@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Rick Seufert, Launches Site"
+title: "Rick Seufert Launches Site"
 date: 2016-08-30
 ---
 
