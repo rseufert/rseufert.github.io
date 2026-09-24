@@ -76,7 +76,7 @@ ul.posts li {
     font-weight: bold;
     font-size: 1.1em;
 }
-.project pre {
+.project pre, .post pre {
     background: #f6f6f6;
     border: 1px solid #e5e5e5;
     padding: 12px 16px;
@@ -95,4 +95,25 @@ code {
     .blurb img {
         max-width: 100%;
     }
+    h1 {
+        font-size: 2em;
+    }
+}
+
+.meta {
+    color: #999;
+    font-family:'Helvetica', 'Arial', 'Sans-Serif';
+}
+.post h2 {
+    font-family:'Helvetica', 'Arial', 'Sans-Serif';
+    margin-top: 40px;
+}
+.post h3 {
+    font-family:'Helvetica', 'Arial', 'Sans-Serif';
+    font-size: 1.3em;
+}
+.post p code, .post li code {
+    overflow-wrap: anywhere;
+    background: #f6f6f6;
+    padding: 1px 4px;
 }
