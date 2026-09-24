@@ -1,8 +1,11 @@
 """Integration tests for po_bridge, against mock-sap and mock-edi.
 
+    pip install mock-sap
     mock-sap --port 8000 &
-    mock-edi --port 8080 &
-    python3 -m unittest -v test_po_bridge
+    python3 -m mockedi --port 8080 &
+    cd examples && python3 -m unittest -v test_po_bridge
+
+The walkthrough: https://rickseufert.com/blog/2026/09/24/testing-an-sap-to-edi-integration
 """
 import json
 import os
