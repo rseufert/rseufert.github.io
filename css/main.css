@@ -108,12 +108,23 @@ code {
     font-family:'Helvetica', 'Arial', 'Sans-Serif';
     margin-top: 40px;
 }
+.post h4 {
+    font-family:'Helvetica', 'Arial', 'Sans-Serif';
+    font-size: 1.1em;
+    color: #333;
+}
 .post h3 {
     font-family:'Helvetica', 'Arial', 'Sans-Serif';
     font-size: 1.3em;
 }
 .post p code, .post li code {
     overflow-wrap: anywhere;
+    font-size: 0.85em;
     background: #f6f6f6;
     padding: 1px 4px;
+}
+.post ul {
+    font-size: 1.3em;
+    line-height: 1.5em;
+    color: #333;
 }
