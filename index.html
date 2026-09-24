@@ -10,3 +10,43 @@ title: Rick Seufert
 	
 
 </div><!-- /.blurb -->
+
+<section id="projects" class="projects">
+	<h2>Projects</h2>
+	<p class="lede">Mock enterprise systems for integration testing. Point your code at them and develop, test and demo without a license, a VPN tunnel, or a support ticket.</p>
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-sap">mock-sap</a></h3>
+		<p>A black-box mock SAP endpoint. It speaks the shapes, not the business logic: SAP Gateway OData V2 and V4 services, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
+		<ul class="features">
+			<li><strong>Zero dependencies.</strong> Python 3.8+ standard library and SQLite.</li>
+			<li><strong>Real wire shapes.</strong> <code>__metadata</code>, <code>/Date(…)/</code>, EDMX <code>$metadata</code>, CSRF tokens, <code>$batch</code> changesets, BAPIRET2 tables.</li>
+			<li><strong>Deterministic demo data.</strong> Business partners, products, sales and purchase orders, the same every run for a given seed.</li>
+			<li><strong>Failure on demand.</strong> Latency, 500s, locked documents, expired CSRF tokens.</li>
+		</ul>
+<pre><code>pip install mock-sap
+mock-sap --port 8000
+curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a></p>
+	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-edi">mock-edi</a></h3>
+		<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end. Send it an 850 and it answers with a 997, an 855, an 856 and an 810. Send it EDIFACT <code>ORDERS</code> and you get <code>CONTRL</code>, <code>ORDRSP</code>, <code>DESADV</code> and <code>INVOIC</code>.</p>
+<pre><code>   you ──850──▶  mock-edi
+       ◀──997──  the syntax parsed
+       ◀──855──  2 lines: one confirmed, one short
+       ◀──856──  shipment / order / item, with a tracking number
+       ◀──810──  1132.80, terms 2% 10 net 30</code></pre>
+		<ul class="features">
+			<li><strong>Zero dependencies.</strong> Installs in a locked-down CI image.</li>
+			<li><strong>X12 and EDIFACT over AS2.</strong> Fixed-width ISA, release characters, <code>HL</code> trees, MDNs with a <code>Received-Content-MIC</code>.</li>
+			<li><strong>Failure on demand.</strong> Short shipments, rejected lines, duplicate invoices, a strict partner, a partner that never answers.</li>
+			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
+		</ul>
+<pre><code>pip install mock-edi
+mock-edi --port 8080
+curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a></p>
+	</div><!-- /.project -->
+</section><!-- /.projects -->
