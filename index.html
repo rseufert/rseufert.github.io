@@ -22,13 +22,14 @@ title: Rick Seufert
 		<ul class="features">
 			<li><strong>Zero dependencies.</strong> Python 3.8+ standard library and SQLite.</li>
 			<li><strong>Real wire shapes.</strong> <code>__metadata</code>, <code>/Date(…)/</code>, EDMX <code>$metadata</code>, CSRF tokens, <code>$batch</code> changesets, BAPIRET2 tables.</li>
+			<li><strong>V2 and V4 over the same rows.</strong> <code>$apply</code> aggregation, delta tokens, Fiori UI annotations, and OAuth 2.0 token flows a client can expire and refresh.</li>
 			<li><strong>Deterministic demo data.</strong> Business partners, products, sales and purchase orders, the same every run for a given seed.</li>
 			<li><strong>Failure on demand.</strong> Latency, 500s, locked documents, expired CSRF tokens.</li>
 		</ul>
 <pre><code>pip install mock-sap
 mock-sap --port 8000
 curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a></p>
+		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
@@ -42,13 +43,15 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 		<ul class="features">
 			<li><strong>Zero dependencies.</strong> Installs in a locked-down CI image.</li>
 			<li><strong>X12 and EDIFACT over AS2.</strong> Fixed-width ISA, release characters, <code>HL</code> trees, MDNs with a <code>Received-Content-MIC</code>.</li>
+			<li><strong>AS2, plain HTTP, or a folder.</strong> Point <code>--drop-dir</code> and <code>--pickup-dir</code> at directories for integrations that still trade files.</li>
+			<li><strong>Changes and receipts.</strong> An 860 or <code>ORDCHG</code> changes an order and is answered with an 865; the 997s you send back are matched to what the mock sent, so "nobody acknowledged my invoice" is testable.</li>
 			<li><strong>Failure on demand.</strong> Short shipments, rejected lines, duplicate invoices, a strict partner, a partner that never answers.</li>
 			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
 		</ul>
 <pre><code>pip install mock-edi
 mock-edi --port 8080
 curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a></p>
+		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
