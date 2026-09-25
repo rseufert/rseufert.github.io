@@ -24,7 +24,7 @@ title: Rick Seufert
 			<li><strong>Real wire shapes.</strong> <code>__metadata</code>, <code>/Date(…)/</code>, EDMX <code>$metadata</code>, CSRF tokens, <code>$batch</code> changesets, BAPIRET2 tables.</li>
 			<li><strong>V2 and V4 over the same rows.</strong> <code>$apply</code> aggregation, delta tokens, Fiori UI annotations, and OAuth 2.0 token flows a client can expire and refresh.</li>
 			<li><strong>Deterministic demo data.</strong> Business partners, products, sales and purchase orders, the same every run for a given seed.</li>
-			<li><strong>Failure on demand.</strong> Latency, 500s, locked documents, expired CSRF tokens.</li>
+			<li><strong>Failure on demand.</strong> Latency, 500s, locked documents, expired CSRF tokens - and an inbound IDoc SAP accepts and then declines to post, which looks like success from the sending side.</li>
 		</ul>
 <pre><code>pip install mock-sap
 mock-sap --port 8000
