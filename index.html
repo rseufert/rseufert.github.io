@@ -50,4 +50,24 @@ mock-edi --port 8080
 curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a></p>
 	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-sap/blob/main/examples/invoice_check.py">Invoice check</a> <span class="tag">mock-sap + mock-edi</span></h3>
+		<p>A worked example of the two mocks together. <code>invoice_check.py</code> is accounts-payable middleware: it takes a supplier's X12 810 invoice and posts it into SAP as an <code>INVOIC</code> IDoc only if it passes a three-way match against the purchase order and the 856 ship notice. Anything else is blocked, with the reasons.</p>
+<pre><code>PO (SAP)  ──┐
+856 ship  ──┼──▶  match?  ──▶  yes: INVOIC IDoc into SAP
+810 bill  ──┘                  no:  blocked, with reasons</code></pre>
+		<ul class="features">
+			<li><strong>A clean invoice is posted,</strong> and the test reads back what SAP received.</li>
+			<li><strong>A short shipment, billed as shipped, is posted.</strong> Matching against the ordered quantity would wrongly block it.</li>
+			<li><strong>A price disagreement is blocked.</strong> mock-edi bills its own catalogue price, the way real suppliers do.</li>
+			<li><strong>The same invoice sent twice is posted once.</strong> No sleeping: the test advances mock-edi's clock.</li>
+		</ul>
+<pre><code>git clone https://github.com/rseufert/mock-sap &amp;&amp; cd mock-sap
+pip install mock-edi
+python3 -m mocksap --port 8000 &amp;
+mock-edi --port 8080 &amp;
+cd examples &amp;&amp; python3 -m unittest -v test_invoice_check</code></pre>
+		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-two-invoices-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-sap/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
 </section><!-- /.projects -->
