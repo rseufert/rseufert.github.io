@@ -44,7 +44,7 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 			<li><strong>Zero dependencies.</strong> Installs in a locked-down CI image.</li>
 			<li><strong>X12 and EDIFACT over AS2.</strong> Fixed-width ISA, release characters, <code>HL</code> trees, MDNs with a <code>Received-Content-MIC</code>.</li>
 			<li><strong>AS2, plain HTTP, or a folder.</strong> Point <code>--drop-dir</code> and <code>--pickup-dir</code> at directories for integrations that still trade files.</li>
-			<li><strong>Changes and receipts.</strong> An 860 or <code>ORDCHG</code> changes an order and is answered with an 865; the 997s you send back are matched to what the mock sent, so "nobody acknowledged my invoice" is testable.</li>
+			<li><strong>Changes and receipts.</strong> An 860 changes an order and is answered with an 865; EDIFACT's <code>ORDCHG</code> is answered by an <code>ORDRSP</code>, having no change acknowledgment of its own. The 997s you send back are matched to what the mock sent, so "nobody acknowledged my invoice" is testable.</li>
 			<li><strong>Failure on demand.</strong> Short shipments, rejected lines, duplicate invoices, a strict partner, a partner that never answers.</li>
 			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
 		</ul>
