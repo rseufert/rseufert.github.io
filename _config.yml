@@ -2,3 +2,6 @@ name: Rick Seufert
 markdown: kramdown
 permalink: /blog/:year/:month/:day/:title
 url: https://rickseufert.com
+# Repo tooling, not site content. Setting exclude replaces Jekyll's default
+# list (Gemfile, node_modules, vendor...), none of which this repo has.
+exclude: [README.md, tools]
