@@ -4,6 +4,8 @@ title: "Testing an SAP-to-EDI Integration Without SAP or a Trading Partner"
 date: 2026-09-24
 ---
 
+*Updated 25 September 2026: [mock-sap 0.9.2](https://pypi.org/project/mock-sap/0.9.2/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release now carries one of the two examples below.*
+
 Every company that buys things through SAP and trades with suppliers over EDI has a piece of middleware in between. It reads purchase orders out of SAP, turns them into X12 850s, sends them to the supplier, takes the supplier's 855 (the purchase order acknowledgment) back into SAP, and, when the goods ship, checks the supplier's 810 invoice before anyone pays it. It is usually the least tested code in the building, because testing it properly needs two things that are hard to get: an SAP system you are allowed to break, and a supplier willing to misbehave on cue.
 
 [mock-sap](https://github.com/rseufert/mock-sap) and [mock-edi](https://github.com/rseufert/mock-edi) are those two things. This post walks through both halves of a small integration, orders out and invoices in, with test suites that run in under a second with no SAP license, no VPN, and no supplier on the phone.
@@ -11,12 +13,14 @@ Every company that buys things through SAP and trades with suppliers over EDI ha
 ## Running the mocks
 
 ```bash
-pip install mock-sap mock-edi
+pip install "mock-sap>=0.9.2" "mock-edi>=0.2.1"
 mock-sap --port 8000 &
 mock-edi --port 8080 &
 ```
 
 mock-sap serves the purchase order service with real Gateway wire shapes (CSRF tokens, `{"d": ...}` envelopes, decimals as strings) and accepts inbound IDocs. mock-edi plays the supplier: send it an 850 and it answers with a 997, an 855, an 856 and an 810, validated against its own X12 dictionary.
+
+The two examples ship with the mocks. `po_bridge` is in mock-edi's [`examples/`](https://github.com/rseufert/mock-edi/tree/main/examples) and `invoice_check` in mock-sap's, and each is also in its package's source archive on PyPI. Each repo's CI runs its example against the other mock's latest release from PyPI, so the examples keep working as new versions come out.
 
 ## Part one: orders out, confirmations in
 
