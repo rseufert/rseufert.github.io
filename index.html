@@ -14,7 +14,7 @@ title: Rick Seufert
 <section id="projects" class="projects">
 	<h2>Projects</h2>
 	<p class="lede">Mock enterprise systems for integration testing. Point your code at them and develop, test and demo without a license, a VPN tunnel, or a support ticket.</p>
-	<p class="lede">Using them together: <a href="/blog/2026/09/24/testing-an-sap-to-edi-integration">Testing an SAP-to-EDI integration without SAP or a trading partner</a>.</p>
+	<p class="lede">Using them together: <a href="/blog/2026/09/24/testing-an-sap-to-edi-integration">Testing an SAP-to-EDI integration without SAP or a trading partner</a>. On the failures you can't ask a partner to perform: <a href="/blog/2026/09/25/three-edi-behaviours-you-cannot-rehearse">three EDI behaviours you can't rehearse</a>.</p>
 
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-sap">mock-sap</a></h3>
@@ -29,7 +29,7 @@ title: Rick Seufert
 <pre><code>pip install mock-sap
 mock-sap --port 8000
 curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a></p>
+		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a> · <a href="https://github.com/rseufert/mock-sap/blob/main/CHANGELOG.md">Changelog</a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
@@ -51,7 +51,7 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 <pre><code>pip install mock-edi
 mock-edi --port 8080
 curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a></p>
+		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a> · <a href="https://github.com/rseufert/mock-edi/blob/main/CHANGELOG.md">Changelog</a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
