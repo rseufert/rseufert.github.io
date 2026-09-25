@@ -52,8 +52,28 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 	</div><!-- /.project -->
 
 	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-edi/blob/main/examples/po_bridge.py">PO bridge</a> <span class="tag">mock-sap + mock-edi</span></h3>
+		<p>A worked example of the two mocks together. <code>po_bridge.py</code> reads a purchase order from SAP over OData, sends it to the supplier as an X12 850, and posts the supplier's 855 back into SAP as an <code>ORDRSP</code> IDoc. Any line that isn't a clean confirmation comes back as an exception for a buyer to look at.</p>
+<pre><code>send:     SAP PO (OData)  ──▶  X12 850  ──▶  supplier
+receive:  SAP  ◀──  ORDRSP IDoc  ◀──  X12 855  ◀──  supplier</code></pre>
+		<ul class="features">
+			<li><strong>The supplier confirms everything,</strong> and one IDoc lands in SAP.</li>
+			<li><strong>The supplier ships short,</strong> and both short lines are flagged.</li>
+			<li><strong>The supplier refuses a line,</strong> and SAP's IDoc carries the rejection on the right item.</li>
+			<li><strong>The supplier never answers,</strong> and nothing is posted: the case a chase-up alert is for.</li>
+			<li><strong>SAP is down when the 855 arrives,</strong> and the confirmation is kept until SAP takes it. This test found a real bug.</li>
+		</ul>
+<pre><code>git clone https://github.com/rseufert/mock-edi &amp;&amp; cd mock-edi
+pip install mock-sap
+mock-sap --port 8000 &amp;
+python3 -m mockedi --port 8080 &amp;
+cd examples &amp;&amp; python3 -m unittest -v test_po_bridge</code></pre>
+		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-one-orders-out-confirmations-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-edi/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
+
+	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-sap/blob/main/examples/invoice_check.py">Invoice check</a> <span class="tag">mock-sap + mock-edi</span></h3>
-		<p>A worked example of the two mocks together. <code>invoice_check.py</code> is accounts-payable middleware: it takes a supplier's X12 810 invoice and posts it into SAP as an <code>INVOIC</code> IDoc only if it passes a three-way match against the purchase order and the 856 ship notice. Anything else is blocked, with the reasons.</p>
+		<p>What happens after the goods ship. <code>invoice_check.py</code> is accounts-payable middleware: it takes a supplier's X12 810 invoice and posts it into SAP as an <code>INVOIC</code> IDoc only if it passes a three-way match against the purchase order and the 856 ship notice. Anything else is blocked, with the reasons.</p>
 <pre><code>PO (SAP)  ──┐
 856 ship  ──┼──▶  match?  ──▶  yes: INVOIC IDoc into SAP
 810 bill  ──┘                  no:  blocked, with reasons</code></pre>
