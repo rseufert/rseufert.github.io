@@ -4,7 +4,7 @@ title: "Testing an SAP-to-EDI Integration Without SAP or a Trading Partner"
 date: 2026-09-24
 ---
 
-*Updated 25 September 2026: [mock-sap 0.9.2](https://pypi.org/project/mock-sap/0.9.2/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release now carries one of the two examples below.*
+*Updated 25 September 2026: [mock-sap 0.10.0](https://pypi.org/project/mock-sap/0.10.0/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release now carries one of the two examples below. 0.10.0 also added the last scenario in part two — an IDoc SAP accepts and then declines to post — which found a bug in the invoice check this post describes.*
 
 Every company that buys things through SAP and trades with suppliers over EDI has a piece of middleware in between. It reads purchase orders out of SAP, turns them into X12 850s, sends them to the supplier, takes the supplier's 855 (the purchase order acknowledgment) back into SAP, and, when the goods ship, checks the supplier's 810 invoice before anyone pays it. It is usually the least tested code in the building, because testing it properly needs two things that are hard to get: an SAP system you are allowed to break, and a supplier willing to misbehave on cue.
 
@@ -13,7 +13,7 @@ Every company that buys things through SAP and trades with suppliers over EDI ha
 ## Running the mocks
 
 ```bash
-pip install "mock-sap>=0.9.2" "mock-edi>=0.2.1"
+pip install "mock-sap>=0.10.0" "mock-edi>=0.2.1"
 mock-sap --port 8000 &
 mock-edi --port 8080 &
 ```
@@ -248,6 +248,32 @@ def test_duplicate_invoice_is_posted_once(self):
 
 A duplicate invoice is how companies pay twice. mock-edi's `duplicate-invoice` behaviour sends the copy a second after the original, which is realistic and would make a naive test either slow or flaky. `/_mock/advance?all` releases it immediately instead, so the test is neither.
 
+#### SAP takes the IDoc and doesn't post it
+
+```python
+def test_an_idoc_sap_would_not_post_is_not_treated_as_posted(self):
+    # SAP answers 201 with a docnum and then declines to post the invoice.
+    # Reading the docnum and stopping there books an invoice SAP rejected.
+    control(SAP, "POST", "/_mock/idoc-posting",
+            {"mestyp": "INVOIC", "status": "51",
+             "message": "Posting period 08 2026 is not open"})
+    self.order()
+
+    [result] = self.check.run()
+    self.assertEqual(result["status"], "not posted")
+    self.assertIn("status 51", result["problems"][0])
+
+    [idoc] = self.invoice_idocs()
+    self.assertEqual(idoc["status"], "51")
+    self.assertEqual(self.check.posted, set())
+```
+
+This one is newer than the rest of this post, and it is here because it found a real bug in the code above. Posting an IDoc is two events, and SAP reports them separately: the port answers `201` and issues a document number, and *then* the application posts the invoice or doesn't. mock-sap 0.10.0 added `/_mock/idoc-posting` so the second answer can be asked for; the first thing it was pointed at was `invoice_check.py`, which read `DOCNUM` from the receipt and reported `posted` without ever reading `STATUS`.
+
+So an invoice SAP had refused was booked as ready to pay. Worse, its number went into the posted set, so the resend after someone opened the posting period would have looked like a duplicate and been blocked — the invoice would never have posted and nothing would have said so. Both halves are fixed above; the check now requires status `53`.
+
+That is the shape of the failure worth designing tests around. A `503` is loud and retryable, and the bridge in part one already survives one. An accepted IDoc that never posts looks exactly like success from the sending side.
+
 ## Running it
 
 ```bash
@@ -257,18 +283,19 @@ test_sap_outage_does_not_lose_the_confirmation ... ok
 test_short_shipment_is_raised_as_an_exception ... ok
 test_silent_supplier_leaves_nothing_to_post ... ok
 test_supplier_confirms_everything ... ok
+test_an_idoc_sap_would_not_post_is_not_treated_as_posted ... ok
 test_duplicate_invoice_is_posted_once ... ok
 test_matching_invoice_is_posted ... ok
 test_price_disagreement_is_blocked ... ok
 test_short_shipment_billed_as_shipped_is_posted ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 0.267s
+Ran 10 tests in 0.166s
 
 OK
 ```
 
-Nine scenarios, two systems, under a second. The full code:
+Ten scenarios, two systems, under a second. The full code:
 
 - Orders out: [po_bridge.py](/examples/po-bridge/po_bridge.py) and [test_po_bridge.py](/examples/po-bridge/test_po_bridge.py), also in [mock-edi's examples](https://github.com/rseufert/mock-edi/tree/main/examples)
 - Invoices in: [invoice_check.py](/examples/invoice-check/invoice_check.py) and [test_invoice_check.py](/examples/invoice-check/test_invoice_check.py), also in [mock-sap's examples](https://github.com/rseufert/mock-sap/tree/main/examples)
