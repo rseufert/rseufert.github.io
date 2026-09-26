@@ -8,10 +8,10 @@ The chain everybody demos is 850 → 997 → 855 → 856 → 810. An order goes 
 
 It is also not what most of your integration code is for. The bulk of it exists for the days the chain doesn't run cleanly: the buyer changes the order after you've packed it, the acknowledgment never comes, the same file is picked up twice. Those are the branches that carry the money, and they are exactly the ones you cannot rehearse — a real trading partner misbehaves on its schedule, not on yours, and "could you reject an invoice for me on Tuesday?" is a support ticket and a fortnight.
 
-[mock-edi](https://github.com/rseufert/mock-edi) 0.2.0 added all three. Here they are, with output from a mock started like this:
+[mock-edi](https://github.com/rseufert/mock-edi) 0.2.0 added all three. Here they are, with output from a mock started like this. *Updated 26 September 2026: the output is from mock-edi 0.3.0, which moved the 865's PO date to `BCA10`, writes every timestamp in UTC, and now refuses a replayed interchange.*
 
 ```bash
-pip install "mock-edi>=0.2.0"
+pip install "mock-edi>=0.3.0"
 mock-edi --port 8080 \
   --drop-dir ./edi/in --pickup-dir ./edi/out \
   --despatch-delay 3600000 --invoice-delay 3600000
@@ -31,7 +31,7 @@ POC*2*DI*0**EA*0**VP*BRKT-050~
 and the 865 answers line by line, in the same vocabulary the 855 uses:
 
 ```
-BCA*00*AC*4500001234**1*20260925***20260925~
+BCA*00*AC*4500001234**1*20260925****20260925~
 POC*1*QD*60**EA*12.50**VP*WIDGET-001*UP*076123400003~
 ACK*IA*60*EA*068*20260927~
 POC*2*DI*40**EA*4.15**VP*BRKT-050*UP*076123400041~
@@ -51,8 +51,8 @@ A despatch delay has to postpone the **packing**, not the posting. So the work i
 
 ```
 $ curl -s localhost:8080/_mock/scheduled
-despatch   4500001234   due 2026-09-25T01:48:15
-invoice    4500001234   due 2026-09-25T01:48:15
+despatch   4500001234   due 2026-09-25T01:48:15Z
+invoice    4500001234   due 2026-09-25T01:48:15Z
 ```
 
 Nothing has been packed. The change lands in that window, and when the despatch finally comes due it ships what the change left behind — 60 of line 1, and no line 2 at all:
@@ -113,7 +113,13 @@ order-9001.edi                 junk.edi
 order-9002.edi
 ```
 
-Moved, not deleted. A mock that eats the evidence is no use at the moment a test fails. Drop `order-9001.edi` a second time and you get `order-9001-1.edi` beside the first, rather than one overwriting the other.
+Moved, not deleted. A mock that eats the evidence is no use at the moment a test fails. Drop `order-9001.edi` a second time and you get `order-9001-1.edi` beside the first, rather than one overwriting the other. And since 0.3.0 the copy is not fulfilled twice: the same `ISA13` from the same sender is refused in the envelope's own words, with a TA1 and nothing behind it read:
+
+```
+TA1*000009001*260926*1943*R*025~
+```
+
+`R` rejects the interchange and `025` says why: a duplicate control number. A sender with a retry bug gets told, rather than getting two shipments and two invoices.
 
 That `scan` endpoint is the other half of the design. There is a poller, but no test should have to wait for it: `POST /_mock/drop/scan` reads the directory *now* and reports what it found. It exists for the same reason `POST /_mock/advance` does — a test that sleeps is slow and flaky, and a test that advances a clock is neither.
 
