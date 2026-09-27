@@ -15,7 +15,7 @@ Every company that buys things through SAP and trades with suppliers over EDI ha
 ## Running the mocks
 
 ```bash
-pip install "mock-sap>=0.11.1" "mock-edi>=0.2.1"
+pip install "mock-sap>=0.11.2" "mock-edi>=0.4.0"
 mock-sap --port 8000 &
 mock-edi --port 8080 &
 ```
