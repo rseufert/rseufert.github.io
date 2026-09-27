@@ -6,7 +6,7 @@ date: 2026-09-24
 
 *Updated 25 September 2026: [mock-sap 0.11.1](https://pypi.org/project/mock-sap/0.11.1/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release carries one of the two examples below. mock-sap 0.10.0 added the last scenario in part two — an IDoc SAP accepts and then declines to post — which found a bug in the invoice check this post describes. Pin 0.11.1 or later: 0.11.0 added business errors on BAPI calls, and 0.11.1 fixes a delta read that could report nothing had changed when something had.*
 
-*Checked again on 26 September 2026 against [mock-sap 0.11.2](https://pypi.org/project/mock-sap/0.11.2/) and [mock-edi 0.3.1](https://pypi.org/project/mock-edi/0.3.1/), the latest of each: all ten tests pass unchanged.*
+*Checked again on 27 September 2026 against [mock-sap 0.11.2](https://pypi.org/project/mock-sap/0.11.2/) and [mock-edi 0.4.0](https://pypi.org/project/mock-edi/0.4.0/), the latest of each: all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [the end of this post](#next-paying-the-invoice).*
 
 Every company that buys things through SAP and trades with suppliers over EDI has a piece of middleware in between. It reads purchase orders out of SAP, turns them into X12 850s, sends them to the supplier, takes the supplier's 855 (the purchase order acknowledgment) back into SAP, and, when the goods ship, checks the supplier's 810 invoice before anyone pays it. It is usually the least tested code in the building, because testing it properly needs two things that are hard to get: an SAP system you are allowed to break, and a supplier willing to misbehave on cue.
 
@@ -305,3 +305,14 @@ Ten scenarios, two systems, under a second. The full code:
 Both run in CI in their repos, against the other mock, so they keep working as the mocks change.
 
 Neither mock implements real business logic, and that's the point. The integration's job is to move documents between two systems correctly and to survive when either one misbehaves. That's exactly what these tests cover.
+
+## Next: paying the invoice
+
+An approved invoice still has to be paid, and that is a third conversation, with a bank. [mock-bank 0.1.0](https://pypi.org/project/mock-bank/0.1.0/) is the counterparty for it. Send it an ISO 20022 `pain.001` payment file and it answers with a `pain.002` that accepts or rejects each payment with a reason code, then a `camt.054` debit notification on the settlement date, then a `camt.053` statement whose balances reconcile. A closed account, an unknown bank or a duplicate file is a `PATCH` away, and `POST /_mock/advance` moves bank time, so settlement day is a test line rather than a wait.
+
+```bash
+pip install mock-bank
+mock-bank --port 8090 &
+```
+
+The worked example for this leg, `payment_run`, is planned for mock-bank 0.2. It will pay the invoices `invoice_check` approves and match the statement back to them.

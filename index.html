@@ -55,6 +55,26 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 	</div><!-- /.project -->
 
 	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a> <span class="tag">new in 0.1</span></h3>
+		<p>A mock bank. Not a payments library or a bank API client, but the thing on the other end. Send it an ISO 20022 <code>pain.001</code> payment file and it answers with a <code>pain.002</code> status report, a <code>camt.054</code> debit notification on the settlement date, and a <code>camt.053</code> statement at the end of each business day.</p>
+<pre><code>   you ──pain.001──▶  mock-bank
+       ◀──pain.002──  PART: 2 accepted, 1 AC04 (account closed), 1 RC01 (bank not found)
+       ◀──camt.054──  2 debits on the settlement date
+       ◀──camt.053──  end of day: opening balance, entries, closing balance</code></pre>
+		<ul class="features">
+			<li><strong>Zero dependencies.</strong> Python 3.8+ standard library and SQLite, like its siblings.</li>
+			<li><strong>Real wire shapes.</strong> Namespaced ISO 20022 messages checked against the published XSDs, real reason codes, and statements whose balances reconcile.</li>
+			<li><strong>A bank clock.</strong> Cutoffs, business days and holidays. <code>POST /_mock/advance</code> moves bank time, so settlement and the next day's statement are a test line, not a wait.</li>
+			<li><strong>Failure on demand.</strong> A closed account, insufficient funds, an unknown bank, a rejected file, a duplicate file, a bank that never answers. Each one is a <code>PATCH</code> away.</li>
+			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
+		</ul>
+<pre><code>pip install mock-bank
+mock-bank --port 8080
+curl -X POST --data-binary @pain001.xml http://127.0.0.1:8080/payments</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
+	</div><!-- /.project -->
+
+	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-edi/blob/main/examples/po_bridge.py">PO bridge</a> <span class="tag">mock-sap + mock-edi</span></h3>
 		<p>A worked example of the two mocks together. <code>po_bridge.py</code> reads a purchase order from SAP over OData, sends it to the supplier as an X12 850, and posts the supplier's 855 back into SAP as an <code>ORDRSP</code> IDoc. Any line that isn't a clean confirmation comes back as an exception for a buyer to look at.</p>
 <pre><code>send:     SAP PO (OData)  ──▶  X12 850  ──▶  supplier
