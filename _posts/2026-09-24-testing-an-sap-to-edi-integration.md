@@ -315,4 +315,12 @@ pip install mock-bank
 mock-bank --port 8090 &
 ```
 
-The worked example for this leg, `payment_run`, is planned for mock-bank 0.2. It will pay the invoices `invoice_check` approves and match the statement back to them.
+That leg has a worked example now. [`pay_invoices`](https://github.com/rseufert/mock-bank/blob/main/examples/pay_invoices.py), in mock-bank's examples, pays mock-edi's EDIFACT invoices on their due dates and then decides from the bank's answers which ones are paid. Its seven tests are the ways a payment run goes wrong quietly:
+
+- a payment the bank *accepted* treated as paid before the statement shows it
+- a retried run that pays twice
+- a status report that rejects every payment read as one file-level rejection, losing each payment's reason
+- a returned payment that leaves its invoice marked paid
+- a payment missing from the statement that nobody notices
+
+[mock-bank's README](https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices) walks through them. The SAP version, `payment_run`, which pays the invoices `invoice_check` approves and posts the statement back into SAP, waits on mock-sap learning to hold payable invoices.

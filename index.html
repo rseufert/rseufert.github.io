@@ -113,4 +113,24 @@ mock-edi --port 8080 &amp;
 cd examples &amp;&amp; python3 -m unittest -v test_invoice_check</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-two-invoices-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-sap/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/pay_invoices.py">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span></h3>
+		<p>The step after the invoice is approved: paying it. <code>pay_invoices.py</code> takes a supplier's EDIFACT <code>INVOIC</code>s, pays each on its due date in an ISO 20022 <code>pain.001</code>, and then works out from what the bank sends back which invoices are actually paid.</p>
+<pre><code>INVOIC  ──▶  pain.001  ──▶  bank
+             pain.002  ◀──  accepted: scheduled, not paid
+             camt.053  ◀──  on the statement: paid</code></pre>
+		<ul class="features">
+			<li><strong>Accepted is not paid.</strong> An invoice is paid when the statement shows the debit, not when the bank says it will try.</li>
+			<li><strong>A retried run pays nothing twice.</strong> The same payments make the same <code>MsgId</code>, so the bank refuses the copy with <code>DUPL</code>, and that refusal does not undo the original.</li>
+			<li><strong>A closed account, or no money, keeps the invoice open,</strong> held with the bank's reason code (<code>AC04</code>, <code>AM04</code>) rather than retried.</li>
+			<li><strong>A returned payment reopens the invoice,</strong> and a payment missing from the statement is reported as unreconciled rather than cleared.</li>
+		</ul>
+<pre><code>git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
+pip install mock-edi
+mock-edi --port 8080 &amp;
+python3 -m mockbank --port 8090 &amp;
+cd examples &amp;&amp; python3 -m unittest -v test_pay_invoices</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
 </section><!-- /.projects -->
