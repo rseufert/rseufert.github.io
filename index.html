@@ -56,22 +56,24 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 	</div><!-- /.project -->
 
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a> <span class="tag">new in 0.1</span></h3>
-		<p>A mock bank. Not a payments library or a bank API client, but the thing on the other end. Send it an ISO 20022 <code>pain.001</code> payment file and it answers with a <code>pain.002</code> status report, a <code>camt.054</code> debit notification on the settlement date, and a <code>camt.053</code> statement at the end of each business day.</p>
+		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a> <span class="tag">new in 0.2</span></h3>
+		<p>A mock bank that speaks ISO 20022 over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
 <pre><code>   you ──pain.001──▶  mock-bank
-       ◀──pain.002──  PART: 2 accepted, 1 AC04 (account closed), 1 RC01 (bank not found)
-       ◀──camt.054──  2 debits on the settlement date
-       ◀──camt.053──  end of day: opening balance, entries, closing balance</code></pre>
+       ◀──pain.002──  2 accepted, 2 rejected (AC04, RC01)
+       ◀──camt.054──  debited, on the settlement date
+       ◀──camt.053──  the day's statement, and it reconciles
+       ◀──pacs.004──  one came back, 3 business days later</code></pre>
 		<ul class="features">
-			<li><strong>Zero dependencies.</strong> Python 3.8+ standard library and SQLite, like its siblings.</li>
-			<li><strong>Real wire shapes.</strong> Namespaced ISO 20022 messages checked against the published XSDs, real reason codes, and statements whose balances reconcile.</li>
-			<li><strong>A bank clock.</strong> Cutoffs, business days and holidays. <code>POST /_mock/advance</code> moves bank time, so settlement and the next day's statement are a test line, not a wait.</li>
-			<li><strong>Failure on demand.</strong> A closed account, insufficient funds, an unknown bank, a rejected file, a duplicate file, a bank that never answers. Each one is a <code>PATCH</code> away.</li>
-			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
+			<li><strong>Zero dependencies.</strong> Python 3.8+, the standard library and SQLite, like its siblings. No transport needing cryptography, no screening, no direct debits - each refused by name, with an answer saying what <em>is</em> supported.</li>
+			<li><strong>The failures, not just the happy path.</strong> An account that rejects for <code>AC04</code>, one with no money, a bank identifier that is not the bank, a duplicate file, a statement with one payment missing, and a payment that settles and then comes back days later.</li>
+			<li><strong>Nothing sleeps.</strong> Settlement dates, the 15:00 cutoff, weekends and holidays run on a bank clock that <code>POST /_mock/advance</code> moves. A three-day return is a line in a test, not a three-day wait.</li>
+			<li><strong>Two doors, one pipeline.</strong> Most bank connections are two directories on an SFTP host rather than an endpoint, so a file dropped in <code>--drop-dir</code> goes through the same decisions as <code>POST /payments</code> and lands in <code>processed/</code> or <code>failed/</code> with the answer written beside it.</li>
+			<li><strong>Its own output is checked against the published XSDs.</strong> Every message the mock writes is validated against the same dictionary it validates yours against, and against schemas fetched from pinned commits - so a declaration that is wrong about the standard fails the build instead of being merely self-consistent.</li>
+			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one <code>pain.001</code>, and post each statement back so SAP clears what was paid and reopens what came back. Thirteen tests, run in CI against mock-sap from PyPI.</li>
 		</ul>
 <pre><code>pip install mock-bank
-mock-bank --port 8080
-curl -X POST --data-binary @pain001.xml http://127.0.0.1:8080/payments</code></pre>
+mock-bank --port 8090
+curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
 	</div><!-- /.project -->
 
@@ -133,5 +135,26 @@ mock-edi --port 8080 &amp;
 python3 -m mockbank --port 8090 &amp;
 cd examples &amp;&amp; python3 -m unittest -v test_pay_invoices</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/payment_run.py">Payment run</a> <span class="tag">mock-sap + mock-bank</span></h3>
+		<p>The same step, but paying what is in SAP rather than what arrived over EDI. <code>payment_run.py</code> does what SAP's <code>F110</code> does: select the open supplier items that are due, pay them in one <code>pain.001</code>, and post each <code>camt.053</code> back as a <code>FINSTA01</code> so SAP clears what was paid - and reopens what came back.</p>
+<pre><code>select:     SAP open items (OData)  ──▶  pain.001  ──▶  bank
+reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
+            cleared · reopened · unreconciled</code></pre>
+		<ul class="features">
+			<li><strong>Accepted is not paid.</strong> A payment made after Friday's 15:00 cutoff settles on Monday. Friday's statement clears nothing, Monday's clears everything, and an integration that cleared on the acknowledgment reported cash it still had.</li>
+			<li><strong>A returned payment and an invoice nobody paid are both <em>open</em> in SAP.</strong> One flag separates them: <code>ClearingIsReversed</code>. Without it you either pay the returned invoice twice or never chase it.</li>
+			<li><strong>A statement that doesn't add up stops one payment, not the run.</strong> The arithmetic is checked before anything reaches SAP; the missing payment goes unreconciled and stays open. When two payments would equally explain the gap, both are named.</li>
+			<li><strong>A blocked invoice is never selected,</strong> and the selection asks SAP to leave blocked and cleared items out rather than filtering them afterwards.</li>
+			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that doesn't answer is three sentences, not silence.</li>
+		</ul>
+<pre><code>git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
+pip install "mock-sap&gt;=0.13.1"
+mock-sap --port 8000 &amp;
+python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &amp;
+cd examples &amp;&amp; python3 -m unittest -v test_payment_run</code></pre>
+		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
