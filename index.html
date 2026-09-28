@@ -148,7 +148,7 @@ reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
 			<li><strong>A returned payment and an invoice nobody paid are both <em>open</em> in SAP.</strong> One flag separates them: <code>ClearingIsReversed</code>. Without it you either pay the returned invoice twice or never chase it.</li>
 			<li><strong>A statement that doesn't add up stops one payment, not the run.</strong> The arithmetic is checked before anything reaches SAP; the missing payment goes unreconciled and stays open. When two payments would equally explain the gap, both are named.</li>
 			<li><strong>A blocked invoice is never selected,</strong> and the selection asks SAP to leave blocked and cleared items out rather than filtering them afterwards.</li>
-			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that doesn't answer is three sentences, not silence.</li>
+			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that answers with an error is three sentences, not silence. A host that is <em>down</em> raises and stops the run instead, which 0.2 is explicit about rather than quiet about.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
 pip install "mock-sap&gt;=0.13.1"
