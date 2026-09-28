@@ -428,16 +428,22 @@ than one of them guessed at.
 
 #### Say what went wrong instead of stopping
 
-`run.problems` holds, in words, anything either side did that the run could not
-use: the bank answering something other than `202` or `422`, a mailbox that never
-replies, SAP refusing a statement. It is neither raised nor swallowed, and an
-empty list is what a clean run looks like.
+`run.problems` holds, in words, anything either side *answered* that the run
+could not use: the bank replying with something other than `202` or `422`, a
+mailbox that answers with an error, SAP refusing a statement. It is neither
+raised nor swallowed, and an empty list is what a clean run looks like.
 
 ```python
 self.assertIn("answered 404 to the payment file", run.problems[0])
 self.assertIn("no status report was read", run.problems[1])
 self.assertIn("no statement was read", run.problems[2])
 ```
+
+A host that is *down* is deliberately not in that list. Point the run at a port
+nothing is listening on and it raises `URLError` and stops, rather than
+recording three sentences and carrying on — `problems` is for an answer it
+could not use, not for an absent server. Which of those two you want is a real
+design question, and 0.2 answers it one way rather than pretending not to.
 
 ### Running the payment run
 
@@ -463,8 +469,9 @@ Ran 13 tests in 0.394s
 OK
 ```
 
-Thirteen scenarios, three systems, on real sockets with nothing stubbed on
-either side:
+Thirteen scenarios across three systems. Twelve of them run on real sockets with
+nothing stubbed on either side; the thirteenth builds a run in memory, because
+naming both candidates for a shortfall is arithmetic and does not need a bank:
 
 ```bash
 pip install "mock-sap>=0.13.1"
@@ -478,7 +485,7 @@ The examples live in the repository, not in the wheel, so this leg needs the
 checkout — and mock-bank itself then needs nothing installed, which is why only
 mock-sap is pinned.
 
-mock-bank's tests need 0.13.1 of mock-sap specifically: the open-item cube it
+mock-bank's tests need mock-sap 0.13.1 or newer: the open-item cube it
 reads is read-only there, as it is in S/4, and a blocked supplier invoice
 reaches its open item — which is what makes *a blocked invoice is never
 selected* a test rather than a comment.
