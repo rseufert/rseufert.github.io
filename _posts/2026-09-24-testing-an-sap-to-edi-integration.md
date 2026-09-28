@@ -6,7 +6,7 @@ date: 2026-09-24
 
 *Updated 25 September 2026: [mock-sap 0.11.1](https://pypi.org/project/mock-sap/0.11.1/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release carries one of the two examples below. mock-sap 0.10.0 added the last scenario in part two — an IDoc SAP accepts and then declines to post — which found a bug in the invoice check this post describes. Pin 0.11.1 or later: 0.11.0 added business errors on BAPI calls, and 0.11.1 fixes a delta read that could report nothing had changed when something had.*
 
-*Checked again on 27 September 2026 against [mock-sap 0.13.1](https://pypi.org/project/mock-sap/0.13.1/) and [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/), the latest of each: all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [the end of this post](#next-paying-the-invoice). One thing did change underneath the invoice check: since mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects. 0.13.0 closed that loop: post the bank's statement back as a `FINSTA01` and the invoice it paid is cleared, or reopened if the payment came back.*
+*Checked again on 27 September 2026 against [mock-sap 0.13.1](https://pypi.org/project/mock-sap/0.13.1/) and [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/), the latest of each: all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [the end of this post](#next-paying-the-invoice). One thing did change underneath the invoice check: since mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects. 0.13.0 closed that loop: post the bank's statement back as a `FINSTA01` and the invoice it paid is cleared, or reopened if the payment came back. [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/) is the other end of it, and there is now a worked SAP payment run: see [the SAP payment run](#the-sap-payment-run).*
 
 Every company that buys things through SAP and trades with suppliers over EDI has a piece of middleware in between. It reads purchase orders out of SAP, turns them into X12 850s, sends them to the supplier, takes the supplier's 855 (the purchase order acknowledgment) back into SAP, and, when the goods ship, checks the supplier's 810 invoice before anyone pays it. It is usually the least tested code in the building, because testing it properly needs two things that are hard to get: an SAP system you are allowed to break, and a supplier willing to misbehave on cue.
 
@@ -308,7 +308,7 @@ Neither mock implements real business logic, and that's the point. The integrati
 
 ## Next: paying the invoice
 
-An approved invoice still has to be paid, and that is a third conversation, with a bank. [mock-bank 0.1.0](https://pypi.org/project/mock-bank/0.1.0/) is the counterparty for it. Send it an ISO 20022 `pain.001` payment file and it answers with a `pain.002` that accepts or rejects each payment with a reason code, then a `camt.054` debit notification on the settlement date, then a `camt.053` statement whose balances reconcile. A closed account, an unknown bank or a duplicate file is a `PATCH` away, and `POST /_mock/advance` moves bank time, so settlement day is a test line rather than a wait.
+An approved invoice still has to be paid, and that is a third conversation, with a bank. [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/) is the counterparty for it. Send it an ISO 20022 `pain.001` payment file and it answers with a `pain.002` that accepts or rejects each payment with a reason code, then a `camt.054` debit notification on the settlement date, then a `camt.053` statement whose balances reconcile. A closed account, an unknown bank or a duplicate file is a `PATCH` away, and `POST /_mock/advance` moves bank time, so settlement day is a test line rather than a wait.
 
 ```bash
 pip install mock-bank
@@ -323,4 +323,161 @@ That leg has a worked example now. [`pay_invoices`](https://github.com/rseufert/
 - a returned payment that leaves its invoice marked paid
 - a payment missing from the statement that nobody notices
 
-[mock-bank's README](https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices) walks through them. The SAP version, `payment_run`, which pays the invoices `invoice_check` approves and posts the statement back into SAP, waits on mock-sap learning to hold payable invoices.
+[mock-bank's README](https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices) walks through them.
+
+### The SAP payment run
+
+`pay_invoices` pays invoices that arrived over EDI. A company pays what is in
+*SAP*, and that is a different selection with a different set of ways to go
+wrong. [`payment_run`](https://github.com/rseufert/mock-bank/blob/main/examples/payment_run.py)
+does what SAP's `F110` does: select the open supplier items that are due, pay
+them in one `pain.001`, and post each `camt.053` back as a `FINSTA01` so SAP
+clears what was paid and reopens what came back.
+
+```python
+payments = PaymentRun(SAP, BANK, ACME)
+run = payments.run(self.monday, "RUN1")
+payments.reconcile(run)
+```
+
+The `EndToEndId` is the supplier's own invoice number and the `MsgId` is the run
+date and identification, the way `F110` builds them. So the bank's answers and
+SAP's clearing meet on the same reference, and the same run sent twice is a
+duplicate by construction rather than by luck.
+
+#### A payment the bank accepted is not a payment that happened
+
+`pain.002` says *accepted*. It does not say *paid*. The money leaves on the
+settlement date, and the statement is what proves it — so an integration that
+clears the invoice on the acknowledgment is reporting cash it still has.
+
+```python
+run = self.payments.run(self.today, "RUN1")        # Friday, 16:00
+self.advance(self.today + datetime.timedelta(days=1))
+self.payments.reconcile(run)
+self.assertEqual({i.status for i in run.items}, {"accepted"})
+self.advance(self.monday + datetime.timedelta(days=1))
+self.payments.reconcile(run)
+self.assertEqual({i.status for i in run.items}, {"cleared"})
+```
+
+mock-bank settles a 16:00 Friday payment on Monday, because 15:00 is the cutoff
+and the weekend is not a business day. Friday's statement arrives and clears
+nothing — harmlessly: nothing cleared, nothing it could not place, nothing wrong
+with it — and Monday's clears everything. The test takes milliseconds, because
+the bank's clock is a number the mock will move for you.
+
+#### A returned payment looks exactly like one never paid
+
+This is the expensive one. Three business days after it settled, a payment can
+come back. In SAP the reopened item and an item nobody ever paid are both simply
+*open*: pay from that list without looking closer and you pay the returned
+invoice a second time; treat it as never sent and you never chase it.
+
+Here `GLX-4711` was paid and came back, and `INI-2026-17` was rejected at the
+door for `AC04` and never paid at all:
+
+```python
+returned, never = self.cube_item("GLX-4711"), self.cube_item("INI-2026-17")
+self.assertEqual((returned["ClearingAccountingDocument"],
+                  never["ClearingAccountingDocument"]), ("", ""))
+self.assertEqual((returned["ClearingIsReversed"],
+                  never["ClearingIsReversed"]), (True, False))
+```
+
+One flag tells them apart. mock-bank sends the return as a `pacs.004` and puts it
+on the day's statement as a credit whose `RtrInf` names the reason, so the
+distinction is in the wire file rather than in a convention (parties and the
+original transaction code trimmed):
+
+```xml
+<Ntry><Amt Ccy="EUR">1190.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>
+  <BookgDt><Dt>2026-10-08</Dt></BookgDt><AcctSvcrRef>MB-RTR-35</AcctSvcrRef>
+  <BkTxCd><Domn><Cd>PMNT</Cd><Fmly><Cd>ICDT</Cd><SubFmlyCd>RRTN</SubFmlyCd></Fmly></Domn></BkTxCd>
+  <NtryDtls><TxDtls><Refs><MsgId>F110-20261005-RUN1</MsgId>
+    <EndToEndId>GLX-4711</EndToEndId></Refs>
+    <RtrInf><Rsn><Cd>AC04</Cd></Rsn></RtrInf>
+  </TxDtls></NtryDtls></Ntry>
+```
+
+`ClearingIsReversed` is how mock-sap carries that through: the clearing document
+comes off the open item, so it is payable again, and the flag says it was paid
+once and came back. The next run selects it alongside the one never paid, which
+is correct — both are owed — and now the run can tell you which is which.
+
+#### A statement that does not add up should stop one payment, not the run
+
+Under the `statement-gap` behaviour the bank leaves one payment off the
+statement, the way a real one does when a file is still in flight. The failures
+to avoid are a reconciliation that balances the day by adjusting something, and
+one that throws and leaves half the run posted.
+
+```python
+statuses = sorted(i.status for i in run.items)
+self.assertEqual(statuses, ["cleared", "unreconciled"])
+missing = [i for i in run.items if i.status == "unreconciled"][0]
+self.assertIn("short", missing.reason)
+```
+
+Closing balance minus opening minus the entries is checked before anything is
+posted to SAP. One payment goes `unreconciled` and its item stays open; the rest
+clear. The reason says which payment and by how much — *statement 2 for
+2026-10-05 is 238.00 short, which is this payment; the item stays open* — and
+when two payments could equally explain the shortfall, both are named rather
+than one of them guessed at.
+
+#### Say what went wrong instead of stopping
+
+`run.problems` holds, in words, anything either side did that the run could not
+use: the bank answering something other than `202` or `422`, a mailbox that never
+replies, SAP refusing a statement. It is neither raised nor swallowed, and an
+empty list is what a clean run looks like.
+
+```python
+self.assertIn("answered 404 to the payment file", run.problems[0])
+self.assertIn("no status report was read", run.problems[1])
+self.assertIn("no statement was read", run.problems[2])
+```
+
+### Running the payment run
+
+```bash
+$ python3 -m unittest -v test_payment_run
+test_3_a_return_reopens_the_invoice_distinguishable_from_one_never_paid ... ok
+test_a_blocked_invoice_is_never_selected ... ok
+test_a_closed_account_is_rejected_ac04_and_the_rest_accepted ... ok
+test_an_item_not_yet_due_is_not_selected ... ok
+test_the_same_run_twice_is_dupl_and_pays_nothing_twice ... ok
+test_the_selection_asks_sap_to_leave_blocked_and_cleared_items_out ... ok
+test_1_a_clean_run_is_paid_matched_and_cleared ... ok
+test_5_a_statement_gap_leaves_the_missing_payment_unreconciled_and_open ... ok
+test_6_after_the_cutoff_it_waits_for_mondays_statement ... ok
+test_posting_the_same_statement_twice_clears_nothing_twice ... ok
+test_a_bank_that_does_not_answer_is_a_problem_not_silence ... ok
+test_sap_refusing_a_statement_is_recorded_against_it ... ok
+test_two_payments_of_the_missing_amount_are_both_named ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.394s
+
+OK
+```
+
+Thirteen scenarios, three systems, on real sockets with nothing stubbed on
+either side:
+
+```bash
+pip install "mock-sap>=0.13.1" "mock-bank>=0.2.0"
+mock-sap --port 8000 &
+python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &
+cd examples && python3 -m unittest -v test_payment_run
+```
+
+mock-bank's tests need 0.13.1 of mock-sap specifically: the open-item cube it
+reads is read-only there, as it is in S/4, and a blocked supplier invoice
+reaches its open item — which is what makes *a blocked invoice is never
+selected* a test rather than a comment.
+
+Under a second for a returned payment, a missed cutoff and a short statement:
+three things that are cheap here and expensive to meet for the first time in
+production.
