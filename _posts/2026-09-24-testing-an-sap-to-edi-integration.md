@@ -6,7 +6,7 @@ date: 2026-09-24
 
 *Updated 25 September 2026: [mock-sap 0.11.1](https://pypi.org/project/mock-sap/0.11.1/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release carries one of the two examples below. mock-sap 0.10.0 added the last scenario in part two — an IDoc SAP accepts and then declines to post — which found a bug in the invoice check this post describes. Pin 0.11.1 or later: 0.11.0 added business errors on BAPI calls, and 0.11.1 fixes a delta read that could report nothing had changed when something had.*
 
-*Checked again on 27 September 2026 against [mock-sap 0.12.0](https://pypi.org/project/mock-sap/0.12.0/) and [mock-edi 0.4.0](https://pypi.org/project/mock-edi/0.4.0/), the latest of each: all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [the end of this post](#next-paying-the-invoice). One thing did change underneath the invoice check: in mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects.*
+*Checked again on 27 September 2026 against [mock-sap 0.13.1](https://pypi.org/project/mock-sap/0.13.1/) and [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/), the latest of each: all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [the end of this post](#next-paying-the-invoice). One thing did change underneath the invoice check: since mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects. 0.13.0 closed that loop: post the bank's statement back as a `FINSTA01` and the invoice it paid is cleared, or reopened if the payment came back.*
 
 Every company that buys things through SAP and trades with suppliers over EDI has a piece of middleware in between. It reads purchase orders out of SAP, turns them into X12 850s, sends them to the supplier, takes the supplier's 855 (the purchase order acknowledgment) back into SAP, and, when the goods ship, checks the supplier's 810 invoice before anyone pays it. It is usually the least tested code in the building, because testing it properly needs two things that are hard to get: an SAP system you are allowed to break, and a supplier willing to misbehave on cue.
 
@@ -15,7 +15,7 @@ Every company that buys things through SAP and trades with suppliers over EDI ha
 ## Running the mocks
 
 ```bash
-pip install "mock-sap>=0.12.0" "mock-edi>=0.4.0"
+pip install "mock-sap>=0.13.1" "mock-edi>=0.5.0"
 mock-sap --port 8000 &
 mock-edi --port 8080 &
 ```
