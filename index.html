@@ -56,7 +56,7 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 	</div><!-- /.project -->
 
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a> <span class="tag">new in 0.2</span></h3>
+		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a></h3>
 		<p>A mock bank that speaks ISO 20022 over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
 <pre><code>   you ──pain.001──▶  mock-bank
        ◀──pain.002──  2 accepted, 2 rejected (AC04, RC01)
@@ -75,6 +75,31 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 mock-bank --port 8090
 curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
+	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Procure to pay</a> <span class="tag">all three mocks</span></h3>
+		<p>One purchase, carried the whole way: a purchase order in SAP becomes an X12 850, the supplier confirms it, ships it and invoices it, a three-way match posts the invoice into SAP as money owed, a payment run pays it in an ISO 20022 <code>pain.001</code>, and the bank's statement clears it. The three examples below are its individual legs; this is the one that runs end to end.</p>
+<pre><code>SAP  ──850──▶  supplier          a purchase order becomes an EDI order
+     ◀──855/856/810──  supplier  confirmed, shipped, invoiced
+SAP  ◀──INVOIC──                 matched, posted, and now owed
+     ──pain.001──▶  bank         a payment run selects what is due
+SAP  ◀──FINSTA01◀──camt.053──    the statement clears what was paid</code></pre>
+		<ul class="features">
+			<li><strong>It was written to find bugs, and it found three.</strong> Each pair of mocks was green while the chain was broken, because each pair's tests assert what the <em>next</em> system received rather than what it could do with it. An <code>INVOIC</code> that named no supplier and so created nothing owed; a mock that answered "posted" for having posted nothing; an order placed in EUR that came back invoiced in dollars. All three had been passing for days.</li>
+			<li><strong>The same invoice twice, and two things that look like they catch it.</strong> A supplier retries an invoice after the first was taken, and a restarted middleware posts it again. Upstream, an invoice arriving alone is blocked for billing more than was shipped - because the restart forgot the ship notice too, not because anything checked. Downstream, the payment run skips a repeated reference within one run - and pays it in the next, once the first has cleared. Neither end is checking, and the second payment goes out through the gap.</li>
+			<li><strong>The fix is to ask the system of record.</strong> Does SAP already hold a supplier invoice with this number, from this supplier? One <code>$filter</code>, and it survives a restart because SAP is where the answer lives. Per supplier, because an invoice number is only unique within one.</li>
+			<li><strong>A price disagreement never reaches the bank,</strong> blocked by a real <code>810</code> disagreeing with the purchase order rather than by a flag a test set.</li>
+			<li><strong>A payment the bank rejects leaves the invoice owed.</strong> The supplier's account is closed, SAP still holds its details, and <code>AC04</code> comes back: the item stays open and stays distinguishable from one that was paid and came back.</li>
+			<li><strong>It does not tell the supplier what was paid,</strong> and says so. That needs a remittance advice, which mock-edi does not speak yet - so the loop ends with SAP and the bank agreeing and the supplier none the wiser, which is why a supplier keeps dunning you for an invoice you paid.</li>
+		</ul>
+<pre><code>pip install "mock-sap&gt;=0.13.2" mock-edi
+git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
+mock-sap --port 8000 &amp;
+mock-edi --port 8080 &amp;
+python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &amp;
+cd examples &amp;&amp; python3 -m unittest -v test_procure_to_pay</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Code</a> · <a href="https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py">Tests</a></p>
 	</div><!-- /.project -->
 
 	<div class="project">

@@ -284,25 +284,32 @@ test_supplier_confirms_everything ... ok
 test_a_posted_invoice_leaves_money_owed
 A posted invoice has to leave money owed, or nothing was posted. ... ok
 test_an_idoc_sap_would_not_post_is_not_treated_as_posted ... ok
+test_an_invoice_in_the_wrong_currency_is_blocked
+The same number in another currency is not the same price. ... ok
+test_an_invoice_that_names_no_currency_is_not_blocked_for_it
+Absence is not disagreement. ... ok
 test_duplicate_invoice_is_posted_once ... ok
 test_matching_invoice_is_posted ... ok
 test_price_disagreement_is_blocked ... ok
 test_short_shipment_billed_as_shipped_is_posted ... ok
+test_the_order_declares_its_currency_so_the_supplier_bills_it
+A EUR order comes back invoiced in EUR, and so is payable by SEPA. ... ok
 test_the_payable_falls_due_on_the_invoices_own_terms
 Net 30 reaches the payable, so a payment run picks it up when due. ... ok
 test_the_payable_lines_carry_the_amounts_and_the_order
 A payable's lines carry the amounts, not just its total. ... ok
 
 ----------------------------------------------------------------------
-Ran 13 tests in 0.249s
+Ran 16 tests in 0.286s
 
 OK
 ```
 
-Thirteen scenarios, two systems, under a second. Three of them are newer than
-the rest, and they are the ones that ask what *posting* the invoice created
-rather than what SAP received - which is the question nothing here asked until
-the payment run needed an answer. The full code:
+Sixteen scenarios, two systems, under a second. Six of them are newer than the
+rest, and every one came from running this integration against a *third* mock.
+Three ask what posting the invoice created rather than what SAP received; three
+ask whether the money it created is in the currency anyone agreed on. Neither
+question was asked here until a payment run needed an answer. The full code:
 
 - Orders out: [po_bridge.py](/examples/po-bridge/po_bridge.py) and [test_po_bridge.py](/examples/po-bridge/test_po_bridge.py), also in [mock-edi's examples](https://github.com/rseufert/mock-edi/tree/main/examples)
 - Invoices in: [invoice_check.py](/examples/invoice-check/invoice_check.py) and [test_invoice_check.py](/examples/invoice-check/test_invoice_check.py), also in [mock-sap's examples](https://github.com/rseufert/mock-sap/tree/main/examples)
@@ -499,6 +506,27 @@ Under a second for a returned payment, a missed cutoff and a short statement:
 three things that are cheap here and expensive to meet for the first time in
 production.
 
+### All three at once
+
+`payment_run` pays what is already in SAP. [`procure_to_pay`](https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py)
+carries one purchase the whole way instead: the order out as an `850`, the
+supplier's answers back, the three-way match, the posting, the payment run and
+the statement that clears it. Everything in this post plus the bank, in one test
+suite.
+
+It is worth reading for the duplicate. A supplier retries an invoice after the
+first was taken, and **two separate things look like they catch it while neither
+does**. Upstream, a restarted middleware has forgotten its ship notices as well
+as what it posted, so the retry is blocked for billing more than was shipped -
+which is a second thing missing, not a check. Downstream, the payment run skips a
+repeated reference within one run, and pays it in the next once the first has
+cleared. The second payment goes out through the gap between two systems that
+were each deduplicating for their own reasons.
+
+The fix is to ask the system of record - does SAP already hold a supplier invoice
+with this number, from this supplier - which is one `$filter` and survives a
+restart, because SAP is where the answer lives.
+
 ## Updates
 
 Newest last. Each one is a date this post was run again rather than reread,
@@ -508,4 +536,4 @@ which is the only kind of check worth recording.
 
 *Checked again on 27 September 2026 against [mock-sap 0.13.1](https://pypi.org/project/mock-sap/0.13.1/) and [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/): all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [Next: paying the invoice](#next-paying-the-invoice). One thing did change underneath the invoice check: since mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects. 0.13.0 closed that loop: post the bank's statement back as a `FINSTA01` and the invoice it paid is cleared, or reopened if the payment came back. [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/) is the other end of it, and there is now a worked SAP payment run: see [the SAP payment run](#the-sap-payment-run).*
 
-*Checked again on 28 September 2026 against [mock-sap 0.13.2](https://pypi.org/project/mock-sap/0.13.2/) and [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/), the latest of each. 0.13.2 matters to part two of this post, and not in a flattering way. The `INVOIC` IDoc `invoice_check` sent named no supplier, so SAP had nobody to owe and created **no supplier invoice and no open payable** — while answering status `53`, *Application document posted*. Every invoice this post's example approved had been booked as posted and left no money owed. The five tests here never caught it because all five asserted what SAP *received*, and none asserted what posting it created. Both halves are fixed in 0.13.2: the IDoc now names the supplier, and an IDoc that posts nothing reports `51` with the segment that was missing rather than claiming success. Three tests were added to ask the question the other five did not - hence thirteen above, where there were ten. It was found on the first attempt to run all three mocks end to end — four examples using two mocks each could not see it.*
+*Checked again on 28 September 2026 against [mock-sap 0.13.2](https://pypi.org/project/mock-sap/0.13.2/) and [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/). (mock-bank 0.3.0 landed later the same day; these tests do not depend on it.) 0.13.2 matters to part two of this post, and not in a flattering way. The `INVOIC` IDoc `invoice_check` sent named no supplier, so SAP had nobody to owe and created **no supplier invoice and no open payable** — while answering status `53`, *Application document posted*. Every invoice this post's example approved had been booked as posted and left no money owed. The five tests here never caught it because all five asserted what SAP *received*, and none asserted what posting it created. Both halves are fixed in 0.13.2: the IDoc now names the supplier, and an IDoc that posts nothing reports `51` with the segment that was missing rather than claiming success. Three tests were added to ask the question the other five did not - hence thirteen above, where there were ten. It was found on the first attempt to run all three mocks end to end — four examples using two mocks each could not see it. A third bug came out of the same exercise: the `850` this example sends declared no currency, so a purchase order placed in EUR came back invoiced in dollars and the three-way match compared the figures without noticing they meant different things. mock-bank was the only thing in the chain that objected, refusing the payment because a SEPA transfer is in EUR. Fixed in 0.13.2 as well, with three more tests — hence sixteen above, where there were ten on the 25th.*
