@@ -57,25 +57,34 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a></h3>
-		<p>A mock bank that speaks ISO 20022 over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
+		<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
 <pre><code>   you ──pain.001──▶  mock-bank
        ◀──pain.002──  2 accepted, 2 rejected (AC04, RC01)
        ◀──camt.054──  debited, on the settlement date
        ◀──camt.053──  the day's statement, and it reconciles
        ◀──pacs.004──  one came back, 3 business days later</code></pre>
+		<p>Or the same four payments as an ACH file, for an account that banks in US formats. The choice is per account, so one file can produce both.</p>
+<pre><code>   you ──NACHA────▶  mock-bank
+       ◀──text─────  ENTRY … REJECTED R02 the creditor account … is closed
+       ◀──NACHA────  a return file: one 21 entry per rejection, addenda 99
+       ◀──BAI2─────  03,0000000001,USD,010,+12500000,,Z,015,+10875000,,Z/
+                     16,495,125000,Z,INV-2026-0101,…,Globex Supplies B.V./
+                     49,+25000000,4/</code></pre>
 		<ul class="features">
 			<li><strong>Zero dependencies.</strong> Python 3.8+, the standard library and SQLite, like its siblings. No transport needing cryptography, no screening, no direct debits - each refused by name, with an answer saying what <em>is</em> supported.</li>
-			<li><strong>The failures, not just the happy path.</strong> An account that rejects for <code>AC04</code>, one with no money, a bank identifier that is not the bank, a duplicate file, a statement with one payment missing, and a payment that settles and then comes back days later.</li>
+			<li><strong>Two formats, and the mock does not care which door.</strong> A <code>pain.001</code> or a 94-column NACHA file, over <code>POST /payments</code> or dropped in a folder, goes through the same decisions. An account whose <code>format</code> is <code>nacha</code> gets a plain-text acknowledgement where an ISO 20022 account gets a <code>pain.002</code>, an R-coded return file where it gets a <code>pacs.004</code>, and a BAI2 statement where it gets a <code>camt.053</code>.</li>
+			<li><strong>The failures, not just the happy path.</strong> An account that rejects for <code>AC04</code>, one with no money, a bank identifier that is not the bank, a duplicate file, a statement with one payment missing, and a payment that settles and then comes back days later. Each reason has its NACHA twin: <code>R01</code>, <code>R02</code>, <code>R03</code>.</li>
 			<li><strong>Nothing sleeps.</strong> Settlement dates, the 15:00 cutoff, weekends and holidays run on a bank clock that <code>POST /_mock/advance</code> moves. A three-day return is a line in a test, not a three-day wait.</li>
 			<li><strong>Two doors, one pipeline.</strong> Most bank connections are two directories on an SFTP host rather than an endpoint, so a file dropped in <code>--drop-dir</code> goes through the same decisions as <code>POST /payments</code> and lands in <code>processed/</code> or <code>failed/</code> with the answer written beside it.</li>
-			<li><strong>Its own output is checked against the published XSDs.</strong> Every message the mock writes is validated against the same dictionary it validates yours against, and against schemas fetched from pinned commits - so a declaration that is wrong about the standard fails the build instead of being merely self-consistent.</li>
-			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one <code>pain.001</code>, and post each statement back so SAP clears what was paid and reopens what came back. Thirteen tests, run in CI against mock-sap from PyPI.</li>
+			<li><strong>Its own output is checked against somebody else's files.</strong> Every ISO 20022 message is validated against schemas fetched from pinned commits, and the NACHA and BAI2 readers are held to files from <a href="https://github.com/moov-io">moov-io</a> - because a reader and a writer built from one declaration agree with each other even when both are wrong. That is how the mock found it was counting a returned debit as a credit, and that its BAI2 reader could not open a real bank's file.</li>
+			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one file, and post each statement back so SAP clears what was paid and reopens what came back. Twenty-three tests, run in CI against mock-sap from PyPI - twice, once over ISO 20022 and once over ACH, because the same run has to survive both.</li>
 		</ul>
 <pre><code>pip install mock-bank
 mock-bank --port 8090
 curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
-	</div><!-- /.project -->
+	
+</div><!-- /.project -->
 
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Procure to pay</a> <span class="tag">all three mocks</span></h3>

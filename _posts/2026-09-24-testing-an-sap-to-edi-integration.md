@@ -320,7 +320,9 @@ Neither mock implements real business logic, and that's the point. The integrati
 
 ## Next: paying the invoice
 
-An approved invoice still has to be paid, and that is a third conversation, with a bank. [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/) is the counterparty for it. Send it an ISO 20022 `pain.001` payment file and it answers with a `pain.002` that accepts or rejects each payment with a reason code, then a `camt.054` debit notification on the settlement date, then a `camt.053` statement whose balances reconcile. A closed account, an unknown bank or a duplicate file is a `PATCH` away, and `POST /_mock/advance` moves bank time, so settlement day is a test line rather than a wait.
+An approved invoice still has to be paid, and that is a third conversation, with a bank. [mock-bank](https://pypi.org/project/mock-bank/) is the counterparty for it. Send it an ISO 20022 `pain.001` payment file and it answers with a `pain.002` that accepts or rejects each payment with a reason code, then a `camt.054` debit notification on the settlement date, then a `camt.053` statement whose balances reconcile. A closed account, an unknown bank or a duplicate file is a `PATCH` away, and `POST /_mock/advance` moves bank time, so settlement day is a test line rather than a wait.
+
+Or send the same payments as a NACHA file, for an account that banks in US formats. The choice is per account, so one file can produce both: an ISO 20022 account gets a `pain.002`, a `pacs.004` and a `camt.053`, and an ACH account gets a plain-text acknowledgement, an R-coded return file and a BAI2 statement. The reason codes line up — `AC04` is `R02`, `RC01` is `R03` — because it is the same decision either way, rendered twice.
 
 ```bash
 pip install mock-bank
