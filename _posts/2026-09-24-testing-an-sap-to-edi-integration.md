@@ -4,10 +4,6 @@ title: "Testing an SAP-to-EDI Integration Without SAP or a Trading Partner"
 date: 2026-09-24
 ---
 
-*Updated 25 September 2026: [mock-sap 0.11.1](https://pypi.org/project/mock-sap/0.11.1/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release carries one of the two examples below. mock-sap 0.10.0 added the last scenario in part two — an IDoc SAP accepts and then declines to post — which found a bug in the invoice check this post describes. Pin 0.11.1 or later: 0.11.0 added business errors on BAPI calls, and 0.11.1 fixes a delta read that could report nothing had changed when something had.*
-
-*Checked again on 27 September 2026 against [mock-sap 0.13.1](https://pypi.org/project/mock-sap/0.13.1/) and [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/), the latest of each: all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [the end of this post](#next-paying-the-invoice). One thing did change underneath the invoice check: since mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects. 0.13.0 closed that loop: post the bank's statement back as a `FINSTA01` and the invoice it paid is cleared, or reopened if the payment came back. [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/) is the other end of it, and there is now a worked SAP payment run: see [the SAP payment run](#the-sap-payment-run).*
-
 Every company that buys things through SAP and trades with suppliers over EDI has a piece of middleware in between. It reads purchase orders out of SAP, turns them into X12 850s, sends them to the supplier, takes the supplier's 855 (the purchase order acknowledgment) back into SAP, and, when the goods ship, checks the supplier's 810 invoice before anyone pays it. It is usually the least tested code in the building, because testing it properly needs two things that are hard to get: an SAP system you are allowed to break, and a supplier willing to misbehave on cue.
 
 [mock-sap](https://github.com/rseufert/mock-sap) and [mock-edi](https://github.com/rseufert/mock-edi) are those two things. This post walks through both halves of a small integration, orders out and invoices in, with test suites that run in under a second with no SAP license, no VPN, and no supplier on the phone.
@@ -15,7 +11,7 @@ Every company that buys things through SAP and trades with suppliers over EDI ha
 ## Running the mocks
 
 ```bash
-pip install "mock-sap>=0.13.1" "mock-edi>=0.5.0"
+pip install "mock-sap>=0.13.2" "mock-edi>=0.5.0"
 mock-sap --port 8000 &
 mock-edi --port 8080 &
 ```
@@ -285,19 +281,28 @@ test_sap_outage_does_not_lose_the_confirmation ... ok
 test_short_shipment_is_raised_as_an_exception ... ok
 test_silent_supplier_leaves_nothing_to_post ... ok
 test_supplier_confirms_everything ... ok
+test_a_posted_invoice_leaves_money_owed
+A posted invoice has to leave money owed, or nothing was posted. ... ok
 test_an_idoc_sap_would_not_post_is_not_treated_as_posted ... ok
 test_duplicate_invoice_is_posted_once ... ok
 test_matching_invoice_is_posted ... ok
 test_price_disagreement_is_blocked ... ok
 test_short_shipment_billed_as_shipped_is_posted ... ok
+test_the_payable_falls_due_on_the_invoices_own_terms
+Net 30 reaches the payable, so a payment run picks it up when due. ... ok
+test_the_payable_lines_carry_the_amounts_and_the_order
+A payable's lines carry the amounts, not just its total. ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 0.166s
+Ran 13 tests in 0.249s
 
 OK
 ```
 
-Ten scenarios, two systems, under a second. The full code:
+Thirteen scenarios, two systems, under a second. Three of them are newer than
+the rest, and they are the ones that ask what *posting* the invoice created
+rather than what SAP received - which is the question nothing here asked until
+the payment run needed an answer. The full code:
 
 - Orders out: [po_bridge.py](/examples/po-bridge/po_bridge.py) and [test_po_bridge.py](/examples/po-bridge/test_po_bridge.py), also in [mock-edi's examples](https://github.com/rseufert/mock-edi/tree/main/examples)
 - Invoices in: [invoice_check.py](/examples/invoice-check/invoice_check.py) and [test_invoice_check.py](/examples/invoice-check/test_invoice_check.py), also in [mock-sap's examples](https://github.com/rseufert/mock-sap/tree/main/examples)
@@ -474,7 +479,7 @@ nothing stubbed on either side; the thirteenth builds a run in memory, because
 naming both candidates for a shortfall is arithmetic and does not need a bank:
 
 ```bash
-pip install "mock-sap>=0.13.1"
+pip install "mock-sap>=0.13.2"
 git clone https://github.com/rseufert/mock-bank && cd mock-bank
 mock-sap --port 8000 &
 python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &
@@ -485,7 +490,7 @@ The examples live in the repository, not in the wheel, so this leg needs the
 checkout — and mock-bank itself then needs nothing installed, which is why only
 mock-sap is pinned.
 
-mock-bank's tests need mock-sap 0.13.1 or newer: the open-item cube it
+mock-bank's tests need mock-sap 0.13.2 or newer: the open-item cube it
 reads is read-only there, as it is in S/4, and a blocked supplier invoice
 reaches its open item — which is what makes *a blocked invoice is never
 selected* a test rather than a comment.
@@ -493,3 +498,14 @@ selected* a test rather than a comment.
 Under a second for a returned payment, a missed cutoff and a short statement:
 three things that are cheap here and expensive to meet for the first time in
 production.
+
+## Updates
+
+Newest last. Each one is a date this post was run again rather than reread,
+which is the only kind of check worth recording.
+
+*Updated 25 September 2026: [mock-sap 0.11.1](https://pypi.org/project/mock-sap/0.11.1/) and [mock-edi 0.2.1](https://pypi.org/project/mock-edi/0.2.1/) are out, and each release carries one of the two examples in this post. mock-sap 0.10.0 added the last scenario in part two — an IDoc SAP accepts and then declines to post — which found a bug in the invoice check this post describes. Pin 0.11.1 or later: 0.11.0 added business errors on BAPI calls, and 0.11.1 fixes a delta read that could report nothing had changed when something had.*
+
+*Checked again on 27 September 2026 against [mock-sap 0.13.1](https://pypi.org/project/mock-sap/0.13.1/) and [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/): all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [Next: paying the invoice](#next-paying-the-invoice). One thing did change underneath the invoice check: since mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects. 0.13.0 closed that loop: post the bank's statement back as a `FINSTA01` and the invoice it paid is cleared, or reopened if the payment came back. [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/) is the other end of it, and there is now a worked SAP payment run: see [the SAP payment run](#the-sap-payment-run).*
+
+*Checked again on 28 September 2026 against [mock-sap 0.13.2](https://pypi.org/project/mock-sap/0.13.2/) and [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/), the latest of each. 0.13.2 matters to part two of this post, and not in a flattering way. The `INVOIC` IDoc `invoice_check` sent named no supplier, so SAP had nobody to owe and created **no supplier invoice and no open payable** — while answering status `53`, *Application document posted*. Every invoice this post's example approved had been booked as posted and left no money owed. The five tests here never caught it because all five asserted what SAP *received*, and none asserted what posting it created. Both halves are fixed in 0.13.2: the IDoc now names the supplier, and an IDoc that posts nothing reports `51` with the segment that was missing rather than claiming success. Three tests were added to ask the question the other five did not - hence thirteen above, where there were ten. It was found on the first attempt to run all three mocks end to end — four examples using two mocks each could not see it.*

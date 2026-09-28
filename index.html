@@ -104,7 +104,7 @@ cd examples &amp;&amp; python3 -m unittest -v test_po_bridge</code></pre>
 856 ship  ──┼──▶  match?  ──▶  yes: INVOIC IDoc into SAP
 810 bill  ──┘                  no:  blocked, with reasons</code></pre>
 		<ul class="features">
-			<li><strong>A clean invoice is posted,</strong> and the test reads back what SAP received.</li>
+			<li><strong>A clean invoice is posted,</strong> and the test reads back the money owed - the supplier invoice, its line amounts and the open payable a payment run selects. Asserting only that SAP took the IDoc is what let this example post invoices that owed nobody anything, until mock-sap 0.13.2.</li>
 			<li><strong>A short shipment, billed as shipped, is posted.</strong> Matching against the ordered quantity would wrongly block it.</li>
 			<li><strong>A price disagreement is blocked.</strong> mock-edi bills its own catalogue price, the way real suppliers do.</li>
 			<li><strong>The same invoice sent twice is posted once.</strong> No sleeping: the test advances mock-edi's clock.</li>
@@ -151,7 +151,7 @@ reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
 			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that answers with an error is three sentences, not silence. A host that is <em>down</em> raises and stops the run instead, which 0.2 is explicit about rather than quiet about.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
-pip install "mock-sap&gt;=0.13.1"
+pip install "mock-sap&gt;=0.13.2"
 mock-sap --port 8000 &amp;
 python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &amp;
 cd examples &amp;&amp; python3 -m unittest -v test_payment_run</code></pre>
