@@ -467,11 +467,16 @@ Thirteen scenarios, three systems, on real sockets with nothing stubbed on
 either side:
 
 ```bash
-pip install "mock-sap>=0.13.1" "mock-bank>=0.2.0"
+pip install "mock-sap>=0.13.1"
+git clone https://github.com/rseufert/mock-bank && cd mock-bank
 mock-sap --port 8000 &
 python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &
 cd examples && python3 -m unittest -v test_payment_run
 ```
+
+The examples live in the repository, not in the wheel, so this leg needs the
+checkout — and mock-bank itself then needs nothing installed, which is why only
+mock-sap is pinned.
 
 mock-bank's tests need 0.13.1 of mock-sap specifically: the open-item cube it
 reads is read-only there, as it is in S/4, and a blocked supplier invoice
