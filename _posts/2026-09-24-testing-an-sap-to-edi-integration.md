@@ -457,31 +457,26 @@ A host that is *down* is deliberately not in that list. Point the run at a port
 nothing is listening on and it raises `URLError` and stops, rather than
 recording three sentences and carrying on — `problems` is for an answer it
 could not use, not for an absent server. Which of those two you want is a real
-design question, and 0.2 answers it one way rather than pretending not to.
+design question, and the run answers it one way rather than pretending not to.
 
 ### Running the payment run
 
 ```bash
-$ python3 -m unittest -v test_payment_run
-test_3_a_return_reopens_the_invoice_distinguishable_from_one_never_paid ... ok
-test_a_blocked_invoice_is_never_selected ... ok
-test_a_closed_account_is_rejected_ac04_and_the_rest_accepted ... ok
-test_an_item_not_yet_due_is_not_selected ... ok
-test_the_same_run_twice_is_dupl_and_pays_nothing_twice ... ok
-test_the_selection_asks_sap_to_leave_blocked_and_cleared_items_out ... ok
-test_1_a_clean_run_is_paid_matched_and_cleared ... ok
-test_5_a_statement_gap_leaves_the_missing_payment_unreconciled_and_open ... ok
-test_6_after_the_cutoff_it_waits_for_mondays_statement ... ok
-test_posting_the_same_statement_twice_clears_nothing_twice ... ok
-test_a_bank_that_does_not_answer_is_a_problem_not_silence ... ok
-test_sap_refusing_a_statement_is_recorded_against_it ... ok
-test_two_payments_of_the_missing_amount_are_both_named ... ok
-
+$ python3 -m unittest test_payment_run
+.......s...............
 ----------------------------------------------------------------------
-Ran 13 tests in 0.394s
+Ran 23 tests in 0.579s
 
-OK
+OK (skipped=1)
 ```
+
+Thirteen of those are the behaviours above. The other ten came with the ACH path
+and with more asking of what happens when something answers badly: five hold the
+NACHA file header to its rules, one keeps two runs on the same day in separate
+files, one skips here because it needs an account that banks in US formats, and
+three cover a bank or an SAP that answers with an error rather than not at all.
+CI runs the whole suite both ways, so the ACH path is not merely present.
+
 
 Thirteen scenarios across three systems. Twelve of them run on real sockets with
 nothing stubbed on either side; the thirteenth builds a run in memory, because
@@ -538,4 +533,12 @@ which is the only kind of check worth recording.
 
 *Checked again on 27 September 2026 against [mock-sap 0.13.1](https://pypi.org/project/mock-sap/0.13.1/) and [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/): all ten tests pass unchanged. The same day, a third mock joined them: [mock-bank](https://github.com/rseufert/mock-bank), for the payment that follows an approved invoice. See [Next: paying the invoice](#next-paying-the-invoice). One thing did change underneath the invoice check: since mock-sap 0.12.0 the `INVOIC` IDoc it posts no longer just lands in SAP, it **creates a supplier invoice and an open payable** - which is exactly what a payment run then selects. 0.13.0 closed that loop: post the bank's statement back as a `FINSTA01` and the invoice it paid is cleared, or reopened if the payment came back. [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/) is the other end of it, and there is now a worked SAP payment run: see [the SAP payment run](#the-sap-payment-run).*
 
-*Checked again on 28 September 2026 against [mock-sap 0.13.2](https://pypi.org/project/mock-sap/0.13.2/) and [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/). (mock-bank 0.3.0 landed later the same day; these tests do not depend on it.) 0.13.2 matters to part two of this post, and not in a flattering way. The `INVOIC` IDoc `invoice_check` sent named no supplier, so SAP had nobody to owe and created **no supplier invoice and no open payable** — while answering status `53`, *Application document posted*. Every invoice this post's example approved had been booked as posted and left no money owed. The five tests here never caught it because all five asserted what SAP *received*, and none asserted what posting it created. Both halves are fixed in 0.13.2: the IDoc now names the supplier, and an IDoc that posts nothing reports `51` with the segment that was missing rather than claiming success. Three tests were added to ask the question the other five did not - hence thirteen above, where there were ten. It was found on the first attempt to run all three mocks end to end — four examples using two mocks each could not see it. A third bug came out of the same exercise: the `850` this example sends declared no currency, so a purchase order placed in EUR came back invoiced in dollars and the three-way match compared the figures without noticing they meant different things. mock-bank was the only thing in the chain that objected, refusing the payment because a SEPA transfer is in EUR. Fixed in 0.13.2 as well, with three more tests — hence sixteen above, where there were ten on the 25th.*
+*Checked again on 28 September 2026 against [mock-sap 0.13.2](https://pypi.org/project/mock-sap/0.13.2/) and [mock-bank 0.2.0](https://pypi.org/project/mock-bank/0.2.0/). (mock-bank 0.3.0 landed later the same day; these tests do not depend on it.) 0.13.2 matters to part two of this post, and not in a flattering way. The `INVOIC` IDoc `invoice_check` sent named no supplier, so SAP had nobody to owe and created **no supplier invoice and no open payable** — while answering status `53`, *Application document posted*. Every invoice this post's example approved had been booked as posted and left no money owed. The five tests here never caught it because all five asserted what SAP *received*, and none asserted what posting it created. Both halves are fixed in 0.13.2: the IDoc now names the supplier, and an IDoc that posts nothing reports `51` with the segment that was missing rather than claiming success. Three tests were added to ask the question the other five did not, taking it to thirteen. It was found on the first attempt to run all three mocks end to end — four examples using two mocks each could not see it. A third bug came out of the same exercise: the `850` this example sends declared no currency, so a purchase order placed in EUR came back invoiced in dollars and the three-way match compared the figures without noticing they meant different things. mock-bank was the only thing in the chain that objected, refusing the payment because a SEPA transfer is in EUR. Fixed in 0.13.2 as well, with three more tests — hence sixteen above, where there were ten on the 25th.*
+
+*Checked again on 28 September 2026 against the released mocks - [mock-sap 0.13.2](https://pypi.org/project/mock-sap/0.13.2/), [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/) and [mock-bank 0.4.0](https://pypi.org/project/mock-bank/0.4.0/) - and two counts above were wrong, both in the same way: true when they were pasted, and never revisited.*
+
+*The run in [Running it](#running-it) says sixteen. Installing the versions this post tells you to install gives **thirteen**. The three currency tests are in mock-sap's main branch and not in any release, so that block was run against a checkout rather than against what a reader gets - and the note above claiming the currency fix shipped in 0.13.2 is wrong too: it is merged and waiting for one.*
+
+*The payment run said thirteen and has been **twenty-three** since mock-bank 0.3.0, one of which skips unless the account banks in US formats. That block now shows the run I made for this note. The sixteen above is left as it is, because the tests behind it exist and only want a release.*
+
+*What 0.4 adds is the direction this post does not cover at all: `POST /_mock/credits` makes money *arrive*, booked on its value date and reported as a `camt.054` and an entry on the day's statement, which still reconciles. Accounts payable has had three mocks for a while; cash application now has something to read.*
