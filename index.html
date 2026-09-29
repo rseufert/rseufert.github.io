@@ -141,6 +141,7 @@ cd examples &amp;&amp; python3 -m unittest -v test_po_bridge</code></pre>
 			<li><strong>A clean invoice is posted,</strong> and the test reads back the money owed - the supplier invoice, its line amounts and the open payable a payment run selects. Asserting only that SAP took the IDoc is what let this example post invoices that owed nobody anything, until mock-sap 0.13.2.</li>
 			<li><strong>A short shipment, billed as shipped, is posted.</strong> Matching against the ordered quantity would wrongly block it.</li>
 			<li><strong>A price disagreement is blocked.</strong> mock-edi bills its own catalogue price, the way real suppliers do.</li>
+			<li><strong>An invoice in the wrong currency is blocked</strong> - and one that names no currency is not. The order declares its currency, so a EUR purchase order comes back invoiced in EUR; before mock-sap 0.13.3 it did not, and the match compared 12.50 with 12.50 without noticing they meant different money. Absence is not disagreement, so an invoice carrying no <code>CUR</code> segment still passes.</li>
 			<li><strong>The same invoice sent twice is posted once.</strong> No sleeping: the test advances mock-edi's clock.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-sap &amp;&amp; cd mock-sap
