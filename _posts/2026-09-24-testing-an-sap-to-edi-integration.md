@@ -11,7 +11,7 @@ Every company that buys things through SAP and trades with suppliers over EDI ha
 ## Running the mocks
 
 ```bash
-pip install "mock-sap>=0.13.2" "mock-edi>=0.5.0"
+pip install "mock-sap>=0.13.3" "mock-edi>=0.5.0"
 mock-sap --port 8000 &
 mock-edi --port 8080 &
 ```
@@ -537,8 +537,12 @@ which is the only kind of check worth recording.
 
 *Checked again on 28 September 2026 against the released mocks - [mock-sap 0.13.2](https://pypi.org/project/mock-sap/0.13.2/), [mock-edi 0.5.0](https://pypi.org/project/mock-edi/0.5.0/) and [mock-bank 0.4.0](https://pypi.org/project/mock-bank/0.4.0/) - and two counts above were wrong, both in the same way: true when they were pasted, and never revisited.*
 
-*The run in [Running it](#running-it) says sixteen. Installing the versions this post tells you to install gives **thirteen**. The three currency tests are in mock-sap's main branch and not in any release, so that block was run against a checkout rather than against what a reader gets - and the note above claiming the currency fix shipped in 0.13.2 is wrong too: it is merged and waiting for one.*
+*The run in [Running it](#running-it) says sixteen, and installing the versions this post told you to install gave **thirteen**. The three currency tests were in mock-sap's main branch and in no release, so that block had been run against a checkout rather than against what a reader gets - and the note above claiming the currency fix shipped in 0.13.2 was wrong for the same reason. Fixed by a release the next day; see below.*
 
 *The payment run said thirteen and has been **twenty-three** since mock-bank 0.3.0, one of which skips unless the account banks in US formats. That block now shows the run I made for this note. The sixteen above is left as it is, because the tests behind it exist and only want a release.*
 
 *What 0.4 adds is the direction this post does not cover at all: `POST /_mock/credits` makes money *arrive*, booked on its value date and reported as a `camt.054` and an entry on the day's statement, which still reconciles. Accounts payable has had three mocks for a while; cash application now has something to read.*
+
+*Updated 29 September 2026: [mock-sap 0.13.3](https://pypi.org/project/mock-sap/0.13.3/) is out, and the sixteen above is now what a reader gets. Run from the source archives this post points at, with nothing but released mocks - mock-sap 0.13.3 and mock-edi 0.5.0 - `test_po_bridge` and `test_invoice_check` are **16 tests, OK**. The install line above asks for 0.13.3 for that reason: 0.13.2's copy of the example has eight tests and no currency check, so the floor, not the post, was what made the block unreachable.*
+
+*0.13.3 changes nothing about the mock itself - `mocksap/` is byte-identical to 0.13.2 - and the wheel carries no examples, so it is a release you feel only by reading the example or cloning the repo. Which is the whole point of it: the example is what this post tells you to run.*
