@@ -297,12 +297,12 @@ def films(page_html):
     return found
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--check", action="store_true",
                         help="write nothing; fail if a still is missing, stale or not linked")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     with open(PAGE, encoding="utf-8") as handle:
         listed = films(handle.read())
