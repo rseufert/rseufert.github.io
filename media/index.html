@@ -1,0 +1,29 @@
+---
+layout: default
+title: Rick Seufert - videos
+---
+<div class="media">
+	<h1>videos</h1>
+	<p class="lede">From my YouTube channel. Nothing loads from YouTube until you press play, so this page sets no cookies of its own.</p>
+
+	<figure class="embed">
+		<button class="load" type="button" data-src="https://www.youtube-nocookie.com/embed/videoseries?list=PLa-2B3enIAoU&amp;autoplay=1" data-title="YouTube playlist">&#9654;&nbsp; play the playlist <span>loads from youtube</span></button>
+		<figcaption><a href="https://www.youtube.com/playlist?list=PLa-2B3enIAoU">open the playlist on YouTube</a></figcaption>
+	</figure>
+</div><!-- /.media -->
+
+<script>
+// Swap each button for its player only when asked: a third-party frame sets
+// cookies, and the footer promises none until the visitor chooses.
+document.querySelectorAll(".media button.load").forEach(function (button) {
+	button.addEventListener("click", function () {
+		var frame = document.createElement("iframe");
+		frame.src = button.dataset.src;
+		frame.title = button.dataset.title;
+		frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+		frame.allowFullscreen = true;
+		button.replaceWith(frame);
+		frame.focus();
+	});
+});
+</script>
