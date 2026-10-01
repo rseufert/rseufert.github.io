@@ -21,9 +21,9 @@ title: Rick Seufert
 		<figure class="film">
 			<picture>
 				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/sap_invoices.png">
-				<img src="/blog/sap_invoices.gif" width="800" height="450" alt="Animated sequence diagram: a client system sends two INVOIC IDocs to mock-sap. SUP-2026-0001 posts as supplier invoice 5100000001, payable EUR 1190.00. SUP-2026-0002 fails with status 51, posting period 10 2026 is not open: a rule the film's script set in mock-sap, as its status line says.">
+				<img src="/blog/sap_invoices.gif" width="800" height="450" alt="Two supplier invoices are sent to mock-sap as INVOIC IDocs for one purchase order. The first posts and leaves EUR 1190.00 payable. The second is refused with status 51, &quot;Posting period 10 2026 is not open&quot;. The capture script told the mock to refuse it; mock-sap itself does not check posting periods.">
 			</picture>
-			<figcaption>two INVOICs in: one becomes a payable, one stops at a status 51 the script asked for <span>filmed with mock-films</span></figcaption>
+			<figcaption>two invoices, one refused on request <span>filmed with mock-films</span></figcaption>
 		</figure>
 		<p>A black-box mock SAP endpoint. It speaks the shapes, not the business logic: SAP Gateway OData V2 and V4 services, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
 		<ul class="features">
