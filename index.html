@@ -36,6 +36,10 @@ title: Rick Seufert
 			<a class="play" href="/blog/sap_bapi.gif" title="play the film"><img src="/blog/sap_bapi.png" width="800" height="450" loading="lazy" alt="A client asks mock-sap to create a purchase order with BAPI_PO_CREATE1 and then commits it. Each call is answered by a RETURN, the first carrying the new order's number. The same create is then refused with message E SR 000. The capture script posted the rule that told the mock to refuse it."></a>
 			<figcaption>a purchase order created, then refused on request <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/sap_statement.gif" title="play the film"><img src="/blog/sap_statement.png" width="800" height="450" loading="lazy" alt="Two supplier invoices of EUR 1190.00 post to mock-sap and are owed. The capture script then posts a bank statement with two lines: one pays the first invoice exactly, and mock-sap clears it. The script wrote the other line for 1000.00 against the second invoice, and mock-sap refused it itself, saying the item is for 1190.00 but the line is for 1000.00; nothing told it to."></a>
+			<figcaption>a statement clears one invoice, refuses a line <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
 <pre><code>pip install mock-sap
 mock-sap --port 8000
 curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
@@ -70,6 +74,10 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 		<figure class="film">
 			<a class="play" href="/blog/edi_850_film.gif" title="play the film"><img src="/blog/edi_850_film.png" width="800" height="450" loading="lazy" alt="The capture script asked mock-edi to place an order, and the X12 850 the mock wrote is typed segment by segment from ISA to IEA, each named from the mock's own dictionary; the envelope segments are not in it and are marked unnamed. The script then altered IEA02, the interchange control number, in a copy and posted the copy to /_mock/validate. Only the altered IEA is typed again, with the mock's refusal beneath it and the wrong number in red."></a>
 			<figcaption>an 850 opened, and an altered copy refused <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/edi_two_film.gif" title="play the film"><img src="/blog/edi_two_film.png" width="800" height="450" loading="lazy" alt="BUYERCO's mock-edi sends an 850 to SELLERCO's mock-edi. The capture set the seller to short-ship and to delay its despatch and invoice, so it acknowledges the order, confirms 80 of the 100 ordered, and the buyer's mock flags the shortfall on that 855. The capture moves both mocks' clocks an hour at a time; the seller then packs and sends the despatch advice, and raises and sends the invoice, with the buyer's mock acknowledging each."></a>
+			<figcaption>two mocks trading, no script playing a partner <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 <pre><code>pip install mock-edi
 mock-edi --port 8080
