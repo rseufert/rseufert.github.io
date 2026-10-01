@@ -49,8 +49,9 @@ NAME = re.compile(r"[a-z0-9_]+\Z")
 FIGURE = re.compile(r'\n?([ \t]*)<figure class="film">.*?</figure>', re.S)
 SRC = re.compile(r'<img[^>]*\bsrc="/blog/([a-z0-9_]+)\.gif"')
 ALT = re.compile(r'(<img[^>]*\balt=")([^"]*)(")')
-CAPTION = re.compile(r"(<figcaption>)(.*?)( <span>filmed with mock-films</span></figcaption>)",
-                     re.S)
+# The line under every caption, after the mock-films team's own words.
+TAG = "<span>drawn by mock-films from a real run</span>"
+CAPTION = re.compile(r"(<figcaption>)(.*?)( %s</figcaption>)" % re.escape(TAG), re.S)
 PROJECT = re.compile(r'<div class="project">\s*<h3><a href="[^"]*">([^<]+)</a></h3>.*?'
                      r"</div><!-- /\.project -->", re.S)
 
@@ -67,7 +68,7 @@ def figure(name, alt, caption, width, height, indent, lazy):
             "%s\t\t<source media=\"(prefers-reduced-motion: reduce)\" srcset=\"/blog/%s.png\">\n"
             "%s\t\t<img src=\"/blog/%s.gif\" width=\"%d\" height=\"%d\"%s alt=\"%s\">\n"
             "%s\t</picture>\n"
-            "%s\t<figcaption>%s <span>filmed with mock-films</span></figcaption>\n"
+            "%s\t<figcaption>%s " + TAG + "</figcaption>\n"
             "%s</figure>") % (i, i, i, name, i, name, width, height,
                               ' loading="lazy"' if lazy else "", attr(alt),
                               i, i, html.escape(caption, quote=False), i)
