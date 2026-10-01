@@ -1,0 +1,25 @@
+name: films
+
+# Every film on the projects page has a still for visitors who asked for less
+# motion. The still is the GIF's final frame, so it goes stale when the GIF is
+# re-recorded - and a new film is easy to add without one. Only this repo can
+# change either, so this runs on push and pull request, not on a schedule.
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stills:
+    name: every film has its still
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/film_stills.py --check
