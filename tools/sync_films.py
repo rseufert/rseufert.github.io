@@ -14,7 +14,9 @@ differs; with --apply it makes the page match.
 
 What --apply does, per film in the index:
 
-    finished, not on the page   added under the project of its first mock
+    finished, not on the page   added to the project of its first mock: first
+                                film above the description, others after
+                                the features list
     finished, a different hash  the new cut copied into blog/
     finished, different text    the alt text and caption replaced, as written
     withdrawn, on the page      its figure, GIF and still removed
@@ -47,7 +49,7 @@ BLOG = os.path.join(ROOT, "blog")
 NAME = re.compile(r"[a-z0-9_]+\Z")
 
 FIGURE = re.compile(r'\n?([ \t]*)<figure class="film">.*?</figure>', re.S)
-SRC = re.compile(r'<img[^>]*\bsrc="/blog/([a-z0-9_]+)\.gif"')
+SRC = re.compile(r'<a class="play" href="/blog/([a-z0-9_]+)\.gif"')
 ALT = re.compile(r'(<img[^>]*\balt=")([^"]*)(")')
 # The line under every caption, after the mock-films team's own words.
 TAG = "<span>drawn by mock-films from a real run</span>"
@@ -64,14 +66,12 @@ def attr(text):
 def figure(name, alt, caption, width, height, indent, lazy):
     i = indent
     return ("\n%s<figure class=\"film\">\n"
-            "%s\t<picture>\n"
-            "%s\t\t<source media=\"(prefers-reduced-motion: reduce)\" srcset=\"/blog/%s.png\">\n"
-            "%s\t\t<img src=\"/blog/%s.gif\" width=\"%d\" height=\"%d\"%s alt=\"%s\">\n"
-            "%s\t</picture>\n"
+            "%s\t<a class=\"play\" href=\"/blog/%s.gif\" title=\"play the film\">"
+            "<img src=\"/blog/%s.png\" width=\"%d\" height=\"%d\"%s alt=\"%s\"></a>\n"
             "%s\t<figcaption>%s " + TAG + "</figcaption>\n"
-            "%s</figure>") % (i, i, i, name, i, name, width, height,
+            "%s</figure>") % (i, i, name, name, width, height,
                               ' loading="lazy"' if lazy else "", attr(alt),
-                              i, i, html.escape(caption, quote=False), i)
+                              i, html.escape(caption, quote=False), i)
 
 
 def sha256(path):
@@ -164,13 +164,18 @@ def apply(changes, films_dir, page):
                 sys.exit("%s: no project on the page for %s" % (name, mock))
             project = projects[0]
             block = project.group(0)
+            # A project leads with one film, before what it is; any others
+            # follow its features list, so the description is not pushed down.
+            features = block.index("</ul>", block.index('<ul class="features">')) + len("</ul>")
             figures = list(FIGURE.finditer(block))
-            if figures:
-                at = figures[-1].end()
-                indent = figures[-1].group(1)
+            later = [f for f in figures if f.start() >= features]
+            indent = figures[0].group(1) if figures else "\t\t"
+            if later:
+                at = later[-1].end()
+            elif figures:
+                at = features
             else:
                 at = block.index("</h3>") + len("</h3>")
-                indent = "\t\t"
             # Only the first film on the page loads eagerly; it is above the fold.
             lazy = FIGURE.search(page).start() < project.start() + at
             new = figure(name, film["alt"], film["caption"], film.get("width", 800),

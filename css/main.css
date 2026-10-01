@@ -195,19 +195,54 @@ ul.posts .date {
     margin-left: 6px;
 }
 
-/* Films: a real exchange with a mock, recorded by mock-films. Scaled to the
-   column (they are 800 wide and the column is not, on a phone or a laptop),
-   framed like the photo, and captioned like a terminal. A visitor who asked
-   for less motion gets the final frame instead, via <picture>. */
+/* Films: a real exchange with a mock, drawn by mock-films. Each is 800 wide
+   and its pixel type only lands on whole pixels at exactly 800, so a film is
+   shown at 800 wherever the window has room - standing out past the text
+   column, centred on it, when the column is narrower - and scales only below
+   that. The border sits outside the 800. The page shows the final frame; a
+   click plays the GIF (js/films.js). */
 .project .film {
-    margin: 20px 0;
+    --film: min(802px, calc(100vw - 32px));
+    width: var(--film);
+    margin: 20px 0 20px min(0px, calc((100% - var(--film)) / 2));
+}
+.project .film a.play {
+    position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
 }
 .project .film img {
     display: block;
-    max-width: 100%;
+    width: 800px;
+    max-width: calc(100% - 2px);
     height: auto;
-    box-sizing: border-box;   /* the border inside the 100%, not beside it */
     border: 1px solid var(--rule);
+}
+.project .film a.play:hover img, .project .film a.play:focus-visible img {
+    border-color: var(--accent);
+}
+.project .film a.play::after {
+    content: "\25B6  play";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 2px 8px;
+    font-family: var(--mono);
+    font-size: 0.85em;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    /* Only while pointed at or focused: at rest it would cover the film's
+       top-right corner, where the films put a party's name or the clock. */
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+.project .film a.play:hover::after, .project .film a.play:focus-visible::after {
+    opacity: 1;
+}
+.project .film a.play[aria-pressed="true"]::after {
+    content: "\25A0  still";
 }
 .project .film figcaption {
     font-family: var(--mono);

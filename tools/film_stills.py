@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
-"""Give every film on the projects page the still a reduced-motion visitor sees.
+"""Give every film on the projects page the still the page shows.
 
-The films on the projects page are GIFs recorded by mock-films, and they loop.
-A visitor whose system asks for less motion gets a PNG instead, through the
-`<picture>` around each one:
+The films on the projects page are GIFs drawn by mock-films, and they loop.
+The page shows each one's still, a PNG, and plays the GIF only when the
+visitor clicks it (js/films.js); without the script, the link opens the GIF:
 
     <figure class="film">
-      <picture>
-        <source media="(prefers-reduced-motion: reduce)" srcset="/blog/NAME.png">
-        <img src="/blog/NAME.gif" ...>
-      </picture>
+      <a class="play" href="/blog/NAME.gif" ...><img src="/blog/NAME.png" ...></a>
       ...
 
 The still is the film's final frame - the whole exchange, once it has played.
@@ -17,11 +14,11 @@ This script plays each GIF to its end and writes that frame next to it, so
 adding a film is adding the GIF and the markup, and running this.
 
     python3 tools/film_stills.py           # write any still that is missing or stale
-    python3 tools/film_stills.py --check   # fail if one is, or a <source> is missing
+    python3 tools/film_stills.py --check   # fail if one is, or the markup is wrong
 
-The films are the GIFs inside `<figure class="film">` in index.html, not
-whatever is in blog/, so the check also catches a film whose `<source>` names
-the wrong still. Standard library only, like the projects it shows: a GIF
+The films are the GIFs linked inside `<figure class="film">` in index.html, not
+whatever is in blog/, so the check also catches a film whose `<img>` shows the
+wrong still. Standard library only, like the projects it shows: a GIF
 decoder (LZW, local colour tables, transparency, the three disposal methods,
 interlacing) and a PNG writer, which is all `zlib` needs to be told.
 """
@@ -36,9 +33,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGE = os.path.join(ROOT, "index.html")
 
 FIGURE = re.compile(r'<figure class="film">(.*?)</figure>', re.S)
-GIF = re.compile(r'<img[^>]*\bsrc="(/[^"]+\.gif)"')
-STILL = re.compile(r'<source[^>]*media="\(prefers-reduced-motion: reduce\)"'
-                   r'[^>]*srcset="(/[^"]+\.png)"')
+GIF = re.compile(r'<a[^>]*\bclass="play"[^>]*\bhref="(/[^"]+\.gif)"')
+STILL = re.compile(r'<img[^>]*\bsrc="(/[^"]+\.png)"')
 
 
 # ---------------------------------------------------------------------------
@@ -287,7 +283,7 @@ def read_png(data):
 
 def films(page_html):
     """(gif, still) site paths for every film on the page; still is None when
-    the figure has no reduced-motion <source>."""
+    the figure shows no PNG."""
     found = []
     for figure in FIGURE.findall(page_html):
         gif = GIF.search(figure)
@@ -314,12 +310,12 @@ def main(argv=None):
     for gif, still in listed:
         expected = gif[:-len(".gif")] + ".png"
         if still is None:
-            problems.append("%s has no reduced-motion <source>; add "
-                            '<source media="(prefers-reduced-motion: reduce)" srcset="%s">'
+            problems.append("%s's figure shows no still; its <img> should be "
+                            'src="%s"'
                             % (gif, expected))
             still = expected
         elif still != expected:
-            problems.append("%s's <source> names %s; its still is %s" % (gif, still, expected))
+            problems.append("%s's <img> shows %s; its still is %s" % (gif, still, expected))
             still = expected
         gif_file = os.path.join(ROOT, gif.lstrip("/"))
         still_file = os.path.join(ROOT, still.lstrip("/"))
@@ -350,7 +346,7 @@ def main(argv=None):
         for problem in problems:
             print(problem, file=sys.stderr)
         print("\n%d problem(s). `python3 tools/film_stills.py` writes the stills; "
-              "the <source> lines are index.html's." % len(problems), file=sys.stderr)
+              "the markup is index.html's." % len(problems), file=sys.stderr)
         return 1
     if not written:
         print("%d film(s), each with a current still" % len(listed))

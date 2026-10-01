@@ -20,18 +20,8 @@ title: Rick Seufert
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-sap">mock-sap</a></h3>
 		<figure class="film">
-			<picture>
-				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/sap_invoices.png">
-				<img src="/blog/sap_invoices.gif" width="800" height="450" alt="Two supplier invoices are sent to mock-sap as INVOIC IDocs for one purchase order. The first posts and leaves EUR 1190.00 payable. The second is refused with status 51, &quot;Posting period 10 2026 is not open&quot;. The capture script told the mock to refuse it; mock-sap itself does not check posting periods.">
-			</picture>
+			<a class="play" href="/blog/sap_invoices.gif" title="play the film"><img src="/blog/sap_invoices.png" width="800" height="450" alt="Two supplier invoices are sent to mock-sap as INVOIC IDocs for one purchase order. The first posts and leaves EUR 1190.00 payable. The second is refused with status 51, &quot;Posting period 10 2026 is not open&quot;. The capture script told the mock to refuse it; mock-sap itself does not check posting periods."></a>
 			<figcaption>two invoices, one refused on request <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<picture>
-				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/sap_bapi.png">
-				<img src="/blog/sap_bapi.gif" width="800" height="450" loading="lazy" alt="A client asks mock-sap to create a purchase order with BAPI_PO_CREATE1 and then commits it. Each call is answered by a RETURN, the first carrying the new order's number. The same create is then refused with message E SR 000. The capture script posted the rule that told the mock to refuse it.">
-			</picture>
-			<figcaption>a purchase order created, then refused on request <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A black-box mock SAP endpoint. It speaks the shapes, not the business logic: SAP Gateway OData V2 and V4 services, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
 		<ul class="features">
@@ -42,6 +32,10 @@ title: Rick Seufert
 			<li><strong>Deterministic demo data.</strong> Business partners, products, sales and purchase orders, the same every run for a given seed.</li>
 			<li><strong>Failure on demand.</strong> Latency, 500s, locked documents, expired CSRF tokens - and the two that answer <em>success</em> and mean no: an inbound IDoc SAP accepts and then declines to post, and a BAPI that returns HTTP 200 with <code>TYPE E</code> in <code>RETURN</code> for a valid call. Both look like success from the sending side, which is why they are the ones worth testing against.</li>
 		</ul>
+		<figure class="film">
+			<a class="play" href="/blog/sap_bapi.gif" title="play the film"><img src="/blog/sap_bapi.png" width="800" height="450" loading="lazy" alt="A client asks mock-sap to create a purchase order with BAPI_PO_CREATE1 and then commits it. Each call is answered by a RETURN, the first carrying the new order's number. The same create is then refused with message E SR 000. The capture script posted the rule that told the mock to refuse it."></a>
+			<figcaption>a purchase order created, then refused on request <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
 <pre><code>pip install mock-sap
 mock-sap --port 8000
 curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
@@ -51,25 +45,8 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-edi">mock-edi</a></h3>
 		<figure class="film">
-			<picture>
-				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/edi_overshipped.png">
-				<img src="/blog/edi_overshipped.gif" width="800" height="450" loading="lazy" alt="mock-edi sends a purchase order, and the seller answers with an order response, a despatch advice and an invoice, each of which the mock acknowledges. The mock reports two problems on the despatch advice: 130 shipped against 100 confirmed and 100 ordered. The seller's documents were sent by the capture script.">
-			</picture>
+			<a class="play" href="/blog/edi_overshipped.gif" title="play the film"><img src="/blog/edi_overshipped.png" width="800" height="450" loading="lazy" alt="mock-edi sends a purchase order, and the seller answers with an order response, a despatch advice and an invoice, each of which the mock acknowledges. The mock reports two problems on the despatch advice: 130 shipped against 100 confirmed and 100 ordered. The seller's documents were sent by the capture script."></a>
 			<figcaption>an order that ships too much <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<picture>
-				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/edi_waits.png">
-				<img src="/blog/edi_waits.gif" width="800" height="450" loading="lazy" alt="ACME's order reaches mock-edi, which answers at once and records two promises, a despatch due in an hour and an invoice due in two. The capture set those delays and moves the clock an hour at a time, and each promise fills in when its work appears.">
-			</picture>
-			<figcaption>an order that waits for the clock <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<picture>
-				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/edi_850_film.png">
-				<img src="/blog/edi_850_film.gif" width="800" height="450" loading="lazy" alt="The capture script asked mock-edi to place an order, and the X12 850 the mock wrote is typed segment by segment from ISA to IEA, each named from the mock's own dictionary; the envelope segments are not in it and are marked unnamed. The script then altered IEA02, the interchange control number, in a copy and posted the copy to /_mock/validate. Only the altered IEA is typed again, with the mock's refusal beneath it and the wrong number in red.">
-			</picture>
-			<figcaption>an 850 opened, and an altered copy refused <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end. Send it an 850 and it answers with a 997, an 855, an 856 and an 810. Send it EDIFACT <code>ORDERS</code> and you get <code>CONTRL</code>, <code>ORDRSP</code>, <code>DESADV</code> and <code>INVOIC</code>.</p>
 <pre><code>   you ──850──▶  mock-edi
@@ -86,6 +63,14 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 			<li><strong>Failure on demand.</strong> Short shipments, rejected lines, duplicate invoices, documents out of order, answers an hour late, corrupt trailers, a translator that rejects everything, an invoice that never comes, a strict partner, a partner that never answers.</li>
 			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
 		</ul>
+		<figure class="film">
+			<a class="play" href="/blog/edi_waits.gif" title="play the film"><img src="/blog/edi_waits.png" width="800" height="450" loading="lazy" alt="ACME's order reaches mock-edi, which answers at once and records two promises, a despatch due in an hour and an invoice due in two. The capture set those delays and moves the clock an hour at a time, and each promise fills in when its work appears."></a>
+			<figcaption>an order that waits for the clock <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/edi_850_film.gif" title="play the film"><img src="/blog/edi_850_film.png" width="800" height="450" loading="lazy" alt="The capture script asked mock-edi to place an order, and the X12 850 the mock wrote is typed segment by segment from ISA to IEA, each named from the mock's own dictionary; the envelope segments are not in it and are marked unnamed. The script then altered IEA02, the interchange control number, in a copy and posted the copy to /_mock/validate. Only the altered IEA is typed again, with the mock's refusal beneath it and the wrong number in red."></a>
+			<figcaption>an 850 opened, and an altered copy refused <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
 <pre><code>pip install mock-edi
 mock-edi --port 8080
 curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
@@ -95,18 +80,8 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a></h3>
 		<figure class="film">
-			<picture>
-				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/bank_four_payments_film.png">
-				<img src="/blog/bank_four_payments_film.gif" width="800" height="450" loading="lazy" alt="ACME sends mock-bank a file of four payments, and the bank's status report rejects two, giving a reason for each. The capture then advances the bank's clock twice: the other two payments are booked and reported in a debit notification, and then in a statement. The rejected two appear in neither.">
-			</picture>
+			<a class="play" href="/blog/bank_four_payments_film.gif" title="play the film"><img src="/blog/bank_four_payments_film.png" width="800" height="450" loading="lazy" alt="ACME sends mock-bank a file of four payments, and the bank's status report rejects two, giving a reason for each. The capture then advances the bank's clock twice: the other two payments are booked and reported in a debit notification, and then in a statement. The rejected two appear in neither."></a>
 			<figcaption>a payment file, half of it rejected <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<picture>
-				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/bank_returned_film.png">
-				<img src="/blog/bank_returned_film.gif" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and booked and debited on Friday. The capture script then advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday a pacs.004 returns the payment with reason AC04 and a camt.054 credits the money back. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours.">
-			</picture>
-			<figcaption>a payment that comes back <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
 <pre><code>   you ──pain.001──▶  mock-bank
@@ -131,6 +106,10 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 			<li><strong>Its own output is checked against somebody else's files.</strong> Every ISO 20022 message is validated against schemas fetched from pinned commits, and the NACHA and BAI2 readers are held to files from <a href="https://github.com/moov-io">moov-io</a> - because a reader and a writer built from one declaration agree with each other even when both are wrong. That is how the mock found it was counting a returned debit as a credit, and that its BAI2 reader could not open a real bank's file.</li>
 			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one file, and post each statement back so SAP clears what was paid and reopens what came back. Twenty-three tests, run in CI against mock-sap from PyPI - twice, once over ISO 20022 and once over ACH, because the same run has to survive both.</li>
 		</ul>
+		<figure class="film">
+			<a class="play" href="/blog/bank_returned_film.gif" title="play the film"><img src="/blog/bank_returned_film.png" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and booked and debited on Friday. The capture script then advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday a pacs.004 returns the payment with reason AC04 and a camt.054 credits the money back. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours."></a>
+			<figcaption>a payment that comes back <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
 <pre><code>pip install mock-bank
 mock-bank --port 8090
 curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
@@ -244,3 +223,4 @@ cd examples &amp;&amp; python3 -m unittest -v test_payment_run</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
+<script src="/js/films.js" defer></script>
