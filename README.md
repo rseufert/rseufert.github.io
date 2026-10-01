@@ -16,7 +16,9 @@ python3 tools/check_examples.py --update
 The projects page shows films recorded by
 [mock-films](https://github.com/rseufert/mock-films): looping GIFs, each in a
 `<figure class="film">`. The page shows each film's final frame, a PNG named
-after the GIF, and plays the GIF when it is clicked (`js/films.js`). A film is
+after the GIF, and plays the GIF on demand (`js/films.js`): on a click with a
+mouse, and on a touch screen when the film is most of the way into view, one
+at a time, unless the visitor asked for less motion or to save data. A film is
 shown at exactly 800 px wherever the window has room, since its pixel type is
 only sharp at 800; a project leads with one film and puts the rest after its
 features list.
