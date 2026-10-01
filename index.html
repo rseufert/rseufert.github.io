@@ -145,7 +145,7 @@ git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
 mock-sap --port 8000 &amp;
 mock-edi --port 8080 &amp;
 python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &amp;
-cd examples &amp;&amp; python3 -m unittest -v test_procure_to_pay</code></pre>
+python3 -m unittest -v examples.test_procure_to_pay</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Code</a> · <a href="https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py">Tests</a></p>
 	</div><!-- /.project -->
 
@@ -206,7 +206,7 @@ cd examples &amp;&amp; python3 -m unittest -v test_invoice_check</code></pre>
 pip install mock-edi
 mock-edi --port 8080 &amp;
 python3 -m mockbank --port 8090 &amp;
-cd examples &amp;&amp; python3 -m unittest -v test_pay_invoices</code></pre>
+python3 -m unittest -v examples.test_pay_invoices</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 
@@ -227,7 +227,7 @@ reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
 pip install "mock-sap&gt;=0.13.2"
 mock-sap --port 8000 &amp;
 python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &amp;
-cd examples &amp;&amp; python3 -m unittest -v test_payment_run</code></pre>
+python3 -m unittest -v examples.test_payment_run</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
