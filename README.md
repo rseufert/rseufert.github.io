@@ -15,8 +15,11 @@ python3 tools/check_examples.py --update
 
 The projects page shows films recorded by
 [mock-films](https://github.com/rseufert/mock-films): looping GIFs, each in a
-`<figure class="film">`. A visitor whose system asks for less motion gets the
-film's final frame instead, a PNG named after the GIF.
+`<figure class="film">`. The page shows each film's final frame, a PNG named
+after the GIF, and plays the GIF when it is clicked (`js/films.js`). A film is
+shown at exactly 800 px wherever the window has room, since its pixel type is
+only sharp at 800; a project leads with one film and puts the rest after its
+features list.
 
 mock-films' `docs/films/index.json` is the source of truth for which films
 exist, each one's current cut, and its alt text and caption, which are used as

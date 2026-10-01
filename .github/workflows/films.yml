@@ -1,7 +1,7 @@
 name: films
 
-# Every film on the projects page has a still for visitors who asked for less
-# motion. The still is the GIF's final frame, so it goes stale when the GIF is
+# Every film on the projects page is shown as its still, and plays on a click.
+# The still is the GIF's final frame, so it goes stale when the GIF is
 # re-recorded - and a new film is easy to add without one. Only this repo can
 # change either, so this runs on push and pull request, not on a schedule.
 on:
