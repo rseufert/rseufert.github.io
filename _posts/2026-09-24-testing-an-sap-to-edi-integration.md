@@ -487,7 +487,7 @@ pip install "mock-sap>=0.13.2"
 git clone https://github.com/rseufert/mock-bank && cd mock-bank
 mock-sap --port 8000 &
 python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &
-cd examples && python3 -m unittest -v test_payment_run
+python3 -m unittest -v examples.test_payment_run
 ```
 
 The examples live in the repository, not in the wheel, so this leg needs the
