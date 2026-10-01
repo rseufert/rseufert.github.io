@@ -9,7 +9,10 @@ visitor clicks it (js/films.js); without the script, the link opens the GIF:
       <a class="play" href="/blog/NAME.gif" ...><img src="/blog/NAME.png" ...></a>
       ...
 
-The still is the film's final frame - the whole exchange, once it has played.
+The still is the film's final frame - the whole exchange, once it has played -
+unless the film names another moment with data-poster-ms on its link, the
+time in milliseconds of the frame to show. A film in acts may end on its last
+act alone, and mock-films names the frame that tells the story better.
 This script plays each GIF to its end and writes that frame next to it, so
 adding a film is adding the GIF and the markup, and running this.
 
@@ -35,6 +38,8 @@ PAGE = os.path.join(ROOT, "index.html")
 FIGURE = re.compile(r'<figure class="film">(.*?)</figure>', re.S)
 GIF = re.compile(r'<a[^>]*\bclass="play"[^>]*\bhref="(/[^"]+\.gif)"')
 STILL = re.compile(r'<img[^>]*\bsrc="(/[^"]+\.png)"')
+# The moment the still is taken from, when it is not the last frame.
+POSTER = re.compile(r'<a[^>]*\bclass="play"[^>]*\bdata-poster-ms="(\d+)"')
 
 
 # ---------------------------------------------------------------------------
@@ -108,8 +113,15 @@ def _palette(data, pos, flags):
 
 
 def last_frame(path):
-    """The canvas once every frame has been drawn: (width, height, pixels),
-    each pixel an (r, g, b) tuple or None where nothing has been drawn."""
+    """The canvas once every frame has been drawn."""
+    return frame_at(path, None)
+
+
+def frame_at(path, ms):
+    """The canvas a viewer sees `ms` milliseconds into the film, or once every
+    frame has been drawn when `ms` is None: (width, height, pixels), each
+    pixel an (r, g, b) tuple or None where nothing has been drawn. A time past
+    the end is the last frame, which the film holds."""
     with open(path, "rb") as handle:
         data = handle.read()
     if data[:6] not in (b"GIF87a", b"GIF89a"):
@@ -124,7 +136,8 @@ def last_frame(path):
     # and the still has to show the same thing. None is transparent.
     fill = None
     canvas = [fill] * (width * height)
-    disposal, transparent = 0, None
+    disposal, transparent, delay = 0, None, 0
+    clock = 0   # when the next frame goes up, in ms
     # The previous frame's disposal, carried out only when another frame
     # arrives: the last frame's is never done, because it is what the film
     # ends on - and a comment block after it must not count as a next frame.
@@ -140,6 +153,7 @@ def last_frame(path):
             if label == 0xF9 and len(block) >= 4:           # graphic control
                 disposal = (block[0] >> 2) & 0x07
                 transparent = block[3] if block[0] & 0x01 else None
+                delay = struct.unpack("<H", block[1:3])[0]
             continue
         if marker != 0x2C:
             raise ValueError("%s: unexpected block 0x%02x at %d" % (path, marker, pos - 1))
@@ -153,6 +167,13 @@ def last_frame(path):
         indices = _lzw(compressed, min_code_size, w * h)
         if image_flags & 0x40:
             indices = _deinterlace(indices, w, h)
+
+        # A frame that goes up after `ms` is not seen yet: what is on the
+        # canvas now, the previous frame and its disposal not yet done, is.
+        if ms is not None and pending and clock > ms:
+            return width, height, canvas
+        # Browsers show a delay of 0 or 1 hundredths of a second as 10.
+        clock += (delay if delay > 1 else 10) * 10
 
         if pending:
             done, done_rect, done_saved = pending
@@ -171,7 +192,7 @@ def last_frame(path):
             if index != transparent and index < len(palette):
                 canvas[y * width + x] = palette[index]
         pending = (disposal, rect, saved)
-        disposal, transparent = 0, None
+        disposal, transparent, delay = 0, None, 0
     return width, height, canvas
 
 
@@ -282,14 +303,16 @@ def read_png(data):
 # ---------------------------------------------------------------------------
 
 def films(page_html):
-    """(gif, still) site paths for every film on the page; still is None when
-    the figure shows no PNG."""
+    """(gif, still, poster_ms) for every film on the page: site paths, still
+    None when the figure shows no PNG, and poster_ms None for the last frame."""
     found = []
     for figure in FIGURE.findall(page_html):
         gif = GIF.search(figure)
         if gif:
             still = STILL.search(figure)
-            found.append((gif.group(1), still.group(1) if still else None))
+            poster = POSTER.search(figure)
+            found.append((gif.group(1), still.group(1) if still else None,
+                          int(poster.group(1)) if poster else None))
     return found
 
 
@@ -307,7 +330,7 @@ def main(argv=None):
         return 0
 
     problems, written = [], []
-    for gif, still in listed:
+    for gif, still, poster_ms in listed:
         expected = gif[:-len(".gif")] + ".png"
         if still is None:
             problems.append("%s's figure shows no still; its <img> should be "
@@ -322,7 +345,7 @@ def main(argv=None):
         if not os.path.exists(gif_file):
             problems.append("%s is on the page but not in the repository" % gif)
             continue
-        frame = last_frame(gif_file)
+        frame = frame_at(gif_file, poster_ms)
         wanted = png(*frame)
         try:
             with open(still_file, "rb") as handle:
@@ -334,7 +357,8 @@ def main(argv=None):
         if current:
             continue
         if args.check:
-            problems.append("%s is missing or is not %s's final frame" % (still, gif))
+            problems.append("%s is missing or is not %s's frame at %s" % (
+                still, gif, "%d ms" % poster_ms if poster_ms is not None else "the end"))
         else:
             with open(still_file, "wb") as handle:
                 handle.write(wanted)

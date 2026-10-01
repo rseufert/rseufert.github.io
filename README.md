@@ -32,7 +32,10 @@ python3 tools/sync_films.py            # what differs from the index
 python3 tools/sync_films.py --apply    # add, re-cut, re-text, withdraw; write the stills
 ```
 
-A new film goes under the project of its first mock. A film on the page that
+A film's still is its last frame unless the index gives a `poster_ms`; the
+page carries it as `data-poster-ms` on the film's link, and the still is the
+frame showing at that moment. A new film goes under the project of its first
+mock. A film on the page that
 the index does not list is reported and left alone. mock-films is private, so
 CI does not run the sync; it runs the still check:
 
