@@ -18,7 +18,13 @@ title: Rick Seufert
 
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-sap">mock-sap</a></h3>
-		<img src="/blog/sap_invoices.gif" align=center />
+		<figure class="film">
+			<picture>
+				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/sap_invoices.png">
+				<img src="/blog/sap_invoices.gif" width="800" height="450" alt="Animated sequence diagram: a client system sends two INVOIC IDocs to mock-sap. SUP-2026-0001 posts as supplier invoice 5100000001, payable EUR 1190.00. SUP-2026-0002 fails with status 51: posting period 10 2026 is not open.">
+			</picture>
+			<figcaption>two INVOICs in: one becomes a payable, one stops at status 51 <span>filmed with mock-films</span></figcaption>
+		</figure>
 		<p>A black-box mock SAP endpoint. It speaks the shapes, not the business logic: SAP Gateway OData V2 and V4 services, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
 		<ul class="features">
 			<li><strong>Zero dependencies.</strong> Python 3.8+ standard library and SQLite.</li>
@@ -36,7 +42,13 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-edi">mock-edi</a></h3>
-		<img src="/blog/edi_overshipped.gif" align=center />
+		<figure class="film">
+			<picture>
+				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/edi_overshipped.png">
+				<img src="/blog/edi_overshipped.gif" width="800" height="450" loading="lazy" alt="Animated sequence diagram: Mock EDI, as the buyer, sends an 850 purchase order to NORTHWIND. The seller answers with an 855, then an 856 that ships 130 against 100 confirmed and ordered, then an 810 invoice, each acknowledged with a 997.">
+			</picture>
+			<figcaption>an 850 out, and a seller who ships 130 of the 100 it confirmed <span>filmed with mock-films</span></figcaption>
+		</figure>
 		<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end. Send it an 850 and it answers with a 997, an 855, an 856 and an 810. Send it EDIFACT <code>ORDERS</code> and you get <code>CONTRL</code>, <code>ORDRSP</code>, <code>DESADV</code> and <code>INVOIC</code>.</p>
 <pre><code>   you ──850──▶  mock-edi
        ◀──997──  the syntax parsed
@@ -60,7 +72,13 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a></h3>
-		<img src="/blog/bank_four_payments.gif" align=center />
+		<figure class="film">
+			<picture>
+				<source media="(prefers-reduced-motion: reduce)" srcset="/blog/bank_four_payments.png">
+				<img src="/blog/bank_four_payments.gif" width="800" height="450" loading="lazy" alt="Animated sequence diagram: ACME sends a pain.001 with four payments to mock-bank. The pain.002 rejects two, AC04 for a closed account and RC01 for a bank that does not resolve. The other two are booked, followed by a camt.054 with two debits and a camt.053 closing at 108750.00.">
+			</picture>
+			<figcaption>four payments in: two rejected by name, two booked, and a statement that closes <span>filmed with mock-films</span></figcaption>
+		</figure>
 		<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
 <pre><code>   you ──pain.001──▶  mock-bank
        ◀──pain.002──  2 accepted, 2 rejected (AC04, RC01)

@@ -195,6 +195,37 @@ ul.posts .date {
     margin-left: 6px;
 }
 
+/* Films: a real exchange with a mock, recorded by mock-films. Scaled to the
+   column (they are 800 wide and the column is not, on a phone or a laptop),
+   framed like the photo, and captioned like a terminal. A visitor who asked
+   for less motion gets the final frame instead, via <picture>. */
+.project .film {
+    margin: 20px 0;
+}
+.project .film img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    box-sizing: border-box;   /* the border inside the 100%, not beside it */
+    border: 1px solid var(--rule);
+}
+.project .film figcaption {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    color: var(--soft);
+    margin-top: 8px;
+}
+.project .film figcaption::before {
+    content: "\25B6  ";    /* a play mark, in the accent */
+    color: var(--accent);
+}
+.project .film figcaption span {
+    color: var(--faint);
+}
+.project .film figcaption span::before {
+    content: "// ";
+}
+
 /* Code blocks: a terminal pane, the accent down its left edge. */
 .project pre, .post pre {
     background: var(--code-bg);
