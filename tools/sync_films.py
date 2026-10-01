@@ -19,6 +19,7 @@ What --apply does, per film in the index:
                                 the features list
     finished, a different hash  the new cut copied into blog/
     finished, different text    the alt text and caption replaced, as written
+    finished, other poster_ms   the still retaken at that moment (none: the end)
     withdrawn, on the page      its figure, GIF and still removed
 
 and then writes the stills, through film_stills. A film on the page that the
@@ -50,6 +51,8 @@ NAME = re.compile(r"[a-z0-9_]+\Z")
 
 FIGURE = re.compile(r'\n?([ \t]*)<figure class="film">.*?</figure>', re.S)
 SRC = re.compile(r'<a class="play" href="/blog/([a-z0-9_]+)\.gif"')
+PLAY = re.compile(r'<a class="play" [^>]*>')
+POSTER = re.compile(r' data-poster-ms="(\d+)"')
 ALT = re.compile(r'(<img[^>]*\balt=")([^"]*)(")')
 # The line under every caption, after the mock-films team's own words.
 TAG = "<span>drawn by mock-films from a real run</span>"
@@ -63,15 +66,22 @@ def attr(text):
     return html.escape(text, quote=False).replace('"', "&quot;")
 
 
-def figure(name, alt, caption, width, height, indent, lazy):
+def play_tag(name, poster_ms):
+    """The link that plays a film; data-poster-ms names the still's moment."""
+    return '<a class="play" href="/blog/%s.gif"%s title="play the film">' % (
+        name, ' data-poster-ms="%d"' % poster_ms if poster_ms is not None else "")
+
+
+def figure(name, alt, caption, width, height, indent, lazy, poster_ms=None):
     i = indent
-    return ("\n%s<figure class=\"film\">\n"
-            "%s\t<a class=\"play\" href=\"/blog/%s.gif\" title=\"play the film\">"
-            "<img src=\"/blog/%s.png\" width=\"%d\" height=\"%d\"%s alt=\"%s\"></a>\n"
-            "%s\t<figcaption>%s " + TAG + "</figcaption>\n"
-            "%s</figure>") % (i, i, name, name, width, height,
-                              ' loading="lazy"' if lazy else "", attr(alt),
-                              i, html.escape(caption, quote=False), i)
+    img = '<img src="/blog/%s.png" width="%d" height="%d"%s alt="%s">' % (
+        name, width, height, ' loading="lazy"' if lazy else "", attr(alt))
+    return "".join([
+        "\n%s<figure class=\"film\">\n" % i,
+        "%s\t%s%s</a>\n" % (i, play_tag(name, poster_ms), img),
+        "%s\t<figcaption>%s %s</figcaption>\n" % (i, html.escape(caption, quote=False), TAG),
+        "%s</figure>" % i,
+    ])
 
 
 def sha256(path):
@@ -90,6 +100,10 @@ def load_index(films_dir):
         if not NAME.match(name) or os.path.basename(film["path"]) != name + ".gif":
             sys.exit("index.json: %r does not name its GIF (%s); stopping"
                      % (name, film["path"]))
+        poster_ms = film.get("poster_ms")
+        if poster_ms is not None and (not isinstance(poster_ms, int) or poster_ms < 0):
+            sys.exit("index.json: %s has poster_ms %r, not a time in ms; stopping"
+                     % (name, poster_ms))
         if film["status"] == "finished":
             gif = os.path.join(films_dir, film["path"])
             if sha256(gif) != film["sha256"]:
@@ -100,13 +114,15 @@ def load_index(films_dir):
 
 
 def on_page(page):
-    """name -> (alt, caption) for each film on the page."""
+    """name -> (alt, caption, poster_ms) for each film on the page."""
     found = {}
     for m in FIGURE.finditer(page):
         block = m.group(0)
         name = SRC.search(block).group(1)
+        poster = POSTER.search(PLAY.search(block).group(0))
         found[name] = (html.unescape(ALT.search(block).group(2)),
-                       html.unescape(CAPTION.search(block).group(2)))
+                       html.unescape(CAPTION.search(block).group(2)),
+                       int(poster.group(1)) if poster else None)
     return found
 
 
@@ -128,8 +144,11 @@ def plan(films, page):
         gif = os.path.join(BLOG, name + ".gif")
         if not os.path.exists(gif) or sha256(gif) != film["sha256"]:
             changes.append(("recut", film))
-        if shown[name] != (film["alt"], film["caption"]):
+        if shown[name][:2] != (film["alt"], film["caption"]):
             changes.append(("retext", film))
+        # The still's moment can change with nothing else: same GIF, same hash.
+        if shown[name][2] != film.get("poster_ms"):
+            changes.append(("repost", film))
     unknown = sorted(set(shown) - listed)
     return changes, unknown
 
@@ -150,6 +169,11 @@ def apply(changes, films_dir, page):
                 return CAPTION.sub(lambda c: c.group(1) + html.escape(film["caption"], quote=False)
                                    + c.group(3), block, count=1)
             page = FIGURE.sub(retext, page)
+        if kind == "repost":
+            page = FIGURE.sub(lambda m, film=film: m.group(0) if SRC.search(m.group(0)).group(1)
+                              != film["name"] else PLAY.sub(
+                                  lambda a: play_tag(film["name"], film.get("poster_ms")),
+                                  m.group(0), count=1), page)
         if kind == "withdraw":
             page = FIGURE.sub(lambda m: "" if SRC.search(m.group(0)).group(1) == name
                               else m.group(0), page)
@@ -179,7 +203,7 @@ def apply(changes, films_dir, page):
             # Only the first film on the page loads eagerly; it is above the fold.
             lazy = FIGURE.search(page).start() < project.start() + at
             new = figure(name, film["alt"], film["caption"], film.get("width", 800),
-                         film.get("height", 450), indent, lazy)
+                         film.get("height", 450), indent, lazy, film.get("poster_ms"))
             page = page[:project.start() + at] + new + page[project.start() + at:]
     return page
 
