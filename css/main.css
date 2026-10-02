@@ -320,6 +320,16 @@ code {
     h1 {
         font-size: 2em;
     }
+    /* Tighter, so the four menu items stay on one line on a phone: a flex
+       row has no space between inline items and no margin after the last. */
+    nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+    }
+    nav ul li {
+        margin-right: 0;
+    }
 }
 
 /* The media page: a player that loads only when asked (see media/index.html). */
@@ -355,3 +365,15 @@ code {
     color: var(--accent);
     margin-right: 0.35em;
 }
+
+/* Flipper screenshots are 128x64 drawn at 4x; keep the pixels square. */
+.project .shot { margin: 20px 0; }
+.project .shot img {
+    display: block;
+    width: 512px;
+    max-width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    border: 1px solid var(--rule);
+}
+.project .shot figcaption { font: 0.9em var(--mono); color: var(--faint); margin-top: 8px; }

@@ -229,4 +229,28 @@ python3 -m unittest -v mockbank.examples.test_payment_run</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
+
+<section id="flipper" class="projects flipper">
+	<h2>Flipper</h2>
+	<p class="lede">Apps for the <a href="https://flipperzero.one">Flipper Zero</a>: a 128&times;64 screen, a d-pad and a buzzer.</p>
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/nw_crawl">NW Crawl</a> <span class="tag">game</span></h3>
+		<figure class="shot">
+			<img src="/flipper/nw_crawl.png" width="512" height="256" loading="lazy" alt="NW Crawl on the Flipper's orange screen: the player stands next to a rat on a dotted floor, with street-sign walls around them. The top line reads &quot;Hit Rat. Rat bites -1&quot; and the bottom line &quot;HP11/12 c1 Burnside&quot;.">
+			<figcaption>fighting a rat on NW Burnside</figcaption>
+		</figure>
+		<p>A tiny roguelike set on the alphabet streets of NW Portland. Start on Burnside and head north one street per floor - Couch, Davis, Everett, Flanders, all the way to Thurman - until you reach the Witch's Castle in Forest Park.</p>
+		<ul class="features">
+			<li><strong>Nineteen streets and a castle.</strong> Each floor is a randomly generated maze of rooms, corridors and side alleys under fog of war.</li>
+			<li><strong>The locals.</strong> Rats, crows, raccoons, rogue e-scooters and coyotes, getting tougher the further north you go. On the northern streets a Sasquatch lurks by the exit, invisible until he's two tiles away.</li>
+			<li><strong>Coffee, donuts and IPAs.</strong> Coffee heals, a pink-box donut raises your max HP, a hazy IPA raises your attack and a used book shows you the floor. On Pettygrove, Joe's Cellar is a safe room where the bartender pours you one stiff drink.</li>
+			<li><strong>The Witch</strong> hexes you from range, summons crows and vanishes when hit.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/nw_crawl &amp;&amp; cd nw_crawl
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/nw_crawl">GitHub</a> · <a href="https://github.com/rseufert/nw_crawl#controls">Controls</a></p>
+	</div><!-- /.project -->
+</section><!-- /.flipper -->
 <script src="/js/films.js" defer></script>
