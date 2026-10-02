@@ -86,8 +86,53 @@ p {
 }
 
 /* The blurb: photo, then the marquee, now with a cursor after "sup?". */
-.blurb img {
-    border: 1px solid var(--rule);
+/* The photo sits in an old desktop window: a title bar, a hard accent
+   shadow, a slight tilt, and scanlines. On hover it straightens and
+   glitches once, red and cyan pulling apart. */
+.blurb .hero {
+    display: inline-block;
+    max-width: calc(100% - 16px);   /* room for the shadow and the tilt */
+    margin: 10px 0 0;
+    border: 2px solid var(--ink);
+    background: var(--bg);
+    box-shadow: 8px 8px 0 var(--accent);
+    transform: rotate(-1.5deg);
+    transition: transform 0.2s ease;
+}
+.blurb .hero:hover { transform: rotate(0deg); }
+.blurb .hero .titlebar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 3px 8px;
+    background: var(--ink);
+    color: var(--bg);
+    font: 0.85em var(--mono);
+}
+.blurb .hero .frame {
+    position: relative;
+    line-height: 0;
+    overflow: hidden;
+}
+.blurb .hero img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    filter: contrast(1.08) saturate(1.2);
+}
+.blurb .hero .frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(to bottom,
+        rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+}
+.blurb .hero:hover img { animation: glitch 0.45s steps(3) 1; }
+@keyframes glitch {
+    0%   { filter: contrast(1.08) saturate(1.2) drop-shadow(-4px 0 #ff0050) drop-shadow(4px 0 #00e5ff); transform: translateX(2px); }
+    50%  { filter: contrast(1.08) saturate(1.2) drop-shadow(3px 0 #ff0050) drop-shadow(-3px 0 #00e5ff); transform: translateX(-2px); }
+    100% { filter: contrast(1.08) saturate(1.2); transform: none; }
 }
 .blurb h1::after {
     content: "\2588";      /* a full block, the old terminal cursor */
@@ -98,6 +143,8 @@ p {
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
     .blurb h1::after { animation: none; }
+    .blurb .hero, .blurb .hero:hover { transform: none; transition: none; }
+    .blurb .hero:hover img { animation: none; }
 }
 
 /* Section headings get a comment marker in the accent colour. */
