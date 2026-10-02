@@ -1,38 +1,48 @@
 ---
 layout: default
 title: Media
-description: Videos from Rick Seufert's YouTube channel and tracks from SoundCloud.
+description: Music Rick Seufert records as Dick Dank, on SoundCloud, and the videos that go with it, on YouTube.
+image: /media/videos.jpg
 ---
 <div class="media">
 	<h1>media</h1>
-	<p class="lede">Videos from my YouTube channel and tracks from SoundCloud. Neither loads until you press play, so this page sets no cookies of its own.</p>
+	<p class="lede">I record music under the nom de guerre Dick Dank: Dick being the old-timey nickname for a Rick. The tracks are on SoundCloud and the videos on my YouTube channel, RickaDickRick.</p>
 
 	<h2>videos</h2>
+	<p>Music videos for Elimination Patterns, DeLorean, Sickener and Whiskey on a Wednesday.</p>
 	<figure class="embed">
-		<button class="load" type="button" data-src="https://www.youtube-nocookie.com/embed/videoseries?list=PLa-2B3enIAoU&amp;autoplay=1" data-title="YouTube playlist">&#9654;&nbsp; play the playlist <span>loads from youtube</span></button>
+		<button class="load poster" type="button" data-src="https://www.youtube-nocookie.com/embed/videoseries?list=PLa-2B3enIAoU&amp;autoplay=1" data-title="YouTube playlist"><span>&#9654;&nbsp; play the playlist <small>loads from youtube</small></span></button>
 		<figcaption><a href="https://www.youtube.com/playlist?list=PLa-2B3enIAoU">open the playlist on YouTube</a></figcaption>
 	</figure>
 
 	<h2>music</h2>
+	<p>Everything by Dick Dank, newest first:</p>
+	<p class="tracks">Sickener &middot; Gainesville Green &middot; Whiskey on a Wednesday &middot; When Was This? &middot; Stuzzy &middot; Mantequilla &middot; Lullaby Improv &middot; Elimination Patterns &middot; DeLorean</p>
 	<figure class="embed">
-		<button class="load sound" type="button" data-src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/the-rick&amp;auto_play=true&amp;show_comments=false&amp;show_reposts=false&amp;visual=false" data-title="SoundCloud tracks">&#9654;&nbsp; play the tracks <span>loads from soundcloud</span></button>
+		<button class="load sound" type="button" data-src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/the-rick&amp;auto_play=true&amp;show_comments=false&amp;show_reposts=false&amp;visual=true" data-title="SoundCloud tracks"><span>&#9654;&nbsp; play the tracks <small>loads from soundcloud</small></span></button>
 		<figcaption><a href="https://soundcloud.com/the-rick/tracks">open the tracks on SoundCloud</a></figcaption>
 	</figure>
+	<p class="note">Neither player loads until you press play, so this page sets no cookies of its own.</p>
 </div><!-- /.media -->
 
 <script>
-// Swap each button for its player only when asked: a third-party frame sets
-// cookies, and the footer promises none until the visitor chooses.
+// Swap a button for its player only when asked: a third-party frame sets
+// cookies, and the footer promises none until the visitor chooses. Only one
+// player is open at a time; starting one puts the other's button back, which
+// is the only way to stop a cross-origin frame talking over this one.
+var playing = null;
 document.querySelectorAll(".media button.load").forEach(function (button) {
 	button.addEventListener("click", function () {
+		if (playing) playing.frame.replaceWith(playing.button);
 		var frame = document.createElement("iframe");
 		frame.src = button.dataset.src;
 		frame.title = button.dataset.title;
 		frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
 		frame.allowFullscreen = true;
-		frame.className = button.className.replace("load", "").trim();
+		frame.className = button.classList.contains("sound") ? "sound" : "";
 		button.replaceWith(frame);
 		frame.focus();
+		playing = { frame: frame, button: button };
 	});
 });
 </script>
