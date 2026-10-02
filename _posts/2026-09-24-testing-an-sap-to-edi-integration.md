@@ -483,16 +483,15 @@ nothing stubbed on either side; the thirteenth builds a run in memory, because
 naming both candidates for a shortfall is arithmetic and does not need a bank:
 
 ```bash
-pip install "mock-sap>=0.13.2"
-git clone https://github.com/rseufert/mock-bank && cd mock-bank
+pip install "mock-bank>=0.6" "mock-sap>=0.13.2"
 mock-sap --port 8000 &
-python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &
-python3 -m unittest -v examples.test_payment_run
+mock-bank --port 8090 --clock 2026-10-02T16:00 &
+python3 -m unittest -v mockbank.examples.test_payment_run
 ```
 
-The examples live in the repository, not in the wheel, so this leg needs the
-checkout — and mock-bank itself then needs nothing installed, which is why only
-mock-sap is pinned.
+Since mock-bank 0.6 the examples and their tests ship in the wheel, as
+`mockbank.examples`, so this leg needs no checkout: two packages and two
+servers. (Until 0.6 it did, and ran from inside the clone.)
 
 mock-bank's tests need mock-sap 0.13.2 or newer: the open-item cube it
 reads is read-only there, as it is in S/4, and a blocked supplier invoice
