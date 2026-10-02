@@ -90,9 +90,10 @@ p {
    shadow, a slight tilt, and scanlines. On hover it straightens and
    glitches once, red and cyan pulling apart. */
 .blurb .hero {
-    display: inline-block;
+    display: block;
+    width: fit-content;
     max-width: calc(100% - 16px);   /* room for the shadow and the tilt */
-    margin: 10px 0 0;
+    margin: 10px auto 0;
     border: 2px solid var(--ink);
     background: var(--bg);
     box-shadow: 8px 8px 0 var(--accent);
