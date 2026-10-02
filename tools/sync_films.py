@@ -217,7 +217,9 @@ def apply(changes, films_dir, pages):
             else:
                 at = block.index("</h3>") + len("</h3>")
             # Only the first film on the page loads eagerly; it is above the fold.
-            lazy = FIGURE.search(page).start() < project.start() + at
+            # A mock's own page may have no film yet, and then this is the first.
+            first = FIGURE.search(page)
+            lazy = first is not None and first.start() < project.start() + at
             new = figure(name, film["alt"], film["caption"], film.get("width", 800),
                          film.get("height", 450), indent, lazy, film.get("poster_ms"))
             pages[path] = page[:project.start() + at] + new + page[project.start() + at:]
