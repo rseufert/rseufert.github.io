@@ -425,3 +425,8 @@ code {
     border: 1px solid var(--rule);
 }
 .project .shot figcaption { font: 0.9em var(--mono); color: var(--faint); margin-top: 8px; }
+/* Two screenshots side by side at 3x, each on whole pixels; they stack when
+   the column is too narrow for both. */
+.project .shot.pair { display: flex; flex-wrap: wrap; gap: 12px; }
+.project .shot.pair img { width: 384px; }
+.project .shot.pair figcaption { flex-basis: 100%; margin-top: 0; }
