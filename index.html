@@ -105,14 +105,15 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
        ◀──BAI2─────  16,447,125000,Z,INV-2026-0101,…,Globex Supplies B.V./
                      16,447,1500000,Z,INV-2026-0104,…,Umbrella Logistics/</code></pre>
 		<ul class="features">
-			<li><strong>Zero dependencies.</strong> Python 3.8+, the standard library and SQLite, like its siblings. No transport needing cryptography, no screening, no direct debits - each refused by name, with an answer saying what <em>is</em> supported.</li>
+			<li><strong>Zero dependencies.</strong> Python 3.8+, the standard library and SQLite, like its siblings. No transport needing cryptography and no screening - each refused by name, with an answer saying what <em>is</em> supported.</li>
 			<li><strong>Two formats, and the mock does not care which door.</strong> A <code>pain.001</code> or a 94-column NACHA file, over <code>POST /payments</code> or dropped in a folder, goes through the same decisions. An account whose <code>format</code> is <code>nacha</code> gets a plain-text acknowledgement where an ISO 20022 account gets a <code>pain.002</code>, an R-coded return file where it gets a <code>pacs.004</code>, and a BAI2 statement where it gets a <code>camt.053</code>.</li>
 			<li><strong>Money can arrive, not just leave.</strong> <code>POST /_mock/credits</code> lands a customer's payment in an account on its value date, or the next business day for a weekend, a holiday or a missed cutoff. It is reported like everything else: a <code>camt.054</code> as it books and an entry on the day's <code>camt.053</code>, which still reconciles - the payer as <code>Dbtr</code>, the note in <code>RmtInf/Ustrd</code>, and the invoice reference in <code>Strd</code> apart from it, because a bank that reformats remittance is the reason cash application is hard. A short payment, one that names no invoice, one that settles several, and a reference split across lines are each one request away.</li>
+			<li><strong>Direct debits, as well as payments.</strong> A <code>pain.008</code>, or a NACHA file of debit entries, collects from customers: the bank answers it as it answers a payment file, credits the account on the settlement date, and reports the money like any other that arrives. The customer's bank can refuse a collection before it settles or send it back after, as a <code>pacs.004</code> or an R-coded return file - <code>MD01</code> or <code>R10</code> for a mandate the customer says they never gave. A customer whose account is at the same bank decides for itself: closed, or without the money, and the collection is rejected.</li>
 			<li><strong>The failures, not just the happy path.</strong> An account that rejects for <code>AC04</code>, one with no money, a bank identifier that is not the bank, a duplicate file, a statement with one payment missing, and a payment that settles and then comes back days later. The three behaviours the bank rejects for have NACHA twins: <code>AM04</code> is <code>R01</code>, <code>AC04</code> is <code>R02</code>, <code>RC01</code> is <code>R03</code>.</li>
 			<li><strong>Nothing sleeps.</strong> Settlement dates, the 15:00 cutoff, weekends and holidays run on a bank clock that <code>POST /_mock/advance</code> moves. A three-day return is a line in a test, not a three-day wait. And you need not wait for the day to end either: <code>POST /_mock/accounts/&lt;id&gt;/report</code> writes a <code>camt.052</code> for the account as it stands now, which a reconciler can compare against the day's statement to find the entry a <code>statement-gap</code> leaves out.</li>
 			<li><strong>Two doors, one pipeline.</strong> Most bank connections are two directories on an SFTP host rather than an endpoint, so a file dropped in <code>--drop-dir</code> goes through the same decisions as <code>POST /payments</code> and lands in <code>processed/</code> or <code>failed/</code> with the answer written beside it.</li>
 			<li><strong>Its own output is checked against somebody else's files.</strong> Every ISO 20022 message is validated against schemas fetched from pinned commits, and the NACHA and BAI2 readers are held to files from <a href="https://github.com/moov-io">moov-io</a> - because a reader and a writer built from one declaration agree with each other even when both are wrong. That is how the mock found it was counting a returned debit as a credit, and that its BAI2 reader could not open a real bank's file.</li>
-			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one file, and post each statement back so SAP clears what was paid and reopens what came back. Twenty-three tests, run in CI against mock-sap from PyPI - twice, once over ISO 20022 and once over ACH, because the same run has to survive both.</li>
+			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one file, and post each statement back so SAP clears what was paid and reopens what came back. Twenty-six tests, run in CI against mock-sap from PyPI - twice, once over ISO 20022 and once over ACH, because the same run has to survive both.</li>
 		</ul>
 		<figure class="film">
 			<a class="play" href="/blog/bank_returned_film.gif" title="play the film"><img src="/blog/bank_returned_film.png" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and booked and debited on Friday. The capture script then advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday a pacs.004 returns the payment with reason AC04 and a camt.054 credits the money back. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours."></a>
@@ -140,12 +141,11 @@ SAP  ◀──FINSTA01◀──camt.053──    the statement clears what was p
 			<li><strong>A payment the bank rejects leaves the invoice owed.</strong> The supplier's account is closed, SAP still holds its details, and <code>AC04</code> comes back: the item stays open and stays distinguishable from one that was paid and came back.</li>
 			<li><strong>It does not tell the supplier what was paid,</strong> and says so - which is why a supplier keeps dunning you for an invoice you paid. That needs a remittance advice, and as of mock-edi 0.6.0 there is one to send: it receives the X12 820 and EDIFACT <code>REMADV</code>. So the gap is now in the example rather than in the mocks, and the loop is closable.</li>
 		</ul>
-<pre><code>pip install "mock-sap&gt;=0.13.2" mock-edi
-git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
+<pre><code>pip install "mock-bank&gt;=0.6" "mock-sap&gt;=0.13.2" mock-edi
 mock-sap --port 8000 &amp;
 mock-edi --port 8080 &amp;
-python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &amp;
-python3 -m unittest -v examples.test_procure_to_pay</code></pre>
+mock-bank --port 8090 --clock 2026-10-02T16:00 &amp;
+python3 -m unittest -v mockbank.examples.test_procure_to_pay</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Code</a> · <a href="https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py">Tests</a></p>
 	</div><!-- /.project -->
 
@@ -202,11 +202,10 @@ cd examples &amp;&amp; python3 -m unittest -v test_invoice_check</code></pre>
 			<li><strong>A closed account, or no money, keeps the invoice open,</strong> held with the bank's reason code (<code>AC04</code>, <code>AM04</code>) rather than retried.</li>
 			<li><strong>A returned payment reopens the invoice,</strong> and a payment missing from the statement is reported as unreconciled rather than cleared.</li>
 		</ul>
-<pre><code>git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
-pip install mock-edi
+<pre><code>pip install "mock-bank&gt;=0.6" mock-edi
 mock-edi --port 8080 &amp;
-python3 -m mockbank --port 8090 &amp;
-python3 -m unittest -v examples.test_pay_invoices</code></pre>
+mock-bank --port 8090 &amp;
+python3 -m unittest -v mockbank.examples.test_pay_invoices</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 
@@ -223,11 +222,10 @@ reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
 			<li><strong>A blocked invoice is never selected,</strong> and the selection asks SAP to leave blocked and cleared items out rather than filtering them afterwards.</li>
 			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that answers with an error is three sentences, not silence. A host that is <em>down</em> raises and stops the run instead - a deliberate difference, not an oversight.</li>
 		</ul>
-<pre><code>git clone https://github.com/rseufert/mock-bank &amp;&amp; cd mock-bank
-pip install "mock-sap&gt;=0.13.2"
+<pre><code>pip install "mock-bank&gt;=0.6" "mock-sap&gt;=0.13.2"
 mock-sap --port 8000 &amp;
-python3 -m mockbank --port 8090 --clock 2026-10-02T16:00 &amp;
-python3 -m unittest -v examples.test_payment_run</code></pre>
+mock-bank --port 8090 --clock 2026-10-02T16:00 &amp;
+python3 -m unittest -v mockbank.examples.test_payment_run</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
