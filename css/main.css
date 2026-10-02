@@ -396,15 +396,26 @@ code {
     cursor: pointer;
 }
 .media .embed button.load span {
+    display: inline-block;
+    padding: 12px 18px;
+    background: var(--bg);
+}
+.media .embed button.load small {
     display: block;
     margin-top: 8px;
     font-size: 0.6em;
     color: var(--faint);
 }
+/* A still from the first video, kept in the repo: hotlinking YouTube's copy
+   would be the third-party request the button exists to avoid. */
+.media .embed button.poster { background: url(/media/videos.jpg) center / cover; }
 .media .embed button.load:hover, .media .embed button.load:focus-visible { border-color: var(--accent); }
 .media .embed figcaption { font: 0.9em var(--mono); color: var(--faint); margin-top: 8px; }
-/* SoundCloud's list player is a fixed height, not a 16:9 picture. */
-.media .embed button.sound, .media .embed iframe.sound { aspect-ratio: auto; height: 450px; }
+/* SoundCloud's player is a fixed height, not a 16:9 picture, and its button
+   has no picture to show, so it stays short until pressed. */
+.media .embed button.sound { aspect-ratio: auto; height: 120px; }
+.media .embed iframe.sound { aspect-ratio: auto; height: 450px; }
+.media .tracks, .media .note { font: 0.9em/1.6 var(--mono); color: var(--faint); }
 .media h2::before {
     content: "//";
     font-family: var(--mono);
