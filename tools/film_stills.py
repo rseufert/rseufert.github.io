@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Give every film on the projects page the still the page shows.
+"""Give every film on the site the still its page shows.
 
-The films on the projects page are GIFs drawn by mock-films, and they loop.
+The films on the home page and the project pages are GIFs drawn by mock-films, and they loop.
 The page shows each one's still, a PNG, and plays the GIF only when the
 visitor clicks it (js/films.js); without the script, the link opens the GIF:
 
@@ -19,8 +19,9 @@ adding a film is adding the GIF and the markup, and running this.
     python3 tools/film_stills.py           # write any still that is missing or stale
     python3 tools/film_stills.py --check   # fail if one is, or the markup is wrong
 
-The films are the GIFs linked inside `<figure class="film">` in index.html, not
-whatever is in blog/, so the check also catches a film whose `<img>` shows the
+The films are the GIFs linked inside `<figure class="film">` on the home page
+and on each directory's index.html (mock-sap/, mock-edi/, ...), not whatever
+is in blog/, so the check also catches a film whose `<img>` shows the
 wrong still. Standard library only, like the projects it shows: a GIF
 decoder (LZW, local colour tables, transparency, the three disposal methods,
 interlacing) and a PNG writer, which is all `zlib` needs to be told.
@@ -33,7 +34,18 @@ import sys
 import zlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGE = os.path.join(ROOT, "index.html")
+
+
+def pages():
+    """The pages that can show a film: the home page, which shows each
+    project's first, and the index.html of each directory beside it."""
+    found = [os.path.join(ROOT, "index.html")]
+    for name in sorted(os.listdir(ROOT)):
+        path = os.path.join(ROOT, name, "index.html")
+        if not name.startswith(("_", ".")) and os.path.isfile(path):
+            found.append(path)
+    return found
+
 
 FIGURE = re.compile(r'<figure class="film">(.*?)</figure>', re.S)
 GIF = re.compile(r'<a[^>]*\bclass="play"[^>]*\bhref="(/[^"]+\.gif)"')
@@ -323,13 +335,24 @@ def main(argv=None):
                         help="write nothing; fail if a still is missing, stale or not linked")
     args = parser.parse_args(argv)
 
-    with open(PAGE, encoding="utf-8") as handle:
-        listed = films(handle.read())
+    # A film can be on two pages, the home page and its project's; it is one
+    # film with one still, so both have to name the same moment.
+    listed, problems, written = [], [], []
+    for page in pages():
+        with open(page, encoding="utf-8") as handle:
+            for film in films(handle.read()):
+                if film in listed:
+                    continue
+                if any(film[0] == other[0] for other in listed):
+                    problems.append("%s is on two pages with a different still or "
+                                    "data-poster-ms; %s has the odd one"
+                                    % (film[0], os.path.relpath(page, ROOT)))
+                    continue
+                listed.append(film)
     if not listed:
-        print("no <figure class=\"film\"> in index.html; nothing to do")
+        print("no <figure class=\"film\"> on any page; nothing to do")
         return 0
 
-    problems, written = [], []
     for gif, still, poster_ms in listed:
         expected = gif[:-len(".gif")] + ".png"
         if still is None:
@@ -370,7 +393,7 @@ def main(argv=None):
         for problem in problems:
             print(problem, file=sys.stderr)
         print("\n%d problem(s). `python3 tools/film_stills.py` writes the stills; "
-              "the markup is index.html's." % len(problems), file=sys.stderr)
+              "the markup is the page's." % len(problems), file=sys.stderr)
         return 1
     if not written:
         print("%d film(s), each with a current still" % len(listed))

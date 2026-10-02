@@ -1,0 +1,41 @@
+---
+layout: default
+title: "mock-sap: a black-box mock SAP endpoint"
+description: "mock-sap is a mock SAP endpoint for integration testing: Gateway OData V2 and V4, BAPI/RFC over JSON and SOAP, and IDocs, backed by SQLite, with failures on demand."
+image: /blog/sap_invoices.png
+---
+<section class="projects">
+	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-sap">mock-sap</a></h3>
+		<figure class="film">
+			<a class="play" href="/blog/sap_invoices.gif" title="play the film"><img src="/blog/sap_invoices.png" width="800" height="450" alt="Two supplier invoices are sent to mock-sap as INVOIC IDocs for one purchase order. The first posts and leaves EUR 1190.00 payable. The second is refused with status 51, &quot;Posting period 10 2026 is not open&quot;. The capture script told the mock to refuse it; mock-sap itself does not check posting periods."></a>
+			<figcaption>two invoices, one refused on request <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<p>A black-box mock SAP endpoint. It speaks the shapes, not the business logic: SAP Gateway OData V2 and V4 services, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
+		<ul class="features">
+			<li><strong>Zero dependencies.</strong> Python 3.8+ standard library and SQLite.</li>
+			<li><strong>Real wire shapes.</strong> <code>__metadata</code>, <code>/Date(…)/</code>, EDMX <code>$metadata</code>, CSRF tokens, <code>$batch</code> changesets, BAPIRET2 tables.</li>
+			<li><strong>V2 and V4 over the same rows.</strong> <code>$apply</code> aggregation, delta tokens, Fiori UI annotations, and OAuth 2.0 token flows a client can expire and refresh.</li>
+			<li><strong>Both sides of the document chain.</strong> A sales order becomes a delivery, an invoice and money owed to you; an inbound <code>INVOIC</code> becomes a supplier invoice and money owed <em>by</em> you - an open item a payment run selects with one <code>$filter</code>, and the supplier's IBAN to pay it into. Post the bank's <code>FINSTA01</code> statement back and the invoices it paid are cleared; a returned payment reopens one, and every line the statement cannot place is reported rather than guessed at.</li>
+			<li><strong>Deterministic demo data.</strong> Business partners, products, sales and purchase orders, the same every run for a given seed.</li>
+			<li><strong>Failure on demand.</strong> Latency, 500s, locked documents, expired CSRF tokens - and the two that answer <em>success</em> and mean no: an inbound IDoc SAP accepts and then declines to post, and a BAPI that returns HTTP 200 with <code>TYPE E</code> in <code>RETURN</code> for a valid call. Both look like success from the sending side, which is why they are the ones worth testing against.</li>
+		</ul>
+		<figure class="film">
+			<a class="play" href="/blog/sap_bapi.gif" title="play the film"><img src="/blog/sap_bapi.png" width="800" height="450" loading="lazy" alt="A client asks mock-sap to create a purchase order with BAPI_PO_CREATE1 and then commits it. Each call is answered by a RETURN, the first carrying the new order's number. The same create is then refused with message E SR 000. The capture script posted the rule that told the mock to refuse it."></a>
+			<figcaption>a purchase order created, then refused on request <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/sap_statement.gif" title="play the film"><img src="/blog/sap_statement.png" width="800" height="450" loading="lazy" alt="Two supplier invoices of EUR 1190.00 post to mock-sap and are owed. The capture script then posts a bank statement with two lines: one pays the first invoice exactly, and mock-sap clears it. The script wrote the other line for 1000.00 against the second invoice, and mock-sap refused it itself, saying the item is for 1190.00 but the line is for 1000.00; nothing told it to."></a>
+			<figcaption>a statement clears one invoice, refuses a line <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+<pre><code>pip install mock-sap
+mock-sap --port 8000
+curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a> · <a href="https://github.com/rseufert/mock-sap/blob/main/CHANGELOG.md">Changelog</a></p>
+	</div><!-- /.project -->
+
+	<p class="lede">Worked examples that use mock-sap: <a href="/examples/#procure-to-pay">Procure to pay</a>, <a href="/examples/#po-bridge">PO bridge</a>, <a href="/examples/#invoice-check">Invoice check</a> and <a href="/examples/#payment-run">Payment run</a>.</p>
+</section><!-- /.projects -->
+<script src="/js/films.js" defer></script>

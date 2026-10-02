@@ -1,4 +1,4 @@
-// Each film on the projects page starts as its final frame, a PNG that tells
+// Each film on the home page and the project pages starts as its final frame, a PNG that tells
 // the story on its own, and plays its GIF on demand. Without this script the
 // still links to the GIF, which opens by itself.
 //

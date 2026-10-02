@@ -19,224 +19,58 @@ layout: default
 	<p class="lede">Using them together: <a href="/blog/2026/09/24/testing-an-sap-to-edi-integration">Testing an SAP-to-EDI integration without SAP or a trading partner</a>. On the failures you can't ask a partner to perform: <a href="/blog/2026/09/25/three-edi-behaviours-you-cannot-rehearse">three EDI behaviours you can't rehearse</a>.</p>
 	<p class="lede">The films are drawn by mock-films from the messages of a real run against each mock. The mocks have no screens of their own; these are the conversations they had.</p>
 
+	<!-- Each mock in brief: one film, what it is, how to start it. The rest of
+	     its films and its features are on its own page, which is where
+	     tools/sync_films.py puts a new film. -->
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-sap">mock-sap</a></h3>
+		<h3><a href="/mock-sap/">mock-sap</a></h3>
 		<figure class="film">
 			<a class="play" href="/blog/sap_invoices.gif" title="play the film"><img src="/blog/sap_invoices.png" width="800" height="450" alt="Two supplier invoices are sent to mock-sap as INVOIC IDocs for one purchase order. The first posts and leaves EUR 1190.00 payable. The second is refused with status 51, &quot;Posting period 10 2026 is not open&quot;. The capture script told the mock to refuse it; mock-sap itself does not check posting periods."></a>
 			<figcaption>two invoices, one refused on request <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A black-box mock SAP endpoint. It speaks the shapes, not the business logic: SAP Gateway OData V2 and V4 services, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
-		<ul class="features">
-			<li><strong>Zero dependencies.</strong> Python 3.8+ standard library and SQLite.</li>
-			<li><strong>Real wire shapes.</strong> <code>__metadata</code>, <code>/Date(…)/</code>, EDMX <code>$metadata</code>, CSRF tokens, <code>$batch</code> changesets, BAPIRET2 tables.</li>
-			<li><strong>V2 and V4 over the same rows.</strong> <code>$apply</code> aggregation, delta tokens, Fiori UI annotations, and OAuth 2.0 token flows a client can expire and refresh.</li>
-			<li><strong>Both sides of the document chain.</strong> A sales order becomes a delivery, an invoice and money owed to you; an inbound <code>INVOIC</code> becomes a supplier invoice and money owed <em>by</em> you - an open item a payment run selects with one <code>$filter</code>, and the supplier's IBAN to pay it into. Post the bank's <code>FINSTA01</code> statement back and the invoices it paid are cleared; a returned payment reopens one, and every line the statement cannot place is reported rather than guessed at.</li>
-			<li><strong>Deterministic demo data.</strong> Business partners, products, sales and purchase orders, the same every run for a given seed.</li>
-			<li><strong>Failure on demand.</strong> Latency, 500s, locked documents, expired CSRF tokens - and the two that answer <em>success</em> and mean no: an inbound IDoc SAP accepts and then declines to post, and a BAPI that returns HTTP 200 with <code>TYPE E</code> in <code>RETURN</code> for a valid call. Both look like success from the sending side, which is why they are the ones worth testing against.</li>
-		</ul>
-		<figure class="film">
-			<a class="play" href="/blog/sap_bapi.gif" title="play the film"><img src="/blog/sap_bapi.png" width="800" height="450" loading="lazy" alt="A client asks mock-sap to create a purchase order with BAPI_PO_CREATE1 and then commits it. Each call is answered by a RETURN, the first carrying the new order's number. The same create is then refused with message E SR 000. The capture script posted the rule that told the mock to refuse it."></a>
-			<figcaption>a purchase order created, then refused on request <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<a class="play" href="/blog/sap_statement.gif" title="play the film"><img src="/blog/sap_statement.png" width="800" height="450" loading="lazy" alt="Two supplier invoices of EUR 1190.00 post to mock-sap and are owed. The capture script then posts a bank statement with two lines: one pays the first invoice exactly, and mock-sap clears it. The script wrote the other line for 1000.00 against the second invoice, and mock-sap refused it itself, saying the item is for 1190.00 but the line is for 1000.00; nothing told it to."></a>
-			<figcaption>a statement clears one invoice, refuses a line <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
 <pre><code>pip install mock-sap
 mock-sap --port 8000
 curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a> · <a href="https://github.com/rseufert/mock-sap/blob/main/CHANGELOG.md">Changelog</a></p>
+		<p class="links"><a href="/mock-sap/">Features and more films</a> · <a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a> · <a href="https://github.com/rseufert/mock-sap/blob/main/CHANGELOG.md">Changelog</a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-edi">mock-edi</a></h3>
+		<h3><a href="/mock-edi/">mock-edi</a></h3>
 		<figure class="film">
 			<a class="play" href="/blog/edi_overshipped.gif" title="play the film"><img src="/blog/edi_overshipped.png" width="800" height="450" loading="lazy" alt="mock-edi sends a purchase order, and the seller answers with an order response, a despatch advice and an invoice, each of which the mock acknowledges. The mock reports two problems on the despatch advice: 130 shipped against 100 confirmed and 100 ordered. The seller's documents were sent by the capture script."></a>
 			<figcaption>an order that ships too much <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end. Send it an 850 and it answers with a 997, an 855, an 856 and an 810. Send it EDIFACT <code>ORDERS</code> and you get <code>CONTRL</code>, <code>ORDRSP</code>, <code>DESADV</code> and <code>INVOIC</code>.</p>
-<pre><code>   you ──850──▶  mock-edi
-       ◀──997──  the syntax parsed
-       ◀──855──  2 lines: one confirmed, one short
-       ◀──856──  shipment / order / item, with a tracking number
-       ◀──810──  1132.80, terms 2% 10 net 30</code></pre>
-		<ul class="features">
-			<li><strong>Zero dependencies.</strong> Installs in a locked-down CI image.</li>
-			<li><strong>X12 and EDIFACT over AS2.</strong> Fixed-width ISA, release characters, <code>HL</code> trees, MDNs with a <code>Received-Content-MIC</code>.</li>
-			<li><strong>It can be the buyer, not only the seller.</strong> <code>POST /_mock/purchase</code> places an order with a partner whose role is <code>supplier</code> - so if the system under test is the one that <em>sells</em>, the mock is the customer sending you the 850 and reading your 855, 856 and 810 back, saying where each disagrees with what it ordered. It also receives a remittance advice, the X12 820 and EDIFACT <code>REMADV</code>, and reports one that advises cash before it settles.</li>
-			<li><strong>AS2, plain HTTP, or a folder.</strong> Point <code>--drop-dir</code> and <code>--pickup-dir</code> at directories for integrations that still trade files.</li>
-			<li><strong>Changes and receipts.</strong> An 860 changes an order and is answered with an 865; EDIFACT's <code>ORDCHG</code> is answered by an <code>ORDRSP</code>, having no change acknowledgment of its own. The 997s you send back are matched to what the mock sent, so "nobody acknowledged my invoice" is testable. A replayed interchange is refused with a TA1, not fulfilled twice.</li>
-			<li><strong>Failure on demand.</strong> Short shipments, rejected lines, duplicate invoices, documents out of order, answers an hour late, corrupt trailers, a translator that rejects everything, an invoice that never comes, a strict partner, a partner that never answers.</li>
-			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
-		</ul>
-		<figure class="film">
-			<a class="play" href="/blog/edi_waits.gif" title="play the film"><img src="/blog/edi_waits.png" width="800" height="450" loading="lazy" alt="ACME's order reaches mock-edi, which answers at once and records two promises, a despatch due in an hour and an invoice due in two. The capture set those delays and moves the clock an hour at a time, and each promise fills in when its work appears."></a>
-			<figcaption>an order that waits for the clock <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<a class="play" href="/blog/edi_850_film.gif" title="play the film"><img src="/blog/edi_850_film.png" width="800" height="450" loading="lazy" alt="The capture script asked mock-edi to place an order, and the X12 850 the mock wrote is typed segment by segment from ISA to IEA, each named from the mock's own dictionary, the envelope segments included. The script then altered IEA02, the interchange control number, in a copy and posted the copy to /_mock/validate. Only the altered IEA is typed again, with the mock's refusal beneath it and the wrong number in red."></a>
-			<figcaption>an 850 opened, and an altered copy refused <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<a class="play" href="/blog/edi_two_film.gif" data-poster-ms="14500" title="play the film"><img src="/blog/edi_two_film.png" width="800" height="450" loading="lazy" alt="BUYERCO's mock-edi sends an 850 to SELLERCO's mock-edi. The capture set the seller to short-ship and to delay its despatch and invoice, so it acknowledges the order, confirms 80 of the 100 ordered, and the buyer's mock flags the shortfall on that 855. The capture moves both mocks' clocks an hour at a time; the seller then packs and sends the despatch advice, and raises and sends the invoice, with the buyer's mock acknowledging each."></a>
-			<figcaption>two mocks trading, no script playing a partner <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<a class="play" href="/blog/edi_plain.gif" title="play the film"><img src="/blog/edi_plain.png" width="800" height="450" loading="lazy" alt="ACME sends mock-edi a purchase order. The mock acknowledges it, answers with an order response, and records two promises, a despatch and an invoice. The capture script then advances the mock's clock: the mock packs the shipment and sends the despatch advice, then raises and sends the invoice, and each promise fills in as its work appears."></a>
-			<figcaption>an order answered, shipped and billed <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
 <pre><code>pip install mock-edi
 mock-edi --port 8080
 curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a> · <a href="https://github.com/rseufert/mock-edi/blob/main/CHANGELOG.md">Changelog</a></p>
+		<p class="links"><a href="/mock-edi/">Features and more films</a> · <a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a> · <a href="https://github.com/rseufert/mock-edi/blob/main/CHANGELOG.md">Changelog</a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a></h3>
+		<h3><a href="/mock-bank/">mock-bank</a></h3>
 		<figure class="film">
 			<a class="play" href="/blog/bank_four_payments_film.gif" data-poster-ms="22200" title="play the film"><img src="/blog/bank_four_payments_film.png" width="800" height="450" loading="lazy" alt="ACME sends mock-bank a file of four payments, and the bank's status report rejects two, giving a reason for each. The bank's own queue says a debit notification is due on the settlement day, which the film shows as a promise. The capture then advances the bank's clock twice: the other two payments are booked and reported in the debit notification, which keeps the promise, and then in a statement. The rejected two appear in neither."></a>
 			<figcaption>a payment file, half of it rejected <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
-<pre><code>   you ──pain.001──▶  mock-bank
-       ◀──pain.002──  2 accepted, 2 rejected (AC04, RC01)
-       ◀──camt.054──  debited, on the settlement date
-       ◀──camt.053──  the day's statement, and it reconciles
-       ◀──pacs.004──  one came back, 3 business days later</code></pre>
-		<p>Or the same four payments as an ACH file, for an account that banks in US formats. The choice is per account, so one file can produce both.</p>
-<pre><code>   you ──NACHA────▶  mock-bank
-       ◀──text─────  ENTRY 999999990000002 INV-2026-0102 3400.50
-                     REJECTED R02 the creditor account … is closed
-       ◀──NACHA────  a return file: one 21 entry and addenda 99 per return
-       ◀──BAI2─────  16,447,125000,Z,INV-2026-0101,…,Globex Supplies B.V./
-                     16,447,1500000,Z,INV-2026-0104,…,Umbrella Logistics/</code></pre>
-		<ul class="features">
-			<li><strong>Zero dependencies.</strong> Python 3.8+, the standard library and SQLite, like its siblings. No transport needing cryptography and no screening - each refused by name, with an answer saying what <em>is</em> supported.</li>
-			<li><strong>Two formats, and the mock does not care which door.</strong> A <code>pain.001</code> or a 94-column NACHA file, over <code>POST /payments</code> or dropped in a folder, goes through the same decisions. An account whose <code>format</code> is <code>nacha</code> gets a plain-text acknowledgement where an ISO 20022 account gets a <code>pain.002</code>, an R-coded return file where it gets a <code>pacs.004</code>, and a BAI2 statement where it gets a <code>camt.053</code>.</li>
-			<li><strong>Money can arrive, not just leave.</strong> <code>POST /_mock/credits</code> lands a customer's payment in an account on its value date, or the next business day for a weekend, a holiday or a missed cutoff. It is reported like everything else: a <code>camt.054</code> as it books and an entry on the day's <code>camt.053</code>, which still reconciles - the payer as <code>Dbtr</code>, the note in <code>RmtInf/Ustrd</code>, and the invoice reference in <code>Strd</code> apart from it, because a bank that reformats remittance is the reason cash application is hard. A short payment, one that names no invoice, one that settles several, and a reference split across lines are each one request away.</li>
-			<li><strong>Direct debits, as well as payments.</strong> A <code>pain.008</code>, or a NACHA file of debit entries, collects from customers: the bank answers it as it answers a payment file, credits the account on the settlement date, and reports the money like any other that arrives. The customer's bank can refuse a collection before it settles or send it back after, as a <code>pacs.004</code> or an R-coded return file - <code>MD01</code> or <code>R10</code> for a mandate the customer says they never gave. A customer whose account is at the same bank decides for itself: closed, or without the money, and the collection is rejected.</li>
-			<li><strong>The failures, not just the happy path.</strong> An account that rejects for <code>AC04</code>, one with no money, a bank identifier that is not the bank, a duplicate file, a statement with one payment missing, and a payment that settles and then comes back days later. The three behaviours the bank rejects for have NACHA twins: <code>AM04</code> is <code>R01</code>, <code>AC04</code> is <code>R02</code>, <code>RC01</code> is <code>R03</code>.</li>
-			<li><strong>Nothing sleeps.</strong> Settlement dates, the 15:00 cutoff, weekends and holidays run on a bank clock that <code>POST /_mock/advance</code> moves. A three-day return is a line in a test, not a three-day wait. And you need not wait for the day to end either: <code>POST /_mock/accounts/&lt;id&gt;/report</code> writes a <code>camt.052</code> for the account as it stands now, which a reconciler can compare against the day's statement to find the entry a <code>statement-gap</code> leaves out.</li>
-			<li><strong>Two doors, one pipeline.</strong> Most bank connections are two directories on an SFTP host rather than an endpoint, so a file dropped in <code>--drop-dir</code> goes through the same decisions as <code>POST /payments</code> and lands in <code>processed/</code> or <code>failed/</code> with the answer written beside it.</li>
-			<li><strong>Its own output is checked against somebody else's files.</strong> Every ISO 20022 message is validated against schemas fetched from pinned commits, and the NACHA and BAI2 readers are held to files from <a href="https://github.com/moov-io">moov-io</a> - because a reader and a writer built from one declaration agree with each other even when both are wrong. That is how the mock found it was counting a returned debit as a credit, and that its BAI2 reader could not open a real bank's file.</li>
-			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one file, and post each statement back so SAP clears what was paid and reopens what came back. Twenty-six tests, run in CI against mock-sap from PyPI - twice, once over ISO 20022 and once over ACH, because the same run has to survive both.</li>
-		</ul>
-		<figure class="film">
-			<a class="play" href="/blog/bank_returned_film.gif" title="play the film"><img src="/blog/bank_returned_film.png" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and the bank's own queue says a debit notification is due on Friday, which the film shows as a promise. On Friday the payment is booked and debited, and the queue then holds two more promises, a camt.054 and a pacs.004 due the next Wednesday. The capture script advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday the pacs.004 returns the payment with reason AC04 and the camt.054 credits the money back, each keeping its promise. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours."></a>
-			<figcaption>a payment that comes back <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<figure class="film">
-			<a class="play" href="/blog/bank_nacha_film.gif" title="play the film"><img src="/blog/bank_nacha_film.png" width="800" height="450" loading="lazy" alt="ACME, set up to bank in US formats and dollars, sends mock-bank a NACHA file for the same four invoices and amounts as the ISO film, in USD. The bank's own acknowledgement, whose shape is the mock's choice and not NACHA's, rejects two with R02 and R03, and the queue shows two promises, a camt.054 and a return file. The capture script advances the bank's clock: the return file sends the two rejected payments back with the same codes, and the camt.054 books the other two, each keeping its promise. The acknowledgement is shown again, and the day's BAI2 statements close at 125000.00 and then 108750.00 with two entries, the rejected two on neither."></a>
-			<figcaption>the same invoices, in usd, as nacha <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
 <pre><code>pip install mock-bank
 mock-bank --port 8090
 curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
+		<p class="links"><a href="/mock-bank/">Features and more films</a> · <a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Procure to pay</a> <span class="tag">all three mocks</span></h3>
-		<p>One purchase, carried the whole way: a purchase order in SAP becomes an X12 850, the supplier confirms it, ships it and invoices it, a three-way match posts the invoice into SAP as money owed, a payment run pays it in an ISO 20022 <code>pain.001</code>, and the bank's statement clears it. Three of the four examples below are its individual legs; this is the one that runs end to end.</p>
-<pre><code>SAP  ──850──▶  supplier          a purchase order becomes an EDI order
-     ◀──855/856/810──  supplier  confirmed, shipped, invoiced
-SAP  ◀──INVOIC──                 matched, posted, and now owed
-     ──pain.001──▶  bank         a payment run selects what is due
-SAP  ◀──FINSTA01◀──camt.053──    the statement clears what was paid</code></pre>
-		<ul class="features">
-			<li><strong>It was written to find bugs, and it found three.</strong> Each pair of mocks was green while the chain was broken, because each pair's tests assert what the <em>next</em> system received rather than what it could do with it. An <code>INVOIC</code> that named no supplier and so created nothing owed; a mock that answered "posted" for having posted nothing; an order placed in EUR that came back invoiced in dollars. All three had been passing for days.</li>
-			<li><strong>The same invoice twice, and two things that look like they catch it.</strong> A supplier retries an invoice after the first was taken, and a restarted middleware posts it again. Upstream, an invoice arriving alone is blocked for billing more than was shipped - because the restart forgot the ship notice too, not because anything checked. Downstream, the payment run skips a repeated reference within one run - and pays it in the next, once the first has cleared. Neither end is checking, and the second payment goes out through the gap.</li>
-			<li><strong>The fix is to ask the system of record.</strong> Does SAP already hold a supplier invoice with this number, from this supplier? One <code>$filter</code>, and it survives a restart because SAP is where the answer lives. Per supplier, because an invoice number is only unique within one.</li>
-			<li><strong>A price disagreement never reaches the bank,</strong> blocked by a real <code>810</code> disagreeing with the purchase order rather than by a flag a test set.</li>
-			<li><strong>A payment the bank rejects leaves the invoice owed.</strong> The supplier's account is closed, SAP still holds its details, and <code>AC04</code> comes back: the item stays open and stays distinguishable from one that was paid and came back.</li>
-			<li><strong>It does not tell the supplier what was paid,</strong> and says so - which is why a supplier keeps dunning you for an invoice you paid. That needs a remittance advice, and as of mock-edi 0.6.0 there is one to send: it receives the X12 820 and EDIFACT <code>REMADV</code>. So the gap is now in the example rather than in the mocks, and the loop is closable.</li>
+		<h3><a href="/examples/">Worked examples</a></h3>
+		<p>Small integrations written against the mocks, each with its tests.</p>
+		<ul class="index">
+			<li><a href="/examples/#procure-to-pay">Procure to pay</a> <span class="tag">all three mocks</span><br>One purchase, carried the whole way: from a purchase order in SAP to the bank statement that clears it.</li>
+			<li><a href="/examples/#po-bridge">PO bridge</a> <span class="tag">mock-sap + mock-edi</span><br>Reads a purchase order from SAP, sends it to the supplier as an X12 850, and posts the supplier's 855 back as an <code>ORDRSP</code> IDoc.</li>
+			<li><a href="/examples/#invoice-check">Invoice check</a> <span class="tag">mock-sap + mock-edi</span><br>Posts a supplier's 810 invoice into SAP only if it passes a three-way match against the purchase order and the ship notice.</li>
+			<li><a href="/examples/#pay-invoices">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span><br>Pays a supplier's EDIFACT <code>INVOIC</code>s in a <code>pain.001</code>, then works out from what the bank sends back which are actually paid.</li>
+			<li><a href="/examples/#payment-run">Payment run</a> <span class="tag">mock-sap + mock-bank</span><br>What SAP's <code>F110</code> does: select the open items that are due, pay them in one file, and post the statement back.</li>
 		</ul>
-<pre><code>pip install "mock-bank&gt;=0.6" "mock-sap&gt;=0.13.2" mock-edi
-mock-sap --port 8000 &amp;
-mock-edi --port 8080 &amp;
-mock-bank --port 8090 --clock 2026-10-02T16:00 &amp;
-python3 -m unittest -v mockbank.examples.test_procure_to_pay</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Code</a> · <a href="https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py">Tests</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-edi/blob/main/examples/po_bridge.py">PO bridge</a> <span class="tag">mock-sap + mock-edi</span></h3>
-		<p>A worked example of the two mocks together. <code>po_bridge.py</code> reads a purchase order from SAP over OData, sends it to the supplier as an X12 850, and posts the supplier's 855 back into SAP as an <code>ORDRSP</code> IDoc. Any line that isn't a clean confirmation comes back as an exception for a buyer to look at.</p>
-<pre><code>send:     SAP PO (OData)  ──▶  X12 850  ──▶  supplier
-receive:  SAP  ◀──  ORDRSP IDoc  ◀──  X12 855  ◀──  supplier</code></pre>
-		<ul class="features">
-			<li><strong>The supplier confirms everything,</strong> and one IDoc lands in SAP.</li>
-			<li><strong>The supplier ships short,</strong> and both short lines are flagged.</li>
-			<li><strong>The supplier refuses a line,</strong> and SAP's IDoc carries the rejection on the right item.</li>
-			<li><strong>The supplier never answers,</strong> and nothing is posted: the case a chase-up alert is for.</li>
-			<li><strong>SAP is down when the 855 arrives,</strong> and the confirmation is kept until SAP takes it. This test found a real bug.</li>
-		</ul>
-<pre><code>git clone https://github.com/rseufert/mock-edi &amp;&amp; cd mock-edi
-pip install mock-sap
-mock-sap --port 8000 &amp;
-python3 -m mockedi --port 8080 &amp;
-cd examples &amp;&amp; python3 -m unittest -v test_po_bridge</code></pre>
-		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-one-orders-out-confirmations-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-edi/tree/main/examples">Code</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-sap/blob/main/examples/invoice_check.py">Invoice check</a> <span class="tag">mock-sap + mock-edi</span></h3>
-		<p>What happens after the goods ship. <code>invoice_check.py</code> is accounts-payable middleware: it takes a supplier's X12 810 invoice and posts it into SAP as an <code>INVOIC</code> IDoc only if it passes a three-way match against the purchase order and the 856 ship notice. Anything else is blocked, with the reasons.</p>
-<pre><code>PO (SAP)  ──┐
-856 ship  ──┼──▶  match?  ──▶  yes: INVOIC IDoc into SAP
-810 bill  ──┘                  no:  blocked, with reasons</code></pre>
-		<ul class="features">
-			<li><strong>A clean invoice is posted,</strong> and the test reads back the money owed - the supplier invoice, its line amounts and the open payable a payment run selects. Asserting only that SAP took the IDoc is what let this example post invoices that owed nobody anything, until mock-sap 0.13.2.</li>
-			<li><strong>A short shipment, billed as shipped, is posted.</strong> Matching against the ordered quantity would wrongly block it.</li>
-			<li><strong>A price disagreement is blocked.</strong> mock-edi bills its own catalogue price, the way real suppliers do.</li>
-			<li><strong>An invoice in the wrong currency is blocked</strong> - and one that names no currency is not. The order declares its currency, so a EUR purchase order comes back invoiced in EUR; before mock-sap 0.13.3 it did not, and the match compared 12.50 with 12.50 without noticing they meant different money. Absence is not disagreement, so an invoice carrying no <code>CUR</code> segment still passes.</li>
-			<li><strong>The same invoice sent twice is posted once.</strong> No sleeping: the test advances mock-edi's clock.</li>
-		</ul>
-<pre><code>git clone https://github.com/rseufert/mock-sap &amp;&amp; cd mock-sap
-pip install mock-edi
-python3 -m mocksap --port 8000 &amp;
-mock-edi --port 8080 &amp;
-cd examples &amp;&amp; python3 -m unittest -v test_invoice_check</code></pre>
-		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-two-invoices-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-sap/tree/main/examples">Code</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/pay_invoices.py">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span></h3>
-		<p>The step after the invoice is approved: paying it. <code>pay_invoices.py</code> takes a supplier's EDIFACT <code>INVOIC</code>s, pays each on its due date in an ISO 20022 <code>pain.001</code>, and then works out from what the bank sends back which invoices are actually paid.</p>
-<pre><code>INVOIC  ──▶  pain.001  ──▶  bank
-             pain.002  ◀──  accepted: scheduled, not paid
-             camt.053  ◀──  on the statement: paid</code></pre>
-		<ul class="features">
-			<li><strong>Accepted is not paid.</strong> An invoice is paid when the statement shows the debit, not when the bank says it will try.</li>
-			<li><strong>A retried run pays nothing twice.</strong> The same payments make the same <code>MsgId</code>, so the bank refuses the copy with <code>DUPL</code>, and that refusal does not undo the original.</li>
-			<li><strong>A closed account, or no money, keeps the invoice open,</strong> held with the bank's reason code (<code>AC04</code>, <code>AM04</code>) rather than retried.</li>
-			<li><strong>A returned payment reopens the invoice,</strong> and a payment missing from the statement is reported as unreconciled rather than cleared.</li>
-		</ul>
-<pre><code>pip install "mock-bank&gt;=0.6" mock-edi
-mock-edi --port 8080 &amp;
-mock-bank --port 8090 &amp;
-python3 -m unittest -v mockbank.examples.test_pay_invoices</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/payment_run.py">Payment run</a> <span class="tag">mock-sap + mock-bank</span></h3>
-		<p>The same step, but paying what is in SAP rather than what arrived over EDI. <code>payment_run.py</code> does what SAP's <code>F110</code> does: select the open supplier items that are due, pay them in one <code>pain.001</code>, and post each <code>camt.053</code> back as a <code>FINSTA01</code> so SAP clears what was paid - and reopens what came back.</p>
-<pre><code>select:     SAP open items (OData)  ──▶  pain.001  ──▶  bank
-reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
-            cleared · reopened · unreconciled</code></pre>
-		<ul class="features">
-			<li><strong>Accepted is not paid.</strong> A payment made after Friday's 15:00 cutoff settles on Monday. Friday's statement clears nothing, Monday's clears everything, and an integration that cleared on the acknowledgment reported cash it still had.</li>
-			<li><strong>A returned payment and an invoice nobody paid are both <em>open</em> in SAP.</strong> One flag separates them: <code>ClearingIsReversed</code>. Without it you either pay the returned invoice twice or never chase it.</li>
-			<li><strong>A statement that doesn't add up stops one payment, not the run.</strong> The arithmetic is checked before anything reaches SAP; the missing payment goes unreconciled and stays open. When two payments would equally explain the gap, both are named.</li>
-			<li><strong>A blocked invoice is never selected,</strong> and the selection asks SAP to leave blocked and cleared items out rather than filtering them afterwards.</li>
-			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that answers with an error is three sentences, not silence. A host that is <em>down</em> raises and stops the run instead - a deliberate difference, not an oversight.</li>
-		</ul>
-<pre><code>pip install "mock-bank&gt;=0.6" "mock-sap&gt;=0.13.2"
-mock-sap --port 8000 &amp;
-mock-bank --port 8090 --clock 2026-10-02T16:00 &amp;
-python3 -m unittest -v mockbank.examples.test_payment_run</code></pre>
-		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
 
@@ -244,61 +78,25 @@ python3 -m unittest -v mockbank.examples.test_payment_run</code></pre>
 	<h2>Flipper</h2>
 	<p class="lede">Apps for the <a href="https://flipperzero.one">Flipper Zero</a>: a 128&times;64 screen, a d-pad and a buzzer.</p>
 
-	<div class="project">
-		<h3><a href="https://github.com/rseufert/hanzi_cards">Hanzi Cards</a> <span class="tag">study</span></h3>
-		<figure class="shot pair">
-			<img src="/flipper/hanzi_cards.png" width="512" height="256" loading="lazy" alt="The back of a Hanzi Cards card on the Flipper's orange screen: the characters 公共汽车 large across the top, the pinyin gōng gòng qì chē below them, then the English &quot;bus&quot;, with &quot;Again&quot; at the bottom left and &quot;Good&quot; at the bottom right.">
-			<img src="/flipper/hanzi_cards_traditional.png" width="512" height="256" loading="lazy" alt="Another card in traditional characters: 服務員, the pinyin fú wù yuán, and the English &quot;waiter, attendant&quot;, with Again and Good at the bottom.">
-			<figcaption><span lang="zh-Hans">公共汽车</span> (bus) in simplified characters, <span lang="zh-Hant">服務員</span> (waiter) in traditional</figcaption>
-		</figure>
-		<p>Mandarin flashcards: simplified or traditional characters, pinyin with tone marks, and the tones played on the speaker.</p>
-		<ul class="features">
-			<li><strong>HSK 1 to 3.</strong> 150, 156 and 292 words, each deck with its own progress. HSK 1 and 2 come in a rough learning order; HSK 3 is shuffled.</li>
-			<li><strong>Simplified or traditional,</strong> switchable at any time, with the characters drawn from Noto Sans CJK.</li>
-			<li><strong>You hear the tones.</strong> When a card flips, the speaker glides through each syllable's tone contour - high and flat, rising, dipping, falling - so you hear the shape of the word.</li>
-			<li><strong>Spaced repetition.</strong> Cards you miss come back often and cards you know come back rarely, and new cards only arrive while fewer than six are still being learned. Progress is saved to the SD card.</li>
-		</ul>
-<pre><code>python3 -m pip install --upgrade ufbt
-git clone https://github.com/rseufert/hanzi_cards &amp;&amp; cd hanzi_cards
-ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/hanzi_cards">GitHub</a> · <a href="https://github.com/rseufert/hanzi_cards#controls">Controls</a> · <a href="https://github.com/rseufert/hanzi_cards#adding-words">Adding words</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="https://github.com/rseufert/step_seq">Step Seq</a> <span class="tag">music</span></h3>
-		<figure class="shot">
-			<img src="/flipper/step_seq.png" width="512" height="256" loading="lazy" alt="Step Seq on the Flipper's orange screen. The top bar reads &quot;P1&quot;, &quot;D#3&quot; and &quot;D# Blues&quot;. Below it a dotted grid of 16 steps has one filled block per step at different heights, a melody climbing and falling, and along the bottom a drum row marked &quot;dr&quot; of filled blocks, hollow blocks and dashes for kick, snare and hi-hat.">
-			<figcaption>pattern 1, in D# blues</figcaption>
-		</figure>
-		<p>A step sequencer for the Flipper's piezo speaker, with a melody grid and a drum row. The speaker can only play one tone at a time, so a drum takes the first few milliseconds of its step and the note gets the rest.</p>
-		<ul class="features">
-			<li><strong>Always in key.</strong> One note per step across 15 pitch rows that follow the scale you pick: minor or major pentatonic, minor, major, blues or chromatic, in any root.</li>
-			<li><strong>Drums from square waves and noise.</strong> A kick, a snare and a hi-hat on the bottom row.</li>
-			<li><strong>Eight patterns,</strong> each 16 or 32 steps with its own tempo (60 to 240 bpm), swing, scale, root and octave. Copy one into the next slot to build a variation, and everything is saved to the SD card when you quit.</li>
-		</ul>
-<pre><code>python3 -m pip install --upgrade ufbt
-git clone https://github.com/rseufert/step_seq &amp;&amp; cd step_seq
-ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/step_seq">GitHub</a> · <a href="https://github.com/rseufert/step_seq#controls">Controls</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="https://github.com/rseufert/nw_crawl">NW Crawl</a> <span class="tag">game</span></h3>
-		<figure class="shot">
-			<img src="/flipper/nw_crawl.png" width="512" height="256" loading="lazy" alt="NW Crawl on the Flipper's orange screen: the player stands next to a rat on a dotted floor, with street-sign walls around them. The top line reads &quot;Hit Rat. Rat bites -1&quot; and the bottom line &quot;HP11/12 c1 Burnside&quot;.">
-			<figcaption>fighting a rat on NW Burnside</figcaption>
-		</figure>
-		<p>A tiny roguelike set on the alphabet streets of NW Portland. Start on Burnside and head north one street per floor - Couch, Davis, Everett, Flanders, all the way to Thurman - until you reach the Witch's Castle in Forest Park.</p>
-		<ul class="features">
-			<li><strong>Nineteen streets and a castle.</strong> Each floor is a randomly generated maze of rooms, corridors and side alleys under fog of war.</li>
-			<li><strong>The locals.</strong> Rats, crows, raccoons, rogue e-scooters and coyotes, getting tougher the further north you go. On the northern streets a Sasquatch lurks by the exit, invisible until he's two tiles away.</li>
-			<li><strong>Coffee, donuts and IPAs.</strong> Coffee heals, a pink-box donut raises your max HP, a hazy IPA raises your attack and a used book shows you the floor. On Pettygrove, Joe's Cellar is a safe room where the bartender pours you one stiff drink.</li>
-			<li><strong>The Witch</strong> hexes you from range, summons crows and vanishes when hit.</li>
-		</ul>
-<pre><code>python3 -m pip install --upgrade ufbt
-git clone https://github.com/rseufert/nw_crawl &amp;&amp; cd nw_crawl
-ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/nw_crawl">GitHub</a> · <a href="https://github.com/rseufert/nw_crawl#controls">Controls</a></p>
-	</div><!-- /.project -->
+	<div class="tiles">
+		<div class="project">
+			<a class="shot" href="/flipper/#hanzi-cards"><img src="/flipper/hanzi_cards.png" width="512" height="256" loading="lazy" alt="The back of a Hanzi Cards card on the Flipper's orange screen: the characters 公共汽车 large across the top, the pinyin gōng gòng qì chē below them, then the English &quot;bus&quot;, with &quot;Again&quot; at the bottom left and &quot;Good&quot; at the bottom right."></a>
+			<h3><a href="/flipper/#hanzi-cards">Hanzi Cards</a> <span class="tag">study</span></h3>
+			<p>Mandarin flashcards: simplified or traditional characters, pinyin with tone marks, and the tones played on the speaker.</p>
+			<p class="links"><a href="/flipper/#hanzi-cards">More</a> · <a href="https://github.com/rseufert/hanzi_cards">GitHub</a></p>
+		</div><!-- /.project -->
+		<div class="project">
+			<a class="shot" href="/flipper/#step-seq"><img src="/flipper/step_seq.png" width="512" height="256" loading="lazy" alt="Step Seq on the Flipper's orange screen. The top bar reads &quot;P1&quot;, &quot;D#3&quot; and &quot;D# Blues&quot;. Below it a dotted grid of 16 steps has one filled block per step at different heights, a melody climbing and falling, and along the bottom a drum row marked &quot;dr&quot; of filled blocks, hollow blocks and dashes for kick, snare and hi-hat."></a>
+			<h3><a href="/flipper/#step-seq">Step Seq</a> <span class="tag">music</span></h3>
+			<p>A step sequencer for the Flipper's piezo speaker, with a melody grid and a drum row.</p>
+			<p class="links"><a href="/flipper/#step-seq">More</a> · <a href="https://github.com/rseufert/step_seq">GitHub</a></p>
+		</div><!-- /.project -->
+		<div class="project">
+			<a class="shot" href="/flipper/#nw-crawl"><img src="/flipper/nw_crawl.png" width="512" height="256" loading="lazy" alt="NW Crawl on the Flipper's orange screen: the player stands next to a rat on a dotted floor, with street-sign walls around them. The top line reads &quot;Hit Rat. Rat bites -1&quot; and the bottom line &quot;HP11/12 c1 Burnside&quot;."></a>
+			<h3><a href="/flipper/#nw-crawl">NW Crawl</a> <span class="tag">game</span></h3>
+			<p>A tiny roguelike set on the alphabet streets of NW Portland.</p>
+			<p class="links"><a href="/flipper/#nw-crawl">More</a> · <a href="https://github.com/rseufert/nw_crawl">GitHub</a></p>
+		</div><!-- /.project -->
+	</div><!-- /.tiles -->
 </section><!-- /.flipper -->
 <script src="/js/films.js" defer></script>

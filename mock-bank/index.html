@@ -1,0 +1,56 @@
+---
+layout: default
+title: "mock-bank: a mock bank that speaks ISO 20022 and NACHA"
+description: "mock-bank is a mock bank for testing payment integrations: ISO 20022 and NACHA, over HTTP or a drop folder, with rejections, returns and a clock you can move."
+image: /blog/bank_four_payments_film.png
+---
+<section class="projects">
+	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a></h3>
+		<figure class="film">
+			<a class="play" href="/blog/bank_four_payments_film.gif" data-poster-ms="22200" title="play the film"><img src="/blog/bank_four_payments_film.png" width="800" height="450" alt="ACME sends mock-bank a file of four payments, and the bank's status report rejects two, giving a reason for each. The bank's own queue says a debit notification is due on the settlement day, which the film shows as a promise. The capture then advances the bank's clock twice: the other two payments are booked and reported in the debit notification, which keeps the promise, and then in a statement. The rejected two appear in neither."></a>
+			<figcaption>a payment file, half of it rejected <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
+<pre><code>   you ──pain.001──▶  mock-bank
+       ◀──pain.002──  2 accepted, 2 rejected (AC04, RC01)
+       ◀──camt.054──  debited, on the settlement date
+       ◀──camt.053──  the day's statement, and it reconciles
+       ◀──pacs.004──  one came back, 3 business days later</code></pre>
+		<p>Or the same four payments as an ACH file, for an account that banks in US formats. The choice is per account, so one file can produce both.</p>
+<pre><code>   you ──NACHA────▶  mock-bank
+       ◀──text─────  ENTRY 999999990000002 INV-2026-0102 3400.50
+                     REJECTED R02 the creditor account … is closed
+       ◀──NACHA────  a return file: one 21 entry and addenda 99 per return
+       ◀──BAI2─────  16,447,125000,Z,INV-2026-0101,…,Globex Supplies B.V./
+                     16,447,1500000,Z,INV-2026-0104,…,Umbrella Logistics/</code></pre>
+		<ul class="features">
+			<li><strong>Zero dependencies.</strong> Python 3.8+, the standard library and SQLite, like its siblings. No transport needing cryptography and no screening - each refused by name, with an answer saying what <em>is</em> supported.</li>
+			<li><strong>Two formats, and the mock does not care which door.</strong> A <code>pain.001</code> or a 94-column NACHA file, over <code>POST /payments</code> or dropped in a folder, goes through the same decisions. An account whose <code>format</code> is <code>nacha</code> gets a plain-text acknowledgement where an ISO 20022 account gets a <code>pain.002</code>, an R-coded return file where it gets a <code>pacs.004</code>, and a BAI2 statement where it gets a <code>camt.053</code>.</li>
+			<li><strong>Money can arrive, not just leave.</strong> <code>POST /_mock/credits</code> lands a customer's payment in an account on its value date, or the next business day for a weekend, a holiday or a missed cutoff. It is reported like everything else: a <code>camt.054</code> as it books and an entry on the day's <code>camt.053</code>, which still reconciles - the payer as <code>Dbtr</code>, the note in <code>RmtInf/Ustrd</code>, and the invoice reference in <code>Strd</code> apart from it, because a bank that reformats remittance is the reason cash application is hard. A short payment, one that names no invoice, one that settles several, and a reference split across lines are each one request away.</li>
+			<li><strong>Direct debits, as well as payments.</strong> A <code>pain.008</code>, or a NACHA file of debit entries, collects from customers: the bank answers it as it answers a payment file, credits the account on the settlement date, and reports the money like any other that arrives. The customer's bank can refuse a collection before it settles or send it back after, as a <code>pacs.004</code> or an R-coded return file - <code>MD01</code> or <code>R10</code> for a mandate the customer says they never gave. A customer whose account is at the same bank decides for itself: closed, or without the money, and the collection is rejected.</li>
+			<li><strong>The failures, not just the happy path.</strong> An account that rejects for <code>AC04</code>, one with no money, a bank identifier that is not the bank, a duplicate file, a statement with one payment missing, and a payment that settles and then comes back days later. The three behaviours the bank rejects for have NACHA twins: <code>AM04</code> is <code>R01</code>, <code>AC04</code> is <code>R02</code>, <code>RC01</code> is <code>R03</code>.</li>
+			<li><strong>Nothing sleeps.</strong> Settlement dates, the 15:00 cutoff, weekends and holidays run on a bank clock that <code>POST /_mock/advance</code> moves. A three-day return is a line in a test, not a three-day wait. And you need not wait for the day to end either: <code>POST /_mock/accounts/&lt;id&gt;/report</code> writes a <code>camt.052</code> for the account as it stands now, which a reconciler can compare against the day's statement to find the entry a <code>statement-gap</code> leaves out.</li>
+			<li><strong>Two doors, one pipeline.</strong> Most bank connections are two directories on an SFTP host rather than an endpoint, so a file dropped in <code>--drop-dir</code> goes through the same decisions as <code>POST /payments</code> and lands in <code>processed/</code> or <code>failed/</code> with the answer written beside it.</li>
+			<li><strong>Its own output is checked against somebody else's files.</strong> Every ISO 20022 message is validated against schemas fetched from pinned commits, and the NACHA and BAI2 readers are held to files from <a href="https://github.com/moov-io">moov-io</a> - because a reader and a writer built from one declaration agree with each other even when both are wrong. That is how the mock found it was counting a returned debit as a credit, and that its BAI2 reader could not open a real bank's file.</li>
+			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one file, and post each statement back so SAP clears what was paid and reopens what came back. Twenty-six tests, run in CI against mock-sap from PyPI - twice, once over ISO 20022 and once over ACH, because the same run has to survive both.</li>
+		</ul>
+		<figure class="film">
+			<a class="play" href="/blog/bank_returned_film.gif" title="play the film"><img src="/blog/bank_returned_film.png" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and the bank's own queue says a debit notification is due on Friday, which the film shows as a promise. On Friday the payment is booked and debited, and the queue then holds two more promises, a camt.054 and a pacs.004 due the next Wednesday. The capture script advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday the pacs.004 returns the payment with reason AC04 and the camt.054 credits the money back, each keeping its promise. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours."></a>
+			<figcaption>a payment that comes back <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/bank_nacha_film.gif" title="play the film"><img src="/blog/bank_nacha_film.png" width="800" height="450" loading="lazy" alt="ACME, set up to bank in US formats and dollars, sends mock-bank a NACHA file for the same four invoices and amounts as the ISO film, in USD. The bank's own acknowledgement, whose shape is the mock's choice and not NACHA's, rejects two with R02 and R03, and the queue shows two promises, a camt.054 and a return file. The capture script advances the bank's clock: the return file sends the two rejected payments back with the same codes, and the camt.054 books the other two, each keeping its promise. The acknowledgement is shown again, and the day's BAI2 statements close at 125000.00 and then 108750.00 with two entries, the rejected two on neither."></a>
+			<figcaption>the same invoices, in usd, as nacha <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+<pre><code>pip install mock-bank
+mock-bank --port 8090
+curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
+	</div><!-- /.project -->
+
+	<p class="lede">Worked examples that use mock-bank: <a href="/examples/#procure-to-pay">Procure to pay</a>, <a href="/examples/#pay-invoices">Pay invoices</a> and <a href="/examples/#payment-run">Payment run</a>.</p>
+</section><!-- /.projects -->
+<script src="/js/films.js" defer></script>

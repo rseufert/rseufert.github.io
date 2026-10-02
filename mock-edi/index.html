@@ -1,0 +1,55 @@
+---
+layout: default
+title: "mock-edi: a mock EDI trading partner"
+description: "mock-edi is a mock EDI trading partner for integration testing: X12 and EDIFACT over AS2, plain HTTP or a folder, as the seller or the buyer, with failures on demand."
+image: /blog/edi_overshipped.png
+---
+<section class="projects">
+	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-edi">mock-edi</a></h3>
+		<figure class="film">
+			<a class="play" href="/blog/edi_overshipped.gif" title="play the film"><img src="/blog/edi_overshipped.png" width="800" height="450" alt="mock-edi sends a purchase order, and the seller answers with an order response, a despatch advice and an invoice, each of which the mock acknowledges. The mock reports two problems on the despatch advice: 130 shipped against 100 confirmed and 100 ordered. The seller's documents were sent by the capture script."></a>
+			<figcaption>an order that ships too much <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end. Send it an 850 and it answers with a 997, an 855, an 856 and an 810. Send it EDIFACT <code>ORDERS</code> and you get <code>CONTRL</code>, <code>ORDRSP</code>, <code>DESADV</code> and <code>INVOIC</code>.</p>
+<pre><code>   you ──850──▶  mock-edi
+       ◀──997──  the syntax parsed
+       ◀──855──  2 lines: one confirmed, one short
+       ◀──856──  shipment / order / item, with a tracking number
+       ◀──810──  1132.80, terms 2% 10 net 30</code></pre>
+		<ul class="features">
+			<li><strong>Zero dependencies.</strong> Installs in a locked-down CI image.</li>
+			<li><strong>X12 and EDIFACT over AS2.</strong> Fixed-width ISA, release characters, <code>HL</code> trees, MDNs with a <code>Received-Content-MIC</code>.</li>
+			<li><strong>It can be the buyer, not only the seller.</strong> <code>POST /_mock/purchase</code> places an order with a partner whose role is <code>supplier</code> - so if the system under test is the one that <em>sells</em>, the mock is the customer sending you the 850 and reading your 855, 856 and 810 back, saying where each disagrees with what it ordered. It also receives a remittance advice, the X12 820 and EDIFACT <code>REMADV</code>, and reports one that advises cash before it settles.</li>
+			<li><strong>AS2, plain HTTP, or a folder.</strong> Point <code>--drop-dir</code> and <code>--pickup-dir</code> at directories for integrations that still trade files.</li>
+			<li><strong>Changes and receipts.</strong> An 860 changes an order and is answered with an 865; EDIFACT's <code>ORDCHG</code> is answered by an <code>ORDRSP</code>, having no change acknowledgment of its own. The 997s you send back are matched to what the mock sent, so "nobody acknowledged my invoice" is testable. A replayed interchange is refused with a TA1, not fulfilled twice.</li>
+			<li><strong>Failure on demand.</strong> Short shipments, rejected lines, duplicate invoices, documents out of order, answers an hour late, corrupt trailers, a translator that rejects everything, an invoice that never comes, a strict partner, a partner that never answers.</li>
+			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
+		</ul>
+		<figure class="film">
+			<a class="play" href="/blog/edi_waits.gif" title="play the film"><img src="/blog/edi_waits.png" width="800" height="450" loading="lazy" alt="ACME's order reaches mock-edi, which answers at once and records two promises, a despatch due in an hour and an invoice due in two. The capture set those delays and moves the clock an hour at a time, and each promise fills in when its work appears."></a>
+			<figcaption>an order that waits for the clock <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/edi_850_film.gif" title="play the film"><img src="/blog/edi_850_film.png" width="800" height="450" loading="lazy" alt="The capture script asked mock-edi to place an order, and the X12 850 the mock wrote is typed segment by segment from ISA to IEA, each named from the mock's own dictionary, the envelope segments included. The script then altered IEA02, the interchange control number, in a copy and posted the copy to /_mock/validate. Only the altered IEA is typed again, with the mock's refusal beneath it and the wrong number in red."></a>
+			<figcaption>an 850 opened, and an altered copy refused <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/edi_two_film.gif" data-poster-ms="14500" title="play the film"><img src="/blog/edi_two_film.png" width="800" height="450" loading="lazy" alt="BUYERCO's mock-edi sends an 850 to SELLERCO's mock-edi. The capture set the seller to short-ship and to delay its despatch and invoice, so it acknowledges the order, confirms 80 of the 100 ordered, and the buyer's mock flags the shortfall on that 855. The capture moves both mocks' clocks an hour at a time; the seller then packs and sends the despatch advice, and raises and sends the invoice, with the buyer's mock acknowledging each."></a>
+			<figcaption>two mocks trading, no script playing a partner <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/edi_plain.gif" title="play the film"><img src="/blog/edi_plain.png" width="800" height="450" loading="lazy" alt="ACME sends mock-edi a purchase order. The mock acknowledges it, answers with an order response, and records two promises, a despatch and an invoice. The capture script then advances the mock's clock: the mock packs the shipment and sends the despatch advice, then raises and sends the invoice, and each promise fills in as its work appears."></a>
+			<figcaption>an order answered, shipped and billed <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+<pre><code>pip install mock-edi
+mock-edi --port 8080
+curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a> · <a href="https://github.com/rseufert/mock-edi/blob/main/CHANGELOG.md">Changelog</a></p>
+	</div><!-- /.project -->
+
+	<p class="lede">Worked examples that use mock-edi: <a href="/examples/#procure-to-pay">Procure to pay</a>, <a href="/examples/#po-bridge">PO bridge</a>, <a href="/examples/#invoice-check">Invoice check</a> and <a href="/examples/#pay-invoices">Pay invoices</a>.</p>
+</section><!-- /.projects -->
+<script src="/js/films.js" defer></script>
