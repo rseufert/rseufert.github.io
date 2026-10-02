@@ -320,6 +320,16 @@ code {
     h1 {
         font-size: 2em;
     }
+    /* Tighter, so the four menu items stay on one line on a phone: a flex
+       row has no space between inline items and no margin after the last. */
+    nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+    }
+    nav ul li {
+        margin-right: 0;
+    }
 }
 
 /* The media page: a player that loads only when asked (see media/index.html). */
