@@ -41,7 +41,8 @@ python3 tools/sync_films.py --apply    # add, re-cut, re-text, withdraw; write t
 A film's still is its last frame unless the index gives a `poster_ms`; the
 page carries it as `data-poster-ms` on the film's link, and the still is the
 frame showing at that moment. A new film goes on the page of its first mock,
-and the home page is left as it is. A re-text, a new still or a withdrawal is
+and the home page is left as it is; a film of several mocks goes in the home
+page's section on the mocks together (`id="together"`) instead. A re-text, a new still or a withdrawal is
 made on every page that shows the film. A film on a page that
 the index does not list is reported and left alone. mock-films is private, so
 CI does not run the sync; it runs the still check:
