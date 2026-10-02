@@ -441,3 +441,31 @@ code {
 .project .shot.pair { display: flex; flex-wrap: wrap; gap: 12px; }
 .project .shot.pair img { width: 384px; }
 .project .shot.pair figcaption { flex-basis: 100%; margin-top: 0; }
+
+/* The home page is an index: each project in brief, and the rest on a page of
+   its own. A project page opens with the way back. */
+.projects .crumb { font: 0.95em var(--mono); margin: 0; }
+.project .index {
+    list-style: none;
+    padding: 0;
+    font-size: 1.2em;
+    line-height: 1.5em;
+}
+.project .index li { margin-bottom: 14px; }
+.project .index li > a { font-family: var(--sans); font-weight: bold; color: var(--ink); }
+.project .index li > a:hover { color: var(--accent); }
+.project .index .tag { font-size: 0.7em; }
+/* Flipper apps as tiles, each screenshot at 2x so its pixels stay whole; as
+   many 256px columns as the text column has room for. */
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 256px);
+    gap: 30px 16px;
+    margin: 30px 0;
+}
+.tiles .project { margin: 0; }
+.tiles .project a.shot { display: block; }
+.tiles .project .shot img { width: 256px; }
+.tiles .project h3 { font-size: 1.3em; margin-top: 12px; }
+.tiles .project .tag { font-size: 0.6em; }
+.tiles .project p { font-size: 1.1em; margin: 8px 0; }

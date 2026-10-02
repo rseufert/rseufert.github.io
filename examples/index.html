@@ -1,0 +1,114 @@
+---
+layout: default
+title: Worked examples
+description: "Five small integrations written against mock-sap, mock-edi and mock-bank, each with its tests: procure to pay, a PO bridge, an invoice check, paying invoices and a payment run."
+---
+<section class="projects">
+	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
+	<h2>Worked examples</h2>
+	<p class="lede">Small integrations written against <a href="/mock-sap/">mock-sap</a>, <a href="/mock-edi/">mock-edi</a> and <a href="/mock-bank/">mock-bank</a>, each with its tests.</p>
+
+	<div class="project" id="procure-to-pay">
+		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Procure to pay</a> <span class="tag">all three mocks</span></h3>
+		<p>One purchase, carried the whole way: a purchase order in SAP becomes an X12 850, the supplier confirms it, ships it and invoices it, a three-way match posts the invoice into SAP as money owed, a payment run pays it in an ISO 20022 <code>pain.001</code>, and the bank's statement clears it. Three of the four examples below are its individual legs; this is the one that runs end to end.</p>
+<pre><code>SAP  ──850──▶  supplier          a purchase order becomes an EDI order
+     ◀──855/856/810──  supplier  confirmed, shipped, invoiced
+SAP  ◀──INVOIC──                 matched, posted, and now owed
+     ──pain.001──▶  bank         a payment run selects what is due
+SAP  ◀──FINSTA01◀──camt.053──    the statement clears what was paid</code></pre>
+		<ul class="features">
+			<li><strong>It was written to find bugs, and it found three.</strong> Each pair of mocks was green while the chain was broken, because each pair's tests assert what the <em>next</em> system received rather than what it could do with it. An <code>INVOIC</code> that named no supplier and so created nothing owed; a mock that answered "posted" for having posted nothing; an order placed in EUR that came back invoiced in dollars. All three had been passing for days.</li>
+			<li><strong>The same invoice twice, and two things that look like they catch it.</strong> A supplier retries an invoice after the first was taken, and a restarted middleware posts it again. Upstream, an invoice arriving alone is blocked for billing more than was shipped - because the restart forgot the ship notice too, not because anything checked. Downstream, the payment run skips a repeated reference within one run - and pays it in the next, once the first has cleared. Neither end is checking, and the second payment goes out through the gap.</li>
+			<li><strong>The fix is to ask the system of record.</strong> Does SAP already hold a supplier invoice with this number, from this supplier? One <code>$filter</code>, and it survives a restart because SAP is where the answer lives. Per supplier, because an invoice number is only unique within one.</li>
+			<li><strong>A price disagreement never reaches the bank,</strong> blocked by a real <code>810</code> disagreeing with the purchase order rather than by a flag a test set.</li>
+			<li><strong>A payment the bank rejects leaves the invoice owed.</strong> The supplier's account is closed, SAP still holds its details, and <code>AC04</code> comes back: the item stays open and stays distinguishable from one that was paid and came back.</li>
+			<li><strong>It does not tell the supplier what was paid,</strong> and says so - which is why a supplier keeps dunning you for an invoice you paid. That needs a remittance advice, and as of mock-edi 0.6.0 there is one to send: it receives the X12 820 and EDIFACT <code>REMADV</code>. So the gap is now in the example rather than in the mocks, and the loop is closable.</li>
+		</ul>
+<pre><code>pip install "mock-bank&gt;=0.6" "mock-sap&gt;=0.13.2" mock-edi
+mock-sap --port 8000 &amp;
+mock-edi --port 8080 &amp;
+mock-bank --port 8090 --clock 2026-10-02T16:00 &amp;
+python3 -m unittest -v mockbank.examples.test_procure_to_pay</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py">Code</a> · <a href="https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py">Tests</a></p>
+	</div><!-- /.project -->
+
+	<div class="project" id="po-bridge">
+		<h3><a href="https://github.com/rseufert/mock-edi/blob/main/examples/po_bridge.py">PO bridge</a> <span class="tag">mock-sap + mock-edi</span></h3>
+		<p>A worked example of the two mocks together. <code>po_bridge.py</code> reads a purchase order from SAP over OData, sends it to the supplier as an X12 850, and posts the supplier's 855 back into SAP as an <code>ORDRSP</code> IDoc. Any line that isn't a clean confirmation comes back as an exception for a buyer to look at.</p>
+<pre><code>send:     SAP PO (OData)  ──▶  X12 850  ──▶  supplier
+receive:  SAP  ◀──  ORDRSP IDoc  ◀──  X12 855  ◀──  supplier</code></pre>
+		<ul class="features">
+			<li><strong>The supplier confirms everything,</strong> and one IDoc lands in SAP.</li>
+			<li><strong>The supplier ships short,</strong> and both short lines are flagged.</li>
+			<li><strong>The supplier refuses a line,</strong> and SAP's IDoc carries the rejection on the right item.</li>
+			<li><strong>The supplier never answers,</strong> and nothing is posted: the case a chase-up alert is for.</li>
+			<li><strong>SAP is down when the 855 arrives,</strong> and the confirmation is kept until SAP takes it. This test found a real bug.</li>
+		</ul>
+<pre><code>git clone https://github.com/rseufert/mock-edi &amp;&amp; cd mock-edi
+pip install mock-sap
+mock-sap --port 8000 &amp;
+python3 -m mockedi --port 8080 &amp;
+cd examples &amp;&amp; python3 -m unittest -v test_po_bridge</code></pre>
+		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-one-orders-out-confirmations-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-edi/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
+
+	<div class="project" id="invoice-check">
+		<h3><a href="https://github.com/rseufert/mock-sap/blob/main/examples/invoice_check.py">Invoice check</a> <span class="tag">mock-sap + mock-edi</span></h3>
+		<p>What happens after the goods ship. <code>invoice_check.py</code> is accounts-payable middleware: it takes a supplier's X12 810 invoice and posts it into SAP as an <code>INVOIC</code> IDoc only if it passes a three-way match against the purchase order and the 856 ship notice. Anything else is blocked, with the reasons.</p>
+<pre><code>PO (SAP)  ──┐
+856 ship  ──┼──▶  match?  ──▶  yes: INVOIC IDoc into SAP
+810 bill  ──┘                  no:  blocked, with reasons</code></pre>
+		<ul class="features">
+			<li><strong>A clean invoice is posted,</strong> and the test reads back the money owed - the supplier invoice, its line amounts and the open payable a payment run selects. Asserting only that SAP took the IDoc is what let this example post invoices that owed nobody anything, until mock-sap 0.13.2.</li>
+			<li><strong>A short shipment, billed as shipped, is posted.</strong> Matching against the ordered quantity would wrongly block it.</li>
+			<li><strong>A price disagreement is blocked.</strong> mock-edi bills its own catalogue price, the way real suppliers do.</li>
+			<li><strong>An invoice in the wrong currency is blocked</strong> - and one that names no currency is not. The order declares its currency, so a EUR purchase order comes back invoiced in EUR; before mock-sap 0.13.3 it did not, and the match compared 12.50 with 12.50 without noticing they meant different money. Absence is not disagreement, so an invoice carrying no <code>CUR</code> segment still passes.</li>
+			<li><strong>The same invoice sent twice is posted once.</strong> No sleeping: the test advances mock-edi's clock.</li>
+		</ul>
+<pre><code>git clone https://github.com/rseufert/mock-sap &amp;&amp; cd mock-sap
+pip install mock-edi
+python3 -m mocksap --port 8000 &amp;
+mock-edi --port 8080 &amp;
+cd examples &amp;&amp; python3 -m unittest -v test_invoice_check</code></pre>
+		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-two-invoices-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-sap/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
+
+	<div class="project" id="pay-invoices">
+		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/pay_invoices.py">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span></h3>
+		<p>The step after the invoice is approved: paying it. <code>pay_invoices.py</code> takes a supplier's EDIFACT <code>INVOIC</code>s, pays each on its due date in an ISO 20022 <code>pain.001</code>, and then works out from what the bank sends back which invoices are actually paid.</p>
+<pre><code>INVOIC  ──▶  pain.001  ──▶  bank
+             pain.002  ◀──  accepted: scheduled, not paid
+             camt.053  ◀──  on the statement: paid</code></pre>
+		<ul class="features">
+			<li><strong>Accepted is not paid.</strong> An invoice is paid when the statement shows the debit, not when the bank says it will try.</li>
+			<li><strong>A retried run pays nothing twice.</strong> The same payments make the same <code>MsgId</code>, so the bank refuses the copy with <code>DUPL</code>, and that refusal does not undo the original.</li>
+			<li><strong>A closed account, or no money, keeps the invoice open,</strong> held with the bank's reason code (<code>AC04</code>, <code>AM04</code>) rather than retried.</li>
+			<li><strong>A returned payment reopens the invoice,</strong> and a payment missing from the statement is reported as unreconciled rather than cleared.</li>
+		</ul>
+<pre><code>pip install "mock-bank&gt;=0.6" mock-edi
+mock-edi --port 8080 &amp;
+mock-bank --port 8090 &amp;
+python3 -m unittest -v mockbank.examples.test_pay_invoices</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
+
+	<div class="project" id="payment-run">
+		<h3><a href="https://github.com/rseufert/mock-bank/blob/main/examples/payment_run.py">Payment run</a> <span class="tag">mock-sap + mock-bank</span></h3>
+		<p>The same step, but paying what is in SAP rather than what arrived over EDI. <code>payment_run.py</code> does what SAP's <code>F110</code> does: select the open supplier items that are due, pay them in one <code>pain.001</code>, and post each <code>camt.053</code> back as a <code>FINSTA01</code> so SAP clears what was paid - and reopens what came back.</p>
+<pre><code>select:     SAP open items (OData)  ──▶  pain.001  ──▶  bank
+reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
+            cleared · reopened · unreconciled</code></pre>
+		<ul class="features">
+			<li><strong>Accepted is not paid.</strong> A payment made after Friday's 15:00 cutoff settles on Monday. Friday's statement clears nothing, Monday's clears everything, and an integration that cleared on the acknowledgment reported cash it still had.</li>
+			<li><strong>A returned payment and an invoice nobody paid are both <em>open</em> in SAP.</strong> One flag separates them: <code>ClearingIsReversed</code>. Without it you either pay the returned invoice twice or never chase it.</li>
+			<li><strong>A statement that doesn't add up stops one payment, not the run.</strong> The arithmetic is checked before anything reaches SAP; the missing payment goes unreconciled and stays open. When two payments would equally explain the gap, both are named.</li>
+			<li><strong>A blocked invoice is never selected,</strong> and the selection asks SAP to leave blocked and cleared items out rather than filtering them afterwards.</li>
+			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that answers with an error is three sentences, not silence. A host that is <em>down</em> raises and stops the run instead - a deliberate difference, not an oversight.</li>
+		</ul>
+<pre><code>pip install "mock-bank&gt;=0.6" "mock-sap&gt;=0.13.2"
+mock-sap --port 8000 &amp;
+mock-bank --port 8090 --clock 2026-10-02T16:00 &amp;
+python3 -m unittest -v mockbank.examples.test_payment_run</code></pre>
+		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-bank/tree/main/examples">Code</a></p>
+	</div><!-- /.project -->
+</section><!-- /.projects -->

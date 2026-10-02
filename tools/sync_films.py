@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Bring the projects page's films up to date with mock-films' index.
+"""Bring the site's films up to date with mock-films' index.
 
 mock-films keeps an index of its finished films, docs/films/index.json, and
 that index is the source of truth: which films exist, the sha256 of each
 GIF's current cut, and the alt text and caption the mock-films team wrote for
-it. This compares the page against a local clone of mock-films and says what
-differs; with --apply it makes the page match.
+it. This compares the site's pages against a local clone of mock-films and
+says what differs; with --apply it makes them match.
+
+Each mock has a page of its own (mock-sap/index.html, ...) with all its films,
+and the home page shows the first of them again. "The page" below is whichever
+pages show the film: a re-text or a withdrawal is made on each.
 
     git clone https://github.com/rseufert/mock-films ../mock-films
     python3 tools/sync_films.py                   # report only
@@ -14,9 +18,10 @@ differs; with --apply it makes the page match.
 
 What --apply does, per film in the index:
 
-    finished, not on the page   added to the project of its first mock: first
+    finished, not on the page   added to the page of its first mock: first
                                 film above the description, others after
-                                the features list
+                                the features list. The home page is left
+                                as it is; which film leads there is a choice
     finished, a different hash  the new cut copied into blog/
     finished, different text    the alt text and caption replaced, as written
     finished, other poster_ms   the still retaken at that moment (none: the end)
@@ -45,7 +50,6 @@ import sys
 import film_stills
 
 ROOT = film_stills.ROOT
-PAGE = film_stills.PAGE
 BLOG = os.path.join(ROOT, "blog")
 NAME = re.compile(r"[a-z0-9_]+\Z")
 
@@ -113,21 +117,24 @@ def load_index(films_dir):
     return films
 
 
-def on_page(page):
-    """name -> (alt, caption, poster_ms) for each film on the page."""
+def on_pages(pages):
+    """name -> the (alt, caption, poster_ms) of each copy of the film, one per
+    page that shows it."""
     found = {}
-    for m in FIGURE.finditer(page):
-        block = m.group(0)
-        name = SRC.search(block).group(1)
-        poster = POSTER.search(PLAY.search(block).group(0))
-        found[name] = (html.unescape(ALT.search(block).group(2)),
-                       html.unescape(CAPTION.search(block).group(2)),
-                       int(poster.group(1)) if poster else None)
+    for page in pages.values():
+        for m in FIGURE.finditer(page):
+            block = m.group(0)
+            name = SRC.search(block).group(1)
+            poster = POSTER.search(PLAY.search(block).group(0))
+            found.setdefault(name, []).append(
+                (html.unescape(ALT.search(block).group(2)),
+                 html.unescape(CAPTION.search(block).group(2)),
+                 int(poster.group(1)) if poster else None))
     return found
 
 
-def plan(films, page):
-    shown = on_page(page)
+def plan(films, pages):
+    shown = on_pages(pages)
     listed = {f["name"] for f in films}
     changes = []
     for film in films:
@@ -144,16 +151,20 @@ def plan(films, page):
         gif = os.path.join(BLOG, name + ".gif")
         if not os.path.exists(gif) or sha256(gif) != film["sha256"]:
             changes.append(("recut", film))
-        if shown[name][:2] != (film["alt"], film["caption"]):
+        if any(copy[:2] != (film["alt"], film["caption"]) for copy in shown[name]):
             changes.append(("retext", film))
         # The still's moment can change with nothing else: same GIF, same hash.
-        if shown[name][2] != film.get("poster_ms"):
+        if any(copy[2] != film.get("poster_ms") for copy in shown[name]):
             changes.append(("repost", film))
     unknown = sorted(set(shown) - listed)
     return changes, unknown
 
 
-def apply(changes, films_dir, page):
+def apply(changes, films_dir, pages):
+    def everywhere(change):
+        for path in pages:
+            pages[path] = FIGURE.sub(change, pages[path])
+
     for kind, film in changes:
         name = film["name"]
         if kind in ("add", "recut"):
@@ -168,25 +179,30 @@ def apply(changes, films_dir, page):
                                 block, count=1)
                 return CAPTION.sub(lambda c: c.group(1) + html.escape(film["caption"], quote=False)
                                    + c.group(3), block, count=1)
-            page = FIGURE.sub(retext, page)
+            everywhere(retext)
         if kind == "repost":
-            page = FIGURE.sub(lambda m, film=film: m.group(0) if SRC.search(m.group(0)).group(1)
-                              != film["name"] else PLAY.sub(
-                                  lambda a: play_tag(film["name"], film.get("poster_ms")),
-                                  m.group(0), count=1), page)
+            everywhere(lambda m, film=film: m.group(0) if SRC.search(m.group(0)).group(1)
+                       != film["name"] else PLAY.sub(
+                           lambda a: play_tag(film["name"], film.get("poster_ms")),
+                           m.group(0), count=1))
         if kind == "withdraw":
-            page = FIGURE.sub(lambda m: "" if SRC.search(m.group(0)).group(1) == name
-                              else m.group(0), page)
+            everywhere(lambda m: "" if SRC.search(m.group(0)).group(1) == name
+                       else m.group(0))
             for ext in (".gif", ".png"):
                 path = os.path.join(BLOG, name + ext)
                 if os.path.exists(path):
                     os.remove(path)
         if kind == "add":
             mock = film["mocks"][0]
-            projects = [m for m in PROJECT.finditer(page) if m.group(1) == mock]
+            # The mock's own page is the one with its features list; the home
+            # page has the mock in brief, with one film and no list.
+            projects = [(path, m) for path, page in pages.items()
+                        for m in PROJECT.finditer(page)
+                        if m.group(1) == mock and '<ul class="features">' in m.group(0)]
             if not projects:
-                sys.exit("%s: no project on the page for %s" % (name, mock))
-            project = projects[0]
+                sys.exit("%s: no page with a features list for %s" % (name, mock))
+            path, project = projects[0]
+            page = pages[path]
             block = project.group(0)
             # A project leads with one film, before what it is; any others
             # follow its features list, so the description is not pushed down.
@@ -201,11 +217,13 @@ def apply(changes, films_dir, page):
             else:
                 at = block.index("</h3>") + len("</h3>")
             # Only the first film on the page loads eagerly; it is above the fold.
-            lazy = FIGURE.search(page).start() < project.start() + at
+            # A mock's own page may have no film yet, and then this is the first.
+            first = FIGURE.search(page)
+            lazy = first is not None and first.start() < project.start() + at
             new = figure(name, film["alt"], film["caption"], film.get("width", 800),
                          film.get("height", 450), indent, lazy, film.get("poster_ms"))
-            page = page[:project.start() + at] + new + page[project.start() + at:]
-    return page
+            pages[path] = page[:project.start() + at] + new + page[project.start() + at:]
+    return pages
 
 
 def main():
@@ -216,9 +234,12 @@ def main():
     args = parser.parse_args()
 
     films = load_index(args.films)
-    with open(PAGE, encoding="utf-8") as f:
-        page = f.read()
-    changes, unknown = plan(films, page)
+    pages = {}
+    for path in film_stills.pages():
+        with open(path, encoding="utf-8") as f:
+            pages[path] = f.read()
+    before = dict(pages)
+    changes, unknown = plan(films, pages)
 
     for kind, film in changes:
         print("%-8s %s" % (kind, film["name"]))
@@ -230,9 +251,11 @@ def main():
     if not args.apply:
         return 1 if changes else 0
 
-    page = apply(changes, args.films, page)
-    with open(PAGE, "w", encoding="utf-8") as f:
-        f.write(page)
+    pages = apply(changes, args.films, pages)
+    for path, page in pages.items():
+        if page != before[path]:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(page)
     return film_stills.main([])
 
 
