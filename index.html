@@ -74,12 +74,16 @@ curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\
 			<figcaption>an order that waits for the clock <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<figure class="film">
-			<a class="play" href="/blog/edi_850_film.gif" title="play the film"><img src="/blog/edi_850_film.png" width="800" height="450" loading="lazy" alt="The capture script asked mock-edi to place an order, and the X12 850 the mock wrote is typed segment by segment from ISA to IEA, each named from the mock's own dictionary; the envelope segments are not in it and are marked unnamed. The script then altered IEA02, the interchange control number, in a copy and posted the copy to /_mock/validate. Only the altered IEA is typed again, with the mock's refusal beneath it and the wrong number in red."></a>
+			<a class="play" href="/blog/edi_850_film.gif" title="play the film"><img src="/blog/edi_850_film.png" width="800" height="450" loading="lazy" alt="The capture script asked mock-edi to place an order, and the X12 850 the mock wrote is typed segment by segment from ISA to IEA, each named from the mock's own dictionary, the envelope segments included. The script then altered IEA02, the interchange control number, in a copy and posted the copy to /_mock/validate. Only the altered IEA is typed again, with the mock's refusal beneath it and the wrong number in red."></a>
 			<figcaption>an 850 opened, and an altered copy refused <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<figure class="film">
 			<a class="play" href="/blog/edi_two_film.gif" data-poster-ms="14500" title="play the film"><img src="/blog/edi_two_film.png" width="800" height="450" loading="lazy" alt="BUYERCO's mock-edi sends an 850 to SELLERCO's mock-edi. The capture set the seller to short-ship and to delay its despatch and invoice, so it acknowledges the order, confirms 80 of the 100 ordered, and the buyer's mock flags the shortfall on that 855. The capture moves both mocks' clocks an hour at a time; the seller then packs and sends the despatch advice, and raises and sends the invoice, with the buyer's mock acknowledging each."></a>
 			<figcaption>two mocks trading, no script playing a partner <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/edi_plain.gif" title="play the film"><img src="/blog/edi_plain.png" width="800" height="450" loading="lazy" alt="ACME sends mock-edi a purchase order. The mock acknowledges it, answers with an order response, and records two promises, a despatch and an invoice. The capture script then advances the mock's clock: the mock packs the shipment and sends the despatch advice, then raises and sends the invoice, and each promise fills in as its work appears."></a>
+			<figcaption>an order answered, shipped and billed <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 <pre><code>pip install mock-edi
 mock-edi --port 8080
@@ -120,6 +124,10 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 		<figure class="film">
 			<a class="play" href="/blog/bank_returned_film.gif" title="play the film"><img src="/blog/bank_returned_film.png" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and the bank's own queue says a debit notification is due on Friday, which the film shows as a promise. On Friday the payment is booked and debited, and the queue then holds two more promises, a camt.054 and a pacs.004 due the next Wednesday. The capture script advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday the pacs.004 returns the payment with reason AC04 and the camt.054 credits the money back, each keeping its promise. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours."></a>
 			<figcaption>a payment that comes back <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/bank_nacha_film.gif" title="play the film"><img src="/blog/bank_nacha_film.png" width="800" height="450" loading="lazy" alt="ACME, set up to bank in US formats and dollars, sends mock-bank a NACHA file for the same four invoices and amounts as the ISO film, in USD. The bank's own acknowledgement, whose shape is the mock's choice and not NACHA's, rejects two with R02 and R03, and the queue shows two promises, a camt.054 and a return file. The capture script advances the bank's clock: the return file sends the two rejected payments back with the same codes, and the camt.054 books the other two, each keeping its promise. The acknowledgement is shown again, and the day's BAI2 statements close at 125000.00 and then 108750.00 with two entries, the rejected two on neither."></a>
+			<figcaption>the same invoices, in usd, as nacha <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 <pre><code>pip install mock-bank
 mock-bank --port 8090
