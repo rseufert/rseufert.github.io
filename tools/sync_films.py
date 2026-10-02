@@ -61,6 +61,8 @@ ALT = re.compile(r'(<img[^>]*\balt=")([^"]*)(")')
 # The line under every caption, after the mock-films team's own words.
 TAG = "<span>drawn by mock-films from a real run</span>"
 CAPTION = re.compile(r"(<figcaption>)(.*?)( %s</figcaption>)" % re.escape(TAG), re.S)
+# The home page's section on the mocks working together, for a film of several.
+TOGETHER = re.compile(r'<div class="project" id="together">.*?</div><!-- /\.project -->', re.S)
 PROJECT = re.compile(r'<div class="project">\s*<h3><a href="[^"]*">([^<]+)</a></h3>.*?'
                      r"</div><!-- /\.project -->", re.S)
 
@@ -192,7 +194,24 @@ def apply(changes, films_dir, pages):
                 path = os.path.join(BLOG, name + ext)
                 if os.path.exists(path):
                     os.remove(path)
-        if kind == "add":
+        if kind == "add" and len(film["mocks"]) > 1:
+            # A film of several mocks belongs to none of their pages; it goes
+            # in the home page's section on them together, after any already there.
+            path = film_stills.pages()[0]
+            page = pages[path]
+            project = TOGETHER.search(page)
+            if not project:
+                sys.exit("%s: a film of %s, and %s has no section on the mocks together"
+                         % (name, ", ".join(film["mocks"]), path))
+            block = project.group(0)
+            figures = list(FIGURE.finditer(block))
+            at = figures[-1].end() if figures else block.index("</h3>") + len("</h3>")
+            first = FIGURE.search(page)
+            lazy = first is not None and first.start() < project.start() + at
+            new = figure(name, film["alt"], film["caption"], film.get("width", 800),
+                         film.get("height", 450), "\t\t", lazy, film.get("poster_ms"))
+            pages[path] = page[:project.start() + at] + new + page[project.start() + at:]
+        elif kind == "add":
             mock = film["mocks"][0]
             # The mock's own page is the one with its features list; the home
             # page has the mock in brief, with one film and no list.

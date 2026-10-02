@@ -356,6 +356,12 @@ code {
     color: var(--accent);
 }
 
+.post img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
 @media (max-width: 700px) {
     body {
         width: auto;

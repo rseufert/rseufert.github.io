@@ -44,6 +44,10 @@ image: /blog/edi_overshipped.png
 			<a class="play" href="/blog/edi_plain.gif" title="play the film"><img src="/blog/edi_plain.png" width="800" height="450" loading="lazy" alt="ACME sends mock-edi a purchase order. The mock acknowledges it, answers with an order response, and records two promises, a despatch and an invoice. The capture script then advances the mock's clock: the mock packs the shipment and sends the despatch advice, then raises and sends the invoice, and each promise fills in as its work appears."></a>
 			<figcaption>an order answered, shipped and billed <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/edi_plain_edifact.gif" title="play the film"><img src="/blog/edi_plain_edifact.png" width="800" height="450" loading="lazy" alt="ACME is set to EDIFACT and sends mock-edi an ORDERS for the same order as the X12 film. The mock acknowledges it with a CONTRL, answers with an ORDRSP, and records two promises, a despatch and an invoice. The capture script then advances the mock's clock: the mock packs the shipment and sends the DESADV, then raises and sends the INVOIC, and each promise fills in as its work appears."></a>
+			<figcaption>the same order, in edifact <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
 <pre><code>pip install mock-edi
 mock-edi --port 8080
 curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
