@@ -1,14 +1,21 @@
 ---
 layout: default
-title: Rick Seufert - videos
+title: Rick Seufert - media
 ---
 <div class="media">
-	<h1>videos</h1>
-	<p class="lede">From my YouTube channel. Nothing loads from YouTube until you press play, so this page sets no cookies of its own.</p>
+	<h1>media</h1>
+	<p class="lede">Videos from my YouTube channel and tracks from SoundCloud. Neither loads until you press play, so this page sets no cookies of its own.</p>
 
+	<h2>videos</h2>
 	<figure class="embed">
 		<button class="load" type="button" data-src="https://www.youtube-nocookie.com/embed/videoseries?list=PLa-2B3enIAoU&amp;autoplay=1" data-title="YouTube playlist">&#9654;&nbsp; play the playlist <span>loads from youtube</span></button>
 		<figcaption><a href="https://www.youtube.com/playlist?list=PLa-2B3enIAoU">open the playlist on YouTube</a></figcaption>
+	</figure>
+
+	<h2>music</h2>
+	<figure class="embed">
+		<button class="load sound" type="button" data-src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/the-rick&amp;auto_play=true&amp;show_comments=false&amp;show_reposts=false&amp;visual=false" data-title="SoundCloud tracks">&#9654;&nbsp; play the tracks <span>loads from soundcloud</span></button>
+		<figcaption><a href="https://soundcloud.com/the-rick/tracks">open the tracks on SoundCloud</a></figcaption>
 	</figure>
 </div><!-- /.media -->
 
@@ -22,6 +29,7 @@ document.querySelectorAll(".media button.load").forEach(function (button) {
 		frame.title = button.dataset.title;
 		frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
 		frame.allowFullscreen = true;
+		frame.className = button.className.replace("load", "").trim();
 		button.replaceWith(frame);
 		frame.focus();
 	});
