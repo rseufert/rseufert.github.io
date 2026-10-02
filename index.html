@@ -90,7 +90,7 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-bank">mock-bank</a></h3>
 		<figure class="film">
-			<a class="play" href="/blog/bank_four_payments_film.gif" title="play the film"><img src="/blog/bank_four_payments_film.png" width="800" height="450" loading="lazy" alt="ACME sends mock-bank a file of four payments, and the bank's status report rejects two, giving a reason for each. The capture then advances the bank's clock twice: the other two payments are booked and reported in a debit notification, and then in a statement. The rejected two appear in neither."></a>
+			<a class="play" href="/blog/bank_four_payments_film.gif" data-poster-ms="22200" title="play the film"><img src="/blog/bank_four_payments_film.png" width="800" height="450" loading="lazy" alt="ACME sends mock-bank a file of four payments, and the bank's status report rejects two, giving a reason for each. The bank's own queue says a debit notification is due on the settlement day, which the film shows as a promise. The capture then advances the bank's clock twice: the other two payments are booked and reported in the debit notification, which keeps the promise, and then in a statement. The rejected two appear in neither."></a>
 			<figcaption>a payment file, half of it rejected <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
@@ -118,7 +118,7 @@ curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
 			<li><strong>Worked end to end with the other mocks.</strong> <code>payment_run</code> does what SAP's <code>F110</code> does: select the open items that are due from <a href="https://github.com/rseufert/mock-sap">mock-sap</a>, pay them in one file, and post each statement back so SAP clears what was paid and reopens what came back. Twenty-six tests, run in CI against mock-sap from PyPI - twice, once over ISO 20022 and once over ACH, because the same run has to survive both.</li>
 		</ul>
 		<figure class="film">
-			<a class="play" href="/blog/bank_returned_film.gif" title="play the film"><img src="/blog/bank_returned_film.png" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and booked and debited on Friday. The capture script then advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday a pacs.004 returns the payment with reason AC04 and a camt.054 credits the money back. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours."></a>
+			<a class="play" href="/blog/bank_returned_film.gif" title="play the film"><img src="/blog/bank_returned_film.png" width="800" height="450" loading="lazy" alt="ACME pays one invoice of EUR 1250.00 through mock-bank; it is accepted, and the bank's own queue says a debit notification is due on Friday, which the film shows as a promise. On Friday the payment is booked and debited, and the queue then holds two more promises, a camt.054 and a pacs.004 due the next Wednesday. The capture script advances the bank's clock a day at a time: Saturday and Sunday are not business days, and no message about the payment arrives on Monday or Tuesday. On Wednesday the pacs.004 returns the payment with reason AC04 and the camt.054 credits the money back, each keeping its promise. The script had set ACME's account to have payments returned three business days later with AC04, one of the mock's behaviours."></a>
 			<figcaption>a payment that comes back <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 <pre><code>pip install mock-bank
@@ -241,7 +241,7 @@ python3 -m unittest -v mockbank.examples.test_payment_run</code></pre>
 		<figure class="shot pair">
 			<img src="/flipper/hanzi_cards.png" width="512" height="256" loading="lazy" alt="The back of a Hanzi Cards card on the Flipper's orange screen: the characters 公共汽车 large across the top, the pinyin gōng gòng qì chē below them, then the English &quot;bus&quot;, with &quot;Again&quot; at the bottom left and &quot;Good&quot; at the bottom right.">
 			<img src="/flipper/hanzi_cards_traditional.png" width="512" height="256" loading="lazy" alt="Another card in traditional characters: 服務員, the pinyin fú wù yuán, and the English &quot;waiter, attendant&quot;, with Again and Good at the bottom.">
-			<figcaption><span lang="zh-Hans">公共汽车</span>, bus, and <span lang="zh-Hant">服務員</span> in traditional characters</figcaption>
+			<figcaption><span lang="zh-Hans">公共汽车</span> (bus) in simplified characters, <span lang="zh-Hant">服務員</span> (waiter) in traditional</figcaption>
 		</figure>
 		<p>Mandarin flashcards: simplified or traditional characters, pinyin with tone marks, and the tones played on the speaker.</p>
 		<ul class="features">
