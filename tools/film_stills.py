@@ -19,10 +19,10 @@ adding a film is adding the GIF and the markup, and running this.
     python3 tools/film_stills.py           # write any still that is missing or stale
     python3 tools/film_stills.py --check   # fail if one is, or the markup is wrong
 
-The films are the GIFs linked inside `<figure class="film">` on the home page
-and on each directory's index.html (mock-sap/, mock-edi/, ...), not whatever
-is in blog/, so the check also catches a film whose `<img>` shows the
-wrong still. Standard library only, like the projects it shows: a GIF
+The films are the GIFs linked inside `<figure class="film">` on the home page,
+on each directory's index.html (mock-sap/, mock-edi/, ...) and in the blog
+posts, not whatever is in blog/, so the check also catches a film whose
+`<img>` shows the wrong still. Standard library only, like the projects it shows: a GIF
 decoder (LZW, local colour tables, transparency, the three disposal methods,
 interlacing) and a PNG writer, which is all `zlib` needs to be told.
 """
@@ -38,12 +38,16 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def pages():
     """The pages that can show a film: the home page, which shows each
-    project's first, and the index.html of each directory beside it."""
+    project's first, the index.html of each directory beside it, and the
+    blog posts, which may show a film they are about."""
     found = [os.path.join(ROOT, "index.html")]
     for name in sorted(os.listdir(ROOT)):
         path = os.path.join(ROOT, name, "index.html")
         if not name.startswith(("_", ".")) and os.path.isfile(path):
             found.append(path)
+    posts = os.path.join(ROOT, "_posts")
+    found += [os.path.join(posts, name) for name in sorted(os.listdir(posts))
+              if name.endswith(".md")]
     return found
 
 

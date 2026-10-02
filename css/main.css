@@ -249,28 +249,28 @@ ul.posts .date {
    column, centred on it, when the column is narrower - and scales only below
    that. The border sits outside the 800. The page shows the final frame; a
    click plays the GIF (js/films.js). */
-.project .film {
+:is(.project, .post) .film {
     --film: min(802px, calc(100vw - 32px));
     width: var(--film);
     margin: 20px 0 20px min(0px, calc((100% - var(--film)) / 2));
 }
-.project .film a.play {
+:is(.project, .post) .film a.play {
     position: relative;
     display: block;
     width: fit-content;
     max-width: 100%;
 }
-.project .film img {
+:is(.project, .post) .film img {
     display: block;
     width: 800px;
     max-width: calc(100% - 2px);
     height: auto;
     border: 1px solid var(--rule);
 }
-.project .film a.play:hover img, .project .film a.play:focus-visible img {
+:is(.project, .post) .film a.play:hover img, :is(.project, .post) .film a.play:focus-visible img {
     border-color: var(--accent);
 }
-.project .film a.play::after {
+:is(.project, .post) .film a.play::after {
     content: "\25B6  play";
     position: absolute;
     top: 10px;
@@ -286,26 +286,26 @@ ul.posts .date {
     opacity: 0;
     transition: opacity 0.15s;
 }
-.project .film a.play:hover::after, .project .film a.play:focus-visible::after {
+:is(.project, .post) .film a.play:hover::after, :is(.project, .post) .film a.play:focus-visible::after {
     opacity: 1;
 }
-.project .film a.play[aria-pressed="true"]::after {
+:is(.project, .post) .film a.play[aria-pressed="true"]::after {
     content: "\25A0  still";
 }
-.project .film figcaption {
+:is(.project, .post) .film figcaption {
     font-family: var(--mono);
     font-size: 0.85em;
     color: var(--soft);
     margin-top: 8px;
 }
-.project .film figcaption::before {
+:is(.project, .post) .film figcaption::before {
     content: "\25B6  ";    /* a play mark, in the accent */
     color: var(--accent);
 }
-.project .film figcaption span {
+:is(.project, .post) .film figcaption span {
     color: var(--faint);
 }
-.project .film figcaption span::before {
+:is(.project, .post) .film figcaption span::before {
     content: "// ";
 }
 

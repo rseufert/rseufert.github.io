@@ -27,7 +27,8 @@ mouse, and on a touch screen when the film is most of the way into view, one
 at a time, unless the visitor asked for less motion or to save data. A film is
 shown at exactly 800 px wherever the window has room, since its pixel type is
 only sharp at 800; a project leads with one film and puts the rest after its
-features list. The home page shows each mock's first film again.
+features list. The home page shows each mock's first film again, and a blog
+post may show the film it is about; the tools keep every copy in step.
 
 mock-films' `docs/films/index.json` is the source of truth for which films
 exist, each one's current cut, and its alt text and caption, which are used as
