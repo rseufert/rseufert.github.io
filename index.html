@@ -237,22 +237,23 @@ python3 -m unittest -v mockbank.examples.test_payment_run</code></pre>
 	<p class="lede">Apps for the <a href="https://flipperzero.one">Flipper Zero</a>: a 128&times;64 screen, a d-pad and a buzzer.</p>
 
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/nw_crawl">NW Crawl</a> <span class="tag">game</span></h3>
-		<figure class="shot">
-			<img src="/flipper/nw_crawl.png" width="512" height="256" loading="lazy" alt="NW Crawl on the Flipper's orange screen: the player stands next to a rat on a dotted floor, with street-sign walls around them. The top line reads &quot;Hit Rat. Rat bites -1&quot; and the bottom line &quot;HP11/12 c1 Burnside&quot;.">
-			<figcaption>fighting a rat on NW Burnside</figcaption>
+		<h3><a href="https://github.com/rseufert/hanzi_cards">Hanzi Cards</a> <span class="tag">study</span></h3>
+		<figure class="shot pair">
+			<img src="/flipper/hanzi_cards.png" width="512" height="256" loading="lazy" alt="The back of a Hanzi Cards card on the Flipper's orange screen: the characters 公共汽车 large across the top, the pinyin gōng gòng qì chē below them, then the English &quot;bus&quot;, with &quot;Again&quot; at the bottom left and &quot;Good&quot; at the bottom right.">
+			<img src="/flipper/hanzi_cards_traditional.png" width="512" height="256" loading="lazy" alt="Another card in traditional characters: 服務員, the pinyin fú wù yuán, and the English &quot;waiter, attendant&quot;, with Again and Good at the bottom.">
+			<figcaption><span lang="zh-Hans">公共汽车</span>, bus, and <span lang="zh-Hant">服務員</span> in traditional characters</figcaption>
 		</figure>
-		<p>A tiny roguelike set on the alphabet streets of NW Portland. Start on Burnside and head north one street per floor - Couch, Davis, Everett, Flanders, all the way to Thurman - until you reach the Witch's Castle in Forest Park.</p>
+		<p>Mandarin flashcards: simplified or traditional characters, pinyin with tone marks, and the tones played on the speaker.</p>
 		<ul class="features">
-			<li><strong>Nineteen streets and a castle.</strong> Each floor is a randomly generated maze of rooms, corridors and side alleys under fog of war.</li>
-			<li><strong>The locals.</strong> Rats, crows, raccoons, rogue e-scooters and coyotes, getting tougher the further north you go. On the northern streets a Sasquatch lurks by the exit, invisible until he's two tiles away.</li>
-			<li><strong>Coffee, donuts and IPAs.</strong> Coffee heals, a pink-box donut raises your max HP, a hazy IPA raises your attack and a used book shows you the floor. On Pettygrove, Joe's Cellar is a safe room where the bartender pours you one stiff drink.</li>
-			<li><strong>The Witch</strong> hexes you from range, summons crows and vanishes when hit.</li>
+			<li><strong>HSK 1 and HSK 2.</strong> 150 and 156 words, each deck in a rough learning order with its own progress.</li>
+			<li><strong>Simplified or traditional,</strong> switchable at any time, with the characters drawn from Noto Sans CJK.</li>
+			<li><strong>You hear the tones.</strong> When a card flips, the speaker glides through each syllable's tone contour - high and flat, rising, dipping, falling - so you hear the shape of the word.</li>
+			<li><strong>Spaced repetition.</strong> Cards you miss come back often and cards you know come back rarely, and new cards only arrive while fewer than six are still being learned. Progress is saved to the SD card.</li>
 		</ul>
 <pre><code>python3 -m pip install --upgrade ufbt
-git clone https://github.com/rseufert/nw_crawl &amp;&amp; cd nw_crawl
+git clone https://github.com/rseufert/hanzi_cards &amp;&amp; cd hanzi_cards
 ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/nw_crawl">GitHub</a> · <a href="https://github.com/rseufert/nw_crawl#controls">Controls</a></p>
+		<p class="links"><a href="https://github.com/rseufert/hanzi_cards">GitHub</a> · <a href="https://github.com/rseufert/hanzi_cards#controls">Controls</a> · <a href="https://github.com/rseufert/hanzi_cards#adding-words">Adding words</a></p>
 	</div><!-- /.project -->
 
 	<div class="project">
@@ -271,6 +272,25 @@ ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 git clone https://github.com/rseufert/step_seq &amp;&amp; cd step_seq
 ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/step_seq">GitHub</a> · <a href="https://github.com/rseufert/step_seq#controls">Controls</a></p>
+	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/nw_crawl">NW Crawl</a> <span class="tag">game</span></h3>
+		<figure class="shot">
+			<img src="/flipper/nw_crawl.png" width="512" height="256" loading="lazy" alt="NW Crawl on the Flipper's orange screen: the player stands next to a rat on a dotted floor, with street-sign walls around them. The top line reads &quot;Hit Rat. Rat bites -1&quot; and the bottom line &quot;HP11/12 c1 Burnside&quot;.">
+			<figcaption>fighting a rat on NW Burnside</figcaption>
+		</figure>
+		<p>A tiny roguelike set on the alphabet streets of NW Portland. Start on Burnside and head north one street per floor - Couch, Davis, Everett, Flanders, all the way to Thurman - until you reach the Witch's Castle in Forest Park.</p>
+		<ul class="features">
+			<li><strong>Nineteen streets and a castle.</strong> Each floor is a randomly generated maze of rooms, corridors and side alleys under fog of war.</li>
+			<li><strong>The locals.</strong> Rats, crows, raccoons, rogue e-scooters and coyotes, getting tougher the further north you go. On the northern streets a Sasquatch lurks by the exit, invisible until he's two tiles away.</li>
+			<li><strong>Coffee, donuts and IPAs.</strong> Coffee heals, a pink-box donut raises your max HP, a hazy IPA raises your attack and a used book shows you the floor. On Pettygrove, Joe's Cellar is a safe room where the bartender pours you one stiff drink.</li>
+			<li><strong>The Witch</strong> hexes you from range, summons crows and vanishes when hit.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/nw_crawl &amp;&amp; cd nw_crawl
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/nw_crawl">GitHub</a> · <a href="https://github.com/rseufert/nw_crawl#controls">Controls</a></p>
 	</div><!-- /.project -->
 </section><!-- /.flipper -->
 <script src="/js/films.js" defer></script>
