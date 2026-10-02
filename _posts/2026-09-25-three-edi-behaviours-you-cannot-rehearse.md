@@ -2,6 +2,11 @@
 layout: post
 title: "Three EDI Behaviours You Can't Rehearse With a Real Trading Partner"
 date: 2026-09-25
+description: >-
+  A changed order after packing, an acknowledgment that never comes, the same
+  file picked up twice: three EDI failures a real trading partner won't perform
+  on cue, and how to rehearse them against mock-edi.
+image: /blog/edi_two_film.png
 ---
 
 The chain everybody demos is 850 → 997 → 855 → 856 → 810. An order goes out, the syntax is acknowledged, the supplier confirms it, the goods ship, the invoice arrives. It is the part of EDI that fits on a slide.
