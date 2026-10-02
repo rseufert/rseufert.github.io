@@ -252,5 +252,23 @@ git clone https://github.com/rseufert/nw_crawl &amp;&amp; cd nw_crawl
 ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/nw_crawl">GitHub</a> · <a href="https://github.com/rseufert/nw_crawl#controls">Controls</a></p>
 	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/step_seq">Step Seq</a> <span class="tag">music</span></h3>
+		<figure class="shot">
+			<img src="/flipper/step_seq.png" width="512" height="256" loading="lazy" alt="Step Seq on the Flipper's orange screen. The top bar reads &quot;P1&quot;, &quot;D#3&quot; and &quot;D# Blues&quot;. Below it a dotted grid of 16 steps has one filled block per step at different heights, a melody climbing and falling, and along the bottom a drum row marked &quot;dr&quot; of filled blocks, hollow blocks and dashes for kick, snare and hi-hat.">
+			<figcaption>pattern 1, in D# blues</figcaption>
+		</figure>
+		<p>A step sequencer for the Flipper's piezo speaker, with a melody grid and a drum row. The speaker can only play one tone at a time, so a drum takes the first few milliseconds of its step and the note gets the rest.</p>
+		<ul class="features">
+			<li><strong>Always in key.</strong> One note per step across 15 pitch rows that follow the scale you pick: minor or major pentatonic, minor, major, blues or chromatic, in any root.</li>
+			<li><strong>Drums from square waves and noise.</strong> A kick, a snare and a hi-hat on the bottom row.</li>
+			<li><strong>Eight patterns,</strong> each 16 or 32 steps with its own tempo (60 to 240 bpm), swing, scale, root and octave. Copy one into the next slot to build a variation, and everything is saved to the SD card when you quit.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/step_seq &amp;&amp; cd step_seq
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/step_seq">GitHub</a> · <a href="https://github.com/rseufert/step_seq#controls">Controls</a></p>
+	</div><!-- /.project -->
 </section><!-- /.flipper -->
 <script src="/js/films.js" defer></script>
