@@ -345,3 +345,13 @@ code {
 }
 .media .embed button.load:hover, .media .embed button.load:focus-visible { border-color: var(--accent); }
 .media .embed figcaption { font: 0.9em var(--mono); color: var(--faint); margin-top: 8px; }
+/* SoundCloud's list player is a fixed height, not a 16:9 picture. */
+.media .embed button.sound, .media .embed iframe.sound { aspect-ratio: auto; height: 450px; }
+.media h2::before {
+    content: "//";
+    font-family: var(--mono);
+    font-weight: normal;
+    font-size: 0.8em;
+    color: var(--accent);
+    margin-right: 0.35em;
+}
