@@ -2,6 +2,11 @@
 layout: post
 title: "Testing an SAP-to-EDI Integration Without SAP or a Trading Partner"
 date: 2026-09-24
+description: >-
+  How to test the middleware between SAP and your suppliers' EDI without an SAP
+  system or a trading partner: purchase orders out as X12 850s, acknowledgments
+  and invoices back in, with mock-sap, mock-edi and mock-bank.
+image: /blog/sap_invoices.png
 ---
 
 Every company that buys things through SAP and trades with suppliers over EDI has a piece of middleware in between. It reads purchase orders out of SAP, turns them into X12 850s, sends them to the supplier, takes the supplier's 855 (the purchase order acknowledgment) back into SAP, and, when the goods ship, checks the supplier's 810 invoice before anyone pays it. It is usually the least tested code in the building, because testing it properly needs two things that are hard to get: an SAP system you are allowed to break, and a supplier willing to misbehave on cue.

@@ -1,4 +1,24 @@
 name: Rick Seufert
+# Read by jekyll-seo-tag for every page's title, description, canonical URL,
+# Open Graph and Twitter tags; jekyll-sitemap writes /sitemap.xml. Both are on
+# GitHub Pages' list of supported plugins.
+title: Rick Seufert
+tagline: Mock SAP, EDI and bank systems, and Flipper apps
+description: >-
+  Rick Seufert's projects: mock-sap, mock-edi and mock-bank, mock enterprise
+  systems for testing SAP, EDI and payment integrations without a license, a
+  VPN or a trading partner. Also apps for the Flipper Zero, and a blog.
+author: Rick Seufert
+lang: en
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+defaults:
+  - scope:
+      path: ""
+    values:
+      # The share image when a page names none: an 800x450 film still.
+      image: /blog/sap_invoices.png
 markdown: kramdown
 permalink: /blog/:year/:month/:day/:title
 url: https://rickseufert.com
