@@ -10,9 +10,12 @@ description: >-
 image: /blog/p2p_film.png
 ---
 
-[![The film's last frame: the bank's statement arrives in SAP as a FINSTA01, and SAP clears invoice INV9000002 for EUR 1250.00](/blog/p2p_film.png)](/blog/p2p_film.gif)
+<figure class="film">
+	<a class="play" href="/blog/p2p_film.gif" title="play the film"><img src="/blog/p2p_film.png" width="800" height="450" alt="Four lanes: SAP, ACME, mock-edi as the supplier, and mock-bank; between the mocks runs the procure_to_pay example from the installed mock-bank package, driven by the capture script, which derived the Monday the run starts on, emptied the bank's holidays, created the purchase order in SAP before the film starts, and ran the example's payment run a step at a time. Act one: the script advances mock-edi's clock to Monday 2026-10-05, ACME's 850 goes to the supplier, and it acknowledges, confirms, packs, sends the despatch advice, raises invoice INV9000002 and sends the 810. Act two: the example posts that invoice to SAP as an INVOIC, and SAP posts it and owes EUR 1250.00. Act three: the script advances the bank's clock to Wednesday 2026-11-04, the day SAP says the invoice is due; the example sends a pain.001 with one payment, which the bank accepts, books and reports; the clock moves a day, the statement arrives, the example posts it to SAP as a FINSTA01 and SAP clears INV9000002. 22 empty statements are posted on the way and are not drawn, and the supplier is not told it was paid: the example sends no remittance advice."></a>
+	<figcaption>one purchase across all three mocks <span>drawn by mock-films from a real run</span></figcaption>
+</figure>
 
-That is the last frame of a film mock-films drew from a real run ([play it](/blog/p2p_film.gif)). It has four lanes (SAP, the buyer ACME, mock-edi playing the supplier, and mock-bank), and one purchase crosses all of them:
+mock-films drew that film from a real run; click it to play. It has four lanes (SAP, the buyer ACME, mock-edi playing the supplier, and mock-bank), and one purchase crosses all of them:
 
 ```
 SAP  ──850──▶  supplier          a purchase order becomes an EDI order
@@ -83,3 +86,5 @@ python3 -m unittest -v mockbank.examples.test_procure_to_pay
 Ten tests, among them the loop end to end, the duplicate paid without the check and refused with it, a price disagreement blocked before any money moves, a short shipment paid for what shipped, and a payment the bank rejects leaving the invoice owed. The code is [procure_to_pay.py](https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py), and the tests are [beside it](https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py).
 
 *Checked on 2 October 2026 against mock-sap 0.14.0, mock-edi 0.7.0 and mock-bank 0.6.0.*
+
+<script src="/js/films.js" defer></script>
