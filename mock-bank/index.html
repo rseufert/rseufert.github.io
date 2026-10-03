@@ -45,6 +45,10 @@ image: /blog/bank_four_payments_film.png
 			<a class="play" href="/blog/bank_nacha_film.gif" title="play the film"><img src="/blog/bank_nacha_film.png" width="800" height="450" loading="lazy" alt="ACME, set up to bank in US formats and dollars, sends mock-bank a NACHA file for the same four invoices and amounts as the ISO film, in USD. The bank's own acknowledgement, whose shape is the mock's choice and not NACHA's, rejects two with R02 and R03, and the queue shows two promises, a camt.054 and a return file. The capture script advances the bank's clock: the return file sends the two rejected payments back with the same codes, and the camt.054 books the other two, each keeping its promise. The acknowledgement is shown again, and Wednesday's BAI2 statement closes at 125000.00 and Thursday's at 108750.00 with two entries, the rejected two on neither."></a>
 			<figcaption>the same invoices, in usd, as nacha <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
+		<figure class="film">
+			<a class="play" href="/blog/bank_dd_film.gif" data-poster-ms="22100" title="play the film"><img src="/blog/bank_dd_film.png" width="800" height="450" loading="lazy" alt="ACME sends mock-bank a file of four direct debits to collect in euro, which the script wrote itself, and the bank's status report rejects two with a reason for each: one debtor, a seeded account, has 12.50 against the 99.99 asked, and the other's account is closed. The bank's own queue says a credit notification is due on the settlement day, which the film shows as a promise. The capture then advances the bank's clock twice: the other two collections, from debtors at other banks, are booked and credited to ACME in the credit notification, which keeps the promise, and then in a statement closing at 125299.99. The rejected two appear in neither."></a>
+			<figcaption>four direct debits, half of them rejected <span>drawn by mock-films from a real run</span></figcaption>
+		</figure>
 <pre><code>pip install mock-bank
 mock-bank --port 8090
 curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
