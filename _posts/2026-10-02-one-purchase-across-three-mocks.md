@@ -85,6 +85,6 @@ python3 -m unittest -v mockbank.examples.test_procure_to_pay
 
 Ten tests, among them the loop end to end, the duplicate paid without the check and refused with it, a price disagreement blocked before any money moves, a short shipment paid for what shipped, and a payment the bank rejects leaving the invoice owed. The code is [procure_to_pay.py](https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py), and the tests are [beside it](https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py).
 
-*Checked on 2 October 2026 against mock-sap 0.14.0, mock-edi 0.7.0 and mock-bank 0.6.0.*
+*Checked on 4 October 2026 against mock-sap 0.16.0, mock-edi 0.7.0 and mock-bank 0.7.0. The film was drawn from mock-sap 0.14.0.*
 
 <script src="/js/films.js" defer></script>
