@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Flipper Zero apps
-description: "Three apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; and NW Crawl, a roguelike set in NW Portland."
+description: "Five apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; NW Crawl, a roguelike set in NW Portland; Yulia's Cats, a virtual pet; and Tricorder, a handheld signal scanner."
 image: /flipper/hanzi_cards.png
 ---
 <section class="projects flipper">
@@ -64,5 +64,46 @@ ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 git clone https://github.com/rseufert/nw_crawl &amp;&amp; cd nw_crawl
 ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/nw_crawl">GitHub</a> · <a href="https://github.com/rseufert/nw_crawl#controls">Controls</a></p>
+	</div><!-- /.project -->
+	<div class="project" id="yulia-cats">
+		<h3><a href="https://github.com/rseufert/yulia_cats">Yulia's Cats</a> <span class="tag">pet</span></h3>
+		<figure class="shot pair">
+			<img src="/flipper/yulia_cats.png" width="512" height="256" loading="lazy" alt="Yulia's Cats on the Flipper's orange screen: Yulia in round glasses on the left, a shelf with a plant and books, the sun in the window, and her two cats on the floor either side of the food bowl. The bottom bar shows a heart and 2, and &quot;Feed&quot; between arrows.">
+			<img src="/flipper/yulia_cats_night.png" width="512" height="256" loading="lazy" alt="The same room later, with a lamp and a cat tree: Yulia, eyes closed and smiling, says &quot;Спокойной ночи&quot; in a speech bubble with &quot;Good night&quot; underneath, the cats sit on the floor, and the bottom bar reads &quot;Nap time&quot;.">
+			<figcaption>dinner time, and good night (<span lang="ru">Спокойной ночи</span>)</figcaption>
+		</figure>
+		<p>A cozy virtual pet. Yulia shares a little room with her two cats: Nugget, an elderly tiger-striped gentleman with white socks, and Baby, a chonky grey cat with big bright eyes.</p>
+		<ul class="features">
+			<li><strong>Feed, play and pet.</strong> Dinner for both, a treat each, yarn to chase, or the laser dot, which Baby cannot resist and Nugget cannot be bothered with. Pet one and the Flipper purrs.</li>
+			<li><strong>The cats get on with their day.</strong> Nugget watches the birds from the window sill and keeps an eye on the food dish; Baby naps in the patch of afternoon sun, follows Nugget around and nudges him off his spot by the dish.</li>
+			<li><strong>The room follows the clock.</strong> The sun crosses the window, the sky goes dark in the evening and the lamp comes on, and late at night the cats get sleepy on their own.</li>
+			<li><strong>Yulia speaks Russian</strong> to the cats now and then, with the English underneath. She also reads, makes art and plays her keyboard through the speaker, and there's a wardrobe, decor, a record player in six genres and a photo album to fill.</li>
+			<li><strong>Nothing bad ever happens.</strong> Time passes while the app is closed, so the cats get hungry and want to play, but that's all.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/yulia_cats &amp;&amp; cd yulia_cats
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/yulia_cats">GitHub</a> · <a href="https://github.com/rseufert/yulia_cats#playing">Playing</a></p>
+	</div><!-- /.project -->
+
+	<div class="project" id="tricorder">
+		<h3><a href="https://github.com/rseufert/tricorder">Tricorder</a> <span class="tag">tools</span></h3>
+		<figure class="shot pair">
+			<img src="/flipper/tricorder.png" width="512" height="256" loading="lazy" alt="Tricorder's RF tab on the Flipper's orange screen: tabs for RF, IR, EMF and TAG down the left with RF highlighted. The top line reads &quot;RF 387-464&quot; and &quot;SCAN&quot;, a spectrum of spikes fills the middle with a marker over the tallest, and the bottom line reads &quot;PEAK 409.87 -71dBm&quot;.">
+			<img src="/flipper/tricorder_ir.png" width="512" height="256" loading="lazy" alt="The IR tab: &quot;IR #25&quot; and &quot;200us&quot; across the top, an infrared signal drawn as a square wave, one long pulse and then a run of short ones, and &quot;NEC A:0 C:40&quot; at the bottom.">
+			<figcaption>a Sub-GHz sweep, and a remote's button decoded</figcaption>
+		</figure>
+		<p>A handheld signal scanner, styled after a certain starship's field instrument. Eight sensors, and one sweep that runs them all.</p>
+		<ul class="features">
+			<li><strong>RF.</strong> A Sub-GHz spectrum sweep with peak hold, or a scrolling waterfall. Lock on to the peak to chart its strength over time and name any protocol the firmware recognises. It only listens.</li>
+			<li><strong>IR.</strong> The last infrared signal as a waveform, with its protocol, address and command. Send it back out, or save it to the SD card for the Flipper's own Infrared app.</li>
+			<li><strong>NFC, RFID and iButton.</strong> Whether a reader field is nearby, which NFC protocols a tag answers to, and 125 kHz fobs, cards and iButton keys.</li>
+			<li><strong>A probe and the battery.</strong> A GPIO pin's voltage (0 to 2.5 V) as a number and a trace, and the battery's voltage, temperature, charge and current draw.</li>
+			<li><strong>It warbles</strong> when it has a contact, higher for stronger signals.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/tricorder &amp;&amp; cd tricorder
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/tricorder">GitHub</a> · <a href="https://github.com/rseufert/tricorder#controls">Controls</a> · <a href="https://github.com/rseufert/tricorder#what-it-transmits">What it transmits</a></p>
 	</div><!-- /.project -->
 </section><!-- /.flipper -->
