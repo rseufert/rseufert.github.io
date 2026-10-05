@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Check that this site's copies of the worked examples match their repos.
+"""Check that this site's copies of the worked examples match their repo.
 
 The SAP-to-EDI post links to files under /examples/, so the site carries its
-own copy of each one.  The authoritative copy lives in the repo of the mock
-the example is *not* testing: po_bridge in mock-edi, invoice_check in
-mock-sap.  Each repo's CI runs its example against the other mock, so the
-repo copies are the tested ones; these are a transcription, and nothing
-stopped them drifting until this script existed.
+own copy of each one.  The authoritative copy lives in mock-acme, the package
+of integrations between the mocks, whose CI runs each against all three.
+Until 5 October 2026 each lived in the examples/ of a mock - po_bridge in
+mock-edi, invoice_check in mock-sap - and the copies here were taken from
+there.  These are a transcription, and nothing stopped them drifting until
+this script existed.
 
     python3 tools/check_examples.py            # compare, and diff what differs
     python3 tools/check_examples.py --update    # fetch the repo copy over ours
 
-Note that this compares against the tip of each repo's default branch, which
+Note that this compares against the tip of the repo's default branch, which
 moves on its own.  A run that passes today can fail tomorrow with nothing
 changed here -- that failure is the point, and --update is the fix.
 
@@ -29,13 +30,13 @@ BRANCH = "main"
 # site path -> (repo, path within that repo)
 COPIES = {
     "examples/po-bridge/po_bridge.py":
-        ("mock-edi", "examples/po_bridge.py"),
+        ("mock-acme", "mockacme/po_bridge.py"),
     "examples/po-bridge/test_po_bridge.py":
-        ("mock-edi", "examples/test_po_bridge.py"),
+        ("mock-acme", "tests/test_po_bridge.py"),
     "examples/invoice-check/invoice_check.py":
-        ("mock-sap", "examples/invoice_check.py"),
+        ("mock-acme", "mockacme/invoice_check.py"),
     "examples/invoice-check/test_invoice_check.py":
-        ("mock-sap", "examples/test_invoice_check.py"),
+        ("mock-acme", "tests/test_invoice_check.py"),
 }
 
 
@@ -97,7 +98,7 @@ def main():
         return 1
 
     if not updated:
-        print("All %d example copies match their repos." % len(COPIES))
+        print("All %d example copies match their repo." % len(COPIES))
     return 0
 
 

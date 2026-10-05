@@ -86,13 +86,14 @@ curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></p
 
 	<div class="project">
 		<h3><a href="/examples/">Worked examples</a></h3>
-		<p>Small integrations written against the mocks, each with its tests.</p>
+		<p>Small integrations between the mocks, each with its tests, kept in <a href="https://github.com/rseufert/mock-acme">mock-acme</a>.</p>
 		<ul class="index">
 			<li><a href="/examples/#procure-to-pay">Procure to pay</a> <span class="tag">all three mocks</span><br>One purchase, carried the whole way: from a purchase order in SAP to the bank statement that clears it.</li>
 			<li><a href="/examples/#po-bridge">PO bridge</a> <span class="tag">mock-sap + mock-edi</span><br>Reads a purchase order from SAP, sends it to the supplier as an X12 850, and posts the supplier's 855 back as an <code>ORDRSP</code> IDoc.</li>
 			<li><a href="/examples/#invoice-check">Invoice check</a> <span class="tag">mock-sap + mock-edi</span><br>Posts a supplier's 810 invoice into SAP only if it passes a three-way match against the purchase order and the ship notice.</li>
 			<li><a href="/examples/#pay-invoices">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span><br>Pays a supplier's EDIFACT <code>INVOIC</code>s in a <code>pain.001</code>, then works out from what the bank sends back which are actually paid.</li>
 			<li><a href="/examples/#payment-run">Payment run</a> <span class="tag">mock-sap + mock-bank</span><br>What SAP's <code>F110</code> does: select the open items that are due, pay them in one file, and post the statement back.</li>
+			<li><a href="/examples/#remittance">Remittance</a> <span class="tag">mock-sap + mock-edi</span><br>Tells the supplier what was paid: SAP's payment advice, sent on as the X12 820 the supplier reads.</li>
 		</ul>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
