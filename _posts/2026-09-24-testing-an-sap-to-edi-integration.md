@@ -467,20 +467,24 @@ design question, and the run answers it one way rather than pretending not to.
 ### Running the payment run
 
 ```bash
-$ python3 -m unittest test_payment_run
-.......s...............
+$ python3 -m unittest mockbank.examples.test_payment_run
+...s....s.................
 ----------------------------------------------------------------------
-Ran 23 tests in 0.579s
+Ran 26 tests in 0.834s
 
-OK (skipped=1)
+OK (skipped=2)
 ```
 
-Thirteen of those are the behaviours above. The other ten came with the ACH path
-and with more asking of what happens when something answers badly: five hold the
-NACHA file header to its rules, one keeps two runs on the same day in separate
-files, one skips here because it needs an account that banks in US formats, and
-three cover a bank or an SAP that answers with an error rather than not at all.
-CI runs the whole suite both ways, so the ACH path is not merely present.
+Thirteen of those are the behaviours above. The other thirteen came with the ACH
+path and with more asking of what happens when something answers badly: five
+hold the NACHA file header to its rules, one keeps two runs on the same day in
+separate files, two skip here because they need an account that banks in US
+formats, three cover a bank or an SAP that answers with an error rather than not
+at all, and two make sure a clearing lands on the invoice SAP says it cleared.
+That last pair came in mock-bank 0.6.0: two suppliers can both bill `INV-1`, so
+the run now matches SAP's answer by accounting document rather than by invoice
+number, and says so out loud when a row names none. CI runs the whole suite
+both ways, so the ACH path is not merely present.
 
 
 Thirteen scenarios across three systems. Twelve of them run on real sockets with
@@ -550,3 +554,5 @@ which is the only kind of check worth recording.
 *Updated 29 September 2026: [mock-sap 0.13.3](https://pypi.org/project/mock-sap/0.13.3/) is out, and the sixteen above is now what a reader gets. Run from the source archives this post points at, with nothing but released mocks - mock-sap 0.13.3 and mock-edi 0.5.0 - `test_po_bridge` and `test_invoice_check` are **16 tests, OK**. The install line above asks for 0.13.3 for that reason: 0.13.2's copy of the example has eight tests and no currency check, so the floor, not the post, was what made the block unreachable.*
 
 *0.13.3 changes nothing about the mock itself - `mocksap/` is byte-identical to 0.13.2 - and the wheel carries no examples, so it is a release you feel only by reading the example or cloning the repo. Which is the whole point of it: the example is what this post tells you to run.*
+
+*Checked again on 5 October 2026 against [mock-sap 0.16.0](https://pypi.org/project/mock-sap/0.16.0/), [mock-edi 0.7.0](https://pypi.org/project/mock-edi/0.7.0/) and [mock-bank 0.7.0](https://pypi.org/project/mock-bank/0.7.0/), installed from PyPI with the lines in this post. `test_po_bridge` and `test_invoice_check`, from the copies this post links to, are still **16 tests, OK**. The payment run is now **26**, two of them skipped, where [Running the payment run](#running-the-payment-run) said 23 and one skipped. The three new tests came with mock-bank 0.6.0, and that block and the paragraph under it now show this run. Two of them are about an invoice number being only the supplier's own: keyed on it, a run with two suppliers' `INV-1` recorded one clearing against the wrong item and left the other looking unpaid, to be paid again next time. The third skips a reference a BAI2 statement cannot carry back, and is the second skip. [procure_to_pay](/blog/2026/10/02/one-purchase-across-three-mocks) passed its ten against the same three releases the day before.*
