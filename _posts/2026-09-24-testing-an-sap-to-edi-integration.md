@@ -23,7 +23,7 @@ mock-edi --port 8080 &
 
 mock-sap serves the purchase order service with real Gateway wire shapes (CSRF tokens, `{"d": ...}` envelopes, decimals as strings) and accepts inbound IDocs. mock-edi plays the supplier: send it an 850 and it answers with a 997, an 855, an 856 and an 810, validated against its own X12 dictionary.
 
-The two examples ship with the mocks. `po_bridge` is in mock-edi's [`examples/`](https://github.com/rseufert/mock-edi/tree/main/examples) and `invoice_check` in mock-sap's, and each is also in its package's source archive on PyPI. Each repo's CI runs its example against the other mock's latest release from PyPI, so the examples keep working as new versions come out.
+The two examples live in [mock-acme](https://github.com/rseufert/mock-acme), the package of integrations between the mocks, as `mockacme.po_bridge` and `mockacme.invoice_check`. Its CI runs them against the released mocks, and every night against each mock's `main`, so they keep working as new versions come out. (Until 5 October 2026 they lived in mock-edi's and mock-sap's `examples/`; see the note at the end.)
 
 ## Part one: orders out, confirmations in
 
@@ -39,8 +39,8 @@ To **send**, it reads the purchase order from SAP's `API_PURCHASEORDER_PROCESS_S
 ```python
 for item in items:
     # PO101 carries the SAP item number, so the 855 can be matched back
-    body.append("PO1*%s*%d*EA*%s**VP*%s" % (
-        item["PurchaseOrderItem"], float(item["OrderQuantity"]),
+    body.append("PO1*%s*%s*EA*%s**VP*%s" % (
+        item["PurchaseOrderItem"], x12_quantity(item["OrderQuantity"]),
         item["NetPriceAmount"], SUPPLIER_PART[item["Material"]]))
 ```
 
@@ -175,8 +175,10 @@ for item, (qty, price) in sorted(invoice["lines"].items()):
         found.append("item %s billed at %s, ordered at %s" % (item, price, po_price))
     if qty > shipped.get(item, 0):
         found.append("item %s bills %s, shipped %s" % (item, qty, shipped.get(item, 0)))
-if total != invoice["total"]:
-    found.append("lines add up to %s, invoice total is %s" % (total, invoice["total"]))
+tax = invoice.get("tax") or Decimal("0.00")
+if total + tax != invoice["total"]:
+    found.append("lines add up to %s%s, invoice total is %s" % (
+        total, " and tax to %s" % tax if tax else "", invoice["total"]))
 ```
 
 Money is `Decimal`, never `float`. The 810's `TDS` total carries two implied decimal places (`113280` means 1132.80), which is the kind of detail a real supplier's document tests for you whether you meant it to or not.
@@ -280,46 +282,28 @@ That is the shape of the failure worth designing tests around. A `503` is loud a
 ## Running it
 
 ```bash
-$ python3 -m unittest -v test_po_bridge test_invoice_check
-test_rejected_line_reaches_sap ... ok
-test_sap_outage_does_not_lose_the_confirmation ... ok
-test_short_shipment_is_raised_as_an_exception ... ok
-test_silent_supplier_leaves_nothing_to_post ... ok
-test_supplier_confirms_everything ... ok
-test_a_posted_invoice_leaves_money_owed
-A posted invoice has to leave money owed, or nothing was posted. ... ok
-test_an_idoc_sap_would_not_post_is_not_treated_as_posted ... ok
-test_an_invoice_in_the_wrong_currency_is_blocked
-The same number in another currency is not the same price. ... ok
-test_an_invoice_that_names_no_currency_is_not_blocked_for_it
-Absence is not disagreement. ... ok
-test_duplicate_invoice_is_posted_once ... ok
-test_matching_invoice_is_posted ... ok
-test_price_disagreement_is_blocked ... ok
-test_short_shipment_billed_as_shipped_is_posted ... ok
-test_the_order_declares_its_currency_so_the_supplier_bills_it
-A EUR order comes back invoiced in EUR, and so is payable by SEPA. ... ok
-test_the_payable_falls_due_on_the_invoices_own_terms
-Net 30 reaches the payable, so a payment run picks it up when due. ... ok
-test_the_payable_lines_carry_the_amounts_and_the_order
-A payable's lines carry the amounts, not just its total. ... ok
-
+$ git clone https://github.com/rseufert/mock-acme && cd mock-acme
+$ pip install -e ".[test]"
+$ python3 -m unittest tests.test_po_bridge tests.test_invoice_check
+.............................................
 ----------------------------------------------------------------------
-Ran 16 tests in 0.286s
+Ran 45 tests in 1.377s
 
 OK
 ```
 
-Sixteen scenarios, two systems, under a second. Six of them are newer than the
+The tests start both mocks themselves. When this post was written the same two files were sixteen tests, and all sixteen are among the forty-five; the rest came after, and the note at the end says what they found.
+
+Sixteen scenarios, two systems, under a second, as first written. Six of them were newer than the
 rest, and every one came from running this integration against a *third* mock.
 Three ask what posting the invoice created rather than what SAP received; three
 ask whether the money it created is in the currency anyone agreed on. Neither
 question was asked here until a payment run needed an answer. The full code:
 
-- Orders out: [po_bridge.py](/examples/po-bridge/po_bridge.py) and [test_po_bridge.py](/examples/po-bridge/test_po_bridge.py), also in [mock-edi's examples](https://github.com/rseufert/mock-edi/tree/main/examples)
-- Invoices in: [invoice_check.py](/examples/invoice-check/invoice_check.py) and [test_invoice_check.py](/examples/invoice-check/test_invoice_check.py), also in [mock-sap's examples](https://github.com/rseufert/mock-sap/tree/main/examples)
+- Orders out: [po_bridge.py](/examples/po-bridge/po_bridge.py) and [test_po_bridge.py](/examples/po-bridge/test_po_bridge.py), also in [mock-acme](https://github.com/rseufert/mock-acme/blob/main/mockacme/po_bridge.py)
+- Invoices in: [invoice_check.py](/examples/invoice-check/invoice_check.py) and [test_invoice_check.py](/examples/invoice-check/test_invoice_check.py), also in [mock-acme](https://github.com/rseufert/mock-acme/blob/main/mockacme/invoice_check.py)
 
-Both run in CI in their repos, against the other mock, so they keep working as the mocks change.
+Both run in mock-acme's CI against all three mocks, so they keep working as the mocks change.
 
 Neither mock implements real business logic, and that's the point. The integration's job is to move documents between two systems correctly and to survive when either one misbehaves. That's exactly what these tests cover.
 
@@ -334,7 +318,7 @@ pip install mock-bank
 mock-bank --port 8090 &
 ```
 
-That leg has a worked example now. [`pay_invoices`](https://github.com/rseufert/mock-bank/blob/main/examples/pay_invoices.py), in mock-bank's examples, pays mock-edi's EDIFACT invoices on their due dates and then decides from the bank's answers which ones are paid. Its seven tests are the ways a payment run goes wrong quietly:
+That leg has a worked example now. [`pay_invoices`](https://github.com/rseufert/mock-acme/blob/main/mockacme/pay_invoices.py), now in mock-acme, pays mock-edi's EDIFACT invoices on their due dates and then decides from the bank's answers which ones are paid. Its seven tests are the ways a payment run goes wrong quietly:
 
 - a payment the bank *accepted* treated as paid before the statement shows it
 - a retried run that pays twice
@@ -342,13 +326,13 @@ That leg has a worked example now. [`pay_invoices`](https://github.com/rseufert/
 - a returned payment that leaves its invoice marked paid
 - a payment missing from the statement that nobody notices
 
-[mock-bank's README](https://github.com/rseufert/mock-bank#worked-example-paying-the-suppliers-invoices) walks through them.
+[The tests](https://github.com/rseufert/mock-acme/blob/main/tests/test_pay_invoices.py) walk through them.
 
 ### The SAP payment run
 
 `pay_invoices` pays invoices that arrived over EDI. A company pays what is in
 *SAP*, and that is a different selection with a different set of ways to go
-wrong. [`payment_run`](https://github.com/rseufert/mock-bank/blob/main/examples/payment_run.py)
+wrong. [`payment_run`](https://github.com/rseufert/mock-acme/blob/main/mockacme/payment_run.py)
 does what SAP's `F110` does: select the open supplier items that are due, pay
 them in one `pain.001`, and post each `camt.053` back as a `FINSTA01` so SAP
 clears what was paid and reopens what came back.
@@ -371,7 +355,7 @@ settlement date, and the statement is what proves it — so an integration that
 clears the invoice on the acknowledgment is reporting cash it still has.
 
 ```python
-run = self.payments.run(self.today, "RUN1")        # Friday, 16:00
+run = self.payments.run(self.today, "R1")          # Friday, 16:00
 self.advance(self.today + datetime.timedelta(days=1))
 self.payments.reconcile(run)
 self.assertEqual({i.status for i in run.items}, {"accepted"})
@@ -467,15 +451,22 @@ design question, and the run answers it one way rather than pretending not to.
 ### Running the payment run
 
 ```bash
-$ python3 -m unittest mockbank.examples.test_payment_run
-...s....s.................
+$ python3 -m unittest tests.test_payment_run          # in the mock-acme clone
+.............s....s...............................
 ----------------------------------------------------------------------
-Ran 26 tests in 0.834s
+Ran 50 tests in 1.863s
 
 OK (skipped=2)
 ```
 
-Thirteen of those are the behaviours above. The other thirteen came with the ACH
+Twenty-six of those were here when this section was last checked, and they are
+described below. The other twenty-four came in mock-acme. Most are about the
+payment run's register, its own record of what it has sent, which is what stops
+a second run before the statement from paying the same invoice again. The rest
+keep money arriving apart from a payment coming back, and post a statement in
+its own currency.
+
+Of the twenty-six, thirteen are the behaviours above. The other thirteen came with the ACH
 path and with more asking of what happens when something answers badly: five
 hold the NACHA file header to its rules, one keeps two runs on the same day in
 separate files, two skip here because they need an account that banks in US
@@ -492,15 +483,14 @@ nothing stubbed on either side; the thirteenth builds a run in memory, because
 naming both candidates for a shortfall is arithmetic and does not need a bank:
 
 ```bash
-pip install "mock-bank>=0.6" "mock-sap>=0.13.2"
-mock-sap --port 8000 &
-mock-bank --port 8090 --clock 2026-10-02T16:00 &
-python3 -m unittest -v mockbank.examples.test_payment_run
+git clone https://github.com/rseufert/mock-acme && cd mock-acme
+pip install -e ".[test]"
+python3 -m unittest -v tests.test_payment_run
 ```
 
-Since mock-bank 0.6 the examples and their tests ship in the wheel, as
-`mockbank.examples`, so this leg needs no checkout: two packages and two
-servers. (Until 0.6 it did, and ran from inside the clone.)
+The tests start the mocks themselves, the bank on its clock at 16:00 on a
+Friday. From mock-bank 0.6 to 0.7 the example also shipped in mock-bank's
+wheel, as `mockbank.examples`; it now lives only in mock-acme.
 
 mock-bank's tests need mock-sap 0.13.2 or newer: the open-item cube it
 reads is read-only there, as it is in S/4, and a blocked supplier invoice
@@ -513,7 +503,7 @@ production.
 
 ### All three at once
 
-`payment_run` pays what is already in SAP. [`procure_to_pay`](https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py)
+`payment_run` pays what is already in SAP. [`procure_to_pay`](https://github.com/rseufert/mock-acme/blob/main/mockacme/procure_to_pay.py)
 carries one purchase the whole way instead: the order out as an `850`, the
 supplier's answers back, the three-way match, the posting, the payment run and
 the statement that clears it. Everything in this post plus the bank, in one test
@@ -558,3 +548,7 @@ which is the only kind of check worth recording.
 *Checked again on 5 October 2026 against [mock-sap 0.16.0](https://pypi.org/project/mock-sap/0.16.0/), [mock-edi 0.7.0](https://pypi.org/project/mock-edi/0.7.0/) and [mock-bank 0.7.0](https://pypi.org/project/mock-bank/0.7.0/), installed from PyPI with the lines in this post. `test_po_bridge` and `test_invoice_check`, from the copies this post links to, are still **16 tests, OK**. The payment run is now **26**, two of them skipped, where [Running the payment run](#running-the-payment-run) said 23 and one skipped. The three new tests came with mock-bank 0.6.0, and that block and the paragraph under it now show this run. Two of them are about an invoice number being only the supplier's own: keyed on it, a run with two suppliers' `INV-1` recorded one clearing against the wrong item and left the other looking unpaid, to be paid again next time. The third skips a reference a BAI2 statement cannot carry back, and is the second skip. [procure_to_pay](/blog/2026/10/02/one-purchase-across-three-mocks) passed its ten against the same three releases the day before.*
 
 *Checked again later the same day against [mock-sap 0.17.1](https://pypi.org/project/mock-sap/0.17.1/), with mock-edi 0.7.0 and mock-bank 0.7.0: still **16 tests, OK**, and the payment run still **26**, two skipped. 0.17.0 changed how a statement posts: three invoices paid to one supplier now clear against one payment document rather than three, and an item's `ClearingItem` points at the line that paid it. None of these tests assumed one document per invoice, so none had to change.*
+
+*Updated 5 October 2026: the examples have moved. Every integration in this post now lives in [mock-acme](https://github.com/rseufert/mock-acme), ACME's middleware as one package, and the mocks removed their copies the same day: `po_bridge` from mock-edi, `invoice_check` from mock-sap, and `pay_invoices`, `payment_run` and `procure_to_pay` from mock-bank, whose 0.7.0 wheel is the last to carry them as `mockbank.examples`. The links, the run commands and the copies under [/examples/](/examples/) now follow mock-acme, and its tests start the three mocks themselves. Run against mock-sap 0.18.0, mock-edi 0.7.0 and mock-bank 0.7.0 from mock-acme at `5f2ee3d`, `po_bridge` and `invoice_check` are **45 tests, OK**, with all sixteen above among them, and the payment run is **50**, two skipped, with all twenty-six among them.*
+
+*The new tests found real bugs. An order for 2.5 was sent to the supplier as 2, because the 850 wrote the quantity with `%d`. The supplier then confirmed, shipped and billed 2, and every document agreed with every other. The block in [Part one](#part-one-orders-out-confirmations-in) now shows the fix. An invoice carrying sales tax was blocked as not adding up, so the total check above now adds the tax in. An invoice for more than was ordered was posted in full when the ship notice agreed with it, because the match never compared it with the order. And a second payment run before the statement paid the same invoice again, because SAP has nothing between open and cleared; the run now keeps a register of what it has sent.*

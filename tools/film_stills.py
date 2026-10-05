@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Give every film on the site the still its page shows.
 
-The films on the home page and the project pages are GIFs drawn by mock-films, and they loop.
+The films on the home page and the project pages are GIFs drawn by mock-films
+or acme-treasury, and they loop.
 The page shows each one's still, a PNG, and plays the GIF only when the
 visitor clicks it (js/films.js); without the script, the link opens the GIF:
 

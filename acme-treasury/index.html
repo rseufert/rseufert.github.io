@@ -1,0 +1,47 @@
+---
+layout: default
+title: "acme-treasury: a cash forecast held to the bank's statements"
+description: "acme-treasury forecasts what ACME's account will close at on each of the next business days, from mock-sap and mock-bank, and holds the forecast to the bank's statements to the cent. When it dips under a floor, a payment schedule says which invoice to hold."
+image: /blog/treasury_week.png
+---
+<section class="projects">
+	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/acme-treasury">acme-treasury</a></h3>
+		<figure class="film">
+			<a class="play" href="/blog/treasury_week.gif" title="play the film"><img src="/blog/treasury_week.png" width="800" height="450" alt="acme-treasury forecasts the closing balance of ACME's account for eight business days, from what mock-sap says is owed and what mock-bank says it holds, and draws it as a line. Monday's statement from the bank closes 9,300.00 away from the line, in red: the forecast expected to pay an invoice, and the bank refused the payment because the supplier's account is closed, which SAP did not know. Tuesday's forecast replaces the line and lists that invoice as left out, with the bank's reason. The other seven statements close where the forecast then said, one of them at -16,450.00. The payments were made by mock-acme's payment run, and the capture script set up the invoices and moved both clocks."></a>
+			<figcaption>a cash forecast, held to the bank's statements <span>drawn by acme-treasury from a real run</span></figcaption>
+		</figure>
+		<p>A cash forecast you can check. It reads what <a href="/mock-sap/">mock-sap</a> says is owed and what <a href="/mock-bank/">mock-bank</a> says the account holds, and says what the account will close at on each of the next business days. Then the clocks are moved, <a href="https://github.com/rseufert/mock-acme">mock-acme</a>'s payment run pays what is due each morning, and the bank's statements say whether the forecast was right. Most cash forecasts are never held to anything: by the time the day arrives, nobody looks back.</p>
+<pre><code>mock-sap   ──open items──────────────▶
+                                        acme-treasury  ──▶  closing balance, day by day
+mock-bank  ──camt.052, payments,─────▶
+             credits, clock, holidays
+
+                        ... a week of mornings and nights ...
+
+mock-bank  ──camt.053──▶  the same figure, or the test fails</code></pre>
+		<ul class="features">
+			<li><strong>Held to the bank's statements.</strong> Both mocks keep a clock a test can move, so the tests play a week: a forecast every morning before the payment run, and every night the <code>camt.053</code> for that day, which has to close where the forecast said, to the cent.</li>
+			<li><strong>A payment at the bank is not owed twice.</strong> SAP keeps an item open until a statement clears it, so on the morning after a payment run the same invoice is an open item in SAP and a debit at the bank. They are joined on the <code>EndToEndId</code> and counted once.</li>
+			<li><strong>Money that will not move is listed, not added up.</strong> A blocked payable is not money going out, an overdue receivable is not money coming in, and a payment the bank refused will be refused again. Each is listed with its reason. mock-sap seeds six overdue receivables, 684,875.06 EUR in all, and a forecast that believed them would be comfortable and wrong.</li>
+			<li><strong>The calendar is the bank's.</strong> After the cutoff, today's run settles tomorrow, and nothing settles on a weekend or a holiday on the bank's list. A payment the bank will return comes back on its day, and is owed again.</li>
+			<li><strong>It says where it will be wrong.</strong> A supplier closed their account last week and SAP does not know, so Monday's forecast expects to pay an invoice the bank then refuses. Monday is out by that invoice, and Tuesday's forecast lists it with the bank's reason. The film above is that week.</li>
+			<li><strong>A payment schedule for when the line dips.</strong> <code>plan</code> is a small mixed-integer program, written in <a href="https://jump.dev">JuMP</a> and solved by <a href="https://highs.dev">HiGHS</a>: which invoices to hold, and until which business day, so that no day closes under a floor, holding as little as it can for as short a time as it can. <code>plan --apply</code> makes it happen as a user would, with a payment block in SAP on each held invoice, lifted on the morning it should be paid. It lifts only its own blocks.</li>
+		</ul>
+		<figure class="film">
+			<a class="play" href="/blog/treasury_plan.gif" title="play the film"><img src="/blog/treasury_plan.png" width="800" height="450" loading="lazy" alt="acme-treasury forecasts the closing balance of ACME's account for eight business days against a floor of 10,000.00. The forecast is under the floor on Monday the 12th, at -16,450.00, in red: an invoice is due a day before a customer's money arrives. Its payment schedule holds that invoice, INV-E for 61,450.00, until Tuesday the 13th by setting a payment block in mock-sap, and the line is drawn again without the dip. All eight of mock-bank's statements then close where the plan said, none under the floor and the lowest at 26,050.00. On the 13th the block is lifted and the invoice is paid, one day late. The payments were made by mock-acme's payment run, and the capture script set up the invoices, paid in the customer's money on the 13th and moved both clocks."></a>
+			<figcaption>an overdraft forecast, and one invoice held a day to avoid it <span>drawn by acme-treasury from a real run</span></figcaption>
+		</figure>
+<pre><code>pip install mock-sap mock-bank mock-acme
+git clone https://github.com/rseufert/acme-treasury &amp;&amp; cd acme-treasury
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+bin/demo                                  # a week's invoices, forecast on Monday
+bin/acme-treasury plan --days 8 --floor 10000</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/acme-treasury">GitHub</a> · <a href="https://github.com/rseufert/acme-treasury#what-it-holds-to">What it holds to</a> · <a href="https://github.com/rseufert/acme-treasury#the-payment-schedule">The payment schedule</a> · <a href="https://github.com/rseufert/acme-treasury#what-it-cannot-know">What it cannot know</a></p>
+	</div><!-- /.project -->
+
+	<p class="lede">Written in Julia 1.13, against the mocks as published: <a href="/mock-sap/">mock-sap</a> and <a href="/mock-bank/">mock-bank</a>, with the payment run from <a href="https://github.com/rseufert/mock-acme">mock-acme</a>.</p>
+</section><!-- /.projects -->
+<script src="/js/films.js" defer></script>

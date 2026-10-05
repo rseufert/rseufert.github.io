@@ -69,24 +69,24 @@ It survives a restart because SAP is where the answer lives. It is per supplier,
 
 ## What it doesn't do
 
-It never tells the supplier it was paid. That takes a remittance advice, an X12 820 or EDIFACT `REMADV`, and the film ends with SAP and the bank agreeing and the supplier none the wiser. That is why a supplier keeps dunning you for an invoice you paid. Both ends of one are in the mocks now: since 0.17.0 mock-sap writes the `REMADV` from the payment itself, naming every invoice it settled, and mock-edi has received both since 0.6.0. So the gap is in the example, not the mocks.
+It never tells the supplier it was paid. That takes a remittance advice, an X12 820 or EDIFACT `REMADV`, and the film ends with SAP and the bank agreeing and the supplier none the wiser. That is why a supplier keeps dunning you for an invoice you paid. Every piece of one exists now: since 0.17.0 mock-sap writes the advice from the payment itself, naming every invoice it settled, mock-edi has read an 820 since 0.6.0, and mock-acme's [`remittance`](/examples/#remittance) converts the one into the other. The example just doesn't call it yet.
 
 ## Run it
 
-The example and its tests ship in the mock-bank wheel, so there is nothing to clone:
+The example and its tests are in [mock-acme](https://github.com/rseufert/mock-acme), the package of integrations between the mocks, and its tests start the three mocks themselves:
 
 ```bash
-pip install "mock-bank>=0.6" "mock-sap>=0.14" "mock-edi>=0.7"
-mock-sap --port 8000 &
-mock-edi --port 8080 &
-mock-bank --port 8090 --clock 2026-10-02T16:00 &
-python3 -m unittest -v mockbank.examples.test_procure_to_pay
+git clone https://github.com/rseufert/mock-acme && cd mock-acme
+pip install -e ".[test]"
+python3 -m unittest -v tests.test_procure_to_pay
 ```
 
-Ten tests, among them the loop end to end, the duplicate paid without the check and refused with it, a price disagreement blocked before any money moves, a short shipment paid for what shipped, and a payment the bank rejects leaving the invoice owed. The code is [procure_to_pay.py](https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py), and the tests are [beside it](https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py).
+Fourteen tests. Among them are the loop end to end, the duplicate paid without the check and refused with it, a price disagreement blocked before any money moves, a short shipment paid for what shipped, and a payment the bank rejects leaving the invoice owed. The other four came with the payment run's register: with one kept on disk, a restarted middleware does not pay again. The code is [procure_to_pay.py](https://github.com/rseufert/mock-acme/blob/main/mockacme/procure_to_pay.py), and the tests are in [tests/test_procure_to_pay.py](https://github.com/rseufert/mock-acme/blob/main/tests/test_procure_to_pay.py).
 
 *Checked on 4 October 2026 against mock-sap 0.16.0, mock-edi 0.7.0 and mock-bank 0.7.0.*
 
 *Checked again on 5 October 2026 against mock-sap 0.17.1: the ten tests pass unchanged. 0.17.0 changed how a statement posts, with one payment document per supplier rather than one per invoice, and added the remittance advice mentioned above.*
+
+*Updated 5 October 2026: the example has moved. It was in mock-bank's `examples/` and its wheel, as `mockbank.examples`; it is now in [mock-acme](https://github.com/rseufert/mock-acme), with the other integrations between the mocks, and the mocks have removed their copies. [Run it](#run-it) says how to run it from there. Against mock-sap 0.18.0, mock-edi 0.7.0 and mock-bank 0.7.0, from mock-acme at `5f2ee3d`, it is fourteen tests, OK. The ten this post described are all among them. mock-bank 0.7.0 still carries the old copy, and the release after it will not.*
 
 <script src="/js/films.js" defer></script>

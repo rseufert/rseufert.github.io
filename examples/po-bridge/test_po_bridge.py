@@ -1,9 +1,9 @@
 """Integration tests for po_bridge, against mock-sap and mock-edi.
 
-    pip install mock-sap
-    mock-sap --port 8000 &
-    python3 -m mockedi --port 8080 &
-    cd examples && python3 -m unittest -v test_po_bridge
+    python3 -m unittest -v tests.test_po_bridge
+
+`tests/__init__.py` starts the mocks, and says how to point the tests at
+mocks that are already running.
 
 The walkthrough: https://rickseufert.com/blog/2026/09/24/testing-an-sap-to-edi-integration
 """
@@ -12,7 +12,7 @@ import os
 import unittest
 import urllib.request
 
-from po_bridge import PO_SERVICE, Bridge, Sap
+from mockacme.po_bridge import PO_SERVICE, Bridge, Sap
 
 SAP = os.environ.get("SAP_URL", "http://127.0.0.1:8000")
 EDI = os.environ.get("EDI_URL", "http://127.0.0.1:8080")

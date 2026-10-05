@@ -17,7 +17,7 @@ layout: default
 	<h2>Projects</h2>
 	<p class="lede">Mock enterprise systems for integration testing. Point your code at them and develop, test and demo without a license, a VPN tunnel, or a support ticket.</p>
 	<p class="lede">Using them together: <a href="/blog/2026/09/24/testing-an-sap-to-edi-integration">Testing an SAP-to-EDI integration without SAP or a trading partner</a>. On the failures you can't ask a partner to perform: <a href="/blog/2026/09/25/three-edi-behaviours-you-cannot-rehearse">three EDI behaviours you can't rehearse</a>.</p>
-	<p class="lede">The films are drawn by mock-films from the messages of a real run against each mock. The mocks have no screens of their own; these are the conversations they had.</p>
+	<p class="lede">The films are drawn by mock-films from the messages of a real run against each mock. The mocks have no screens of their own; these are the conversations they had. acme-treasury draws its own, from a real week against the mocks.</p>
 
 	<!-- Each mock in brief: one film, what it is, how to start it. The rest of
 	     its films and its features are on its own page, which is where
@@ -74,15 +74,26 @@ curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></p
 		<p class="more"><a href="/blog/2026/10/02/one-purchase-across-three-mocks">Read the post</a></p>
 	</div><!-- /.project -->
 
+	<div class="project" id="treasury">
+		<h3><a href="/acme-treasury/">acme-treasury</a></h3>
+		<figure class="film">
+			<a class="play" href="/blog/treasury_week.gif" title="play the film"><img src="/blog/treasury_week.png" width="800" height="450" loading="lazy" alt="acme-treasury forecasts the closing balance of ACME's account for eight business days, from what mock-sap says is owed and what mock-bank says it holds, and draws it as a line. Monday's statement from the bank closes 9,300.00 away from the line, in red: the forecast expected to pay an invoice, and the bank refused the payment because the supplier's account is closed, which SAP did not know. Tuesday's forecast replaces the line and lists that invoice as left out, with the bank's reason. The other seven statements close where the forecast then said, one of them at -16,450.00. The payments were made by mock-acme's payment run, and the capture script set up the invoices and moved both clocks."></a>
+			<figcaption>a cash forecast, held to the bank's statements <span>drawn by acme-treasury from a real run</span></figcaption>
+		</figure>
+		<p>A cash forecast from what mock-sap says is owed and what mock-bank says the account holds, held to the bank's statements to the cent. When the line dips under a floor, a payment schedule says which invoice to hold, and for how long.</p>
+		<p class="more"><a href="/acme-treasury/">Features and the payment schedule</a></p>
+	</div><!-- /.project -->
+
 	<div class="project">
 		<h3><a href="/examples/">Worked examples</a></h3>
-		<p>Small integrations written against the mocks, each with its tests.</p>
+		<p>Small integrations between the mocks, each with its tests, kept in <a href="https://github.com/rseufert/mock-acme">mock-acme</a>.</p>
 		<ul class="index">
 			<li><a href="/examples/#procure-to-pay">Procure to pay</a> <span class="tag">all three mocks</span><br>One purchase, carried the whole way: from a purchase order in SAP to the bank statement that clears it.</li>
 			<li><a href="/examples/#po-bridge">PO bridge</a> <span class="tag">mock-sap + mock-edi</span><br>Reads a purchase order from SAP, sends it to the supplier as an X12 850, and posts the supplier's 855 back as an <code>ORDRSP</code> IDoc.</li>
 			<li><a href="/examples/#invoice-check">Invoice check</a> <span class="tag">mock-sap + mock-edi</span><br>Posts a supplier's 810 invoice into SAP only if it passes a three-way match against the purchase order and the ship notice.</li>
 			<li><a href="/examples/#pay-invoices">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span><br>Pays a supplier's EDIFACT <code>INVOIC</code>s in a <code>pain.001</code>, then works out from what the bank sends back which are actually paid.</li>
 			<li><a href="/examples/#payment-run">Payment run</a> <span class="tag">mock-sap + mock-bank</span><br>What SAP's <code>F110</code> does: select the open items that are due, pay them in one file, and post the statement back.</li>
+			<li><a href="/examples/#remittance">Remittance</a> <span class="tag">mock-sap + mock-edi</span><br>Tells the supplier what was paid: SAP's payment advice, sent on as the X12 820 the supplier reads.</li>
 		</ul>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
