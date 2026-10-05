@@ -18,28 +18,32 @@ image: /flipper/hanzi_cards.png
 		</figure>
 		<p>Mandarin flashcards: simplified or traditional characters, pinyin with tone marks, and the tones played on the speaker.</p>
 		<ul class="features">
-			<li><strong>HSK 1 to 3.</strong> 150, 156 and 292 words, each deck with its own progress. HSK 1 and 2 come in a rough learning order; HSK 3 is shuffled.</li>
+			<li><strong>HSK 1 to 4, and four small decks.</strong> 150, 156, 292 and 601 words, plus Numbers and time, Food, Travel and Measure words, each deck with its own progress. HSK 1 and 2 come in a rough learning order; HSK 3 and 4 are shuffled.</li>
 			<li><strong>Simplified or traditional,</strong> switchable at any time, with the characters drawn from Noto Sans CJK.</li>
 			<li><strong>You hear the tones.</strong> When a card flips, the speaker glides through each syllable's tone contour - high and flat, rising, dipping, falling - so you hear the shape of the word.</li>
-			<li><strong>Spaced repetition.</strong> Cards you miss come back often and cards you know come back rarely, and new cards only arrive while fewer than six are still being learned. Progress is saved to the SD card.</li>
+			<li><strong>A tone quiz.</strong> Instead of flipping the card, pick each syllable's tone on the d-pad: up for the first, right for the second, down for the third, left for the fourth. The answer shows any wrong syllables inverted, and the card only counts as Good if every tone was right.</li>
+			<li><strong>Spaced over days.</strong> A card you know comes back after 1, 3, 7, 14, 30 and then 60 days, and one you miss comes back the same day until you get it, with a daily limit on new cards. A stats screen shows what's due, today's reviews and your streak, and you can browse a whole deck without touching your progress. Progress is saved to the SD card.</li>
 		</ul>
 <pre><code>python3 -m pip install --upgrade ufbt
 git clone https://github.com/rseufert/hanzi_cards &amp;&amp; cd hanzi_cards
 ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/hanzi_cards">GitHub</a> · <a href="https://github.com/rseufert/hanzi_cards#controls">Controls</a> · <a href="https://github.com/rseufert/hanzi_cards#adding-words">Adding words</a></p>
+		<p class="links"><a href="https://github.com/rseufert/hanzi_cards">GitHub</a> · <a href="https://github.com/rseufert/hanzi_cards#controls">Controls</a> · <a href="https://github.com/rseufert/hanzi_cards#tone-quiz">Tone quiz</a> · <a href="https://github.com/rseufert/hanzi_cards#adding-words">Adding words</a></p>
 	</div><!-- /.project -->
 
 	<div class="project" id="step-seq">
 		<h3><a href="https://github.com/rseufert/step_seq">Step Seq</a> <span class="tag">music</span></h3>
-		<figure class="shot">
+		<figure class="shot pair">
 			<img src="/flipper/step_seq.png" width="512" height="256" loading="lazy" alt="Step Seq on the Flipper's orange screen. The top bar reads &quot;P1&quot;, &quot;D#3&quot; and &quot;D# Blues&quot;. Below it a dotted grid of 16 steps has one filled block per step at different heights, a melody climbing and falling, and along the bottom a drum row marked &quot;dr&quot; of filled blocks, hollow blocks and dashes for kick, snare and hi-hat.">
-			<figcaption>pattern 1, in D# blues</figcaption>
+			<img src="/flipper/step_seq_tools.png" width="512" height="256" loading="lazy" alt="Another pattern: the top bar reads &quot;P4&quot;, &quot;Accent&quot; and &quot;A Min pent&quot;. A single long note with a tail sits in the middle of the grid, and the drum row holds a hollow block, two dashes, a cross and a round blob.">
+			<figcaption>pattern 1 in D# blues, and a held note and four drum sounds</figcaption>
 		</figure>
 		<p>A step sequencer for the Flipper's piezo speaker, with a melody grid and a drum row. The speaker can only play one tone at a time, so a drum takes the first few milliseconds of its step and the note gets the rest.</p>
 		<ul class="features">
 			<li><strong>Always in key.</strong> One note per step across 15 pitch rows that follow the scale you pick: minor or major pentatonic, minor, major, blues or chromatic, in any root.</li>
-			<li><strong>Drums from square waves and noise.</strong> A kick, a snare and a hi-hat on the bottom row.</li>
-			<li><strong>Eight patterns,</strong> each 16 or 32 steps with its own tempo (60 to 240 bpm), swing, scale, root and octave. Copy one into the next slot to build a variation, and everything is saved to the SD card when you quit.</li>
+			<li><strong>Notes that do more than beep.</strong> A note can be short or held for up to eight steps, and an accent plays it a level louder. A chord is played chiptune-style, cycling fast through its notes, since the speaker has one voice: the octave, the fifth, or a triad from the scale.</li>
+			<li><strong>Drums from square waves and noise.</strong> A kick, snare, hi-hat, open hat, clap and tom on the bottom row.</li>
+			<li><strong>Eight patterns and a song.</strong> Each pattern is 16 or 32 steps with its own tempo (60 to 240 bpm), swing, scale, root and octave, and a song chains up to 16 of them. Transpose, shift, a random melody and undo help build variations, and everything is saved to the SD card when you quit.</li>
+			<li><strong>Export</strong> writes the melody as a file the Flipper's own Music Player can play.</li>
 		</ul>
 <pre><code>python3 -m pip install --upgrade ufbt
 git clone https://github.com/rseufert/step_seq &amp;&amp; cd step_seq
@@ -49,15 +53,19 @@ ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 
 	<div class="project" id="nw-crawl">
 		<h3><a href="https://github.com/rseufert/nw_crawl">NW Crawl</a> <span class="tag">game</span></h3>
-		<figure class="shot">
+		<figure class="shot pair">
 			<img src="/flipper/nw_crawl.png" width="512" height="256" loading="lazy" alt="NW Crawl on the Flipper's orange screen: the player stands next to a rat on a dotted floor, with street-sign walls around them. The top line reads &quot;Hit Rat. Rat bites -1&quot; and the bottom line &quot;HP11/12 c1 Burnside&quot;.">
-			<figcaption>fighting a rat on NW Burnside</figcaption>
+			<img src="/flipper/nw_crawl_umbrella.png" width="512" height="256" loading="lazy" alt="Further north among the pine trees of Forest Park: the player with a coyote two tiles to the right. The top line reads &quot;Shoved Coyote back!&quot; and the bottom line &quot;HP39/39 c3 Thurman&quot;.">
+			<figcaption>fighting a rat on NW Burnside, and shoving a coyote back with the umbrella on Thurman</figcaption>
 		</figure>
 		<p>A tiny roguelike set on the alphabet streets of NW Portland. Start on Burnside and head north one street per floor - Couch, Davis, Everett, Flanders, all the way to Thurman - until you reach the Witch's Castle in Forest Park.</p>
 		<ul class="features">
-			<li><strong>Nineteen streets and a castle.</strong> Each floor is a randomly generated maze of rooms, corridors and side alleys under fog of war.</li>
-			<li><strong>The locals.</strong> Rats, crows, raccoons, rogue e-scooters and coyotes, getting tougher the further north you go. On the northern streets a Sasquatch lurks by the exit, invisible until he's two tiles away.</li>
-			<li><strong>Coffee, donuts and IPAs.</strong> Coffee heals, a pink-box donut raises your max HP, a hazy IPA raises your attack and a used book shows you the floor. On Pettygrove, Joe's Cellar is a safe room where the bartender pours you one stiff drink.</li>
+			<li><strong>Nineteen streets and a castle.</strong> Each floor is a randomly generated maze of rooms, corridors and side alleys under fog of war: wide open blocks in the south, long industrial corridors further north, and the trees of Forest Park at the end.</li>
+			<li><strong>The locals.</strong> Rats bite, crows fly over walls, raccoons steal a coffee and run, rogue e-scooters charge down a straight line and coyotes hunt in pairs. On the northern streets a Sasquatch lurks by the exit, invisible until he's two tiles away.</li>
+			<li><strong>An umbrella and a slingshot.</strong> The umbrella, found on Davis, shoves a local two tiles back and stuns it. Beat Sasquatch for his slingshot, which fires pebbles up to five tiles.</li>
+			<li><strong>Coffee, donuts and IPAs.</strong> Coffee heals, a pink-box donut raises your max HP, a hazy IPA raises your attack and a used book shows you the floor.</li>
+			<li><strong>Landmarks.</strong> Powell's Books on Couch, the food carts on Kearney, the streetcar on Lovejoy, and Joe's Cellar on Pettygrove, where the bartender pours you one stiff drink.</li>
+			<li><strong>Saved at every street.</strong> Quit and pick the walk up from the start of the street you reached. The title screen keeps your furthest street, your wins and your fastest win.</li>
 			<li><strong>The Witch</strong> hexes you from range, summons crows and vanishes when hit.</li>
 		</ul>
 <pre><code>python3 -m pip install --upgrade ufbt
@@ -77,7 +85,8 @@ ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 			<li><strong>Feed, play and pet.</strong> Dinner for both, a treat each, yarn to chase, or the laser dot, which Baby cannot resist and Nugget cannot be bothered with. Pet one and the Flipper purrs.</li>
 			<li><strong>The cats get on with their day.</strong> Nugget watches the birds from the window sill and keeps an eye on the food dish; Baby naps in the patch of afternoon sun, follows Nugget around and nudges him off his spot by the dish.</li>
 			<li><strong>The room follows the clock.</strong> The sun crosses the window, the sky goes dark in the evening and the lamp comes on, and late at night the cats get sleepy on their own.</li>
-			<li><strong>Yulia speaks Russian</strong> to the cats now and then, with the English underneath. She also reads, makes art and plays her keyboard through the speaker, and there's a wardrobe, decor, a record player in six genres and a photo album to fill.</li>
+			<li><strong>Yulia speaks Russian</strong> to the cats now and then, with the English underneath. She also reads, makes art and plays her keyboard through the speaker.</li>
+			<li><strong>Make the room hers.</strong> A wardrobe of nine hair styles in three colours, eight pairs of glasses (or none) and nine sweaters; seven rugs, a shelf plant, a cat tree and fairy lights; a record player in six genres, which everyone reacts to; and a photo album of twelve milestones to fill.</li>
 			<li><strong>Nothing bad ever happens.</strong> Time passes while the app is closed, so the cats get hungry and want to play, but that's all.</li>
 		</ul>
 <pre><code>python3 -m pip install --upgrade ufbt

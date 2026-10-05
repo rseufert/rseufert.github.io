@@ -69,7 +69,7 @@ It survives a restart because SAP is where the answer lives. It is per supplier,
 
 ## What it doesn't do
 
-It never tells the supplier it was paid. That takes a remittance advice, an X12 820 or EDIFACT `REMADV`, and the film ends with SAP and the bank agreeing and the supplier none the wiser. That is why a supplier keeps dunning you for an invoice you paid. mock-edi has received both since 0.6.0, so the gap is in the example now, not the mocks.
+It never tells the supplier it was paid. That takes a remittance advice, an X12 820 or EDIFACT `REMADV`, and the film ends with SAP and the bank agreeing and the supplier none the wiser. That is why a supplier keeps dunning you for an invoice you paid. Both ends of one are in the mocks now: since 0.17.0 mock-sap writes the `REMADV` from the payment itself, naming every invoice it settled, and mock-edi has received both since 0.6.0. So the gap is in the example, not the mocks.
 
 ## Run it
 
@@ -86,5 +86,7 @@ python3 -m unittest -v mockbank.examples.test_procure_to_pay
 Ten tests, among them the loop end to end, the duplicate paid without the check and refused with it, a price disagreement blocked before any money moves, a short shipment paid for what shipped, and a payment the bank rejects leaving the invoice owed. The code is [procure_to_pay.py](https://github.com/rseufert/mock-bank/blob/main/examples/procure_to_pay.py), and the tests are [beside it](https://github.com/rseufert/mock-bank/blob/main/examples/test_procure_to_pay.py).
 
 *Checked on 4 October 2026 against mock-sap 0.16.0, mock-edi 0.7.0 and mock-bank 0.7.0.*
+
+*Checked again on 5 October 2026 against mock-sap 0.17.1: the ten tests pass unchanged. 0.17.0 changed how a statement posts, with one payment document per supplier rather than one per invoice, and added the remittance advice mentioned above.*
 
 <script src="/js/films.js" defer></script>
