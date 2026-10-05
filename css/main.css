@@ -243,7 +243,7 @@ ul.posts .date {
     margin-left: 6px;
 }
 
-/* Films: a real exchange with a mock, drawn by mock-films. Each is 800 wide
+/* Films: a real run against the mocks, drawn by mock-films or acme-treasury. Each is 800 wide
    and its pixel type only lands on whole pixels at exactly 800, so a film is
    shown at 800 wherever the window has room - standing out past the text
    column, centred on it, when the column is narrower - and scales only below
