@@ -58,8 +58,11 @@ in the home page's section on the mocks together (`id="together"`) instead. A
 new acme-treasury film goes on the acme-treasury page, whichever mocks it
 shows. A re-text, a new still or a withdrawal is made on every page that shows
 the film. A film on a page that its index does not list is reported and left
-alone. mock-films is private, so CI does not run the sync; it runs the still
-check:
+alone. mock-films is private, so CI does not run the sync for its films.
+acme-treasury is public, so every Monday `acme-treasury-films.yml` runs the
+report for it: while the site is behind, it keeps one issue open with each
+week's report, and closes it once the site matches. Either way the sync itself
+is run by hand. On every push and pull request, CI runs the still check:
 
 ```bash
 python3 tools/film_stills.py           # write any still that is missing or stale

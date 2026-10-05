@@ -46,8 +46,10 @@ The alt text and caption are used exactly as the index has them. Some films
 show a failure the capture script asked a mock to produce, and the text says
 so; rewording it here could lose that.
 
-mock-films is private, so CI cannot run this; film_stills --check is what CI
-holds the page to once a sync is committed.
+mock-films is private, so CI cannot run this for its films; film_stills
+--check is what CI holds the page to once a sync is committed. acme-treasury
+is public, and .github/workflows/acme-treasury-films.yml runs the report for
+it every Monday, opening an issue while the site is behind.
 
 Two sources may not use the same name: every film's GIF and still share blog/.
 """

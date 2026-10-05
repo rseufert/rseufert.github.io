@@ -1,0 +1,89 @@
+name: acme-treasury films
+
+# acme-treasury is public, so unlike mock-films its index can be read from CI.
+# Once a week this compares the site's acme-treasury films with that index, the
+# way tools/sync_films.py does by hand. It runs on a schedule and never on a
+# pull request: a new cut published there is not a fault in a change here, and
+# should not turn an unrelated pull request red.
+#
+# When the site is behind, it opens an issue saying what differs, or adds the
+# week's report to the one already open; when the site matches again, it
+# closes that issue. The sync itself stays a person's job, because adding a
+# film means choosing where it goes.
+on:
+  schedule:
+    - cron: "41 6 * * 1"   # Mondays, 06:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: acme-treasury-films
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: the site matches acme-treasury's films
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Clone acme-treasury
+        run: git clone --depth 1 https://github.com/rseufert/acme-treasury "$RUNNER_TEMP/acme-treasury"
+      - name: Compare the site with its index
+        id: report
+        run: |
+          set +e
+          python tools/sync_films.py --source acme-treasury \
+            --clone "acme-treasury=$RUNNER_TEMP/acme-treasury" > "$RUNNER_TEMP/report.txt" 2>&1
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/report.txt"
+          # 0: matches. 1: differs, or the tool stopped and said why. 2: no
+          # index was read, which means the clone above is not where it says.
+          if [ "$status" -eq 2 ]; then exit 1; fi
+          echo "differs=$([ "$status" -eq 0 ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          echo "head=$(git -C "$RUNNER_TEMP/acme-treasury" rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIFFERS: ${{ steps.report.outputs.differs }}
+          HEAD: ${{ steps.report.outputs.head }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -eu
+          title="The site's acme-treasury films are behind its index"
+          open=$(gh issue list --state open --search "\"$title\" in:title" \
+                   --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)
+          {
+            echo "acme-treasury at \`$HEAD\`, [this run]($RUN):"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/report.txt"
+            echo '```'
+          } > "$RUNNER_TEMP/body.md"
+          if [ "$DIFFERS" = "true" ]; then
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --body-file "$RUNNER_TEMP/body.md"
+            else
+              {
+                cat "$RUNNER_TEMP/body.md"
+                echo
+                echo "To bring the site up to date, with a clone of acme-treasury beside this repo:"
+                echo
+                echo '```bash'
+                echo "python3 tools/sync_films.py --source acme-treasury            # what differs"
+                echo "python3 tools/sync_films.py --source acme-treasury --apply    # add, re-cut, re-text, withdraw; write the stills"
+                echo '```'
+                echo
+                echo "A film that is new in the index is added after the features list on /acme-treasury/; whether it should lead there, or on the home page, is a choice for a person. This issue closes itself the first Monday the site matches again."
+              } > "$RUNNER_TEMP/new.md"
+              gh issue create --title "$title" --body-file "$RUNNER_TEMP/new.md"
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "The site matches acme-treasury's index again (acme-treasury at \`$HEAD\`, [this run]($RUN))."
+          fi
