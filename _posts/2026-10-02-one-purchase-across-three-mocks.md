@@ -11,7 +11,7 @@ image: /blog/p2p_film.png
 ---
 
 <figure class="film">
-	<a class="play" href="/blog/p2p_film.gif" title="play the film"><img src="/blog/p2p_film.png" width="800" height="450" alt="Four lanes: SAP, ACME, mock-edi as the supplier, and mock-bank; between the mocks runs procure_to_pay from the installed mock-acme package, ACME's middleware, driven by the capture script, which derived the Monday the run starts on, emptied the bank's holidays, and created the purchase order in SAP before the film starts. Act one, on Monday 2026-10-12: ACME's 850 goes to the supplier, and it acknowledges, confirms, packs, sends the despatch advice, raises invoice INV9000002 and sends the 810. Act two: the middleware posts that invoice to SAP as an INVOIC, and SAP posts it and owes EUR 1250.00. Act three: the script advances the bank's clock to Wednesday 2026-11-11, the day SAP says the invoice is due; the middleware sends a pain.001 with one payment, which the bank accepts, books and reports; the clock moves a day, the statement arrives, the middleware posts it to SAP as a FINSTA01 and SAP clears INV9000002. 22 empty statements are posted on the way and are not drawn, and the supplier is not told it was paid: the capture stops before the middleware's advise step."></a>
+	<a class="play" href="/blog/p2p_film.gif" title="play the film"><img src="/blog/p2p_film.png" width="800" height="450" alt="Four lanes: SAP, ACME, mock-edi as the supplier, and mock-bank; between the mocks runs procure_to_pay from the installed mock-acme package, ACME's middleware, driven by the capture script, which derived the Monday the run starts on, emptied the bank's holidays, and created the purchase order in SAP before the film starts. Act one, on Monday 2026-10-12: ACME's 850 goes to the supplier, and it acknowledges, confirms, packs, sends the despatch advice, raises invoice INV9000002 and sends the 810. Act two: the middleware posts that invoice to SAP as an INVOIC, and SAP posts it and owes EUR 1250.00. Act three: the script advances the bank's clock to Wednesday 2026-11-11, the day SAP says the invoice is due; the middleware sends a pain.001 with one payment, which the bank accepts, books and reports; the clock moves a day, the statement arrives, the middleware posts it to SAP as a FINSTA01 and SAP clears INV9000002, with 22 empty statements posted on the way and not drawn. Act four: the script moves the supplier's clock to the bank's day, because a supplier a month behind would take the advice as one for money that has not come; SAP writes a payment advice, the middleware sends it to the supplier as an 820 for EUR 1250.00, and the supplier acknowledges it and records it as advised, which is its word for being told and not a state on the invoice."></a>
 	<figcaption>one purchase across all three mocks <span>drawn by mock-films from a real run</span></figcaption>
 </figure>
 
@@ -23,15 +23,18 @@ SAP  ──850──▶  supplier          a purchase order becomes an EDI order
 SAP  ◀──INVOIC──                 matched, posted, and now owed
      ──pain.001──▶  bank         a payment run selects what is due
 SAP  ◀──FINSTA01◀──camt.053──    the statement clears what was paid
+SAP  ──PEXR2002──▶ 820 ──▶  supplier   and the supplier is told what for
 ```
 
-Every arrow in it is something one of the other worked examples already does with two mocks. [PO bridge](/examples/#po-bridge) sends the order, [Invoice check](/examples/#invoice-check) posts the invoice, [Payment run](/examples/#payment-run) pays it and reads the statement back. [Procure to pay](/examples/#procure-to-pay) strings them together, and it exists for what only shows up between them.
+Every arrow in it is something one of the other worked examples already does with two mocks. [PO bridge](/examples/#po-bridge) sends the order, [Invoice check](/examples/#invoice-check) posts the invoice, [Payment run](/examples/#payment-run) pays it and reads the statement back, [Remittance](/examples/#remittance) tells the supplier. [Procure to pay](/examples/#procure-to-pay) strings them together, and it exists for what only shows up between them.
 
 ## What the film shows
 
 The run starts on Monday 2026-10-12. ACME's 850 goes to the supplier, which acknowledges it, confirms it, packs it, sends the despatch advice, and raises invoice INV9000002. The middleware posts that invoice into SAP as an `INVOIC`, and SAP now owes EUR 1250.00.
 
 Then the bank's clock moves to Wednesday 2026-11-11, the day SAP says the invoice is due. The payment run sends a `pain.001` with one payment; the bank accepts it, books it and reports the debit. The clock moves a day, Thursday's statement arrives, the middleware posts it to SAP as a `FINSTA01`, and SAP clears INV9000002. On the way, 22 empty statements were posted for the days nothing happened, and the film leaves them out.
+
+The fourth act tells the supplier. First the script moves the supplier's clock to the bank's day, and the film shows it doing so: a supplier still on its own clock, a month behind, would take the advice as one for money that has not arrived, and say so. Then SAP writes a payment advice from the payment, the middleware sends it to the supplier as an X12 820 for EUR 1250.00, and the supplier acknowledges it and records it as *advised*. That word is the supplier's, and it means only that it was told. Nothing in the film says the supplier applied the payment to the invoice on its side.
 
 ## Each pair was green while the chain was broken
 
@@ -69,7 +72,7 @@ It survives a restart because SAP is where the answer lives. It is per supplier,
 
 ## What it doesn't do
 
-The film never tells the supplier it was paid. That takes a remittance advice, an X12 820 or EDIFACT `REMADV`, and the film ends with SAP and the bank agreeing and the supplier none the wiser. That is why a supplier keeps dunning you for an invoice you paid. Since mock-acme 0.2.0 the middleware does tell it: after the statement clears the invoice, its `advise` step asks SAP for the payment advice (mock-sap writes one from the payment itself, naming every invoice it settled), converts it with [`remittance`](/examples/#remittance) into an 820, and sends it to mock-edi, which says whether it agrees. The film's capture stops before that step, so for now the fourth act is only in the tests.
+Until mock-acme 0.2.0 it didn't tell the supplier it was paid, and the film ended with SAP and the bank agreeing and the supplier none the wiser. That is why a supplier keeps dunning you for an invoice you paid. The fourth act is the fix: the middleware's `advise` step asks SAP for the payment advice (mock-sap writes one from the payment itself, naming every invoice it settled), converts it with [`remittance`](/examples/#remittance) into an 820, and sends it to mock-edi, which says whether it agrees.
 
 What the middleware still doesn't do is take it back. If the bank returns a payment after the supplier was told, SAP reopens the invoice, and the supplier holds an advice saying it was paid. The correction is a reversing 820, and nothing sends one yet.
 
@@ -92,5 +95,7 @@ Nineteen tests. Among them are the loop end to end, the duplicate paid without t
 *Updated 5 October 2026: the example has moved. It was in mock-bank's `examples/` and its wheel, as `mockbank.examples`; it is now in [mock-acme](https://github.com/rseufert/mock-acme), with the other integrations between the mocks, and the mocks have removed their copies. [Run it](#run-it) says how to run it from there. Against mock-sap 0.18.0, mock-edi 0.7.0 and mock-bank 0.7.0, from mock-acme at `5f2ee3d`, it is fourteen tests, OK. The ten this post described are all among them. mock-bank 0.7.0 still carries the old copy, and the release after it will not.*
 
 *Updated 5 October 2026: mock-films re-cut the film with mock-acme 0.2.0's `procure_to_pay` driving it, where it had run mock-bank's packaged example. No row changed, but every date moved a week, because the run is dated the Monday after the capture: it now starts on Monday 2026-10-12 and pays on Wednesday 2026-11-11. mock-acme 0.2.0 also tells the supplier what was paid, so [What it doesn't do](#what-it-doesnt-do) now says what the middleware does and what it still doesn't. Against mock-sap 0.18.0, mock-edi 0.7.0 and mock-bank 0.7.0, from mock-acme 0.2.0 at `c538e72`, it is nineteen tests, OK.*
+
+*Updated 5 October 2026, later: mock-films added the fourth act, so the film now ends with the supplier told, and [What the film shows](#what-the-film-shows) describes it. The supplier's lane now shows its clock in every act; the rows and dates of the first three acts are unchanged. The film runs 65.7 seconds, up from 51.2.*
 
 <script src="/js/films.js" defer></script>
