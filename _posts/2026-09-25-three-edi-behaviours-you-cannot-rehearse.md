@@ -13,10 +13,10 @@ The chain everybody demos is 850 → 997 → 855 → 856 → 810. An order goes 
 
 It is also not what most of your integration code is for. The bulk of it exists for the days the chain doesn't run cleanly: the buyer changes the order after you've packed it, the acknowledgment never comes, the same file is picked up twice. Those are the branches that carry the money, and they are exactly the ones you cannot rehearse — a real trading partner misbehaves on its schedule, not on yours, and "could you reject an invoice for me on Tuesday?" is a support ticket and a fortnight.
 
-[mock-edi](https://github.com/rseufert/mock-edi) 0.2.0 added all three. Here they are, with output from a mock started like this. *Updated 26 September 2026: the output is from mock-edi 0.3.0, which moved the 865's PO date to `BCA10`, writes every timestamp in UTC, and now refuses a replayed interchange.*
+[mock-edi](https://github.com/rseufert/mock-edi) 0.2.0 added all three. Here they are, with output from a mock started like this. *Updated 5 October 2026: the output is from mock-edi 0.7.0, which refuses a replayed interchange (since 0.3.0) and puts the 865's dates where X12 004010 says (since 0.6.0). An earlier note here said 0.3.0 had moved the order date to `BCA10`; it had, and that was the wrong place, as the note at the end explains.*
 
 ```bash
-pip install "mock-edi>=0.3.0"
+pip install "mock-edi>=0.7.0"
 mock-edi --port 8080 \
   --drop-dir ./edi/in --pickup-dir ./edi/out \
   --despatch-delay 3600000 --invoice-delay 3600000
@@ -36,13 +36,15 @@ POC*2*DI*0**EA*0**VP*BRKT-050~
 and the 865 answers line by line, in the same vocabulary the 855 uses:
 
 ```
-BCA*00*AC*4500001234**1*20260925****20260925~
+BCA*00*AC*4500001234**1*20260925***5100002*20261005*20260925~
 POC*1*QD*60**EA*12.50**VP*WIDGET-001*UP*076123400003~
 ACK*IA*60*EA*068*20260927~
 POC*2*DI*40**EA*4.15**VP*BRKT-050*UP*076123400041~
 ACK*IR*0*EA~
 REF*ZZ**Line deleted at the buyer's request~
 ```
+
+`BCA` carries three dates, and 004010 fixes which is which: `BCA06` is the date the buyer gave the order, `BCA10` the date of this acknowledgment, and `BCA11` the date of the change it answers. `BCA09` is the seller's own order number, so the buyer can quote it back.
 
 Note `POC02` — the seller echoes the verb the buyer used (`QD`, `DI`), rather than flattening everything to "changed", so the buyer can match each answer to the request it made.
 
@@ -141,3 +143,5 @@ bash examples/demo.sh
 ```
 
 The guided tour covers all three, and skips the sections your configuration doesn't enable rather than pretending. There is a walkthrough of a full SAP-to-EDI integration in [the previous post](/blog/2026/09/24/testing-an-sap-to-edi-integration), and the [changelog](https://github.com/rseufert/mock-edi/blob/main/CHANGELOG.md) has the rest.
+
+*Checked on 5 October 2026 against [mock-edi 0.7.0](https://pypi.org/project/mock-edi/0.7.0/): all three behaviours run as shown, replayed with the same order and files, and `examples/demo.sh` from the 0.7.0 source archive runs end to end. One thing had changed: the 865's dates. Until 0.6.0 the mock wrote the order date in `BCA10`, where the acknowledgment's own date belongs, and its own date in `BCA06`, where the order date belongs, and read them back the same way, so its own round trips agreed with themselves while a partner reading by the standard got the two swapped. That is the layout this post showed until today. 0.6.0 put them where 004010 says, and 0.7.0 added the seller's order number in `BCA09`; the block above is now 0.7.0's. Since 0.7.0, `?older-than=` also measures age by the mock's clock, so advancing the clock ages what is outstanding, which is how a chase-up timer gets tested without waiting.*
