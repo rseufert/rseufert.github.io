@@ -452,20 +452,24 @@ design question, and the run answers it one way rather than pretending not to.
 
 ```bash
 $ python3 -m unittest tests.test_payment_run          # in the mock-acme clone
-....................s....s........................................
+.......................sssss....s...........................................
 ----------------------------------------------------------------------
-Ran 66 tests in 2.286s
+Ran 76 tests in 2.337s
 
-OK (skipped=2)
+OK (skipped=6)
 ```
 
 Twenty-six of those were here when this section was last checked, and they are
-described below. The other forty came in mock-acme. Most are about not paying an
+described below. The other fifty came in mock-acme. Most are about not paying an
 invoice twice. Since mock-acme 0.3.0 a run writes into SAP which run has each
 invoice, before its file goes out, so a second run before the statement skips it
 whoever starts that run; the tests hold that claim to every way it is let go of,
-or left behind. The rest keep money arriving apart from a payment coming back,
-and post a statement in its own currency.
+or left behind. Others keep money arriving apart from a payment coming back,
+and post a statement in its own currency. The newest hold an ACH file to what a
+NACHA record can carry: a name with a control character in it, or a routing
+number that is not nine digits, costs that one payment and not the whole file.
+Four of those skip here, beside the two below, because they need an account
+that banks in US formats.
 
 Of the twenty-six, thirteen are the behaviours above. The other thirteen came with the ACH
 path and with more asking of what happens when something answers badly: five
@@ -555,3 +559,5 @@ which is the only kind of check worth recording.
 *The new tests found real bugs. An order for 2.5 was sent to the supplier as 2, because the 850 wrote the quantity with `%d`. The supplier then confirmed, shipped and billed 2, and every document agreed with every other. The block in [Part one](#part-one-orders-out-confirmations-in) now shows the fix. An invoice carrying sales tax was blocked as not adding up, so the total check above now adds the tax in. An invoice for more than was ordered was posted in full when the ship notice agreed with it, because the match never compared it with the order. And a second payment run before the statement paid the same invoice again, because SAP has nothing between open and cleared; the run now keeps a register of what it has sent.*
 
 *Checked again on 7 October 2026 against [mock-sap 0.19.0](https://pypi.org/project/mock-sap/0.19.0/), mock-edi 0.7.0 and [mock-bank 0.8.0](https://pypi.org/project/mock-bank/0.8.0/), from mock-acme 0.3.0: the bridge and the invoice check are still **45 tests, OK**, and the payment run is **66**, two skipped. mock-sap 0.19.0 lets an open item say which payment run has it, and mock-acme 0.3.0 writes that claim before a file goes out, so [Running the payment run](#running-the-payment-run) now says SAP holds it rather than the run's own register. 0.19.0 also has a credit line on a statement say whether it is a payment coming back or money arriving; mock-acme already wrote that, so nothing in this post changes for it.*
+
+*Checked again on 7 October 2026 against mock-sap 0.19.0, [mock-edi 0.8.0](https://pypi.org/project/mock-edi/0.8.0/) and [mock-bank 0.9.0](https://pypi.org/project/mock-bank/0.9.0/), from mock-acme 0.3.2: the bridge and the invoice check are still **45 tests, OK**, and the payment run is **76**, six skipped. The ten new payment run tests came with mock-acme 0.3.1 and 0.3.2: an ACH file is held to what a NACHA record can carry, which mock-bank 0.9.0 now refuses whole when it is not, and a payment file the bank refuses whole now lets its invoices go in SAP.*

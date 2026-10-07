@@ -13,10 +13,10 @@ The chain everybody demos is 850 → 997 → 855 → 856 → 810. An order goes 
 
 It is also not what most of your integration code is for. The bulk of it exists for the days the chain doesn't run cleanly: the buyer changes the order after you've packed it, the acknowledgment never comes, the same file is picked up twice. Those are the branches that carry the money, and they are exactly the ones you cannot rehearse — a real trading partner misbehaves on its schedule, not on yours, and "could you reject an invoice for me on Tuesday?" is a support ticket and a fortnight.
 
-[mock-edi](https://github.com/rseufert/mock-edi) 0.2.0 added all three. Here they are, with output from a mock started like this. *Updated 5 October 2026: the output is from mock-edi 0.7.0, which refuses a replayed interchange (since 0.3.0) and puts the 865's dates where X12 004010 says (since 0.6.0). An earlier note here said 0.3.0 had moved the order date to `BCA10`; it had, and that was the wrong place, as the note at the end explains.*
+[mock-edi](https://github.com/rseufert/mock-edi) 0.2.0 added all three. Here they are, with output from a mock started like this. *Updated 5 October 2026: the output is from mock-edi 0.7.0, which refuses a replayed interchange (since 0.3.0) and puts the 865's dates where X12 004010 says (since 0.6.0). An earlier note here said 0.3.0 had moved the order date to `BCA10`; it had, and that was the wrong place, as the note at the end explains. Updated again 7 October 2026: the output is now from mock-edi 0.8.0, which dates an acknowledged line `067` rather than `068`.*
 
 ```bash
-pip install "mock-edi>=0.7.0"
+pip install "mock-edi>=0.8.0"
 mock-edi --port 8080 \
   --drop-dir ./edi/in --pickup-dir ./edi/out \
   --despatch-delay 3600000 --invoice-delay 3600000
@@ -36,9 +36,9 @@ POC*2*DI*0**EA*0**VP*BRKT-050~
 and the 865 answers line by line, in the same vocabulary the 855 uses:
 
 ```
-BCA*00*AC*4500001234**1*20260925***5100002*20261005*20260925~
+BCA*00*AC*4500001234**1*20260925***5100002*20261007*20260925~
 POC*1*QD*60**EA*12.50**VP*WIDGET-001*UP*076123400003~
-ACK*IA*60*EA*068*20260927~
+ACK*IA*60*EA*067*20261009~
 POC*2*DI*40**EA*4.15**VP*BRKT-050*UP*076123400041~
 ACK*IR*0*EA~
 REF*ZZ**Line deleted at the buyer's request~
@@ -89,7 +89,7 @@ Two control numbers per row, and both are needed. `AK102` quotes the functional 
 
 ```
 810 0006 -> rejected (matched True)
-  BIG at segment 2: Segment has data element errors; element 4: Invalid code value ('BADPO')
+  BIG at segment 2: Segment has data element errors; BIG04 (element 4): Invalid code value ('BADPO')
 ```
 
 ```
@@ -145,3 +145,5 @@ bash examples/demo.sh
 The guided tour covers all three, and skips the sections your configuration doesn't enable rather than pretending. There is a walkthrough of a full SAP-to-EDI integration in [the previous post](/blog/2026/09/24/testing-an-sap-to-edi-integration), and the [changelog](https://github.com/rseufert/mock-edi/blob/main/CHANGELOG.md) has the rest.
 
 *Checked on 5 October 2026 against [mock-edi 0.7.0](https://pypi.org/project/mock-edi/0.7.0/): all three behaviours run as shown, replayed with the same order and files, and `examples/demo.sh` from the 0.7.0 source archive runs end to end. One thing had changed: the 865's dates. Until 0.6.0 the mock wrote the order date in `BCA10`, where the acknowledgment's own date belongs, and its own date in `BCA06`, where the order date belongs, and read them back the same way, so its own round trips agreed with themselves while a partner reading by the standard got the two swapped. That is the layout this post showed until today. 0.6.0 put them where 004010 says, and 0.7.0 added the seller's order number in `BCA09`; the block above is now 0.7.0's. Since 0.7.0, `?older-than=` also measures age by the mock's clock, so advancing the clock ages what is outstanding, which is how a chase-up timer gets tested without waiting.*
+
+*Checked again on 7 October 2026 against [mock-edi 0.8.0](https://pypi.org/project/mock-edi/0.8.0/): all three behaviours run as shown, replayed with the same order and files, and `examples/demo.sh` from the 0.8.0 source archive runs end to end. Two things in the output changed. The 865 dates an accepted line with `067`, the current scheduled delivery, where it wrote `068`, which in X12 is the scheduled ship date; the date itself is the same. And a 997's rejection names the element it rejects by its reference, `BIG04`, as well as by its position. The 865 block above is from a single run on that day, so `BCA10`, the acknowledgment's own date, and `ACK05`, the delivery it schedules, are that day's; they move with the clock, and an earlier version of the block paired dates from two runs.*
