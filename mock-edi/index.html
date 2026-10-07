@@ -26,6 +26,8 @@ image: /blog/edi_overshipped.png
 			<li><strong>AS2, plain HTTP, or a folder.</strong> Point <code>--drop-dir</code> and <code>--pickup-dir</code> at directories for integrations that still trade files.</li>
 			<li><strong>Changes and receipts.</strong> An 860 changes an order and is answered with an 865; EDIFACT's <code>ORDCHG</code> is answered by an <code>ORDRSP</code>, having no change acknowledgment of its own. The 997s you send back are matched to what the mock sent, so "nobody acknowledged my invoice" is testable. A replayed interchange is refused with a TA1, not fulfilled twice.</li>
 			<li><strong>Failure on demand.</strong> Short shipments, rejected lines, duplicate invoices, documents out of order, answers an hour late, corrupt trailers, a translator that rejects everything, an invoice that never comes, a strict partner, a partner that never answers.</li>
+			<li><strong>Held to the standards it names.</strong> Every X12 segment has the width 004010 gives it and every EDIFACT composite the bounds D.96A gives it, so a correct document in either dialect is not reported against. A name the partner's character set cannot carry is transliterated (<code>Łódź</code> as <code>Lodz</code>, a curled apostrophe as a straight one) rather than written as <code>?</code>, and one <code>REMADV</code> can replace another, as EANCOM has it.</li>
+			<li><strong>A run you can repeat byte for byte.</strong> Start the mock at a chosen time and hold it there, hold the courier and step deliveries one document at a time, and read off the timeline which promise each shipment, invoice and document kept.</li>
 			<li><strong>Validates its own output</strong> against the same dictionary it checks yours against.</li>
 		</ul>
 		<figure class="film">
