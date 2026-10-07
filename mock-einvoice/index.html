@@ -1,0 +1,36 @@
+---
+layout: default
+title: "mock-einvoice: a mock e-invoicing partner for EN 16931 and Peppol"
+description: "mock-einvoice is a mock e-invoicing partner: UBL invoices and credit notes held to every published rule of EN 16931, Peppol BIS Billing and XRechnung, and the Peppol Invoice Response that answers them."
+---
+<section class="projects">
+	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
+
+	<div class="project">
+		<h3><a href="https://github.com/rseufert/mock-einvoice">mock-einvoice</a></h3>
+		<p>A mock e-invoicing partner. It reads and writes UBL invoices and credit notes and holds them to their published rules, and it reads and writes the Peppol Invoice Response a buyer answers one with. Over HTTP it is a buyer that takes invoices in and answers them, and a supplier that sends them and takes the answers. One process is both, and two can be pointed at each other.</p>
+<pre><code>supplier ──Invoice (UBL)──▶  buyer   held to 1,144 rules: valid, 201
+         ◀──Response AP───          accepted
+         ◀──Response PD───          paid
+         ──BT-115 999.99──▶  buyer   422  BR-CO-16: the parts come to 1190.00
+buyer    ──Response UQ──▶  refused   409  OP-BR111-R004: nothing follows
+                                          a payment in full</code></pre>
+		<ul class="features">
+			<li><strong>Zero dependencies.</strong> Python 3.8+ and the standard library, like its siblings. Every amount, quantity and percentage is a <code>Decimal</code> made from the text as written, and making one from a float is a <code>TypeError</code>.</li>
+			<li><strong>Every published rule, under its publisher's name.</strong> All 979 of the EN 16931 core, all 165 of Peppol BIS Billing 3.0 (its own 63, the 31 for Germany and the 71 for seven other countries), the 34 of a standard XRechnung 3.0 document, and all 82 of the Invoice Response. A finding gives the rule's identifier, where it was found and a link to where the rule is published; the words are the project's own.</li>
+			<li><strong>Not built is said, never assumed.</strong> A report lists the rules it ran and the published ones it did not. A document nothing was found wrong with is <code>not judged</code>, not <code>valid</code>, while a rule that could apply to it is missing. Since 0.2.0 every rule that can apply to a document it takes is built, so the verdict waits for the day a specification publishes a rule before the mock has it.</li>
+			<li><strong>Held to other people's tests.</strong> Of the 1,137 unit test cases EN 16931 publishes, 1,126 agree and none disagree; all 678 statements in Peppol's 673 cases agree; and all 39 valid documents of the XRechnung test suite are <code>valid</code>. A disagreement is a failure until the published rule shows the case to be wrong.</li>
+			<li><strong>The rules no validator checks.</strong> Peppol's guide gives the Invoice Response an order (acknowledged, in process, under query, conditionally accepted, rejected, accepted, paid) and says nothing follows a rejection or a payment in full. No Schematron file has those rules, so the buyer keeps to them and refuses a response that breaks one with <code>409</code> and the rule. <code>"force"</code> sends it anyway, because a seller's system has to cope with a buyer who does, and the supplier takes such a response and ignores it, as the guide says it may.</li>
+			<li><strong>The arithmetic is the rules' own.</strong> The published rules are XPath, and XPath rounds a tie towards positive infinity, which is neither Python's <code>round</code> nor half up. A rule that could not be computed has failed, as it would in a real validator.</li>
+			<li><strong>What it does not do is refused by name.</strong> A Cross Industry Invoice, an XRechnung Extension or CVD document, a document with a <code>DOCTYPE</code>, a specification it does not know: each is refused with a code and a sentence, not quietly held to the core alone.</li>
+			<li><strong>Not real, and says where.</strong> There is no AS4 and no SMP lookup: an invoice is a <code>POST</code> and the other party is a URL. Nothing happens with time, so each status after the first is asked for, and nothing is kept on disk.</li>
+			<li><strong>Worked end to end with the other mocks.</strong> <a href="/examples/#e-invoice">E-invoice</a> in <a href="https://github.com/rseufert/mock-acme">mock-acme</a> takes a supplier's UBL invoice in place of an 810, matches it against the order in <a href="/mock-sap/">mock-sap</a> and the ship notice from <a href="/mock-edi/">mock-edi</a>, posts it, and answers the supplier with Invoice Responses down to paid.</li>
+		</ul>
+<pre><code>pip install mock-einvoice
+mock-einvoice --port 8100
+curl --data-binary @invoice.xml http://127.0.0.1:8100/invoices</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-einvoice">GitHub</a> · <a href="https://pypi.org/project/mock-einvoice/">PyPI</a> <a href="https://pypi.org/project/mock-einvoice/"><img class="badge" src="https://img.shields.io/pypi/v/mock-einvoice" alt="latest mock-einvoice release on PyPI"></a> · <a href="https://github.com/rseufert/mock-einvoice/blob/main/CHANGELOG.md">Changelog</a></p>
+	</div><!-- /.project -->
+
+	<p class="lede">Worked examples that use mock-einvoice: <a href="/examples/#e-invoice">E-invoice</a>.</p>
+</section><!-- /.projects -->

@@ -1,17 +1,17 @@
 ---
 layout: default
 title: Worked examples
-description: "Six small integrations between mock-sap, mock-edi and mock-bank, each with its tests, kept in mock-acme: procure to pay, a PO bridge, an invoice check, paying invoices, a payment run and a remittance advice."
+description: "Seven small integrations between mock-sap, mock-edi, mock-bank and mock-einvoice, each with its tests, kept in mock-acme: procure to pay, a PO bridge, an invoice check, an e-invoice, paying invoices, a payment run and a remittance advice."
 ---
 <section class="projects">
 	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
 	<h2>Worked examples</h2>
-	<p class="lede">Small integrations between <a href="/mock-sap/">mock-sap</a>, <a href="/mock-edi/">mock-edi</a> and <a href="/mock-bank/">mock-bank</a>, each with its tests. They live in <a href="https://github.com/rseufert/mock-acme">mock-acme</a>: ACME's middleware, one package with one copy of each, tested against the released mocks and every night against each mock's <code>main</code>. Its tests start the three mocks themselves, so there is nothing to run first.</p>
+	<p class="lede">Small integrations between <a href="/mock-sap/">mock-sap</a>, <a href="/mock-edi/">mock-edi</a>, <a href="/mock-bank/">mock-bank</a> and <a href="/mock-einvoice/">mock-einvoice</a>, each with its tests. They live in <a href="https://github.com/rseufert/mock-acme">mock-acme</a>: ACME's middleware, one package with one copy of each, tested against the released mocks and every night against each mock's <code>main</code>. Its tests start the four mocks themselves, so there is nothing to run first.</p>
 	<p class="lede">Until 5 October 2026 each lived in the <code>examples/</code> of the mock it was written beside. Each mock's <code>examples/README.md</code> says which file became which.</p>
 
 	<div class="project" id="procure-to-pay">
 		<h3><a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/procure_to_pay.py">Procure to pay</a> <span class="tag">all three mocks</span></h3>
-		<p>One purchase, carried the whole way: a purchase order in SAP becomes an X12 850, the supplier confirms it, ships it and invoices it, a three-way match posts the invoice into SAP as money owed, a payment run pays it in an ISO 20022 <code>pain.001</code>, the bank's statement clears it, and the supplier is told what was paid. Four of the five examples below are its individual legs; this is the one that runs end to end.</p>
+		<p>One purchase, carried the whole way: a purchase order in SAP becomes an X12 850, the supplier confirms it, ships it and invoices it, a three-way match posts the invoice into SAP as money owed, a payment run pays it in an ISO 20022 <code>pain.001</code>, the bank's statement clears it, and the supplier is told what was paid. Four of the six examples below are its individual legs; this is the one that runs end to end.</p>
 <pre><code>SAP  ──850──▶  supplier          a purchase order becomes an EDI order
      ◀──855/856/810──  supplier  confirmed, shipped, invoiced
 SAP  ◀──INVOIC──                 matched, posted, and now owed
@@ -20,15 +20,17 @@ SAP  ◀──FINSTA01◀──camt.053──    the statement clears what was p
 SAP  ──PEXR2002──▶ 820 ──▶  supplier   and the supplier is told what for</code></pre>
 		<ul class="features">
 			<li><strong>It was written to find bugs, and it found three.</strong> Each pair of mocks was green while the chain was broken, because each pair's tests assert what the <em>next</em> system received rather than what it could do with it. An <code>INVOIC</code> that named no supplier and so created nothing owed; a mock that answered "posted" for having posted nothing; an order placed in EUR that came back invoiced in dollars. All three had been passing for days.</li>
-			<li><strong>The same invoice twice, and two things that look like they catch it.</strong> A supplier retries an invoice after the first was taken, and a restarted middleware posts it again. Upstream, an invoice arriving alone is blocked for billing more than was shipped - because the restart forgot the ship notice too, not because anything checked. Downstream, the payment run skips a repeated reference within one run - and pays it in the next, once the first has cleared. Neither end is checking, and the second payment goes out through the gap.</li>
+			<li><strong>The same invoice twice, and two things that look like they catch it.</strong> A supplier retries an invoice after the first was taken, and a restarted middleware posts it again. Upstream, an invoice arriving alone is held, waiting for a ship notice the restart forgot - which keeps it out of SAP, not because anything checked: resend the ship notice with it and it posts again. Downstream, the payment run skips a repeated reference within one run - and pays it in the next, once the first has cleared. Neither end is checking, and the second payment goes out through the gap.</li>
 			<li><strong>The fix is to ask the system of record.</strong> Does SAP already hold a supplier invoice with this number, from this supplier? One <code>$filter</code>, and it survives a restart because SAP is where the answer lives. Per supplier, because an invoice number is only unique within one.</li>
+			<li><strong>One order, two deliveries, two payables.</strong> A supplier with less in stock than was ordered ships the rest later, with a ship notice and an invoice of its own. Each invoice is matched against the shipment it names, neither is taken for a copy of the other, and each is paid once, in one run or in two. Before mock-acme 0.5.0, with both deliveries read in one run, the first invoice was blocked against the second delivery's notice.</li>
+			<li><strong>An invoice ahead of its ship notice is held, not paid.</strong> It is kept and reported, a payment run that fires meanwhile pays nothing for it, and the run after the notice arrives pays it once. Anything else wrong with it blocks it at once: a wrong price does not get better when the goods arrive.</li>
 			<li><strong>A price disagreement never reaches the bank,</strong> blocked by a real <code>810</code> disagreeing with the purchase order rather than by a flag a test set.</li>
 			<li><strong>A payment the bank rejects leaves the invoice owed.</strong> The supplier's account is closed, SAP still holds its details, and <code>AC04</code> comes back: the item stays open and stays distinguishable from one that was paid and came back.</li>
 			<li><strong>The supplier is told what was paid,</strong> which is why it stops dunning you for an invoice you paid. Once the statement clears a payment, SAP writes the advice from the payment itself, one per payment document naming every invoice it settled, <a href="#remittance">Remittance</a> sends it on as an X12 820, and mock-edi says whether it agrees. Only what SAP has cleared is advised: a payment the bank accepted is not yet money that arrived.</li>
 			<li><strong>It does not take an advice back,</strong> and says so. A payment the bank returns after the supplier was told reopens the invoice in SAP, while the supplier still holds an advice saying it was paid; the correction is a reversing 820, which nothing here sends.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-acme &amp;&amp; cd mock-acme
-pip install -e ".[test]"         # mock-acme, and the three mocks to test against
+pip install -e ".[test]"         # mock-acme, and the four mocks to test against
 python3 -m unittest -v tests.test_procure_to_pay</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/procure_to_pay.py">Code</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/tests/test_procure_to_pay.py">Tests</a> · <a href="/blog/2026/10/02/one-purchase-across-three-mocks">The post</a></p>
 	</div><!-- /.project -->
@@ -46,7 +48,7 @@ receive:  SAP  ◀──  ORDRSP IDoc  ◀──  X12 855  ◀──  supplier</
 			<li><strong>SAP is down when the 855 arrives,</strong> and the confirmation is kept until SAP takes it. This test found a real bug.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-acme &amp;&amp; cd mock-acme
-pip install -e ".[test]"         # mock-acme, and the three mocks to test against
+pip install -e ".[test]"         # mock-acme, and the four mocks to test against
 python3 -m unittest -v tests.test_po_bridge</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-one-orders-out-confirmations-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/po_bridge.py">Code</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/tests/test_po_bridge.py">Tests</a></p>
 	</div><!-- /.project -->
@@ -62,15 +64,38 @@ python3 -m unittest -v tests.test_po_bridge</code></pre>
 			<li><strong>A short shipment, billed as shipped, is posted.</strong> Matching against the ordered quantity would wrongly block it.</li>
 			<li><strong>A price disagreement is blocked.</strong> mock-edi bills its own catalogue price, the way real suppliers do.</li>
 			<li><strong>An invoice in the wrong currency is blocked</strong> - and one that names no currency is not. The order declares its currency, so a EUR purchase order comes back invoiced in EUR; before mock-sap 0.13.3 it did not, and the match compared 12.50 with 12.50 without noticing they meant different money. Absence is not disagreement, so an invoice carrying no <code>CUR</code> segment still passes.</li>
+			<li><strong>An invoice is matched against the shipment it bills.</strong> An 810 can name its consignment (<code>REF*SI</code>), the number on the 856 (<code>BSN02</code>), and is then compared with that ship notice and no other. If the notice has not arrived the invoice is <code>held</code>: kept, reported on every run, and posted on the run after it comes. Before mock-acme 0.5.0 it was blocked for billing more than was shipped, and dropped, so it never posted when the notice did come.</li>
 			<li><strong>The same invoice sent twice is posted once.</strong> No sleeping: the test advances mock-edi's clock.</li>
 			<li><strong>An invoice for more than was ordered is blocked,</strong> counting what earlier invoices for the same item billed. The ship notice is the supplier's own account of what it sent, so a supplier that ships too much and bills it agrees with itself; only the order disagrees.</li>
 			<li><strong>An invoice that carries sales tax is posted, and owed in full.</strong> The tax is added in before the total is compared, and SAP is told the net, the tax and the gross apart. Before, every correct taxed invoice was blocked as not adding up.</li>
 			<li><strong>SAP not answering loses nothing.</strong> An invoice taken from the supplier's mailbox is kept until SAP has dealt with it, and one whose IDoc may have arrived is not sent twice.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-acme &amp;&amp; cd mock-acme
-pip install -e ".[test]"         # mock-acme, and the three mocks to test against
+pip install -e ".[test]"         # mock-acme, and the four mocks to test against
 python3 -m unittest -v tests.test_invoice_check</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#part-two-invoices-in">Walkthrough</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/invoice_check.py">Code</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/tests/test_invoice_check.py">Tests</a></p>
+	</div><!-- /.project -->
+
+	<div class="project" id="e-invoice">
+		<h3><a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/e_invoice.py">E-invoice</a> <span class="tag">mock-sap + mock-edi + mock-einvoice</span></h3>
+		<p>The invoice check again, with the invoice arriving the new way. <code>e_invoice.py</code> collects a supplier's UBL e-invoice from <a href="/mock-einvoice/">mock-einvoice</a> in place of an 810, reads it into what the 810 reader makes, and runs the same three-way match, the same <code>INVOIC</code> IDoc and the same duplicate question. Then it does what an 810 has no answer for: it tells the supplier what became of the invoice, in Peppol Invoice Responses. The order and the ship notice still go by EDI, with a supplier who sends no 810.</p>
+<pre><code>supplier ──UBL Invoice──▶           collected from the supplier's side
+supplier ◀──AB──                    received
+SAP ◀──INVOIC──                     matched, posted
+supplier ◀──AP── or ◀──RE / UQ──    accepted, or not and why
+SAP clears the payable              (payment run)
+supplier ◀──PD──                    paid</code></pre>
+		<ul class="features">
+			<li><strong>Rejected or queried, with Peppol's reason and the problem in words.</strong> An invoice only a new invoice can cure (a price, a quantity, an item, a total, a duplicate) is rejected with <code>RE</code>; one that information could cure (an order SAP does not have, or none named) is queried with <code>UQ</code>. A block that is not the supplier's doing, SAP not answering among them, is not told.</li>
+			<li><strong>Paid is SAP's clearing and nothing else.</strong> <code>PD</code> is said when the payable the invoice became is cleared in SAP, which is the fact the remittance advice rests on too. A payment sent and not yet on a statement is not paid.</li>
+			<li><strong>Every response it writes passes Peppol's 82 rules,</strong> because mock-einvoice refuses one that does not. The UBL here is read and written by hand, so that refusal is what holds the writer to something.</li>
+			<li><strong>Started again, it asks.</strong> A new process asks the supplier's side what each invoice was last told, so nothing is acknowledged, accepted or rejected twice, and an invoice accepted before the restart is still told paid. One case is left to a person and told nothing: an invoice only acknowledged that SAP already holds, since SAP does not say whether the earlier process posted it.</li>
+			<li><strong>An XRechnung invoice is matched, posted and told nothing,</strong> because XRechnung has no response message.</li>
+		</ul>
+<pre><code>git clone https://github.com/rseufert/mock-acme &amp;&amp; cd mock-acme
+pip install -e ".[test]"         # mock-acme, and the four mocks to test against
+python3 -m unittest -v tests.test_e_invoice</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/e_invoice.py">Code</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/tests/test_e_invoice.py">Tests</a></p>
 	</div><!-- /.project -->
 
 	<div class="project" id="pay-invoices">
@@ -86,7 +111,7 @@ python3 -m unittest -v tests.test_invoice_check</code></pre>
 			<li><strong>A returned payment reopens the invoice,</strong> and a payment missing from the statement is reported as unreconciled rather than cleared.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-acme &amp;&amp; cd mock-acme
-pip install -e ".[test]"         # mock-acme, and the three mocks to test against
+pip install -e ".[test]"         # mock-acme, and the four mocks to test against
 python3 -m unittest -v tests.test_pay_invoices</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/pay_invoices.py">Code</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/tests/test_pay_invoices.py">Tests</a></p>
 	</div><!-- /.project -->
@@ -106,7 +131,7 @@ reconcile:  SAP  ◀──  FINSTA01  ◀──  camt.053  ◀──  bank
 			<li><strong>Anything either side did that the run couldn't use is said in words.</strong> <code>run.problems</code> is neither raised nor swallowed - a bank that answers with an error is three sentences, not silence. A host that is <em>down</em> raises and stops the run instead - a deliberate difference, not an oversight.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-acme &amp;&amp; cd mock-acme
-pip install -e ".[test]"         # mock-acme, and the three mocks to test against
+pip install -e ".[test]"         # mock-acme, and the four mocks to test against
 python3 -m unittest -v tests.test_payment_run</code></pre>
 		<p class="links"><a href="/blog/2026/09/24/testing-an-sap-to-edi-integration#the-sap-payment-run">Walkthrough</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/payment_run.py">Code</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/tests/test_payment_run.py">Tests</a></p>
 	</div><!-- /.project -->
@@ -123,7 +148,7 @@ python3 -m unittest -v tests.test_payment_run</code></pre>
 			<li><strong>The direction is read, not assumed.</strong> SAP writes money leaving as <code>3570.00-</code>; an amount that is not money out is refused rather than relabelled, and <code>BPR01</code> says no money moves on this document.</li>
 		</ul>
 <pre><code>git clone https://github.com/rseufert/mock-acme &amp;&amp; cd mock-acme
-pip install -e ".[test]"         # mock-acme, and the three mocks to test against
+pip install -e ".[test]"         # mock-acme, and the four mocks to test against
 python3 -m unittest -v tests.test_remittance</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/mock-acme/blob/main/mockacme/remittance.py">Code</a> · <a href="https://github.com/rseufert/mock-acme/blob/main/tests/test_remittance.py">Tests</a></p>
 	</div><!-- /.project -->

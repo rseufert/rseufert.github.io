@@ -17,7 +17,7 @@ layout: default
 	<h2>Projects</h2>
 	<p class="lede">Mock enterprise systems for integration testing. Point your code at them and develop, test and demo without a license, a VPN tunnel, or a support ticket.</p>
 	<p class="lede">Using them together: <a href="/blog/2026/09/24/testing-an-sap-to-edi-integration">Testing an SAP-to-EDI integration without SAP or a trading partner</a>. On the failures you can't ask a partner to perform: <a href="/blog/2026/09/25/three-edi-behaviours-you-cannot-rehearse">three EDI behaviours you can't rehearse</a>.</p>
-	<p class="lede">The films are drawn by mock-films from the messages of a real run against each mock. The mocks have no screens of their own; these are the conversations they had. acme-treasury draws its own, from a real week against the mocks.</p>
+	<p class="lede">The films are drawn by mock-films from the messages of a real run against a mock. The mocks have no screens of their own; these are the conversations they had. acme-treasury draws its own, from a real week against the mocks.</p>
 
 	<!-- Each mock in brief: one film, what it is, how to start it. The rest of
 	     its films and its features are on its own page, which is where
@@ -64,6 +64,18 @@ curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></p
 		<p class="more"><a href="/mock-bank/">Features and more films</a></p>
 	</div><!-- /.project -->
 
+	<div class="project">
+		<h3><a href="/mock-einvoice/">mock-einvoice</a></h3>
+		<p>A mock e-invoicing partner. UBL invoices and credit notes, held to every published rule of EN 16931, Peppol BIS Billing and XRechnung, and the Peppol Invoice Response that answers them. Over HTTP it is a buyer that takes invoices in and a supplier that sends them.</p>
+<pre><code>supplier ──Invoice (UBL)──▶  buyer   held to 1,144 rules: valid
+         ◀──Response AP───          accepted
+         ◀──Response PD───          paid</code></pre>
+<pre><code>pip install mock-einvoice
+mock-einvoice --port 8100</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/mock-einvoice">GitHub</a> · <a href="https://pypi.org/project/mock-einvoice/">PyPI</a> <a href="https://pypi.org/project/mock-einvoice/"><img class="badge" src="https://img.shields.io/pypi/v/mock-einvoice" alt="latest mock-einvoice release on PyPI"></a> · <a href="https://github.com/rseufert/mock-einvoice/blob/main/CHANGELOG.md">Changelog</a></p>
+		<p class="more"><a href="/mock-einvoice/">Features</a></p>
+	</div><!-- /.project -->
+
 	<div class="project" id="together">
 		<h3><a href="/blog/2026/10/02/one-purchase-across-three-mocks">One purchase, all three mocks</a></h3>
 		<figure class="film">
@@ -91,6 +103,7 @@ curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></p
 			<li><a href="/examples/#procure-to-pay">Procure to pay</a> <span class="tag">all three mocks</span><br>One purchase, carried the whole way: from a purchase order in SAP to the bank statement that clears it and the advice that tells the supplier.</li>
 			<li><a href="/examples/#po-bridge">PO bridge</a> <span class="tag">mock-sap + mock-edi</span><br>Reads a purchase order from SAP, sends it to the supplier as an X12 850, and posts the supplier's 855 back as an <code>ORDRSP</code> IDoc.</li>
 			<li><a href="/examples/#invoice-check">Invoice check</a> <span class="tag">mock-sap + mock-edi</span><br>Posts a supplier's 810 invoice into SAP only if it passes a three-way match against the purchase order and the ship notice.</li>
+			<li><a href="/examples/#e-invoice">E-invoice</a> <span class="tag">mock-sap + mock-edi + mock-einvoice</span><br>Takes a supplier's UBL e-invoice in place of an 810, matches and posts it the same way, and answers the supplier with Peppol Invoice Responses down to paid.</li>
 			<li><a href="/examples/#pay-invoices">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span><br>Pays a supplier's EDIFACT <code>INVOIC</code>s in a <code>pain.001</code>, then works out from what the bank sends back which are actually paid.</li>
 			<li><a href="/examples/#payment-run">Payment run</a> <span class="tag">mock-sap + mock-bank</span><br>What SAP's <code>F110</code> does: select the open items that are due, pay them in one file, and post the statement back.</li>
 			<li><a href="/examples/#remittance">Remittance</a> <span class="tag">mock-sap + mock-edi</span><br>Tells the supplier what was paid: SAP's payment advice, sent on as the X12 820 the supplier reads.</li>
