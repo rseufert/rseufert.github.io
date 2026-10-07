@@ -173,7 +173,7 @@ for item, (qty, price) in sorted(invoice["lines"].items()):
     po_price = Decimal(ordered[item]["NetPriceAmount"])
     if price != po_price:
         found.append("item %s billed at %s, ordered at %s" % (item, price, po_price))
-    if qty > shipped.get(item, 0):
+    if shipped is not None and qty > shipped.get(item, 0):
         found.append("item %s bills %s, shipped %s" % (item, qty, shipped.get(item, 0)))
 tax = invoice.get("tax") or Decimal("0.00")
 if total + tax != invoice["total"]:
@@ -517,8 +517,8 @@ suite.
 It is worth reading for the duplicate. A supplier retries an invoice after the
 first was taken, and **two separate things look like they catch it while neither
 does**. Upstream, a restarted middleware has forgotten its ship notices as well
-as what it posted, so the retry is blocked for billing more than was shipped -
-which is a second thing missing, not a check. Downstream, the payment run skips a
+as what it posted, so the retry is held, waiting for a ship notice it will not
+see again - which is a second thing missing, not a check. Downstream, the payment run skips a
 repeated reference within one run, and pays it in the next once the first has
 cleared. The second payment goes out through the gap between two systems that
 were each deduplicating for their own reasons.
@@ -563,3 +563,5 @@ which is the only kind of check worth recording.
 *Checked again on 7 October 2026 against mock-sap 0.19.0, [mock-edi 0.8.0](https://pypi.org/project/mock-edi/0.8.0/) and [mock-bank 0.9.0](https://pypi.org/project/mock-bank/0.9.0/), from mock-acme 0.3.2: the bridge and the invoice check are still **45 tests, OK**, and the payment run is **76**, six skipped. The ten new payment run tests came with mock-acme 0.3.1 and 0.3.2: an ACH file is held to what a NACHA record can carry, which mock-bank 0.9.0 now refuses whole when it is not, and a payment file the bank refuses whole now lets its invoices go in SAP.*
 
 *Checked again on 7 October 2026 against [mock-sap 0.20.0](https://pypi.org/project/mock-sap/0.20.0/), with mock-edi 0.8.0 and mock-bank 0.9.0, from mock-acme 0.3.2: still **45 tests, OK**, and the payment run still **76**, six skipped. 0.20.0 is mostly the mock refusing what it used to accept and answer plausibly, and computing every amount as a decimal rounded half up; nothing in this post relied on either.*
+
+*Checked again on 7 October 2026 against [mock-sap 0.21.0](https://pypi.org/project/mock-sap/0.21.0/), [mock-edi 0.9.0](https://pypi.org/project/mock-edi/0.9.0/) and mock-bank 0.9.0, from mock-acme 0.5.0: the bridge and the invoice check are still **45 tests, OK**, and the payment run still **76**, six skipped, in the same order as the block above. One thing in this post changed with mock-acme 0.5.0. An 810 can name the shipment it bills (`REF*SI`), and the invoice check now compares it with that shipment's ship notice rather than the order's latest; if that notice has not arrived, the invoice is `held` and posts on the run after it does, where before it was blocked and dropped. So the quantity check in [Part two](#part-two-invoices-in) is skipped while there is no notice to compare with, which is the `shipped is not None` now in that block, and the copy under [/examples/](/examples/) follows it. And the near miss in [All three at once](#all-three-at-once) is now an invoice held for a ship notice the restart forgot, rather than one blocked for it; it is still a second thing missing, not a check. mock-sap 0.21.0 posts a customer's payment against the receivable it quotes, which this post's integrations do not send.*

@@ -2,8 +2,8 @@
 
 The home page is an index: each mock in brief with one film, the worked
 examples as a list, the Flipper apps as tiles. The rest is a page each:
-`mock-sap/`, `mock-edi/` and `mock-bank/` carry a mock's features and all its
-films, `examples/index.html` the worked examples in full, and
+`mock-sap/`, `mock-edi/`, `mock-bank/` and `mock-einvoice/` carry a mock's
+features and all its films, `examples/index.html` the worked examples in full, and
 `flipper/index.html` the apps in full.
 
 The [SAP-to-EDI post](https://rickseufert.com/blog/2026/09/24/testing-an-sap-to-edi-integration)

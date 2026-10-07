@@ -3,11 +3,11 @@ name: Rick Seufert
 # Open Graph and Twitter tags; jekyll-sitemap writes /sitemap.xml. Both are on
 # GitHub Pages' list of supported plugins.
 title: Rick Seufert
-tagline: Mock SAP, EDI and bank systems, and Flipper apps
+tagline: Mock SAP, EDI, bank and e-invoicing systems, and Flipper apps
 description: >-
-  Rick Seufert's projects: mock-sap, mock-edi and mock-bank, mock enterprise
-  systems for testing SAP, EDI and payment integrations without a license, a
-  VPN or a trading partner. Also apps for the Flipper Zero, and a blog.
+  Rick Seufert's projects: mock-sap, mock-edi, mock-bank and mock-einvoice,
+  mock enterprise systems for testing SAP, EDI, payment and e-invoicing
+  integrations without a license, a VPN or a trading partner. Also apps for the Flipper Zero, and a blog.
 author: Rick Seufert
 lang: en
 plugins:
