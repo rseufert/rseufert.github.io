@@ -10,7 +10,7 @@ image: /blog/edi_overshipped.png
 	<div class="project">
 		<h3><a href="https://github.com/rseufert/mock-edi">mock-edi</a></h3>
 		<figure class="film">
-			<a class="play" href="/blog/edi_overshipped.gif" title="play the film"><img src="/blog/edi_overshipped.png" width="800" height="450" alt="mock-edi sends a purchase order, and the seller answers with an order response, a despatch advice and an invoice, each of which the mock acknowledges. The mock reports two problems on the despatch advice: 130 shipped against 100 confirmed and 100 ordered. The seller's documents were sent by the capture script."></a>
+			<a class="play" href="/blog/edi_overshipped.gif" data-poster-ms="33000" title="play the film"><img src="/blog/edi_overshipped.png" width="800" height="450" alt="ACME's mock-edi sends an 850 to NORTHWIND's mock-edi, which the capture set to over-ship and to delay its despatch and invoice. Act one: the seller acknowledges the order and confirms the 100 ordered. Act two: the capture moves both clocks an hour, the seller packs and sends a despatch advice for 130, and the buyer's mock reports two problems on it: 130 shipped against 100 confirmed, and against 100 ordered. Act three: the clocks move again, the seller invoices the 130, and the buyer's mock reports that the invoice bills 130 against 100 ordered. The capture delivers each document from one mock to the other, one at a time, and the buyer's mock acknowledges each."></a>
 			<figcaption>an order that ships too much <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end. Send it an 850 and it answers with a 997, an 855, an 856 and an 810. Send it EDIFACT <code>ORDERS</code> and you get <code>CONTRL</code>, <code>ORDRSP</code>, <code>DESADV</code> and <code>INVOIC</code>.</p>
@@ -40,7 +40,7 @@ image: /blog/edi_overshipped.png
 			<figcaption>an 850 opened, and an altered copy refused <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<figure class="film">
-			<a class="play" href="/blog/edi_two_film.gif" data-poster-ms="14500" title="play the film"><img src="/blog/edi_two_film.png" width="800" height="450" loading="lazy" alt="BUYERCO's mock-edi sends an 850 to SELLERCO's mock-edi. The capture set the seller to short-ship and to delay its despatch and invoice, so it acknowledges the order, confirms 80 of the 100 ordered, and the buyer's mock flags the shortfall on that 855. The capture moves both mocks' clocks an hour at a time; the seller then packs and sends the despatch advice, and raises and sends the invoice, with the buyer's mock acknowledging each."></a>
+			<a class="play" href="/blog/edi_two_film.gif" data-poster-ms="16500" title="play the film"><img src="/blog/edi_two_film.png" width="800" height="450" loading="lazy" alt="BUYERCO's mock-edi sends an 850 to SELLERCO's mock-edi. The capture set the seller to short-ship and to delay its despatch and invoice, so it acknowledges the order, confirms 80 of the 100 ordered, and the buyer's mock flags the shortfall on that 855. The capture delivers each document from one mock to the other, one at a time, and moves both mocks' clocks an hour at a time; the seller then packs and sends the despatch advice, and raises and sends the invoice, with the buyer's mock acknowledging each."></a>
 			<figcaption>two mocks trading, no script playing a partner <span>drawn by mock-films from a real run</span></figcaption>
 		</figure>
 		<figure class="film">
