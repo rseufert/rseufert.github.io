@@ -699,3 +699,16 @@ code {
 .rivers .spark .dot.hover { background: var(--ink); }
 .rivers .river .readout { font: 0.75em var(--mono); color: var(--faint); min-height: 1.3em; }
 .rivers .river .source { font: 0.75em var(--mono); color: var(--faint); margin: 8px 0 0; }
+
+/* Mountains: USGS volcano alert levels and NWAC avalanche danger, as status
+   colours (reserved for state, never a series) that always sit beside the
+   level's name. */
+.dash .status-good { fill: #0ca30c; background: #0ca30c; }
+.dash .status-warning { fill: #fab219; background: #fab219; }
+.dash .status-serious { fill: #ec835a; background: #ec835a; }
+.dash .status-critical { fill: #d03b3b; background: #d03b3b; }
+.dash .status-none { fill: var(--faint); background: var(--faint); }
+.dash .status-mark { stroke: var(--bg); stroke-width: 2; }
+.dash .status-label { fill: var(--soft); font: 11px var(--mono); }
+.dash .row-label { fill: var(--ink); font-size: 12px; }
+.dash .day.hover .row-label { font-weight: 600; }

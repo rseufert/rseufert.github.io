@@ -72,9 +72,10 @@ python3 tools/film_stills.py --check   # what CI runs
 ```
 
 `dashboard/index.html` draws public data feeds with D3 (`js/dashboard.js`):
-the Treasury's debt, cash and borrowing costs, Portland's weather, air,
-rivers, bikes and earthquakes, and asteroids, fireballs, space weather and
-NASA's natural events. Each figure is fetched by the visitor's browser from
+Portland's weather, air, rivers, bikes and earthquakes; the Cascade
+volcanoes' alert levels and earthquakes, and Mount Hood's freezing level,
+snow and avalanche danger; asteroids, fireballs, space weather and NASA's
+natural events; and the Treasury's debt, cash and borrowing costs. Each figure is fetched by the visitor's browser from
 its source's own API when the page loads, and fails on its own if that source
 is down. D3, the TopoJSON reader and the Natural Earth coastlines
 (`data/land-110m.json`) are kept in the repo, so the page loads no code from

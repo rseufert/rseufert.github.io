@@ -1,12 +1,12 @@
 ---
 layout: default
-title: "dashboard: Portland, the sky and the Treasury's books, live"
-description: "Public data feeds drawn with D3: the US national debt to the penny, the Treasury's cash balance, what it pays to borrow, central bank policy rates, and Portland's weather, air, rivers, BIKETOWN bikes and nearby earthquakes, and asteroid flybys, fireballs, space weather and NASA's natural event tracker."
+title: "dashboard: Portland, the mountains, the sky and the Treasury's books, live"
+description: "Public data feeds drawn with D3: the US national debt to the penny, the Treasury's cash balance, what it pays to borrow, central bank policy rates, and Portland's weather, air, rivers, BIKETOWN bikes and nearby earthquakes, the Cascade volcanoes and Mount Hood's earthquakes, freezing level and snow, and asteroid flybys, fireballs, space weather and NASA's natural event tracker."
 ---
 <section class="projects dash">
 	<p class="crumb"><a href="/">&larr; home</a></p>
 	<h1>dashboard</h1>
-	<p class="lede">Three panels of public data, drawn when the page loads. Your browser asks each source's own API for the numbers, so they are as fresh as the source: the Treasury publishes once a business day, the bikes, the rivers and the earthquakes every few minutes. The asteroid and fireball figures come from NASA once a night; nothing else is stored here, and every chart has a table under it.</p>
+	<p class="lede">Four panels of public data, drawn when the page loads. Your browser asks each source's own API for the numbers, so they are as fresh as the source: the Treasury publishes once a business day, the bikes, the rivers and the earthquakes every few minutes. The asteroid and fireball figures come from NASA once a night; nothing else is stored here, and every chart has a table under it.</p>
 
 	<h2 id="portland">Portland</h2>
 	<p class="lede">The weather, the air, the rivers, the bikes and the ground under the city, right now.</p>
@@ -63,6 +63,46 @@ description: "Public data feeds drawn with D3: the US national debt to the penny
 		<figcaption>Earthquakes within 400 km of Portland <span>the past 30 days, magnitude 1 and up</span></figcaption>
 		<div class="plot"></div>
 		<p class="source">source: <a href="https://earthquake.usgs.gov/earthquakes/search/">USGS earthquake catalog</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<h2 id="mountains">Mountains</h2>
+	<p class="lede">The Cascade volcanoes, from Baker to Crater Lake, and a closer look at Mount Hood: what the ground under it is doing, where it is freezing, and how much snow is on it.</p>
+
+	<div class="stats">
+		<div class="stat" id="stat-volcanoes"><div class="label">Cascade volcano alert levels</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-hood-quakes"><div class="label">Earthquakes under Mount Hood, past 30 days</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-freezing"><div class="label">Freezing level over Mount Hood</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-snow"><div class="label">Snow at the Mt Hood Test Site</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-avalanche" hidden><div class="label">Avalanche danger on Mount Hood</div><div class="value">&hellip;</div><div class="note"></div></div>
+	</div>
+
+	<figure class="chart" id="chart-volcanoes">
+		<figcaption>The Cascade volcanoes, north to south <span>earthquakes within 20 km of each summit in the past 30 days, and its USGS alert level</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">sources: <a href="https://volcanoes.usgs.gov/hans-public/">USGS Volcano Notification Service</a> (alert levels) · <a href="https://earthquake.usgs.gov/earthquakes/search/">USGS earthquake catalog</a>, located by the <a href="https://pnsn.org/">Pacific Northwest Seismic Network</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-hood-quakes">
+		<figcaption>The ground under Mount Hood <span>every earthquake within 20 km of the summit in the past year, by depth below sea level</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://pnsn.org/volcanoes/mount-hood">Pacific Northwest Seismic Network</a>, through the USGS earthquake catalog</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-freezing">
+		<figcaption>Where it freezes on Mount Hood <span>the height of the 0&deg;C level over the mountain, the past day and the week ahead; above it, rain, and below it, snow</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://open-meteo.com/">Open-Meteo</a> forecast API, over the summit</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-snow">
+		<figcaption>Snow on the mountain <span>daily snow depth at the Mt Hood Test Site, 5,380 ft, below Timberline, for the past year</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://wcc.sc.egov.usda.gov/nwcc/site?sitenum=651">NRCS SNOTEL site 651, Mt Hood Test Site</a> (provisional data)</p>
 		<details class="table"><summary>table</summary><div></div></details>
 	</figure>
 

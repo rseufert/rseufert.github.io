@@ -243,6 +243,14 @@
                 svg.append("text").attr("class", "now-label")
                     .attr("x", x(cfg.now) + 4).attr("y", m.top + 10).text("now");
             }
+            // Reference lines that mean something (a summit, a lodge), named at the right end.
+            (cfg.refs || []).forEach(function (ref) {
+                var ry = y(ref.y);
+                if (ry < m.top || ry > height - m.bottom) return;
+                svg.append("line").attr("class", "zero").attr("x1", m.left).attr("x2", width - m.right).attr("y1", ry).attr("y2", ry);
+                svg.append("text").attr("class", "zero-label").attr("text-anchor", "end")
+                    .attr("x", width - m.right - 4).attr("y", ry - 5).text(ref.label);
+            });
             // A zero line that means something (the river standing still), named on both sides.
             if (cfg.zero) {
                 svg.append("line").attr("class", "zero")
@@ -986,6 +994,329 @@
             }).catch(function (e) { if (window.console) console.warn("alerts", e); });
     }
 
+    /* ---- Mountains ------------------------------------------------------- */
+
+    // The ten Cascade volcanoes USGS watches, north to south. Where each is
+    // and how high comes from the USGS Volcano Notification Service (it does
+    // not change); the alert levels are fetched fresh.
+    var VOLCANOES = [
+        { cd: "wa2", name: "Mount Baker", lat: 48.777, lon: -121.813, m: 3285 },
+        { cd: "wa3", name: "Glacier Peak", lat: 48.112, lon: -121.113, m: 3213 },
+        { cd: "wa6", name: "Mount Rainier", lat: 46.853, lon: -121.76, m: 4392 },
+        { cd: "wa4", name: "Mount St. Helens", lat: 46.2, lon: -122.18, m: 2549 },
+        { cd: "wa1", name: "Mount Adams", lat: 46.206, lon: -121.49, m: 3742 },
+        { cd: "or12", name: "Mount Hood", lat: 45.374, lon: -121.695, m: 3426 },
+        { cd: "or13", name: "Mount Jefferson", lat: 44.674, lon: -121.8, m: 3199 },
+        { cd: "or20", name: "Three Sisters", lat: 44.103, lon: -121.768, m: 3157 },
+        { cd: "or15", name: "Newberry", lat: 43.722, lon: -121.229, m: 2434 },
+        { cd: "or4", name: "Crater Lake", lat: 42.93, lon: -122.12, m: 2487 }
+    ];
+    var HOOD = VOLCANOES[5];
+    var FT = 3.28084;
+    var TIMBERLINE_FT = 5960;  // Timberline Lodge
+    var ft = function (v) { return comma(Math.round(v)) + " ft"; };
+    // USGS's volcano alert levels, worn as status colours with their names.
+    var ALERTS = {
+        NORMAL: { name: "normal", cls: "status-good" },
+        ADVISORY: { name: "advisory", cls: "status-warning" },
+        WATCH: { name: "watch", cls: "status-serious" },
+        WARNING: { name: "warning", cls: "status-critical" }
+    };
+    function alertOf(level) { return ALERTS[level] || { name: (level || "unassigned").toLowerCase(), cls: "status-none" }; }
+    function statusNote(cls, text) {
+        var n = el("span");
+        n.appendChild(el("span", "status-dot " + cls));
+        n.appendChild(document.createTextNode(text));
+        return n;
+    }
+
+    function loadVolcanoes() {
+        var fig = figure("chart-volcanoes");
+        loading(fig);
+        var start = d3.timeDay.offset(new Date(), -30).toISOString().slice(0, 19);
+        Promise.all([
+            getJSON("https://volcanoes.usgs.gov/hans-public/api/volcano/getMonitoredVolcanoes").then(function (r) { return r.json(); }),
+            // One box around the whole range, then each quake is given to the summit it is within 20 km of.
+            getJSON("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minlatitude=42.6&maxlatitude=49.0&minlongitude=-122.5&maxlongitude=-120.8&starttime=" + start)
+                .then(function (r) { return r.json(); })
+        ]).then(function (res) {
+            var level = new Map(res[0].map(function (v) { return [v.volcano_cd, v]; }));
+            var rows = VOLCANOES.map(function (v) {
+                var hans = level.get(v.cd) || {};
+                var quakes = res[1].features.filter(function (f) {
+                    var c = f.geometry.coordinates;
+                    return km(v.lat, v.lon, c[1], c[0]) <= 20;
+                });
+                var big = d3.greatest(quakes, function (f) { return f.properties.mag; });
+                return Object.assign({}, v, { alert: alertOf(hans.alert_level), level: hans.alert_level, color: hans.color_code,
+                                              n: quakes.length, big: big ? big.properties.mag : null });
+            });
+            var raised = rows.filter(function (r) { return r.level && r.level !== "NORMAL"; });
+            if (raised.length) {
+                setStat("stat-volcanoes", raised.length + " raised", statNoteList(raised));
+            } else {
+                setStat("stat-volcanoes", "all normal", statusNote("status-good", "green on all " + rows.length + ", Baker to Crater Lake"));
+            }
+            volcanoChart(fig, rows);
+            table(fig, [
+                { name: "Volcano", value: function (r) { return r.name; } },
+                { name: "Summit", num: true, value: function (r) { return ft(r.m * FT); } },
+                { name: "Alert level", value: function (r) { return r.alert.name + (r.color ? " (" + r.color.toLowerCase() + ")" : ""); } },
+                { name: "Quakes, 30 days", num: true, value: function (r) { return r.n; } },
+                { name: "Largest", num: true, value: function (r) { return r.big === null ? "—" : "M" + r.big.toFixed(1); } }
+            ], rows, "North to south. Earthquakes are counted within 20 km of each summit, at any magnitude the network located.");
+        }).catch(function (e) { failed(fig, e, loadVolcanoes); failStat("stat-volcanoes"); });
+    }
+    function statNoteList(raised) {
+        var n = el("span");
+        raised.forEach(function (r, i) {
+            if (i) n.appendChild(document.createTextNode(", "));
+            n.appendChild(el("span", "status-dot " + r.alert.cls));
+            n.appendChild(document.createTextNode(r.name + " at " + r.alert.name));
+        });
+        return n;
+    }
+
+    // One bar per volcano, north to south, square at zero and rounded at the
+    // tip, with the count at the tip and the alert level, icon and word, at the right.
+    function volcanoChart(fig, rows) {
+        onWidth(fig, function () {
+            var width = fig.plot.clientWidth;
+            if (!width) return;
+            var narrow = width < 520;
+            var rowH = 30, m = { top: 6, right: narrow ? 70 : 96, bottom: 24, left: narrow ? 112 : 168 };
+            var height = m.top + rows.length * rowH + m.bottom;
+            var x = d3.scaleLinear().domain([0, Math.max(10, d3.max(rows, function (r) { return r.n; }))]).nice()
+                .range([m.left, width - m.right - 26]);
+            var y = d3.scaleBand().domain(rows.map(function (r) { return r.cd; })).range([m.top, height - m.bottom]).paddingInner(0.3);
+            var bh = Math.min(24, y.bandwidth()), rr = Math.min(4, bh / 2);
+            fig.plot.textContent = "";
+            var svg = d3.select(fig.plot).append("svg")
+                .attr("viewBox", [0, 0, width, height]).attr("width", width).attr("height", height)
+                .attr("tabindex", 0).attr("role", "img")
+                .attr("aria-label", "Earthquakes within 20 km of each Cascade volcano in the past 30 days, north to south, with each one's alert level. Use the arrow keys to read each; the table below has them all.");
+            var tip = tooltip(fig.plot);
+            svg.append("g").attr("class", "grid").attr("transform", "translate(0," + (height - m.bottom) + ")")
+                .call(d3.axisBottom(x).ticks(narrow ? 3 : 5).tickSize(-(height - m.top - m.bottom)).tickFormat(""));
+            svg.append("g").attr("class", "axis x").attr("transform", "translate(0," + (height - m.bottom) + ")")
+                .call(d3.axisBottom(x).ticks(narrow ? 3 : 5).tickSize(0).tickPadding(8));
+            var g = svg.append("g").selectAll("g").data(rows).join("g").attr("class", "day s-accent")
+                .attr("transform", function (r) { return "translate(0," + (y(r.cd) + (y.bandwidth() - bh) / 2) + ")"; });
+            g.append("text").attr("class", "row-label").attr("x", m.left - 10).attr("y", bh / 2).attr("dy", "0.32em").attr("text-anchor", "end")
+                .text(function (r) { return narrow ? r.name.replace("Mount ", "Mt ") : r.name; });
+            g.append("path").attr("class", "bar").attr("d", function (r) {
+                var x0 = x(0), x1 = Math.max(x(r.n), x0 + (r.n ? rr : 0));
+                if (!r.n) return "";
+                return "M" + x0 + ",0H" + (x1 - rr) + "Q" + x1 + ",0 " + x1 + "," + rr + "V" + (bh - rr) + "Q" + x1 + "," + bh + " " + (x1 - rr) + "," + bh + "H" + x0 + "Z";
+            });
+            g.append("text").attr("class", "end-label").attr("x", function (r) { return x(r.n) + 6; }).attr("y", bh / 2).attr("dy", "0.32em")
+                .text(function (r) { return r.n; });
+            var st = g.append("g").attr("transform", "translate(" + (width - m.right + 12) + "," + (bh / 2) + ")");
+            st.append("circle").attr("class", function (r) { return "status-mark " + r.alert.cls; }).attr("r", 4);
+            st.append("text").attr("class", "status-label").attr("x", 9).attr("dy", "0.32em").text(function (r) { return r.alert.name; });
+            var index = 5;  // Mount Hood
+            function show(i) {
+                index = Math.max(0, Math.min(rows.length - 1, i));
+                var r = rows[index];
+                g.classed("hover", function (d) { return d === r; });
+                tip.show(x(r.n), y(r.cd), r.name + " · " + ft(r.m * FT), [
+                    { cls: "s-accent", value: r.n + (r.n === 1 ? " earthquake" : " earthquakes"), name: r.big === null ? "in 30 days" : "largest M" + r.big.toFixed(1) },
+                    { value: r.alert.name, name: "USGS alert level" + (r.color ? ", aviation " + r.color.toLowerCase() : "") }
+                ]);
+            }
+            function hide() { g.classed("hover", false); tip.hide(); }
+            g.append("rect").attr("class", "hit").attr("x", 0).attr("width", width).attr("y", -(y.step() - bh) / 2).attr("height", y.step())
+                .on("pointerenter", function (ev, r) { show(rows.indexOf(r)); }).on("pointerleave", hide);
+            keyboard(svg, function () { return index; }, show, hide, rows.length);
+        });
+    }
+
+    function loadHoodQuakes() {
+        var fig = figure("chart-hood-quakes");
+        loading(fig);
+        var start = d3.timeYear.offset(new Date(), -1);
+        getJSON("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time-asc&latitude=" + HOOD.lat + "&longitude=" + HOOD.lon +
+            "&maxradiuskm=20&starttime=" + start.toISOString().slice(0, 19))
+            .then(function (r) { return r.json(); }).then(function (j) {
+                var quakes = j.features.filter(function (f) { return f.properties.mag !== null; }).map(function (f) {
+                    var c = f.geometry.coordinates;
+                    return { x: new Date(f.properties.time), mag: f.properties.mag, depth: c[2], place: f.properties.place || "near Mount Hood",
+                             away: km(HOOD.lat, HOOD.lon, c[1], c[0]) };
+                });
+                var month = quakes.filter(function (q) { return q.x >= d3.timeDay.offset(new Date(), -30); });
+                var big = d3.greatest(month, function (q) { return q.mag; });
+                setStat("stat-hood-quakes", comma(month.length), (big ? "largest M" + big.mag.toFixed(1) + " · " : "") + comma(quakes.length) + " in the past year");
+                hoodChart(fig, quakes, start);
+                table(fig, [
+                    { name: "When (Portland time)", value: function (q) { return q.x.toLocaleString("en-US", { timeZone: PDX.tz, month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }); } },
+                    { name: "Magnitude", num: true, value: function (q) { return q.mag.toFixed(1); } },
+                    { name: "Depth", num: true, value: function (q) { return d3.format(".1f")(q.depth) + " km"; } },
+                    { name: "From the summit", num: true, value: function (q) { return d3.format(".1f")(q.away) + " km"; } }
+                ], quakes.slice().reverse(), "Newest first. Depth is below sea level; the summit is 3.4 km above it.");
+            }).catch(function (e) { failed(fig, e, loadHoodQuakes); failStat("stat-hood-quakes"); });
+    }
+
+    // Time across, depth down: the shallow quakes sit near the top, under the summit.
+    function hoodChart(fig, quakes, start) {
+        var height = 260;
+        onWidth(fig, function () {
+            var width = fig.plot.clientWidth;
+            if (!width) return;
+            var m = { top: 16, right: 16, bottom: 28, left: 52 };
+            var x = d3.scaleTime().domain([start, new Date()]).range([m.left, width - m.right]);
+            var deepest = d3.max(quakes, function (q) { return q.depth; }) || 10;
+            var shallowest = d3.min(quakes, function (q) { return q.depth; }) || 0;
+            var y = d3.scaleLinear().domain([Math.min(-1, Math.floor(shallowest)), Math.max(10, Math.ceil(deepest))]).nice().range([m.top, height - m.bottom]);
+            var r = function (mag) { return 4 + Math.max(0, mag) * 2.4; };
+            fig.plot.textContent = "";
+            var svg = d3.select(fig.plot).append("svg")
+                .attr("viewBox", [0, 0, width, height]).attr("width", width).attr("height", height)
+                .attr("tabindex", 0).attr("role", "img")
+                .attr("aria-label", "Earthquakes within 20 km of Mount Hood's summit over the past year, by time and depth. Use the arrow keys to step through them; the table below lists them all.");
+            var tip = tooltip(fig.plot);
+            svg.append("g").attr("class", "grid").attr("transform", "translate(" + m.left + ",0)")
+                .call(d3.axisLeft(y).ticks(5).tickSize(-(width - m.left - m.right)).tickFormat(""));
+            svg.append("g").attr("class", "axis y").attr("transform", "translate(" + m.left + ",0)")
+                .call(d3.axisLeft(y).ticks(5).tickSize(0).tickPadding(8).tickFormat(function (v) { return v + " km"; }));
+            svg.append("g").attr("class", "axis x").attr("transform", "translate(0," + (height - m.bottom) + ")")
+                .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor(width / 90))).tickSize(0).tickPadding(10).tickFormat(d3.timeFormat("%b")));
+            svg.append("line").attr("class", "zero").attr("x1", m.left).attr("x2", width - m.right).attr("y1", y(0)).attr("y2", y(0));
+            svg.append("text").attr("class", "zero-label").attr("x", m.left + 6).attr("y", y(0) - 5).text("sea level");
+            var order = quakes.slice().sort(function (a, b) { return b.mag - a.mag; });
+            var dots = svg.append("g").attr("class", "quakes s-accent").selectAll("circle").data(order).join("circle")
+                .attr("cx", function (q) { return x(q.x); }).attr("cy", function (q) { return y(q.depth); }).attr("r", function (q) { return r(q.mag); });
+            var big = d3.greatest(quakes, function (q) { return q.mag; });
+            if (big) {
+                var bx = x(big.x), onLeft = bx > width * 0.6;
+                svg.append("text").attr("class", "end-label").attr("text-anchor", onLeft ? "end" : "start")
+                    .attr("x", bx + (onLeft ? -1 : 1) * (r(big.mag) + 6)).attr("y", y(big.depth)).attr("dy", "0.32em")
+                    .text("M" + big.mag.toFixed(1) + ", " + d3.timeFormat("%b %-d")(big.x));
+            }
+            var pos = quakes.map(function (q) { return [x(q.x), y(q.depth)]; });
+            var delaunay = quakes.length ? d3.Delaunay.from(pos) : null;
+            var index = quakes.length - 1;
+            function show(i) {
+                if (!quakes.length) return;
+                index = Math.max(0, Math.min(quakes.length - 1, i));
+                var q = quakes[index];
+                dots.classed("hover", function (d) { return d === q; });
+                tip.show(pos[index][0], pos[index][1] - r(q.mag), q.x.toLocaleString("en-US", { timeZone: PDX.tz, month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }), [
+                    { cls: "s-accent", value: "M" + q.mag.toFixed(1), name: d3.format(".1f")(q.depth) + " km deep" },
+                    { value: d3.format(".1f")(q.away) + " km", name: "from the summit" }
+                ]);
+            }
+            function hide() { dots.classed("hover", false); tip.hide(); }
+            svg.on("pointermove", function (ev) {
+                if (!delaunay) return;
+                var p = d3.pointer(ev), i = delaunay.find(p[0], p[1]);
+                if (Math.hypot(pos[i][0] - p[0], pos[i][1] - p[1]) <= 24) show(i); else hide();
+            }).on("pointerleave", hide);
+            keyboard(svg, function () { return index; }, show, hide, quakes.length);
+        });
+    }
+
+    function loadFreezing() {
+        var fig = figure("chart-freezing");
+        loading(fig);
+        getJSON("https://api.open-meteo.com/v1/forecast?latitude=" + HOOD.lat + "&longitude=" + HOOD.lon +
+            "&hourly=freezing_level_height&current=temperature_2m&timezone=" + encodeURIComponent(PDX.tz) + "&past_days=1&forecast_days=7")
+            .then(function (r) { return r.json(); }).then(function (j) {
+                var now = parseLocal(j.current.time);
+                var pts = j.hourly.time.map(function (t, i) {
+                    var v = j.hourly.freezing_level_height[i];
+                    return { x: parseLocal(t), y: v === null ? null : v * FT };
+                }).filter(function (p) { return p.y !== null; });
+                var at = pts[d3.bisector(function (p) { return p.x; }).center(pts, now)];
+                var summit = HOOD.m * FT;
+                var low = d3.least(pts.filter(function (p) { return p.x > now; }), function (p) { return p.y; });
+                setStat("stat-freezing", ft(at.y), (at.y < summit ? "below the summit (" + ft(summit) + ")" : "above the summit (" + ft(summit) + ")") +
+                    (low ? " · down to " + ft(low.y) + " " + fmtWeekday(low.x) : ""));
+                legend(fig, [
+                    { name: "the model's past day", cls: "s-accent" },
+                    { name: "forecast", cls: "s-accent", dashed: true }
+                ]);
+                lineChart(fig, {
+                    label: "Height of the freezing level over Mount Hood, hourly, the past day and the week ahead",
+                    series: [{ name: "Freezing level", cls: "s-accent", points: pts, forecastFrom: now }],
+                    now: now, endLabels: true, yMin: 0, yMax: summit + 1000,
+                    refs: [{ y: summit, label: "Mount Hood's summit, " + ft(summit) }, { y: TIMBERLINE_FT, label: "Timberline Lodge, " + ft(TIMBERLINE_FT) }],
+                    yTick: function (v) { return v ? d3.format(",")(v / 1000) + "k ft" : "0 ft"; }, xTick: d3.timeFormat("%a"), xTicks: d3.timeDay,
+                    endValue: function (v) { return d3.format(",.1f")(v / 1000) + "k ft"; },
+                    value: ft, extra: function (p) { return p.y < summit ? "below the summit" : "above the summit"; },
+                    when: fmtHour, tolerance: 36e5
+                });
+                table(fig, [
+                    { name: "Hour (Portland)", value: function (p) { return fmtHour(p.x) + (p.x > now ? " (forecast)" : ""); } },
+                    { name: "Freezing level", num: true, value: function (p) { return ft(p.y); } }
+                ], pts.filter(function (p, i) { return i % 3 === 0; }), "Every third hour.");
+            }).catch(function (e) { failed(fig, e, loadFreezing); failStat("stat-freezing"); });
+    }
+
+    function loadSnow() {
+        var fig = figure("chart-snow");
+        loading(fig);
+        var iso = d3.timeFormat("%Y-%m-%d");
+        getJSON("https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=651:OR:SNTL&elements=SNWD,WTEQ&duration=DAILY" +
+            "&beginDate=" + iso(d3.timeYear.offset(new Date(), -1)) + "&endDate=" + iso(new Date()))
+            .then(function (r) { return r.json(); }).then(function (j) {
+                var by = {};
+                j[0].data.forEach(function (e) {
+                    by[e.stationElement.elementCode] = e.values.filter(function (v) { return v.value !== null && v.value !== undefined; })
+                        .map(function (v) { return { x: parseDay(v.date), y: +v.value }; });
+                });
+                var depth = by.SNWD || [], water = by.WTEQ || [];
+                if (!depth.length) throw new Error("no readings");
+                // One day far below the days either side of it (57, 2, 47 in) is the
+                // sensor dropping out, not the snow melting and falling back overnight.
+                var gaps = 0;
+                depth = depth.filter(function (p, i) {
+                    var a = depth[i - 1], b = depth[i + 1];
+                    var gap = a && b && a.y > 10 && b.y > 10 && p.y < a.y / 5 && p.y < b.y / 5;
+                    if (gap) gaps++;
+                    return !gap;
+                });
+                var last = depth[depth.length - 1], peak = d3.greatest(depth, function (p) { return p.y; });
+                var swe = water.length ? water[water.length - 1].y : null;
+                setStat("stat-snow", last.y + " in", (swe !== null ? d3.format(".1f")(swe) + " in of water in it · " : "") +
+                    "the past year's deepest " + peak.y + " in, " + fmtDay(peak.x));
+                lineChart(fig, {
+                    label: "Daily snow depth at the Mt Hood Test Site, for the past year",
+                    series: [{ name: "Snow depth", cls: "s-accent", points: depth }],
+                    area: true, endLabels: true, yMin: 0,
+                    yTick: function (v) { return v + " in"; }, xTick: d3.timeFormat("%b"),
+                    endValue: function (v) { return v + " in"; }, value: function (v) { return v + " in"; },
+                    when: fmtDay, tolerance: 864e5 * 2
+                });
+                var waterBy = new Map(water.map(function (p) { return [+p.x, p.y]; }));
+                table(fig, [
+                    { name: "Day", value: function (p) { return fmtDay(p.x); } },
+                    { name: "Snow depth", num: true, value: function (p) { return p.y + " in"; } },
+                    { name: "Water in it", num: true, value: function (p) { var v = waterBy.get(+p.x); return v === undefined ? "—" : d3.format(".1f")(v) + " in"; } }
+                ], depth.filter(function (p) { return p.x.getDay() === 0; }).reverse(), "Sundays, newest first." +
+                    (gaps ? " " + gaps + (gaps === 1 ? " reading" : " readings") + " far below the days either side left out as sensor dropouts." : ""));
+            }).catch(function (e) { failed(fig, e, loadSnow); failStat("stat-snow"); });
+    }
+
+    // The Northwest Avalanche Center's rating for its Mt Hood zone. Out of
+    // season there is no rating, and the tile says so.
+    var DANGER = ["", "low", "moderate", "considerable", "high", "extreme"];
+    var DANGER_CLS = ["", "status-good", "status-warning", "status-serious", "status-critical", "status-critical"];
+    function loadAvalanche() {
+        getJSON("https://api.avalanche.org/v2/public/products/map-layer/NWAC").then(function (r) { return r.json(); }).then(function (j) {
+            var zone = j.features.filter(function (f) { return /hood/i.test(f.properties.name); })[0];
+            if (!zone) throw new Error("no Mt Hood zone");
+            var p = zone.properties, lvl = +p.danger_level;
+            // Out of season the tile stays hidden, and the snow chart says why.
+            if (p.off_season || !(lvl >= 1 && lvl <= 5)) {
+                var src = document.querySelector("#chart-snow .source");
+                src.appendChild(document.createTextNode(" · NWAC's avalanche forecasts for Mt Hood are off for the season; they start again when the snow does."));
+                return;
+            }
+            setStat("stat-avalanche", DANGER[lvl], statusNote(DANGER_CLS[lvl], "level " + lvl + " of 5 · NWAC, " + fmtDay(new Date(p.start_date))));
+            document.getElementById("stat-avalanche").hidden = false;
+        }).catch(function (e) { if (window.console) console.warn("avalanche", e); });
+    }
+
     /* ---- Sky ------------------------------------------------------------- */
 
     var AU_KM = 149597870.7, LD_AU = 384400 / AU_KM;
@@ -1349,6 +1680,11 @@
     loadColumbia();
     loadBikes();
     loadQuakes();
+    loadVolcanoes();
+    loadHoodQuakes();
+    loadFreezing();
+    loadSnow();
+    loadAvalanche();
     loadAsteroids();
     loadKp();
     loadEvents();
