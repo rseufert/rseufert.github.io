@@ -1,0 +1,38 @@
+name: sky data
+
+# The dashboard's asteroid and fireball charts read data/sky.json, because
+# NASA JPL's API does not answer a browser on another site. This saves a
+# fresh copy every night and commits it only when it changed.
+on:
+  schedule:
+    - cron: "17 11 * * *"   # 04:17 in Portland (PDT), after JPL's nightly updates
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sky-data
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    name: save JPL close approaches and fireballs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python tools/sky_data.py
+      - name: commit if changed
+        run: |
+          if git diff --quiet -- data/sky.json; then
+            echo "no change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898338+github-actions[bot]@users.noreply.github.com"
+          git add data/sky.json
+          git commit -m "Refresh dashboard sky data"
+          git push

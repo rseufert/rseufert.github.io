@@ -1,0 +1,158 @@
+---
+layout: default
+title: "dashboard: the Treasury's books, Portland and the sky, live"
+description: "Public data feeds drawn with D3: the US national debt to the penny, the Treasury's cash balance, what it pays to borrow, central bank policy rates, and Portland's weather, air, rivers, BIKETOWN bikes and nearby earthquakes, and asteroid flybys, fireballs, space weather and NASA's natural event tracker."
+---
+<section class="projects dash">
+	<p class="crumb"><a href="/">&larr; home</a></p>
+	<h1>dashboard</h1>
+	<p class="lede">Three panels of public data, drawn when the page loads. Your browser asks each source's own API for the numbers, so they are as fresh as the source: the Treasury publishes once a business day, the bikes, the rivers and the earthquakes every few minutes. The asteroid and fireball figures come from NASA once a night; nothing else is stored here, and every chart has a table under it.</p>
+
+	<h2 id="treasury">Treasury</h2>
+	<p class="lede">The federal government's books, as the Treasury publishes them. It is <a href="/acme-treasury/">acme-treasury</a>'s question at a larger scale: what is owed, what is in the account, and what borrowing costs.</p>
+
+	<div class="hero-stat" id="debt-hero">
+		<div class="label">Total public debt outstanding</div>
+		<div class="value">&hellip;</div>
+		<div class="note"></div>
+	</div>
+
+	<div class="stats">
+		<div class="stat" id="stat-public"><div class="label">Held by the public</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-intragov"><div class="label">Owed to its own trust funds</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-tga"><div class="label">Cash in the Treasury's account</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-rate"><div class="label">Average rate on marketable debt</div><div class="value">&hellip;</div><div class="note"></div></div>
+	</div>
+
+	<figure class="chart" id="chart-debt">
+		<figcaption>Total public debt outstanding <span>each business day since 2021</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/">Treasury Fiscal Data, Debt to the Penny</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-tga">
+		<figcaption>The Treasury's checking account <span>closing balance of the Treasury General Account, past year</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/">Treasury Fiscal Data, Daily Treasury Statement</a>, operating cash balance</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-cost">
+		<figcaption>What the Treasury pays, and what the Fed charges <span>monthly since 2015</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">sources: <a href="https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/">Treasury Fiscal Data, Average Interest Rates</a> (total marketable) · <a href="https://data.bis.org/topics/CBPOL">BIS central bank policy rates</a> (United States)</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-banks">
+		<figcaption>Central bank policy rates <span>end of each month since 2015</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://data.bis.org/topics/CBPOL">Bank for International Settlements, central bank policy rates</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<h2 id="portland">Portland</h2>
+	<p class="lede">The weather, the air, the rivers, the bikes and the ground under the city, right now.</p>
+	<div class="alerts" id="nws-alerts" hidden></div>
+
+	<div class="stats">
+		<div class="stat" id="stat-weather"><div class="label">Now in Portland</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-air"><div class="label">Air quality</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-river"><div class="label">The Willamette right now</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-bikes"><div class="label">BIKETOWN bikes free</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-quakes"><div class="label">Earthquakes nearby, past 30 days</div><div class="value">&hellip;</div><div class="note"></div></div>
+	</div>
+
+	<figure class="chart" id="chart-temp">
+		<figcaption>Daily highs and lows <span>the past week and the week ahead, &deg;F</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://open-meteo.com/">Open-Meteo</a> forecast API, downtown Portland</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-air">
+		<figcaption>Air quality, hour by hour <span>US AQI, the past three days and the next three</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://open-meteo.com/en/docs/air-quality-api">Open-Meteo air quality API</a> (CAMS model), downtown Portland</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-willamette">
+		<figcaption>The Willamette runs backwards <span>flow at the Morrison Bridge, every 15 minutes for three days. Portland is about 100 river miles from the ocean, and the tide still reaches it, pushing the river back upstream</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://waterdata.usgs.gov/monitoring-location/14211720/">USGS gauge 14211720, Willamette River at Portland</a> (provisional data)</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-columbia">
+		<figcaption>The Columbia, rising and falling with the ocean <span>water level at Vancouver, measured and as the tide tables predict, feet above mean lower low water</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=9440083">NOAA Tides &amp; Currents, station 9440083, Vancouver WA</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-bikes">
+		<figcaption>Every BIKETOWN bike, right now <span>no map underneath: the bikes draw the city</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://gbfs.biketownpdx.com/gbfs/2.3/gbfs.json">BIKETOWN's public GBFS feed</a> (station and bike status)</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-quakes">
+		<figcaption>Earthquakes within 400 km of Portland <span>the past 30 days, magnitude 1 and up</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://earthquake.usgs.gov/earthquakes/search/">USGS earthquake catalog</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<h2 id="sky">Sky</h2>
+	<p class="lede">What is passing overhead and what is burning below: asteroids, fireballs and the solar wind, and the fires, storms and ice that NASA is watching from orbit.</p>
+
+	<div class="stats">
+		<div class="stat" id="stat-flyby"><div class="label">Next close flyby</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-moon"><div class="label">Asteroids passing inside the Moon's orbit, next 60 days</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-kp"><div class="label">Geomagnetic activity now</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-events"><div class="label">Natural events NASA is tracking</div><div class="value">&hellip;</div><div class="note"></div></div>
+	</div>
+
+	<figure class="chart" id="chart-asteroids">
+		<figcaption>Asteroids passing Earth <span>every known close approach within 20 lunar distances, the past week and the next 60 days</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://ssd-api.jpl.nasa.gov/doc/cad.html">NASA JPL Small-Body Database, close-approach data</a>, saved nightly. Sizes are estimated from brightness, assuming a typical reflectivity.</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-kp">
+		<figcaption>Geomagnetic activity <span>the planetary K index, every three hours: the past week and NOAA's forecast for the next three days</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://www.swpc.noaa.gov/products/planetary-k-index">NOAA Space Weather Prediction Center, planetary K index</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-events">
+		<figcaption>What NASA is watching on the ground <span>open natural events reported in the past 30 days</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://eonet.gsfc.nasa.gov/">NASA Earth Observatory Natural Event Tracker (EONET)</a>; coastlines from <a href="https://www.naturalearthdata.com/">Natural Earth</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-fireballs">
+		<figcaption>Fireballs <span>meteors bright enough for US government sensors to record, the past year, by estimated impact energy</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://cneos.jpl.nasa.gov/fireballs/">NASA JPL Center for Near Earth Object Studies, fireball reports</a>, saved nightly</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+</section><!-- /.dash -->
+<script src="/js/d3.v7.min.js" defer></script>
+<script src="/js/topojson-client.min.js" defer></script>
+<script src="/js/dashboard.js" defer></script>

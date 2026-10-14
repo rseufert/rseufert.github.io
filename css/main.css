@@ -374,7 +374,7 @@ code {
     h1 {
         font-size: 2em;
     }
-    /* Tighter, so the four menu items stay on one line on a phone: a flex
+    /* Tighter, so the menu takes as few lines as it can on a phone: a flex
        row has no space between inline items and no margin after the last. */
     nav ul {
         display: flex;
@@ -508,3 +508,166 @@ code {
     padding: 13px 35px 11px 37px;
 }
 .project .more a:focus-visible { outline: 1px dotted #000; outline-offset: -8px; }
+
+/* The dashboard (dashboard/index.html, drawn by js/dashboard.js). Charts use
+   the site's own ink and surface; a single series wears the accent, context
+   wears the faint grey, and the four central banks take four categorical
+   colours, stepped separately for each mode and checked for colour-blind
+   separation against this page's backgrounds. Text never wears a series
+   colour: a line key, dot or swatch beside it carries the identity. */
+.dash {
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+    --grid: var(--code-rule);
+}
+@media (prefers-color-scheme: dark) {
+    .dash { --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; }
+}
+.dash h1 { margin-bottom: 0; }
+.dash .s-accent { color: var(--accent); }
+.dash .s-context { color: var(--faint); }
+.dash .s-station { color: var(--soft); }
+.dash .s-1 { color: var(--s1); }
+.dash .s-2 { color: var(--s2); }
+.dash .s-3 { color: var(--s3); }
+.dash .s-4 { color: var(--s4); }
+
+/* The headline number, to the penny, and the tiles under it. */
+.dash .hero-stat { margin: 30px 0 10px; font-family: var(--sans); }
+.dash .hero-stat .label { font-size: 1.1em; color: var(--soft); }
+.dash .hero-stat .value {
+    font-size: clamp(28px, 6.4vw, 56px);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+.dash .hero-stat .note { font: 0.9em var(--mono); color: var(--faint); margin-top: 6px; }
+.dash .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin: 24px 0 10px;
+}
+.dash .stat { border: 1px dashed var(--rule); padding: 12px 14px; font-family: var(--sans); }
+.dash .stat .label { font-size: 0.95em; color: var(--soft); }
+.dash .stat .value { font-size: 1.7em; font-weight: 600; color: var(--ink); margin: 4px 0; }
+.dash .stat .note { font: 0.8em/1.4 var(--mono); color: var(--faint); }
+.dash .stat.failed .value { color: var(--faint); }
+.dash .status-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px; vertical-align: 1px;
+}
+
+/* A figure: title, legend, plot, source, and the table that holds every value. */
+.dash figure.chart { margin: 44px 0; }
+.dash figure.chart figcaption { font: bold 1.2em var(--sans); color: var(--ink); margin-bottom: 8px; }
+.dash figure.chart figcaption span { display: block; font: normal 0.7em var(--mono); color: var(--faint); margin-top: 4px; }
+.dash .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font: 0.9em var(--sans); color: var(--soft); margin-bottom: 8px; }
+.dash .legend .item { display: inline-flex; align-items: center; gap: 7px; }
+.dash .key { display: inline-block; flex: none; }
+.dash .key.line { width: 16px; height: 2px; background: currentColor; }
+.dash .key.line.dashed { background: repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 8px); }
+.dash .key.bar { width: 10px; height: 14px; border-radius: 3px; background: currentColor; }
+.dash .key.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.dash .key.ring { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid currentColor; box-sizing: border-box; }
+.dash .plot { position: relative; min-height: 120px; }
+.dash .plot svg { display: block; overflow: visible; font-family: var(--sans); }
+.dash .plot svg:focus { outline: none; }
+.dash .plot svg:focus-visible { outline: 2px dashed var(--accent); outline-offset: 4px; }
+.dash .state { font: 1em var(--mono); color: var(--faint); padding: 40px 0; margin: 0; }
+.dash .state.failed { color: var(--soft); }
+.dash button.retry {
+    font: inherit; color: var(--accent); background: none; cursor: pointer;
+    border: 1px solid var(--accent); padding: 2px 8px;
+}
+.dash .source { font: 0.8em var(--mono); color: var(--faint); margin: 10px 0 4px; line-height: 1.5; }
+.dash details.table summary { font: 0.85em var(--mono); color: var(--accent); cursor: pointer; }
+.dash details.table > div { max-height: 340px; overflow: auto; margin-top: 8px; border: 1px solid var(--code-rule); }
+.dash details.table .note { font: 0.8em var(--mono); color: var(--faint); margin: 8px 10px; }
+.dash details.table table { border-collapse: collapse; width: 100%; font: 0.85em var(--sans); }
+.dash details.table th { text-align: left; color: var(--soft); font-weight: 600; position: sticky; top: 0; background: var(--bg); }
+.dash details.table th, .dash details.table td { padding: 4px 10px; border-bottom: 1px solid var(--code-rule); }
+.dash details.table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Chart chrome: hairline grid one step off the surface, quiet axes. */
+.dash .grid line { stroke: var(--grid); }
+.dash .grid .domain, .dash .axis .domain { display: none; }
+.dash .axis.x .domain { display: inline; stroke: var(--rule); }
+.dash .axis text { fill: var(--faint); font: 11px var(--mono); font-variant-numeric: tabular-nums; }
+.dash .series .line { fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.dash .series .line.forecast { stroke-dasharray: 5 4; }
+.dash .series .area { fill: currentColor; fill-opacity: 0.1; }
+.dash .end-dot, .dash .cross-dot { fill: currentColor; stroke: var(--bg); stroke-width: 2; }
+.dash .leader { fill: none; stroke: currentColor; stroke-width: 1; }
+.dash .end-label { fill: var(--ink); font-size: 12px; }
+.dash .end-label .v { font-weight: 600; }
+.dash .end-label .n { fill: var(--faint); }
+.dash .cross line { stroke: var(--faint); stroke-width: 1; }
+.dash .hit { fill: transparent; }
+.dash .now { stroke: var(--soft); stroke-width: 1; }
+.dash .now-label { fill: var(--faint); font: 11px var(--mono); }
+.dash .tip {
+    display: none; position: absolute; z-index: 2; pointer-events: none; white-space: nowrap;
+    background: var(--bg); border: 1px solid var(--rule); box-shadow: 3px 3px 0 var(--accent);
+    padding: 6px 9px; font: 13px var(--sans); color: var(--ink);
+}
+.dash .tip .when { font: 11px var(--mono); color: var(--faint); margin-bottom: 3px; white-space: normal; max-width: 260px; }
+.dash .tip .row { display: flex; align-items: center; gap: 6px; line-height: 1.5; }
+.dash .tip .row strong { font-weight: 600; }
+.dash .tip .row .name { color: var(--soft); }
+
+/* Daily highs and lows. */
+.dash .day .bar { fill: currentColor; }
+.dash .day.hover .bar { fill-opacity: 0.7; }
+
+/* Air quality: the EPA's category colours, as faint washes with their names. */
+.dash .band { fill-opacity: 0.14; }
+.dash .band-label { fill: var(--faint); font: 11px var(--mono); }
+.dash .band-label.inside { paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
+.dash .aqi-good { fill: #00e400; background: #00e400; }
+.dash .aqi-moderate { fill: #ffff00; background: #e6c700; }
+.dash .aqi-usg { fill: #ff7e00; background: #ff7e00; }
+.dash .aqi-unhealthy { fill: #ff0000; background: #ff0000; }
+.dash .aqi-very { fill: #8f3f97; background: #8f3f97; }
+.dash .aqi-hazardous { fill: #7e0023; background: #7e0023; }
+@media (prefers-color-scheme: dark) {
+    .dash .band { fill-opacity: 0.17; }
+}
+
+/* BIKETOWN: bikes as dots, stations as rings, places named in the faint ink. */
+.dash .free circle { fill: currentColor; fill-opacity: 0.75; }
+.dash .stations circle { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.dash .stations circle.hover { stroke: var(--ink); stroke-width: 3; }
+.dash .places text {
+    fill: var(--soft); font: bold 11px var(--mono); pointer-events: none;
+    paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round;
+}
+
+/* Earthquakes: dots with a surface ring, so overlapping ones stay apart. */
+.dash .quakes circle { fill: currentColor; fill-opacity: 0.55; stroke: var(--bg); stroke-width: 2; }
+.dash .quakes circle.hover { fill-opacity: 1; }
+
+/* Reference lines that mean something (the river standing still, the
+   Moon's distance, a storm level): solid hairlines a step darker than the
+   grid, named in the faint ink. */
+.dash .zero { stroke: var(--rule); stroke-width: 1; }
+.dash .zero-label {
+    fill: var(--faint); font: 11px var(--mono);
+    paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round;
+}
+
+/* The weather service's alerts, shown only while one is active. */
+.dash .alerts { border: 1px solid var(--accent); border-left-width: 4px; padding: 4px 14px; margin: 20px 0; }
+.dash .alerts .alert { font: 1em var(--sans); margin: 8px 0; }
+.dash .alerts .alert strong { color: var(--ink); margin-right: 6px; }
+
+/* The world map of natural events. */
+.dash .sphere { fill: none; stroke: var(--rule); }
+.dash .land { fill: var(--code-bg); stroke: var(--rule); stroke-width: 0.5; }
+.dash .events circle { fill: currentColor; stroke: var(--bg); stroke-width: 2; }
+.dash .events circle.hover { stroke: var(--ink); }
+.dash .home { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.dash .place-label {
+    fill: var(--soft); font: bold 11px var(--mono);
+    paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round;
+}

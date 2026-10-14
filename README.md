@@ -68,3 +68,19 @@ is run by hand. On every push and pull request, CI runs the still check:
 python3 tools/film_stills.py           # write any still that is missing or stale
 python3 tools/film_stills.py --check   # what CI runs
 ```
+
+`dashboard/index.html` draws public data feeds with D3 (`js/dashboard.js`):
+the Treasury's debt, cash and borrowing costs, Portland's weather, air,
+rivers, bikes and earthquakes, and asteroids, fireballs, space weather and
+NASA's natural events. Each figure is fetched by the visitor's browser from
+its source's own API when the page loads, and fails on its own if that source
+is down. D3, the TopoJSON reader and the Natural Earth coastlines
+(`data/land-110m.json`) are kept in the repo, so the page loads no code from
+anywhere else. NASA JPL's API does not answer a browser on another site, so
+its close approaches and fireballs come from `data/sky.json`, which
+`sky-data.yml` refreshes every night and commits when it changes:
+
+```bash
+python3 tools/sky_data.py           # write data/sky.json
+python3 tools/sky_data.py --check   # fetch and validate, write nothing
+```
