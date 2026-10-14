@@ -1,58 +1,12 @@
 ---
 layout: default
-title: "dashboard: the Treasury's books, Portland and the sky, live"
+title: "dashboard: Portland, the sky and the Treasury's books, live"
 description: "Public data feeds drawn with D3: the US national debt to the penny, the Treasury's cash balance, what it pays to borrow, central bank policy rates, and Portland's weather, air, rivers, BIKETOWN bikes and nearby earthquakes, and asteroid flybys, fireballs, space weather and NASA's natural event tracker."
 ---
 <section class="projects dash">
 	<p class="crumb"><a href="/">&larr; home</a></p>
 	<h1>dashboard</h1>
 	<p class="lede">Three panels of public data, drawn when the page loads. Your browser asks each source's own API for the numbers, so they are as fresh as the source: the Treasury publishes once a business day, the bikes, the rivers and the earthquakes every few minutes. The asteroid and fireball figures come from NASA once a night; nothing else is stored here, and every chart has a table under it.</p>
-
-	<h2 id="treasury">Treasury</h2>
-	<p class="lede">The federal government's books, as the Treasury publishes them. It is <a href="/acme-treasury/">acme-treasury</a>'s question at a larger scale: what is owed, what is in the account, and what borrowing costs.</p>
-
-	<div class="hero-stat" id="debt-hero">
-		<div class="label">Total public debt outstanding</div>
-		<div class="value">&hellip;</div>
-		<div class="note"></div>
-	</div>
-
-	<div class="stats">
-		<div class="stat" id="stat-public"><div class="label">Held by the public</div><div class="value">&hellip;</div><div class="note"></div></div>
-		<div class="stat" id="stat-intragov"><div class="label">Owed to its own trust funds</div><div class="value">&hellip;</div><div class="note"></div></div>
-		<div class="stat" id="stat-tga"><div class="label">Cash in the Treasury's account</div><div class="value">&hellip;</div><div class="note"></div></div>
-		<div class="stat" id="stat-rate"><div class="label">Average rate on marketable debt</div><div class="value">&hellip;</div><div class="note"></div></div>
-	</div>
-
-	<figure class="chart" id="chart-debt">
-		<figcaption>Total public debt outstanding <span>each business day since 2021</span></figcaption>
-		<div class="plot"></div>
-		<p class="source">source: <a href="https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/">Treasury Fiscal Data, Debt to the Penny</a></p>
-		<details class="table"><summary>table</summary><div></div></details>
-	</figure>
-
-	<figure class="chart" id="chart-tga">
-		<figcaption>The Treasury's checking account <span>closing balance of the Treasury General Account, past year</span></figcaption>
-		<div class="plot"></div>
-		<p class="source">source: <a href="https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/">Treasury Fiscal Data, Daily Treasury Statement</a>, operating cash balance</p>
-		<details class="table"><summary>table</summary><div></div></details>
-	</figure>
-
-	<figure class="chart" id="chart-cost">
-		<figcaption>What the Treasury pays, and what the Fed charges <span>monthly since 2015</span></figcaption>
-		<div class="legend"></div>
-		<div class="plot"></div>
-		<p class="source">sources: <a href="https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/">Treasury Fiscal Data, Average Interest Rates</a> (total marketable) · <a href="https://data.bis.org/topics/CBPOL">BIS central bank policy rates</a> (United States)</p>
-		<details class="table"><summary>table</summary><div></div></details>
-	</figure>
-
-	<figure class="chart" id="chart-banks">
-		<figcaption>Central bank policy rates <span>end of each month since 2015</span></figcaption>
-		<div class="legend"></div>
-		<div class="plot"></div>
-		<p class="source">source: <a href="https://data.bis.org/topics/CBPOL">Bank for International Settlements, central bank policy rates</a></p>
-		<details class="table"><summary>table</summary><div></div></details>
-	</figure>
 
 	<h2 id="portland">Portland</h2>
 	<p class="lede">The weather, the air, the rivers, the bikes and the ground under the city, right now.</p>
@@ -150,6 +104,52 @@ description: "Public data feeds drawn with D3: the US national debt to the penny
 		<figcaption>Fireballs <span>meteors bright enough for US government sensors to record, the past year, by estimated impact energy</span></figcaption>
 		<div class="plot"></div>
 		<p class="source">source: <a href="https://cneos.jpl.nasa.gov/fireballs/">NASA JPL Center for Near Earth Object Studies, fireball reports</a>, saved nightly</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<h2 id="treasury">Treasury</h2>
+	<p class="lede">The federal government's books, as the Treasury publishes them. It is <a href="/acme-treasury/">acme-treasury</a>'s question at a larger scale: what is owed, what is in the account, and what borrowing costs.</p>
+
+	<div class="hero-stat" id="debt-hero">
+		<div class="label">Total public debt outstanding</div>
+		<div class="value">&hellip;</div>
+		<div class="note"></div>
+	</div>
+
+	<div class="stats">
+		<div class="stat" id="stat-public"><div class="label">Held by the public</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-intragov"><div class="label">Owed to its own trust funds</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-tga"><div class="label">Cash in the Treasury's account</div><div class="value">&hellip;</div><div class="note"></div></div>
+		<div class="stat" id="stat-rate"><div class="label">Average rate on marketable debt</div><div class="value">&hellip;</div><div class="note"></div></div>
+	</div>
+
+	<figure class="chart" id="chart-debt">
+		<figcaption>Total public debt outstanding <span>each business day since 2021</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/">Treasury Fiscal Data, Debt to the Penny</a></p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-tga">
+		<figcaption>The Treasury's checking account <span>closing balance of the Treasury General Account, past year</span></figcaption>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/">Treasury Fiscal Data, Daily Treasury Statement</a>, operating cash balance</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-cost">
+		<figcaption>What the Treasury pays, and what the Fed charges <span>monthly since 2015</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">sources: <a href="https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/">Treasury Fiscal Data, Average Interest Rates</a> (total marketable) · <a href="https://data.bis.org/topics/CBPOL">BIS central bank policy rates</a> (United States)</p>
+		<details class="table"><summary>table</summary><div></div></details>
+	</figure>
+
+	<figure class="chart" id="chart-banks">
+		<figcaption>Central bank policy rates <span>end of each month since 2015</span></figcaption>
+		<div class="legend"></div>
+		<div class="plot"></div>
+		<p class="source">source: <a href="https://data.bis.org/topics/CBPOL">Bank for International Settlements, central bank policy rates</a></p>
 		<details class="table"><summary>table</summary><div></div></details>
 	</figure>
 </section><!-- /.dash -->

@@ -1342,9 +1342,6 @@
         });
     }
 
-    loadDebt();
-    loadCash();
-    loadRates();
     loadAlerts();
     loadWeather();
     loadAir();
@@ -1356,4 +1353,8 @@
     loadKp();
     loadEvents();
     loadFireballs();
+    // The Treasury's API is the slowest, and its panel is at the bottom.
+    loadDebt();
+    loadCash();
+    loadRates();
 })();
