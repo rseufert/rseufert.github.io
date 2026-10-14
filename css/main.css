@@ -671,3 +671,31 @@ code {
     fill: var(--soft); font: bold 11px var(--mono);
     paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round;
 }
+
+/* The home page's rivers (index.html, js/rivers.js): two tiles, each a
+   level, which way it is heading, and a two-day sparkline in the faint ink
+   with the latest reading as an accent dot. */
+.rivers .river-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+.rivers .river { border: 1px dashed var(--rule); padding: 14px 16px 10px; font-family: var(--sans); }
+.rivers .river .label { font-size: 1.05em; font-weight: bold; color: var(--ink); }
+.rivers .river .label span { font: normal 0.75em var(--mono); color: var(--faint); margin-left: 4px; }
+.rivers .river .value { font-size: 2em; font-weight: 600; color: var(--ink); margin: 6px 0 2px; }
+.rivers .river .note { font: 0.8em/1.4 var(--mono); color: var(--soft); min-height: 1.4em; }
+.rivers .spark { position: relative; height: 44px; margin: 12px 0 4px; }
+.rivers .spark svg { display: block; width: 100%; height: 100%; overflow: visible; cursor: crosshair; }
+.rivers .spark svg:focus { outline: none; }
+.rivers .spark svg:focus-visible { outline: 2px dashed var(--accent); outline-offset: 4px; }
+.rivers .spark .line { fill: none; stroke: var(--faint); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rivers .spark .cross { stroke: var(--rule); stroke-width: 1; }
+.rivers .spark .dot {
+    position: absolute; width: 8px; height: 8px; margin: -6px 0 0 -6px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg); pointer-events: none;
+}
+.rivers .spark .dot.hover { background: var(--ink); }
+.rivers .river .readout { font: 0.75em var(--mono); color: var(--faint); min-height: 1.3em; }
+.rivers .river .source { font: 0.75em var(--mono); color: var(--faint); margin: 8px 0 0; }
