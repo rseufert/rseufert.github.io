@@ -1,8 +1,10 @@
 name: sky data
 
-# The dashboard's asteroid and fireball charts read data/sky.json, because
-# NASA JPL's API does not answer a browser on another site. This saves a
-# fresh copy every night and commits it only when it changed.
+# The dashboard's asteroid and fireball charts read sky.json, because NASA
+# JPL's API does not answer a browser on another site. This saves a fresh
+# copy every night. master is protected (its required checks never run on a
+# bot's push), so the copy goes to its own branch, sky-data, which holds only
+# sky.json; the page reads it from raw.githubusercontent.com.
 on:
   schedule:
     - cron: "17 11 * * *"   # 04:17 in Portland (PDT), after JPL's nightly updates
@@ -24,15 +26,22 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - run: python tools/sky_data.py
-      - name: commit if changed
+      - run: python tools/sky_data.py --out "$RUNNER_TEMP/sky.json"
+      - name: commit to sky-data if changed
         run: |
-          if git diff --quiet -- data/sky.json; then
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898338+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth 1 origin sky-data; then
+            git worktree add -B sky-data "$RUNNER_TEMP/branch" FETCH_HEAD
+          else
+            git worktree add --orphan -b sky-data "$RUNNER_TEMP/branch"
+          fi
+          cp "$RUNNER_TEMP/sky.json" "$RUNNER_TEMP/branch/sky.json"
+          cd "$RUNNER_TEMP/branch"
+          git add sky.json
+          if git diff --cached --quiet; then
             echo "no change"
             exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898338+github-actions[bot]@users.noreply.github.com"
-          git add data/sky.json
           git commit -m "Refresh dashboard sky data"
-          git push
+          git push origin sky-data

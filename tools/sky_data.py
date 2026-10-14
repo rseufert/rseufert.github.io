@@ -2,12 +2,15 @@
 
 The dashboard reads everything else straight from each source's API, but
 JPL's Solar System Dynamics API does not answer a browser on another site
-(it sends no CORS headers), so a nightly workflow saves its answers here
-instead (.github/workflows/sky-data.yml). Both change slowly: an approach is
-known weeks ahead, and fireballs are posted days after they fall.
+(it sends no CORS headers), so a nightly workflow saves its answers instead
+(.github/workflows/sky-data.yml). It commits them to the sky-data branch,
+since master is protected, and the page reads them from there; data/sky.json
+on master is the copy the page falls back to. Both change slowly: an approach
+is known weeks ahead, and fireballs are posted days after they fall.
 
-    python3 tools/sky_data.py           # write data/sky.json
-    python3 tools/sky_data.py --check   # fetch and validate, write nothing
+    python3 tools/sky_data.py               # write data/sky.json
+    python3 tools/sky_data.py --out FILE    # write FILE instead
+    python3 tools/sky_data.py --check       # fetch and validate, write nothing
 """
 import datetime
 import json
@@ -60,8 +63,9 @@ def main():
     text = json.dumps(sky, separators=(",", ":")) + "\n"
     print(f'{len(sky["approaches"]["data"])} approaches, {len(sky["fireballs"]["data"])} fireballs')
     if "--check" not in sys.argv:
-        OUT.write_text(text)
-        print("wrote", OUT)
+        out = Path(sys.argv[sys.argv.index("--out") + 1]) if "--out" in sys.argv else OUT
+        out.write_text(text)
+        print("wrote", out)
 
 
 if __name__ == "__main__":

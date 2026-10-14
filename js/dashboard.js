@@ -995,7 +995,12 @@
     function diameterM(h, albedo) { return 1329 / Math.sqrt(albedo) * Math.pow(10, -h / 5) * 1000; }
     function metres(v) { return v >= 1000 ? d3.format(".2~")(v / 1000) + " km" : d3.format(".2~r")(v) + " m"; }
 
-    var sky = getJSON("/data/sky.json").then(function (r) { return r.json(); });
+    // The nightly copy lives on the sky-data branch (master is protected, so
+    // the workflow cannot commit there); GitHub's raw file server answers
+    // browsers on any site. The copy on master is the fallback.
+    var sky = getJSON("https://raw.githubusercontent.com/rseufert/rseufert.github.io/sky-data/sky.json")
+        .then(function (r) { return r.json(); })
+        .catch(function () { return getJSON("/data/sky.json").then(function (r) { return r.json(); }); });
 
     function loadAsteroids() {
         var fig = figure("chart-asteroids");

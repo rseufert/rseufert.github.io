@@ -77,8 +77,11 @@ its source's own API when the page loads, and fails on its own if that source
 is down. D3, the TopoJSON reader and the Natural Earth coastlines
 (`data/land-110m.json`) are kept in the repo, so the page loads no code from
 anywhere else. NASA JPL's API does not answer a browser on another site, so
-its close approaches and fireballs come from `data/sky.json`, which
-`sky-data.yml` refreshes every night and commits when it changes:
+its close approaches and fireballs are saved by `sky-data.yml` every night.
+`master` is protected, so the workflow commits them to the `sky-data` branch
+instead, and the page reads `sky.json` from there through
+raw.githubusercontent.com. `data/sky.json` on `master` is the copy it falls
+back to; refresh it by hand when you like:
 
 ```bash
 python3 tools/sky_data.py           # write data/sky.json
