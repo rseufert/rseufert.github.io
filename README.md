@@ -1,8 +1,9 @@
 # rseufert.github.io
 
 The home page is an index: each mock in brief with one film, the worked
-examples as a list, the Flipper apps as tiles, and the dashboard as the two
-rivers right now (`js/rivers.js`, plain SVG, so the home page loads no D3).
+examples as a list, the dashboard as the two rivers and the mountains right
+now (`js/home-dashboard.js`, plain SVG, so the home page loads no D3), and the
+Flipper apps as tiles.
 The rest is a page each: `mock-sap/`, `mock-edi/`, `mock-bank/` and
 `mock-einvoice/` carry a mock's
 features and all its films, `examples/index.html` the worked examples in full, and

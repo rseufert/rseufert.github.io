@@ -111,6 +111,57 @@ mock-einvoice --port 8100</code></pre>
 	</div><!-- /.project -->
 </section><!-- /.projects -->
 
+<section id="dashboard" class="projects rivers">
+	<h2>Dashboard</h2>
+	<p class="lede">Public data, live: Portland's weather, air, rivers, bikes and earthquakes, the Cascade volcanoes and Mount Hood's snow, what's passing overhead, and the Treasury's books, each drawn from its source's own feed when the page loads.</p>
+
+	<div class="project">
+		<h3><a href="/dashboard/#portland">Rivers</a> <span class="tag">right now</span></h3>
+		<p>The two rivers Portland sits on. Both are about 100 miles from the Pacific, and both still rise and fall with its tide.</p>
+		<div class="river-tiles">
+			<div class="river" id="river-willamette">
+				<div class="label">Willamette <span>at the Morrison Bridge</span></div>
+				<div class="value">&hellip;</div>
+				<div class="note"></div>
+				<div class="spark"></div>
+				<div class="readout" aria-live="polite"></div>
+				<p class="source">gauge height · <a href="https://waterdata.usgs.gov/monitoring-location/14211720/">USGS 14211720</a></p>
+			</div>
+			<div class="river" id="river-columbia">
+				<div class="label">Columbia <span>at Vancouver</span></div>
+				<div class="value">&hellip;</div>
+				<div class="note"></div>
+				<div class="spark"></div>
+				<div class="readout" aria-live="polite"></div>
+				<p class="source">above mean lower low water · <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=9440083">NOAA 9440083</a></p>
+			</div>
+		</div>
+	</div><!-- /.project -->
+
+	<div class="project">
+		<h3><a href="/dashboard/#mountains">Mountains</a> <span class="tag">right now</span></h3>
+		<p>The Cascade volcanoes from Baker to Crater Lake, and where it will freeze on Mount Hood this week.</p>
+		<div class="river-tiles">
+			<div class="river" id="mountain-volcanoes">
+				<div class="label">Cascade volcanoes <span>USGS alert levels</span></div>
+				<div class="value">&hellip;</div>
+				<div class="note"></div>
+				<div class="volcano-list"></div>
+				<p class="source"><a href="https://volcanoes.usgs.gov/hans-public/">USGS Volcano Notification Service</a></p>
+			</div>
+			<div class="river" id="mountain-hood">
+				<div class="label">Mount Hood <span>freezing level</span></div>
+				<div class="value">&hellip;</div>
+				<div class="note"></div>
+				<div class="spark"></div>
+				<div class="readout" aria-live="polite"></div>
+				<p class="source"><a href="https://open-meteo.com/">Open-Meteo</a> · <a href="https://pnsn.org/volcanoes/mount-hood">PNSN</a> · <a href="https://wcc.sc.egov.usda.gov/nwcc/site?sitenum=651">SNOTEL 651</a></p>
+			</div>
+		</div>
+		<p class="more"><a href="/dashboard/">The whole dashboard</a></p>
+	</div><!-- /.project -->
+</section><!-- /.dashboard -->
+
 <section id="flipper" class="projects flipper">
 	<h2>Flipper</h2>
 	<p class="lede">Apps for the <a href="https://flipperzero.one">Flipper Zero</a>: a 128&times;64 screen, a d-pad and a buzzer.</p>
@@ -154,34 +205,5 @@ mock-einvoice --port 8100</code></pre>
 		</div><!-- /.project -->
 	</div><!-- /.tiles -->
 </section><!-- /.flipper -->
-
-<section id="dashboard" class="projects rivers">
-	<h2>Dashboard</h2>
-	<p class="lede">Public data, live: Portland's weather, air, rivers, bikes and earthquakes, the Cascade volcanoes and Mount Hood's snow, what's passing overhead, and the Treasury's books, each drawn from its source's own feed when the page loads.</p>
-
-	<div class="project">
-		<h3><a href="/dashboard/#portland">Rivers</a> <span class="tag">right now</span></h3>
-		<p>The two rivers Portland sits on. Both are about 100 miles from the Pacific, and both still rise and fall with its tide.</p>
-		<div class="river-tiles">
-			<div class="river" id="river-willamette">
-				<div class="label">Willamette <span>at the Morrison Bridge</span></div>
-				<div class="value">&hellip;</div>
-				<div class="note"></div>
-				<div class="spark"></div>
-				<div class="readout" aria-live="polite"></div>
-				<p class="source">gauge height · <a href="https://waterdata.usgs.gov/monitoring-location/14211720/">USGS 14211720</a></p>
-			</div>
-			<div class="river" id="river-columbia">
-				<div class="label">Columbia <span>at Vancouver</span></div>
-				<div class="value">&hellip;</div>
-				<div class="note"></div>
-				<div class="spark"></div>
-				<div class="readout" aria-live="polite"></div>
-				<p class="source">above mean lower low water · <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=9440083">NOAA 9440083</a></p>
-			</div>
-		</div>
-		<p class="more"><a href="/dashboard/">The whole dashboard</a></p>
-	</div><!-- /.project -->
-</section><!-- /.dashboard -->
 <script src="/js/films.js" defer></script>
-<script src="/js/rivers.js" defer></script>
+<script src="/js/home-dashboard.js" defer></script>

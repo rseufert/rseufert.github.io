@@ -672,9 +672,9 @@ code {
     paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round;
 }
 
-/* The home page's rivers (index.html, js/rivers.js): two tiles, each a
-   level, which way it is heading, and a two-day sparkline in the faint ink
-   with the latest reading as an accent dot. */
+/* The home page's dashboard section (index.html, js/home-dashboard.js):
+   tiles, each a value, a note, and a sparkline in the faint ink with one
+   reading as an accent dot, or the volcanoes' alert levels as a list. */
 .rivers .river-tiles {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -712,3 +712,22 @@ code {
 .dash .status-label { fill: var(--soft); font: 11px var(--mono); }
 .dash .row-label { fill: var(--ink); font-size: 12px; }
 .dash .day.hover .row-label { font-weight: 600; }
+.rivers .spark .ref { fill: none; stroke: var(--faint); stroke-width: 1; }
+/* Alert levels are status colours, reserved for state, always beside the name. */
+.rivers .volcano-list ul {
+    list-style: none; padding: 0; margin: 12px 0 0;
+    /* Down the columns, so Washington's five are on the left and Oregon's on the right. */
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(5, auto);
+    grid-auto-flow: column; gap: 3px 12px;
+    font: 0.8em/1.5 var(--mono); color: var(--soft);
+}
+.rivers .volcano-list strong { color: var(--ink); }
+.rivers .status-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 7px; vertical-align: 0;
+}
+.rivers .status-good { background: #0ca30c; }
+.rivers .status-warning { background: #fab219; }
+.rivers .status-serious { background: #ec835a; }
+.rivers .status-critical { background: #d03b3b; }
+.rivers .status-none { background: var(--faint); }
