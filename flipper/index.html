@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Flipper Zero apps
-description: "Five apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; NW Crawl, a roguelike set in NW Portland; Yulia's Cats, a virtual pet; and Tricorder, a handheld signal scanner."
+description: "Six apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; NW Crawl, a roguelike set in NW Portland; Yulia's Cats, a virtual pet; Tricorder, a handheld signal scanner; and Jiggler, a mouse jiggler that pauses while you work."
 image: /flipper/hanzi_cards.png
 ---
 <section class="projects flipper">
@@ -132,5 +132,26 @@ ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 git clone https://github.com/rseufert/tricorder &amp;&amp; cd tricorder
 ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/tricorder">GitHub</a> · <a href="https://github.com/rseufert/tricorder#controls">Controls</a> · <a href="https://github.com/rseufert/tricorder#what-it-transmits">What it transmits</a> · <a href="https://github.com/rseufert/tricorder/releases/tag/v0.3">Release 0.3</a> · <a href="https://github.com/rseufert/tricorder/blob/main/docs/changelog.md">Changelog</a></p>
+	</div><!-- /.project -->
+	<div class="project" id="jiggler">
+		<h3><a href="https://github.com/rseufert/jiggler">Jiggler</a> <span class="tag">tools</span></h3>
+		<figure class="shot pair">
+			<img src="/flipper/jiggler.png" width="512" height="256" loading="lazy" alt="Jiggler on the Flipper's orange screen: &quot;Jiggler&quot; and &quot;USB ok&quot; across the top, a mouse pointer on the left, and beside it &quot;Jiggling&quot;, &quot;next move in 1:31&quot;, &quot;1 move in 0:06&quot; and &quot;Helper: idle 0:46&quot;. The bottom line reads &quot;OK: stop&quot; and &quot;Right: settings&quot;.">
+			<img src="/flipper/jiggler_paused.png" width="512" height="256" loading="lazy" alt="Jiggler paused: the pointer with a pause sign beside it, then &quot;Paused&quot;, &quot;you're using the PC&quot;, &quot;1 move in 0:24&quot; and &quot;Helper: idle 0:03&quot;.">
+			<figcaption>jiggling while the computer is idle, and paused while it's in use</figcaption>
+		</figure>
+		<p>A mouse jiggler that keeps a computer awake without getting in your way. The Flipper plugs in over USB as a mouse.</p>
+		<ul class="features">
+			<li><strong>Invisible moves.</strong> Each move is a 1 px nudge and an immediate nudge back, so the computer's idle timer resets but the pointer never visibly leaves its spot. It can also wiggle, trace a tiny square, or tap F15 or Shift for programs that only watch the keyboard.</li>
+			<li><strong>Random timing.</strong> Set a shortest and a longest wait, from 5 seconds to 10 minutes, and each move comes at a random moment in between.</li>
+			<li><strong>It pauses while you work.</strong> A small desktop helper tells the Flipper how long the computer has been idle and whether the screen is locked, over a USB interface of its own, so it needs no special permissions. The jiggler holds off until you've been idle a while. Without the helper it still works, it just can't tell when you're busy.</li>
+			<li><strong>Run timers.</strong> Stop after 15 minutes to 12 hours, or at a time of day from the Flipper's clock.</li>
+			<li><strong>Status at a glance.</strong> What it's doing, when the next move is due, how many moves it has made, how long it has been running and what the helper reports. Settings are saved to the SD card.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/jiggler &amp;&amp; cd jiggler
+ufbt launch     # Flipper on USB, qFlipper closed
+pip install hidapi &amp;&amp; python3 helper/jiggler_helper.py     # optional</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/jiggler">GitHub</a> · <a href="https://github.com/rseufert/jiggler#controls">Controls</a> · <a href="https://github.com/rseufert/jiggler#the-desktop-helper">The desktop helper</a> · <a href="https://github.com/rseufert/jiggler/releases/tag/v0.1">Release 0.1</a></p>
 	</div><!-- /.project -->
 </section><!-- /.flipper -->
