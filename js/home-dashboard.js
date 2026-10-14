@@ -6,7 +6,9 @@
    Vancouver (NOAA), each as its level, which way it is heading, and a
    two-day sparkline. Mountains: the ten Cascade volcanoes' USGS alert
    levels, and Mount Hood's freezing level for the week ahead against its
-   summit, with its earthquakes and snow. Each tile fails on its own. */
+   summit, with its earthquakes and snow. Sky: the next asteroid flybys
+   (NASA JPL, saved nightly) and the planetary K index (NOAA) against Kp 7.
+   Each tile fails on its own. */
 (function () {
     "use strict";
 
@@ -256,4 +258,73 @@
                 });
             });
         }).catch(function () { fail("mountain-hood", "Open-Meteo"); });
+
+    /* ---- sky ------------------------------------------------------------- */
+
+    // The next asteroid flybys, from the nightly copy of NASA JPL's
+    // close-approach data (the sky-data branch, as the dashboard reads it;
+    // the copy on master if that fails).
+    var LD_AU = 384400 / 149597870.7;
+    var MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+    function jplTime(cd) {  // "2026-Oct-14 05:34", UTC
+        var m = /^(\d+)-(\w+)-(\d+) (\d+):(\d+)$/.exec(cd);
+        return m ? Date.UTC(+m[1], MONTHS[m[2]], +m[3], +m[4], +m[5]) : NaN;
+    }
+    function across(h) {  // estimated diameter for a typical 14% reflectivity
+        var metres = 1329 / Math.sqrt(0.14) * Math.pow(10, -h / 5) * 1000;
+        return metres >= 1000 ? (metres / 1000).toPrecision(2) + " km" : Math.round(metres) + " m";
+    }
+    function shortWhen(t) {
+        return new Date(t).toLocaleString("en-US", { timeZone: TZ, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+    getJSON("https://raw.githubusercontent.com/rseufert/rseufert.github.io/sky-data/sky.json")
+        .catch(function () { return getJSON("/data/sky.json"); })
+        .then(function (sky) {
+            var f = sky.approaches.fields;
+            var col = function (k) { return f.indexOf(k); };
+            var now = Date.now();
+            var next = sky.approaches.data.map(function (r) {
+                return { name: r[col("des")], t: jplTime(r[col("cd")]), ld: +r[col("dist")] / LD_AU, h: +r[col("h")] };
+            }).filter(function (a) { return a.t >= now; }).sort(function (a, b) { return a.t - b.t; });
+            if (!next.length) throw new Error("no flybys ahead");
+            var a = next[0];
+            var tile = fill("sky-asteroids", a.name, shortWhen(a.t) + " · " + a.ld.toFixed(1) + " lunar distances" +
+                (a.ld < 1 ? ", inside the Moon's orbit" : "") + " · about " + across(a.h) + " across");
+            var ul = document.createElement("ul");
+            // The next four after it; the first is the tile's headline.
+            next.slice(1, 5).forEach(function (n) {
+                var li = document.createElement("li");
+                var s = document.createElement("strong");
+                s.textContent = n.name;
+                li.appendChild(s);
+                li.appendChild(document.createTextNode(" " + shortWhen(n.t) + " · " + n.ld.toFixed(1) + " LD" + (n.ld < 1 ? ", inside the Moon" : "")));
+                ul.appendChild(li);
+            });
+            var box = tile.querySelector(".flyby-list");
+            box.textContent = "";
+            box.appendChild(ul);
+        }).catch(function () { fail("sky-asteroids", "NASA JPL's data"); });
+
+    // NOAA's planetary K index: the past three days and its forecast for the
+    // next three, against Kp 7, where a storm can bring the aurora to Oregon.
+    getJSON("https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json")
+        .then(function (rows) {
+            var since = Date.now() - 3 * DAY;
+            var pts = rows.map(function (r) {
+                return { x: Date.parse(r.time_tag + "Z"), y: +r.kp, predicted: r.observed === "predicted" };
+            }).filter(function (p) { return !isNaN(p.y) && p.x >= since; });
+            var seen = pts.filter(function (p) { return !p.predicted; });
+            if (!seen.length || pts.length < 2) throw new Error("no readings");
+            var cur = seen[seen.length - 1];
+            var peak = pts.filter(function (p) { return p.predicted; }).reduce(function (m, p) { return !m || p.y > m.y ? p : m; }, null);
+            var kp = function (v) { return "Kp " + (Math.round(v * 100) / 100); };
+            var state = cur.y >= 5 ? "G" + Math.min(5, Math.floor(cur.y) - 4) + " storm" : cur.y >= 4 ? "active" : "quiet";
+            var tile = fill("sky-kp", kp(cur.y), state + (peak ? " · forecast peak " + kp(peak.y) : "") +
+                " · the aurora reaches Portland in a strong storm, around Kp 7");
+            sparkline(tile, pts, {
+                label: "Planetary K index for the past three days and NOAA's forecast for the next three, against Kp 7",
+                fmt: kp, mark: pts.indexOf(cur), ref: { y: 7 },
+                resting: "three days back, three ahead; the line across is Kp 7"
+            });
+        }).catch(function () { fail("sky-kp", "NOAA"); });
 })();

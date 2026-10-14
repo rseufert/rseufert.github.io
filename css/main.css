@@ -731,3 +731,6 @@ code {
 .rivers .status-serious { background: #ec835a; }
 .rivers .status-critical { background: #d03b3b; }
 .rivers .status-none { background: var(--faint); }
+/* The next flybys: one column, the asteroid's name first. */
+.rivers .flyby-list ul { list-style: none; padding: 0; margin: 12px 0 0; font: 0.8em/1.6 var(--mono); color: var(--soft); }
+.rivers .flyby-list strong { color: var(--ink); font-weight: normal; }
