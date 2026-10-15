@@ -156,7 +156,7 @@ p {
 }
 
 /* Section headings get a comment marker in the accent colour. */
-.projects h2::before, .post h2::before {
+.projects h2::before, .projects:not(.dash) > h1::before, .post h2::before {
     content: "//";
     font-family: var(--mono);
     font-weight: normal;
@@ -200,23 +200,30 @@ ul.posts .date {
 .projects {
     margin-top: 60px;
 }
-.projects h2 {
+.projects h2, .projects:not(.dash) > h1 {
     font-size: 2em;
     font-family: var(--sans);
     border-bottom: 1px dashed var(--rule);
     padding-bottom: 10px;
 }
+/* On a page of its own (the examples, Flipper) the section heading is the
+   page's h1, drawn as an h2, at an h2's margins. The dashboard's h1 stays
+   the big one. */
+.projects:not(.dash) > h1 { margin: 0.83em 0; }
 .projects .lede {
     color: var(--soft);
 }
 .project {
     margin: 40px 0;
 }
-.project h3 {
+/* On a project's own page the card's name is the page's h1, drawn as a
+   card's h3, at an h3's margin above. */
+.project h1, .project h3 {
     font-size: 1.8em;
     font-family: var(--sans);
     margin-bottom: 0;
 }
+.project h1 { margin-top: 1em; }
 .project .tag {
     font-family: var(--mono);
     font-size: 0.45em;
@@ -226,10 +233,10 @@ ul.posts .date {
     margin-left: 8px;
     white-space: nowrap;
 }
-.project h3 a {
+.project h1 a, .project h3 a {
     color: var(--ink);
 }
-.project h3 a:hover {
+.project h1 a:hover, .project h3 a:hover {
     color: var(--accent);
 }
 .project .features {

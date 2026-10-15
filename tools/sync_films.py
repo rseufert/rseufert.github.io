@@ -68,9 +68,9 @@ ROOT = film_stills.ROOT
 BLOG = os.path.join(ROOT, "blog")
 NAME = re.compile(r"[a-z0-9_]+\Z")
 
-# The repos whose films the site shows. `project` is the name in the <h3> of
-# the page a new film goes on; None places a film by its mocks, as mock-films'
-# films are, since each is a film of a mock.
+# The repos whose films the site shows. `project` is the name in the heading
+# of the page a new film goes on; None places a film by its mocks, as
+# mock-films' films are, since each is a film of a mock.
 SOURCES = {
     "mock-films": {"project": None},
     "acme-treasury": {"project": "acme-treasury"},
@@ -92,7 +92,8 @@ def tag(source):
 
 # The home page's section on the mocks working together, for a film of several.
 TOGETHER = re.compile(r'<div class="project" id="together">.*?</div><!-- /\.project -->', re.S)
-PROJECT = re.compile(r'<div class="project">\s*<h3><a href="[^"]*">([^<]+)</a></h3>.*?'
+# A project's name is its page's <h1>, and an <h3> where it is one of several.
+PROJECT = re.compile(r'<div class="project">\s*<(h[13])><a href="[^"]*">([^<]+)</a></\1>.*?'
                      r"</div><!-- /\.project -->", re.S)
 
 
@@ -259,7 +260,7 @@ def apply(changes, films_dir, pages, source):
             # page has the mock in brief, with one film and no list.
             projects = [(path, m) for path, page in pages.items()
                         for m in PROJECT.finditer(page)
-                        if m.group(1) == mock and '<ul class="features">' in m.group(0)]
+                        if m.group(2) == mock and '<ul class="features">' in m.group(0)]
             if not projects:
                 sys.exit("%s: no page with a features list for %s" % (name, mock))
             path, project = projects[0]
@@ -276,7 +277,8 @@ def apply(changes, films_dir, pages, source):
             elif figures:
                 at = features
             else:
-                at = block.index("</h3>") + len("</h3>")
+                heading = "</%s>" % project.group(1)
+                at = block.index(heading) + len(heading)
             # Only the first film on the page loads eagerly; it is above the fold.
             # A mock's own page may have no film yet, and then this is the first.
             first = FIGURE.search(page)
