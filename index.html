@@ -6,76 +6,22 @@ layout: default
 		<figcaption class="titlebar"><span>sup.jpeg</span><span aria-hidden="true">_ &#9633; &times;</span></figcaption>
 		<div class="frame"><img src="/blog/sup.jpeg" width="481" height="680" alt="Josh Allen in a white cap, rose-tinted rimless glasses and an iced-out heart pendant"></div>
 	</figure>
-	<br />
-	<br />
-	<marquee><h1>sup?</h1></marquee>
-	
-
+	<div class="who">
+		<marquee><h1>sup?</h1></marquee>
+		<p>Mock SAP, EDI, bank and e-invoicing systems, for testing integrations without a license, a VPN or a trading partner. Also apps for the <a href="/#flipper">Flipper Zero</a>, a <a href="/dashboard/">dashboard</a> of Portland and the sky, a <a href="/blog/">blog</a> and <a href="/media/">some music</a>.</p>
+	</div>
 </div><!-- /.blurb -->
 
 <section id="projects" class="projects">
 	<h2>Projects</h2>
 	<p class="lede">Mock enterprise systems for integration testing. Point your code at them and develop, test and demo without a license, a VPN tunnel, or a support ticket.</p>
 	<p class="lede">Using them together: <a href="/blog/2026/09/24/testing-an-sap-to-edi-integration">Testing an SAP-to-EDI integration without SAP or a trading partner</a>. On the failures you can't ask a partner to perform: <a href="/blog/2026/09/25/three-edi-behaviours-you-cannot-rehearse">three EDI behaviours you can't rehearse</a>.</p>
+	<p class="lede">The films
 	<p class="lede">The films are drawn by mock-films from the messages of a real run against a mock. The mocks have no screens of their own; these are the conversations they had. acme-treasury draws its own, from a real week against the mocks.</p>
 
-	<!-- Each mock in brief: one film, what it is, how to start it. The rest of
-	     its films and its features are on its own page, which is where
-	     tools/sync_films.py puts a new film, and the button under each goes there. -->
-	<div class="project">
-		<h3><a href="/mock-sap/">mock-sap</a></h3>
-		<figure class="film">
-			<a class="play" href="/blog/sap_invoices.gif" title="play the film"><img src="/blog/sap_invoices.png" width="800" height="450" alt="Two supplier invoices are sent to mock-sap as INVOIC IDocs for one purchase order. The first posts and leaves EUR 1190.00 payable. The second is refused with status 51, &quot;Posting period 10 2026 is not open&quot;. The capture script told the mock to refuse it; mock-sap itself does not check posting periods."></a>
-			<figcaption>two invoices, one refused on request <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<p>A black-box mock SAP endpoint. It speaks the shapes, not the business logic: SAP Gateway OData V2 and V4 services, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
-<pre><code>pip install mock-sap
-mock-sap --port 8000
-curl "http://127.0.0.1:8000/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder?\$top=1&amp;\$format=json"</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a> · <a href="https://github.com/rseufert/mock-sap/blob/main/CHANGELOG.md">Changelog</a></p>
-		<p class="more"><a href="/mock-sap/">Features and more films</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="/mock-edi/">mock-edi</a></h3>
-		<figure class="film">
-			<a class="play" href="/blog/edi_overshipped.gif" data-poster-ms="33000" title="play the film"><img src="/blog/edi_overshipped.png" width="800" height="450" loading="lazy" alt="ACME's mock-edi sends an 850 to NORTHWIND's mock-edi, which the capture set to over-ship and to delay its despatch and invoice. Act one: the seller acknowledges the order and confirms the 100 ordered. Act two: the capture moves both clocks an hour, the seller packs and sends a despatch advice for 130, and the buyer's mock reports two problems on it: 130 shipped against 100 confirmed, and against 100 ordered. Act three: the clocks move again, the seller invoices the 130, and the buyer's mock reports that the invoice bills 130 against 100 ordered. The capture delivers each document from one mock to the other, one at a time, and the buyer's mock acknowledges each."></a>
-			<figcaption>an order that ships too much <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end. Send it an 850 and it answers with a 997, an 855, an 856 and an 810. Send it EDIFACT <code>ORDERS</code> and you get <code>CONTRL</code>, <code>ORDRSP</code>, <code>DESADV</code> and <code>INVOIC</code>.</p>
-<pre><code>pip install mock-edi
-mock-edi --port 8080
-curl -X POST --data-binary @order.edi http://127.0.0.1:8080/edi</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a> · <a href="https://github.com/rseufert/mock-edi/blob/main/CHANGELOG.md">Changelog</a></p>
-		<p class="more"><a href="/mock-edi/">Features and more films</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="/mock-bank/">mock-bank</a></h3>
-		<figure class="film">
-			<a class="play" href="/blog/bank_four_payments_film.gif" data-poster-ms="22200" title="play the film"><img src="/blog/bank_four_payments_film.png" width="800" height="450" loading="lazy" alt="ACME sends mock-bank a file of four payments, and the bank's status report rejects two, giving a reason for each. The bank's own queue says a debit notification is due on the settlement day, which the film shows as a promise. The capture then advances the bank's clock twice: the other two payments are booked and reported in the debit notification, which keeps the promise, and then in a statement. The rejected two appear in neither."></a>
-			<figcaption>a payment file, half of it rejected <span>drawn by mock-films from a real run</span></figcaption>
-		</figure>
-		<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank, a test IBAN, or six weeks of onboarding. It is not a ledger and not a payment provider: it holds four accounts, moves balances in minor units, and refuses by name anything it does not implement.</p>
-<pre><code>pip install mock-bank
-mock-bank --port 8090
-curl -X POST --data-binary @pain001.xml http://127.0.0.1:8090/payments</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a> · <a href="https://github.com/rseufert/mock-bank/blob/main/CHANGELOG.md">Changelog</a></p>
-		<p class="more"><a href="/mock-bank/">Features and more films</a></p>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="/mock-einvoice/">mock-einvoice</a></h3>
-		<p>A mock e-invoicing partner. UBL invoices and credit notes, held to every published rule of EN 16931, Peppol BIS Billing and XRechnung, and the Peppol Invoice Response that answers them. Over HTTP it is a buyer that takes invoices in and a supplier that sends them.</p>
-<pre><code>supplier ──Invoice (UBL)──▶  buyer   held to 1,144 rules: valid
-         ◀──Response AP───          accepted
-         ◀──Response PD───          paid</code></pre>
-<pre><code>pip install mock-einvoice
-mock-einvoice --port 8100</code></pre>
-		<p class="links"><a href="https://github.com/rseufert/mock-einvoice">GitHub</a> · <a href="https://pypi.org/project/mock-einvoice/">PyPI</a> <a href="https://pypi.org/project/mock-einvoice/"><img class="badge" src="https://img.shields.io/pypi/v/mock-einvoice" alt="latest mock-einvoice release on PyPI"></a> · <a href="https://github.com/rseufert/mock-einvoice/blob/main/CHANGELOG.md">Changelog</a></p>
-		<p class="more"><a href="/mock-einvoice/">Features</a></p>
-	</div><!-- /.project -->
-
+	<!-- The section's one film is the purchase that crosses all three mocks;
+	     tools/sync_films.py puts a film of several mocks here. Each project is
+	     then a tile, and its own page has its films and features. -->
 	<div class="project" id="together">
 		<h3><a href="/blog/2026/10/02/one-purchase-across-three-mocks">One purchase, all three mocks</a></h3>
 		<figure class="film">
@@ -86,39 +32,57 @@ mock-einvoice --port 8100</code></pre>
 		<p class="more"><a href="/blog/2026/10/02/one-purchase-across-three-mocks">Read the post</a></p>
 	</div><!-- /.project -->
 
-	<div class="project" id="treasury">
-		<h3><a href="/acme-treasury/">acme-treasury</a></h3>
-		<figure class="film">
-			<a class="play" href="/blog/treasury_week.gif" title="play the film"><img src="/blog/treasury_week.png" width="800" height="450" loading="lazy" alt="acme-treasury forecasts the closing balance of ACME's account for eight business days, from what mock-sap says is owed and what mock-bank says it holds, and draws it as a line. Monday's statement from the bank closes 9,300.00 away from the line, in red: the forecast expected to pay an invoice, and the bank refused the payment because the supplier's account is closed, which SAP did not know. Tuesday's forecast replaces the line and lists that invoice as left out, with the bank's reason. The other seven statements close where the forecast then said, one of them at -16,450.00. The payments were made by mock-acme's payment run, and the capture script set up the invoices and moved both clocks."></a>
-			<figcaption>a cash forecast, held to the bank's statements <span>drawn by acme-treasury from a real run</span></figcaption>
-		</figure>
-		<p>A cash forecast from what mock-sap says is owed and what mock-bank says the account holds, held to the bank's statements to the cent. When the line dips under a floor, a payment schedule says which invoice to hold, and for how long.</p>
-		<p class="more"><a href="/acme-treasury/">Features and the payment schedule</a></p>
-	</div><!-- /.project -->
+	<div class="tiles mocks">
+		<div class="project">
+			<h3><a href="/mock-sap/">mock-sap</a></h3>
+			<p>A black-box mock SAP endpoint: Gateway OData V2 and V4, BAPI/RFC over JSON and SOAP, and IDocs in XML and flat-file form, all backed by SQLite.</p>
+			<p class="links"><a href="https://github.com/rseufert/mock-sap">GitHub</a> · <a href="https://pypi.org/project/mock-sap/">PyPI</a> <a href="https://pypi.org/project/mock-sap/"><img class="badge" src="https://img.shields.io/pypi/v/mock-sap" alt="latest mock-sap release on PyPI"></a></p>
+			<p class="more"><a href="/mock-sap/">Features and films</a></p>
+		</div><!-- /.project -->
 
-	<div class="project">
-		<h3><a href="/examples/">Worked examples</a></h3>
-		<p>Small integrations between the mocks, each with its tests, kept in <a href="https://github.com/rseufert/mock-acme">mock-acme</a>.</p>
-		<ul class="index">
-			<li><a href="/examples/#procure-to-pay">Procure to pay</a> <span class="tag">all three mocks</span><br>One purchase, carried the whole way: from a purchase order in SAP to the bank statement that clears it and the advice that tells the supplier.</li>
-			<li><a href="/examples/#po-bridge">PO bridge</a> <span class="tag">mock-sap + mock-edi</span><br>Reads a purchase order from SAP, sends it to the supplier as an X12 850, and posts the supplier's 855 back as an <code>ORDRSP</code> IDoc.</li>
-			<li><a href="/examples/#invoice-check">Invoice check</a> <span class="tag">mock-sap + mock-edi</span><br>Posts a supplier's 810 invoice into SAP only if it passes a three-way match against the purchase order and the ship notice.</li>
-			<li><a href="/examples/#e-invoice">E-invoice</a> <span class="tag">mock-sap + mock-edi + mock-einvoice</span><br>Takes a supplier's UBL e-invoice in place of an 810, matches and posts it the same way, and answers the supplier with Peppol Invoice Responses down to paid.</li>
-			<li><a href="/examples/#pay-invoices">Pay invoices</a> <span class="tag">mock-edi + mock-bank</span><br>Pays a supplier's EDIFACT <code>INVOIC</code>s in a <code>pain.001</code>, then works out from what the bank sends back which are actually paid.</li>
-			<li><a href="/examples/#payment-run">Payment run</a> <span class="tag">mock-sap + mock-bank</span><br>What SAP's <code>F110</code> does: select the open items that are due, pay them in one file, and post the statement back.</li>
-			<li><a href="/examples/#remittance">Remittance</a> <span class="tag">mock-sap + mock-edi</span><br>Tells the supplier what was paid: SAP's payment advice, sent on as the X12 820 the supplier reads.</li>
-		</ul>
-	</div><!-- /.project -->
+		<div class="project">
+			<h3><a href="/mock-edi/">mock-edi</a></h3>
+			<p>A mock EDI trading partner. Not an EDI library or an AS2 server, but the thing on the other end: send it an 850 and it answers with a 997, an 855, an 856 and an 810.</p>
+			<p class="links"><a href="https://github.com/rseufert/mock-edi">GitHub</a> · <a href="https://pypi.org/project/mock-edi/">PyPI</a> <a href="https://pypi.org/project/mock-edi/"><img class="badge" src="https://img.shields.io/pypi/v/mock-edi" alt="latest mock-edi release on PyPI"></a></p>
+			<p class="more"><a href="/mock-edi/">Features and films</a></p>
+		</div><!-- /.project -->
+
+		<div class="project">
+			<h3><a href="/mock-bank/">mock-bank</a></h3>
+			<p>A mock bank that speaks ISO 20022 and NACHA, over HTTP and over a drop folder, so you can test a payment integration without a bank or a test IBAN.</p>
+			<p class="links"><a href="https://github.com/rseufert/mock-bank">GitHub</a> · <a href="https://pypi.org/project/mock-bank/">PyPI</a> <a href="https://pypi.org/project/mock-bank/"><img class="badge" src="https://img.shields.io/pypi/v/mock-bank" alt="latest mock-bank release on PyPI"></a></p>
+			<p class="more"><a href="/mock-bank/">Features and films</a></p>
+		</div><!-- /.project -->
+
+		<div class="project">
+			<h3><a href="/mock-einvoice/">mock-einvoice</a></h3>
+			<p>A mock e-invoicing partner: UBL invoices and credit notes held to every published rule of EN 16931, Peppol BIS Billing and XRechnung, and the Invoice Response that answers them.</p>
+			<p class="links"><a href="https://github.com/rseufert/mock-einvoice">GitHub</a> · <a href="https://pypi.org/project/mock-einvoice/">PyPI</a> <a href="https://pypi.org/project/mock-einvoice/"><img class="badge" src="https://img.shields.io/pypi/v/mock-einvoice" alt="latest mock-einvoice release on PyPI"></a></p>
+			<p class="more"><a href="/mock-einvoice/">Features</a></p>
+		</div><!-- /.project -->
+
+		<div class="project">
+			<h3><a href="/acme-treasury/">acme-treasury</a></h3>
+			<p>A cash forecast from what mock-sap says is owed and what mock-bank says the account holds, held to the bank's statements to the cent.</p>
+			<p class="links"><a href="https://github.com/rseufert/acme-treasury">GitHub</a></p>
+			<p class="more"><a href="/acme-treasury/">Features and films</a></p>
+		</div><!-- /.project -->
+
+		<div class="project">
+			<h3><a href="/examples/">Worked examples</a></h3>
+			<p>Small integrations between the mocks, from a PO bridge to procure-to-pay, each with its tests, kept in mock-acme.</p>
+			<p class="links"><a href="https://github.com/rseufert/mock-acme">GitHub</a></p>
+			<p class="more"><a href="/examples/">All the examples</a></p>
+		</div><!-- /.project -->
+	</div><!-- /.tiles -->
 </section><!-- /.projects -->
 
 <section id="dashboard" class="projects rivers">
 	<h2>Dashboard</h2>
-	<p class="lede">Public data, live: Portland's weather, air, rivers, bikes and earthquakes, the Cascade volcanoes and Mount Hood's snow, what's passing overhead, and the Treasury's books, each drawn from its source's own feed when the page loads.</p>
+	<p class="lede">Public data, live: Portland's weather, air, rivers, bikes and earthquakes, the Cascade volcanoes and Mount Hood's snow, what's passing overhead, and the Treasury's books. One of its numbers here, the rest on the page.</p>
 
 	<div class="project">
-		<h3><a href="/dashboard/#portland">Rivers</a> <span class="tag">right now</span></h3>
-		<p>The two rivers Portland sits on. Both are about 100 miles from the Pacific, and both still rise and fall with its tide.</p>
-		<div class="river-tiles">
+		<div class="river-tiles one">
 			<div class="river" id="river-willamette">
 				<div class="label">Willamette <span>at the Morrison Bridge</span></div>
 				<div class="value">&hellip;</div>
@@ -126,59 +90,6 @@ mock-einvoice --port 8100</code></pre>
 				<div class="spark"></div>
 				<div class="readout" aria-live="polite"></div>
 				<p class="source">gauge height · <a href="https://waterdata.usgs.gov/monitoring-location/14211720/">USGS 14211720</a></p>
-			</div>
-			<div class="river" id="river-columbia">
-				<div class="label">Columbia <span>at Vancouver</span></div>
-				<div class="value">&hellip;</div>
-				<div class="note"></div>
-				<div class="spark"></div>
-				<div class="readout" aria-live="polite"></div>
-				<p class="source">above mean lower low water · <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=9440083">NOAA 9440083</a></p>
-			</div>
-		</div>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="/dashboard/#mountains">Mountains</a> <span class="tag">right now</span></h3>
-		<p>The Cascade volcanoes from Baker to Crater Lake, and where it will freeze on Mount Hood this week.</p>
-		<div class="river-tiles">
-			<div class="river" id="mountain-volcanoes">
-				<div class="label">Cascade volcanoes <span>USGS alert levels</span></div>
-				<div class="value">&hellip;</div>
-				<div class="note"></div>
-				<div class="volcano-list"></div>
-				<p class="source"><a href="https://volcanoes.usgs.gov/hans-public/">USGS Volcano Notification Service</a></p>
-			</div>
-			<div class="river" id="mountain-hood">
-				<div class="label">Mount Hood <span>freezing level</span></div>
-				<div class="value">&hellip;</div>
-				<div class="note"></div>
-				<div class="spark"></div>
-				<div class="readout" aria-live="polite"></div>
-				<p class="source"><a href="https://open-meteo.com/">Open-Meteo</a> · <a href="https://pnsn.org/volcanoes/mount-hood">PNSN</a> · <a href="https://wcc.sc.egov.usda.gov/nwcc/site?sitenum=651">SNOTEL 651</a></p>
-			</div>
-		</div>
-	</div><!-- /.project -->
-
-	<div class="project">
-		<h3><a href="/dashboard/#sky">Sky</a> <span class="tag">right now</span></h3>
-		<p>The next asteroids to pass Earth, and how stirred up the solar wind is.</p>
-		<div class="river-tiles">
-			<div class="river" id="sky-asteroids">
-				<div class="label">Next close flyby <span>within 20 lunar distances</span></div>
-				<div class="value">&hellip;</div>
-				<div class="note"></div>
-				<div class="flyby-list"></div>
-				<p class="source"><a href="https://ssd-api.jpl.nasa.gov/doc/cad.html">NASA JPL close-approach data</a>, saved nightly</p>
-			</div>
-			<div class="river" id="sky-kp">
-				<div class="label">Space weather <span>planetary K index</span></div>
-				<div class="value">&hellip;</div>
-				<div class="note"></div>
-				<div class="spark"></div>
-				<div class="readout" aria-live="polite"></div>
-				<p class="source"><a href="https://www.swpc.noaa.gov/products/planetary-k-index">NOAA Space Weather Prediction Center</a></p>
-			</div>
 		</div>
 		<p class="more"><a href="/dashboard/">The whole dashboard</a></p>
 	</div><!-- /.project -->

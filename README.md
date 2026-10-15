@@ -1,9 +1,9 @@
 # rseufert.github.io
 
-The home page is an index: each mock in brief with one film, the worked
-examples as a list, the dashboard as the rivers, the mountains and the sky
-right now (`js/home-dashboard.js`, plain SVG, so the home page loads no D3),
-and the Flipper apps as tiles.
+The home page is an index: one film, the purchase that crosses all three
+mocks, then each project as a tile, the dashboard as one of its numbers, the
+Willamette right now (`js/home-dashboard.js`, plain SVG, so the home page
+loads no D3 and asks one other host), and the Flipper apps as tiles.
 The rest is a page each: `mock-sap/`, `mock-edi/`, `mock-bank/` and
 `mock-einvoice/` carry a mock's
 features and all its films, `examples/index.html` the worked examples in full, and
@@ -32,8 +32,8 @@ mouse, and on a touch screen when the film is most of the way into view, one
 at a time, unless the visitor asked for less motion or to save data. A film is
 shown at exactly 800 px wherever the window has room, since its pixel type is
 only sharp at 800; a project leads with one film and puts the rest after its
-features list. The home page shows each project's first film again, and a blog
-post may show the film it is about; the tools keep every copy in step.
+features list. A blog post may show the film it is about, and the home page
+shows the film of the mocks together; the tools keep every copy in step.
 
 Each source keeps `docs/films/index.json` in mock-films' layout, and that
 index is the source of truth for which of its films exist, each one's current
