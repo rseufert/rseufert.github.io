@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Three EDI Behaviours You Can't Rehearse With a Real Trading Partner"
+title: "Three EDI Behaviours You Can't Rehearse"
 date: 2026-09-25
 description: >-
   A changed order after packing, an acknowledgment that never comes, the same

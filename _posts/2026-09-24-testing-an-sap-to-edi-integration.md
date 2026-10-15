@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Testing an SAP-to-EDI Integration Without SAP or a Trading Partner"
+title: "Testing SAP-to-EDI Without SAP or a Partner"
 date: 2026-09-24
 description: >-
   How to test the middleware between SAP and your suppliers' EDI without an SAP

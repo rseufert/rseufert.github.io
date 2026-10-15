@@ -1,13 +1,14 @@
 ---
 layout: default
-title: "mock-einvoice: a mock e-invoicing partner for EN 16931 and Peppol"
+title: "mock-einvoice: a mock EN 16931/Peppol partner"
 description: "mock-einvoice is a mock e-invoicing partner: UBL invoices and credit notes held to every published rule of EN 16931, Peppol BIS Billing and XRechnung, and the Peppol Invoice Response that answers them."
+image: /blog/p2p_film.png
 ---
 <section class="projects">
 	<p class="crumb"><a href="/#projects">&larr; all projects</a></p>
 
 	<div class="project">
-		<h3><a href="https://github.com/rseufert/mock-einvoice">mock-einvoice</a></h3>
+		<h1><a href="https://github.com/rseufert/mock-einvoice">mock-einvoice</a></h1>
 		<p>A mock e-invoicing partner. It reads and writes UBL invoices and credit notes and holds them to their published rules, and it reads and writes the Peppol Invoice Response a buyer answers one with. Over HTTP it is a buyer that takes invoices in and answers them, and a supplier that sends them and takes the answers. One process is both, and two can be pointed at each other.</p>
 <pre><code>supplier ──Invoice (UBL)──▶  buyer   held to 1,144 rules: valid, 201
          ◀──Response AP───          accepted
