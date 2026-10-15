@@ -85,15 +85,21 @@ p {
     color: var(--ink);
 }
 
-/* The blurb: photo, then the marquee, now with a cursor after "sup?". */
+/* The blurb: the photo beside the marquee, with a cursor after "sup?", and
+   one line on what the site is, so the first screen says so. */
+.blurb { display: flex; align-items: center; gap: 40px; margin-top: 20px; }
+.blurb .who { min-width: 0; }
+.blurb .who p { color: var(--soft); }
 /* The photo sits in an old desktop window: a title bar, a hard accent
    shadow, a slight tilt, and scanlines. On hover it straightens and
-   glitches once, red and cyan pulling apart. */
+   glitches once, red and cyan pulling apart. It is shown small, 240 wide,
+   so the projects start within the first screen. */
 .blurb .hero {
     display: block;
+    flex: none;
     width: fit-content;
     max-width: calc(100% - 16px);   /* room for the shadow and the tilt */
-    margin: 10px auto 0;
+    margin: 10px 0 0 8px;
     border: 2px solid var(--ink);
     background: var(--bg);
     box-shadow: 8px 8px 0 var(--accent);
@@ -117,6 +123,7 @@ p {
 }
 .blurb .hero img {
     display: block;
+    width: 240px;
     max-width: 100%;
     height: auto;
     filter: contrast(1.08) saturate(1.2);
@@ -367,6 +374,9 @@ code {
         width: auto;
         margin: 30px 16px;
     }
+    .blurb { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .blurb .hero { margin-left: 0; }
+    .blurb .hero img { width: 180px; }
     .blurb img {
         max-width: 100%;
         height: auto;
@@ -475,6 +485,16 @@ code {
 .tiles .project h3 { font-size: 1.3em; margin-top: 12px; }
 .tiles .project .tag { font-size: 0.6em; }
 .tiles .project p { font-size: 1.1em; margin: 8px 0; }
+/* The projects as tiles, three across where the column has room for it:
+   the name, one line on what it is, its links, and the button to its page
+   at the foot, level across a row. */
+.tiles.mocks { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+.tiles.mocks .project { display: flex; flex-direction: column; border: 1px dashed var(--rule); padding: 14px 18px 18px; }
+.tiles.mocks .project h3 { margin-top: 0; }
+.tiles.mocks .project .links { font-size: 0.85em; margin: 4px 0 0; }
+.tiles.mocks .project .more { margin-top: auto; padding-top: 18px; }
+.tiles.mocks .project .more a { padding: 8px 16px; font-size: 16px; }
+.tiles.mocks .project .more a:active { padding: 9px 15px 7px 17px; }
 /* The way to a mock's own page is a Windows 95 button, to go with the photo's
    title bar: grey in both themes, raised until it is pressed, and a dotted
    box inside it for focus. It sits centred under the mock, at a size to be
@@ -672,7 +692,7 @@ code {
     paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round;
 }
 
-/* The home page's dashboard section (index.html, js/home-dashboard.js):
+/* The dashboard's tiles (dashboard/index.html, and one on the home page by js/home-dashboard.js):
    tiles, each a value, a note, and a sparkline in the faint ink with one
    reading as an accent dot, or the volcanoes' alert levels as a list. */
 .rivers .river-tiles {
@@ -681,6 +701,7 @@ code {
     gap: 16px;
     margin: 24px 0;
 }
+.rivers .river-tiles.one { grid-template-columns: minmax(240px, 440px); }   /* the home page's one tile */
 .rivers .river { border: 1px dashed var(--rule); padding: 14px 16px 10px; font-family: var(--sans); }
 .rivers .river .label { font-size: 1.05em; font-weight: bold; color: var(--ink); }
 .rivers .river .label span { font: normal 0.75em var(--mono); color: var(--faint); margin-left: 4px; }
