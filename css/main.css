@@ -140,7 +140,9 @@ canvas.julia {
 .chat .log .sys { color: var(--faint); }
 .chat .log .room { font-weight: bold; margin-bottom: 2px; }
 .chat .log .typing::after { content: "\2026"; }
-.chat .log pre { margin: 0 0 8px; font: inherit; color: var(--soft); overflow-x: auto; }
+.chat .log pre { margin: 0 0 8px; font: inherit; color: var(--soft); overflow-x: auto; white-space: pre; }
+.chat .log pre.art { color: var(--accent); }
+.chat .log a { text-decoration: underline; }
 .chat .line { display: flex; border-top: 1px solid var(--rule); }
 .chat .line .prompt { padding: 8px 0 8px 12px; color: var(--accent); }
 .chat .line input {
@@ -261,6 +263,17 @@ p {
     pointer-events: none;
 }
 .blurb .hero:hover img { animation: glitch 0.45s steps(3) 1; }
+/* After the elves (js/hero.js): the photo dreamed, over the plain one. */
+.blurb .hero .frame canvas.dream {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.blurb .hero.dreaming-css img { filter: contrast(1.2) saturate(2.2) hue-rotate(70deg); }
+/* The strip, the moment the elves go home. */
+a.julia.glitching canvas { animation: glitch 0.45s steps(3) 3; }
 @keyframes glitch {
     0%   { filter: contrast(1.08) saturate(1.2) drop-shadow(-4px 0 #ff0050) drop-shadow(4px 0 #00e5ff); transform: translateX(2px); }
     50%  { filter: contrast(1.08) saturate(1.2) drop-shadow(3px 0 #ff0050) drop-shadow(-3px 0 #00e5ff); transform: translateX(-2px); }
@@ -277,6 +290,7 @@ p {
     .blurb h1::after { animation: none; }
     .blurb .hero, .blurb .hero:hover { transform: none; transition: none; }
     .blurb .hero:hover img { animation: none; }
+    a.julia.glitching canvas { animation: none; }
 }
 
 /* Section headings get a comment marker in the accent colour. */

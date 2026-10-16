@@ -96,7 +96,12 @@
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.00, 0.10, 0.20]]
     ];
     // A seventh, the machine elves', for whoever got them home (js/chat.js).
-    try { if (localStorage.getItem("elf")) PALETTES.push([[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.30, 0.65, 0.15]]); } catch (e) { /* no storage */ }
+    var ELF = [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.30, 0.65, 0.15]];
+    try { if (localStorage.getItem("elf")) PALETTES.push(ELF); } catch (e) { /* no storage */ }
+    window.addEventListener("elves", function () {
+        if (PALETTES.length < 7) PALETTES.push(ELF);
+        palette(6);
+    });
     var visit;
     try { visit = JSON.parse(sessionStorage.getItem("julia")); } catch (e) { visit = null; }
     if (!visit || typeof visit.start !== "number" || !PALETTES[visit.palette]) {
