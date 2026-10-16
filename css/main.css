@@ -75,6 +75,18 @@ nav a::after  { content: "]"; color: var(--faint); }
 nav a:hover { text-decoration: none; }
 nav a:hover::before, nav a:hover::after { color: var(--accent); }
 
+/* The strip under the menu: a Julia set, drawn by js/julia-set.js. The
+   height is fixed so the page does not move when it loads; without
+   scripts, or WebGL, there is no strip at all. */
+canvas.julia {
+    display: block;
+    width: 100%;
+    height: 110px;
+    margin: 6px 0 24px;
+    background: #000;
+    cursor: pointer;
+}
+
 h1 {
     font-size: 3em;
     font-family: var(--sans);
@@ -401,6 +413,7 @@ code {
     nav ul li {
         margin-right: 0;
     }
+    canvas.julia { height: 72px; margin-bottom: 18px; }
 }
 
 /* The media page: a player that loads only when asked (see media/index.html). */
