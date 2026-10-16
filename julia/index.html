@@ -1,0 +1,40 @@
+---
+layout: default
+title: Julia
+description: A Julia set to steer. Move over it to change c, scroll to zoom, click to hold it still, and it wanders on its own when you stop.
+image: /julia/share.jpg
+nostrip: true
+---
+<div class="julia-page">
+<h1>Julia</h1>
+<p class="lede">The strip under the menu, writ large and yours to steer. Every point of
+the plane is a <a href="https://en.wikipedia.org/wiki/Julia_set">Julia set</a>: pick a
+number <var>c</var>, and the set is every <var>z</var> that never escapes under
+<var>z</var> &rarr; <var>z</var>&sup2; + <var>c</var>. Move over the picture and
+<var>c</var> follows you. Stop, and it wanders off along the walk that
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/tools/julia_set.jl">Julia</a>
+charted for the strip.</p>
+
+<canvas id="julia-stage" class="stage" aria-label="a Julia set; move over it to change c, scroll to zoom, click to hold"></canvas>
+
+<div class="bar">
+  <canvas id="julia-map" class="map" width="180" height="120" aria-label="the Mandelbrot set; click or drag on it to pick c" title="c lives here; click or drag"></canvas>
+  <div class="read">
+    <output id="julia-c" class="c">c = &hellip;</output>
+    <p class="hint">move to change <var>c</var> &middot; scroll or pinch to zoom &middot; click or tap to hold &middot;
+      <kbd>p</kbd> palette &middot; <kbd>r</kbd> start over &middot; arrows nudge <var>c</var></p>
+    <p class="buttons"><button type="button" id="julia-hold">hold</button> <button type="button" id="julia-palette">palette</button> <button type="button" id="julia-reset">start over</button></p>
+  </div>
+</div>
+
+<p>The small map is the <a href="https://en.wikipedia.org/wiki/Mandelbrot_set">Mandelbrot set</a>,
+the catalogue of every <var>c</var>: inside it the Julia set is one piece, outside it
+a cloud of dust, and the edge is where the pictures are. The wander keeps
+just outside that edge, on an equipotential of the set, which is what the Julia
+script works out. The drawing is the
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/julia.js">graphics card's</a>:
+every pixel runs its own orbit, three hundred steps at most, sixty times a second.
+Holding the set still with a view you like puts <var>c</var> and the zoom in the
+address, so the link brings it back.</p>
+</div>
+<script src="/js/julia.js"></script>

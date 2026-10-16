@@ -23,8 +23,8 @@
 	        		
 	    		</ul>
 			</nav>
-			<canvas class="julia" aria-hidden="true"></canvas>
-			<noscript><style>canvas.julia { display: none; }</style></noscript>
+			{% unless page.nostrip %}<a class="julia" href="/julia/" title="a julia set, zooming; click for the whole page"><canvas class="julia" aria-hidden="true"></canvas></a>
+			<noscript><style>a.julia { display: none; }</style></noscript>{% endunless %}
 			<div class="container">
 			
 			{{ content }}

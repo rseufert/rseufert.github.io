@@ -16,8 +16,8 @@
 // Each visit starts somewhere along the walk at random, where the walk
 // lingers most likely, in one of a few palettes, and keeps both for the
 // visit, so the strip is at the same place on every page but a different
-// one next time. A visitor who asked for less motion gets one still frame,
-// and a click pauses or plays.
+// one next time. A visitor who asked for less motion gets one still frame.
+// The strip is a link to /julia/, the same set writ large and steerable.
 (function () {
     "use strict";
     var canvas = document.querySelector("canvas.julia");
@@ -26,7 +26,8 @@
         alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "low-power"
     });
     var ok = gl && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision >= 23;
-    if (!ok) { canvas.remove(); return; }
+    var gone = function () { (canvas.parentNode.tagName === "A" ? canvas.parentNode : canvas).remove(); };
+    if (!ok) { gone(); return; }
 
     var MAXIT = 200;
     var CYCLE = 40;       // seconds per pullback: a slow drift inwards
@@ -186,7 +187,6 @@
     }
     function play(on) {
         playing = on;
-        canvas.title = "a julia set, zooming; click to " + (on ? "pause" : "play");
         if (on && !raf) raf = requestAnimationFrame(frame);
     }
 
@@ -199,8 +199,7 @@
                 if (seen && playing && !raf) raf = requestAnimationFrame(frame);
             }).observe(canvas);
         }
-        canvas.addEventListener("click", function () { play(!playing); });
         window.addEventListener("resize", function () { if (!playing) draw(clock()); });
         if (still) { draw(clock()); play(false); } else play(true);
-    }, function () { canvas.remove(); });
+    }, gone);
 })();
