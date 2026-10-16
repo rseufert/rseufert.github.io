@@ -101,7 +101,10 @@ its needle, follows a fixed point along it, scores how much of each view is
 near the set, and writes `js/julia-set.json`, which is all the page needs. Each visit starts somewhere along the walk at random, in
 one of a few palettes, and keeps both for the visit, so the strip is at the
 same place on every page but different next time; it holds still for a
-visitor who asked for less motion, and pauses on a click. Change a constant at the top of the script and rerun it:
+visitor who asked for less motion, and is a link to `julia/`, the same set
+writ large and steerable (`js/julia.js`): the pointer sets c, scrolling
+zooms, a click holds the set and puts c and the view in the address, and
+left alone it wanders the same walk. Change a constant at the top of the script and rerun it:
 
 ```bash
 julia tools/julia_set.jl            # writes js/julia-set.json; no packages
