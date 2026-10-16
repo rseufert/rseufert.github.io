@@ -2,11 +2,17 @@
 //
 // The picture is the Julia set of c, drawn by the graphics card: each pixel
 // runs its own orbit of z -> z^2 + c and is coloured by how long it takes
-// to escape, black if it never does. Moving over the picture sets c from
-// where the pointer is, so the set morphs as you move; the small map is
-// the Mandelbrot set, c's own plane, and clicking or dragging on it picks
-// c there. Scrolling or pinching zooms the picture; a click or tap holds
-// it still; keys do the same (p palette, r start over, arrows nudge c).
+// to escape, black if it never does. Moving over the picture moves c with
+// the pointer, so the set morphs as you move; the small map is the
+// Mandelbrot set, c's own plane, and clicking or dragging on it picks c
+// there. Scrolling or pinching zooms the picture; a click or tap holds it
+// still; keys do the same (p palette, r start over, arrows nudge c).
+//
+// The deeper the zoom, the less of c's plane a view can stand to cross:
+// a change that redraws a few lobes at home sweeps everything away at a
+// hundred times. So c moves in step with the zoom: the pointer, the
+// arrows and the wander all move it slower by the same factor the picture
+// is magnified.
 //
 // Left alone for a few seconds, c eases onto the walk the strip follows
 // (js/julia-set.json, charted by tools/julia_set.jl) and wanders along it.
@@ -122,6 +128,18 @@
         return [PLANE.x0 + (PLANE.x1 - PLANE.x0) * Math.min(Math.max(x, 0), 1),
                 PLANE.y1 - (PLANE.y1 - PLANE.y0) * Math.min(Math.max(y, 0), 1)];
     }
+    // How far the pointer moved, in c's plane, slowed by the zoom.
+    function planeStep(el, ev, prev) {
+        var r = el.getBoundingClientRect(), g = gain();
+        return [(ev.clientX - prev.clientX) / r.width * (PLANE.x1 - PLANE.x0) * g,
+                -(ev.clientY - prev.clientY) / r.height * (PLANE.y1 - PLANE.y0) * g];
+    }
+    // The factor c moves by: one at home, a tenth at ten times.
+    function gain() { return Math.min(view.h / HOME.h, 1); }
+    function nudge(dx, dy, now) {
+        steer([Math.min(Math.max(target[0] + dx, PLANE.x0), PLANE.x1),
+               Math.min(Math.max(target[1] + dy, PLANE.y0), PLANE.y1)], now);
+    }
     // Where the pointer is in the Julia set's plane, for zooming about it.
     function viewAt(ev) {
         var r = stage.getBoundingClientRect();
@@ -144,10 +162,12 @@
     }
 
     // Pointer: move steers, a click holds, a drag on a phone steers, a pinch zooms.
-    var pointers = {}, pinch = null, moved = false;
+    var pointers = {}, pinch = null, moved = false, prev = null;
     stage.addEventListener("pointermove", function (ev) {
-        if (ev.pointerType === "mouse" && held) return;
+        if (ev.pointerType === "mouse" && held) { prev = null; return; }
         if (ev.pointerType !== "mouse" && !(ev.pointerId in pointers)) return;
+        var from = ev.pointerType === "mouse" ? prev : pointers[ev.pointerId];
+        prev = ev;
         if (ev.pointerId in pointers) {
             pointers[ev.pointerId] = ev;
             moved = true;
@@ -162,20 +182,24 @@
             lastInput = clock();
             return;
         }
-        if (ev.pointerType === "mouse" || ids.length === 1) steer(planeAt(stage, ev), clock());
+        if ((ev.pointerType === "mouse" || ids.length === 1) && from && !held) {
+            var d = planeStep(stage, ev, from);
+            nudge(d[0], d[1], clock());
+        }
     });
+    stage.addEventListener("pointerleave", function () { prev = null; });
     stage.addEventListener("pointerdown", function (ev) {
         pointers[ev.pointerId] = ev;
         moved = false;
         stage.setPointerCapture(ev.pointerId);
-        if (ev.pointerType !== "mouse" && Object.keys(pointers).length === 1 && !held) steer(planeAt(stage, ev), clock());
     });
     function lift(ev) {
         var was = ev.pointerId in pointers;
         delete pointers[ev.pointerId];
         if (Object.keys(pointers).length < 2) pinch = null;
         if (was && !moved && ev.type === "pointerup") {
-            if (held) { hold(false); steer(planeAt(stage, ev), clock()); } else hold(true);
+            hold(!held);
+            lastInput = clock();
         }
     }
     stage.addEventListener("pointerup", lift);
@@ -212,16 +236,16 @@
     buttons.reset.addEventListener("click", reset);
     document.addEventListener("keydown", function (ev) {
         if (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA" || ev.metaKey || ev.ctrlKey || ev.altKey) return;
-        var step = 0.004, now = clock(), k = ev.key;
+        var step = 0.004 * gain(), now = clock(), k = ev.key;
         if (k === "p") palette(visit.palette + 1);
         else if (k === "r") reset();
         else if (k === " " || k === "h") hold(!held);
         else if (k === "+" || k === "=") zoom(1 / 1.3, centre());
         else if (k === "-" || k === "_") zoom(1.3, centre());
-        else if (k === "ArrowLeft") steer([target[0] - step, target[1]], now);
-        else if (k === "ArrowRight") steer([target[0] + step, target[1]], now);
-        else if (k === "ArrowUp") steer([target[0], target[1] + step], now);
-        else if (k === "ArrowDown") steer([target[0], target[1] - step], now);
+        else if (k === "ArrowLeft") nudge(-step, 0, now);
+        else if (k === "ArrowRight") nudge(step, 0, now);
+        else if (k === "ArrowUp") nudge(0, step, now);
+        else if (k === "ArrowDown") nudge(0, -step, now);
         else return;
         ev.preventDefault();
         if (k[0] === "A") { c = target.slice(); hold(true); }
@@ -326,15 +350,20 @@
     }
     var EPOCH = Date.UTC(2026, 9, 16) / 1000;
     function clock() { return Date.now() / 1000 - EPOCH; }
-    var last = null;
+    // The wander keeps its own clock, which runs slower the deeper the zoom.
+    var last = null, walkT = null;
     function draw(now) {
         var dt = last === null ? 0 : Math.min(now - last, 0.1);
         last = now;
         if (!held && !wandering && legs && now - lastInput > IDLE && !still) {
             wandering = true;
+            if (walkT === null) walkT = visit.start + now;
             if (history.replaceState && location.hash) history.replaceState(null, "", location.pathname);
         }
-        if (wandering) target = walk(now + visit.start);
+        if (wandering) {
+            walkT += dt * gain();
+            target = walk(walkT);
+        }
         var rate = wandering ? 0.6 : 10;
         var f = still ? 1 : 1 - Math.exp(-rate * dt);
         c[0] += (target[0] - c[0]) * f;
