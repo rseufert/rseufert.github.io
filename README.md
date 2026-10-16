@@ -94,11 +94,11 @@ python3 tools/sky_data.py --check   # fetch and validate, write nothing
 
 The strip under the menu on every page is a Julia set, drawn by the
 visitor's graphics card (`js/julia-set.js`, WebGL) and zooming for ever into
-one of its fixed points while the parameter walks a loop round the
-Mandelbrot set. The loop is charted in Julia: `tools/julia_set.jl` traces an
-equipotential just outside the set, follows a fixed point round it, scores
-how much each view has to see, and writes `js/julia-set.json`, which is all
-the page needs. It runs off the clock, so the strip is at the same place on
+one of its fixed points while the parameter walks back and forth along an
+arc round the Mandelbrot set. The arc is charted in Julia: `tools/julia_set.jl`
+traces an equipotential just outside the set from its cusp to just short of
+its needle, follows a fixed point along it, scores how much of each view is
+near the set, and writes `js/julia-set.json`, which is all the page needs. It runs off the clock, so the strip is at the same place on
 every page, holds still for a visitor who asked for less motion, and pauses
 on a click. Change a constant at the top of the script and rerun it:
 
