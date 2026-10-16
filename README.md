@@ -109,3 +109,11 @@ and left alone it wanders the same walk. Change a constant at the top of the scr
 ```bash
 julia tools/julia_set.jl            # writes js/julia-set.json; no packages
 ```
+
+The [chat] tab in the corner of every page is rickbot (`js/chat.js`), a
+virtual assistant that answers a question or two about the site and then
+confesses: reality has been hacked by extradimensional machine elves, who
+came through the strip, and the window becomes a text adventure in the old
+style through a dungeon made of the site. Escaping reboots reality and
+leaves the elves' palette on the strip. It all runs in the page; the
+conversation is kept in localStorage, and RESET starts over.
