@@ -2,11 +2,12 @@
 //
 // The picture is the Julia set of c, drawn by the graphics card: each pixel
 // runs its own orbit of z -> z^2 + c and is coloured by how long it takes
-// to escape, black if it never does. Moving over the picture moves c with
-// the pointer, so the set morphs as you move; the small map is the
-// Mandelbrot set, c's own plane, and clicking or dragging on it picks c
-// there. Scrolling or pinching zooms the picture; a click or tap holds it
-// still; keys do the same (p palette, r start over, arrows nudge c).
+// to escape, black if it never does. Dragging the picture moves c with
+// the pointer, so the set morphs as you pull, and stays where you let go;
+// the small map is the Mandelbrot set, c's own plane, and dragging on it
+// picks c there. Scrolling or pinching zooms the picture; a click or tap
+// with no drag pins the set, so it never wanders off; keys do the same
+// (p palette, r start over, arrows nudge c, space pins).
 //
 // The deeper the zoom, the less of c's plane a view can stand to cross:
 // a change that redraws a few lobes at home sweeps everything away at a
@@ -14,18 +15,19 @@
 // arrows and the wander all move it slower by the same factor the picture
 // is magnified.
 //
-// Left alone for a few seconds, c eases onto the walk the strip follows
-// (js/julia-set.json, charted by tools/julia_set.jl) and wanders along it.
-// The palette is the visit's, shared with the strip through sessionStorage,
-// and changing it here changes the strip on the other pages too. Holding a
-// view puts c and the zoom in the address, so the link brings it back.
+// Left alone for a while, unless pinned, c eases onto the walk the strip
+// follows (js/julia-set.json, charted by tools/julia_set.jl) and wanders
+// along it. The palette is the visit's, shared with the strip through
+// sessionStorage, and changing it here changes the strip on the other
+// pages too. Letting go of a view puts c and the zoom in the address, so
+// the link brings it back.
 (function () {
     "use strict";
     var stage = document.getElementById("julia-stage");
     var map = document.getElementById("julia-map");
     var readout = document.getElementById("julia-c");
     var buttons = {
-        hold: document.getElementById("julia-hold"),
+        pin: document.getElementById("julia-pin"),
         palette: document.getElementById("julia-palette"),
         reset: document.getElementById("julia-reset")
     };
@@ -112,12 +114,12 @@
     }
     palette(visit.palette);
 
-    // The state: c, where c is easing to, the view, and whether it is held.
+    // The state: c, where c is easing to, the view, and whether it is pinned.
     var HOME = { cx: 0, cy: 0, h: 1.3 };
     var c = [0, 0], target = [0, 0], view = { cx: 0, cy: 0, h: 1.3 };
-    var held = false, lastInput = -1e9, wandering = false;
+    var pinned = false, lastInput = -1e9, wandering = false;
     var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var IDLE = 6;   // seconds without input before c wanders off
+    var IDLE = 20;   // seconds without input before c wanders off, unless pinned
 
     // The map's window on c's plane, and the stage's: the stage is also a
     // map, so moving over it steers c.
@@ -153,25 +155,24 @@
         lastInput = now;
         wandering = false;
     }
-    function hold(on) {
-        held = on;
-        stage.classList.toggle("held", on);
-        buttons.hold.setAttribute("aria-pressed", on ? "true" : "false");
-        buttons.hold.textContent = on ? "held" : "hold";
+    function pin(on) {
+        pinned = on;
+        stage.classList.toggle("pinned", on);
+        buttons.pin.setAttribute("aria-pressed", on ? "true" : "false");
+        buttons.pin.textContent = on ? "pinned" : "pin";
+        lastInput = clock();
+        wandering = false;
         if (on) remember();
     }
 
-    // Pointer: move steers, a click holds, a drag on a phone steers, a pinch zooms.
-    var pointers = {}, pinch = null, moved = false, prev = null;
+    // Pointer: a drag steers, letting go leaves the set there, a click or
+    // tap with no drag pins it, a second finger pinches to zoom.
+    var pointers = {}, pinch = null, moved = false;
     stage.addEventListener("pointermove", function (ev) {
-        if (ev.pointerType === "mouse" && held) { prev = null; return; }
-        if (ev.pointerType !== "mouse" && !(ev.pointerId in pointers)) return;
-        var from = ev.pointerType === "mouse" ? prev : pointers[ev.pointerId];
-        prev = ev;
-        if (ev.pointerId in pointers) {
-            pointers[ev.pointerId] = ev;
-            moved = true;
-        }
+        if (!(ev.pointerId in pointers)) return;
+        var from = pointers[ev.pointerId];
+        pointers[ev.pointerId] = ev;
+        moved = true;
         var ids = Object.keys(pointers);
         if (ids.length >= 2) {
             var a = pointers[ids[0]], b = pointers[ids[1]];
@@ -182,25 +183,27 @@
             lastInput = clock();
             return;
         }
-        if ((ev.pointerType === "mouse" || ids.length === 1) && from && !held) {
+        if (ids.length === 1) {
             var d = planeStep(stage, ev, from);
             nudge(d[0], d[1], clock());
         }
     });
-    stage.addEventListener("pointerleave", function () { prev = null; });
     stage.addEventListener("pointerdown", function (ev) {
+        if (ev.button > 0) return;
         pointers[ev.pointerId] = ev;
         moved = false;
+        stage.classList.add("dragging");
         stage.setPointerCapture(ev.pointerId);
     });
     function lift(ev) {
         var was = ev.pointerId in pointers;
         delete pointers[ev.pointerId];
         if (Object.keys(pointers).length < 2) pinch = null;
-        if (was && !moved && ev.type === "pointerup") {
-            hold(!held);
-            lastInput = clock();
-        }
+        if (!Object.keys(pointers).length) stage.classList.remove("dragging");
+        if (!was) return;
+        lastInput = clock();
+        if (ev.type === "pointerup" && !moved) pin(!pinned);
+        else remember();
     }
     stage.addEventListener("pointerup", lift);
     stage.addEventListener("pointercancel", lift);
@@ -208,7 +211,7 @@
         ev.preventDefault();
         zoom(Math.exp(ev.deltaY * (ev.deltaMode === 1 ? 0.05 : 0.002)), ev);
         lastInput = clock();
-        if (held) remember();
+        remember();
     }, { passive: false });
     function zoom(factor, ev) {
         var at = viewAt(ev);
@@ -219,19 +222,19 @@
         view.h = h;
     }
 
-    // The map: click or drag picks c, and holds it.
+    // The map: a click or a drag picks c there.
     map.addEventListener("pointerdown", function (ev) {
+        if (ev.button > 0) return;
         map.setPointerCapture(ev.pointerId);
-        hold(false);
         steer(planeAt(map, ev), clock());
         map.dragging = true;
     });
     map.addEventListener("pointermove", function (ev) { if (map.dragging) steer(planeAt(map, ev), clock()); });
-    function mapUp() { if (map.dragging) { map.dragging = false; hold(true); } }
+    function mapUp() { if (map.dragging) { map.dragging = false; lastInput = clock(); remember(); } }
     map.addEventListener("pointerup", mapUp);
     map.addEventListener("pointercancel", mapUp);
 
-    buttons.hold.addEventListener("click", function () { hold(!held); lastInput = clock(); });
+    buttons.pin.addEventListener("click", function () { pin(!pinned); });
     buttons.palette.addEventListener("click", function () { palette(visit.palette + 1); });
     buttons.reset.addEventListener("click", reset);
     document.addEventListener("keydown", function (ev) {
@@ -239,7 +242,7 @@
         var step = 0.004 * gain(), now = clock(), k = ev.key;
         if (k === "p") palette(visit.palette + 1);
         else if (k === "r") reset();
-        else if (k === " " || k === "h") hold(!held);
+        else if (k === " " || k === "h") pin(!pinned);
         else if (k === "+" || k === "=") zoom(1 / 1.3, centre());
         else if (k === "-" || k === "_") zoom(1.3, centre());
         else if (k === "ArrowLeft") nudge(-step, 0, now);
@@ -248,8 +251,7 @@
         else if (k === "ArrowDown") nudge(0, -step, now);
         else return;
         ev.preventDefault();
-        if (k[0] === "A") { c = target.slice(); hold(true); }
-        if (held) remember();
+        if (k[0] === "A" || k === "+" || k === "=" || k === "-" || k === "_") remember();
     });
     function centre() {
         var r = stage.getBoundingClientRect();
@@ -257,18 +259,20 @@
     }
     function reset() {
         view = { cx: HOME.cx, cy: HOME.cy, h: HOME.h };
-        hold(false);
+        pin(false);
         lastInput = -1e9;
         if (history.replaceState) history.replaceState(null, "", location.pathname);
     }
 
-    // The address holds c and the view while the set is held.
+    // The address holds c and the view once the visitor has set them, until
+    // the set wanders off again.
     var remembered = 0;
     function remember() {
         if (!history.replaceState) return;
         clearTimeout(remembered);
         remembered = setTimeout(function () {
-            var hash = "#c=" + c[0].toFixed(6) + "," + c[1].toFixed(6);
+            if (wandering) return;
+            var hash = "#c=" + target[0].toFixed(6) + "," + target[1].toFixed(6);
             if (view.h !== HOME.h || view.cx || view.cy) {
                 hash += "&v=" + view.cx.toFixed(6) + "," + view.cy.toFixed(6) + "," + view.h.toPrecision(4);
             }
@@ -281,7 +285,7 @@
         c = target = [+m[1], +m[2]];
         var v = /v=(-?[\d.]+),(-?[\d.]+),([\d.e-]+)/.exec(location.hash);
         if (v) view = { cx: +v[1], cy: +v[2], h: Math.min(Math.max(+v[3], 0.0002), 2.5) };
-        hold(true);
+        pin(true);
         return true;
     }
 
@@ -355,7 +359,7 @@
     function draw(now) {
         var dt = last === null ? 0 : Math.min(now - last, 0.1);
         last = now;
-        if (!held && !wandering && legs && now - lastInput > IDLE && !still) {
+        if (!pinned && !wandering && legs && now - lastInput > IDLE && !still) {
             wandering = true;
             if (walkT === null) walkT = visit.start + now;
             if (history.replaceState && location.hash) history.replaceState(null, "", location.pathname);

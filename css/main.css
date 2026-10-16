@@ -94,10 +94,10 @@ canvas.julia {
     height: 62vh;
     min-height: 300px;
     background: #000;
-    cursor: crosshair;
+    cursor: grab;
     touch-action: none;
 }
-.julia-page .stage.held { cursor: default; }
+.julia-page .stage.dragging { cursor: grabbing; }
 .julia-page .bar { display: flex; gap: 20px; align-items: flex-start; margin: 14px 0 30px; }
 .julia-page .map { flex: none; width: 180px; height: 120px; background: #000; cursor: crosshair; touch-action: none; }
 .julia-page .read { min-width: 0; }
