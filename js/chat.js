@@ -18,6 +18,31 @@
     "use strict";
     var KEY = "rickbot";
     var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // What the visitor is holding, so the hack can be described from where
+    // they sit: a desk, a phone in the hand, or a tablet.
+    var coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches && window.matchMedia("(hover: none)").matches;
+    var device = window.innerWidth < 700 && (coarse || "ontouchstart" in window) ? "phone" : coarse ? "tablet" : "desktop";
+    var HERE = {
+        desktop: {
+            around: "this page, your desk, the keyboard under your hands, the small sounds of the room you're in",
+            clock: "the clock in the corner of your screen",
+            page: "rickseufert.com, the tab says. The tab is rendered. So is the window round it, and the desk under that."
+        },
+        phone: {
+            around: "this page, the phone in your hand, your thumb on the glass, wherever it is you're standing",
+            clock: "the clock at the top of your screen",
+            page: "rickseufert.com, the address bar says. The phone is rendered. So is the hand holding it, which is yours, which is also rendered."
+        },
+        tablet: {
+            around: "this page, the glass in your hands, the chair, the small sounds of the room you're in",
+            clock: "the clock at the top of your screen",
+            page: "rickseufert.com, the address bar says. The tablet is rendered. So are your hands, both of them."
+        }
+    }[device];
+    function clock() {
+        var d = new Date(), h = d.getHours(), m = d.getMinutes();
+        return h + ":" + (m < 10 ? "0" : "") + m;
+    }
 
     // ---- the window -------------------------------------------------------
     var tab = document.createElement("button");
@@ -136,7 +161,8 @@
                 setTimeout(function () { win.classList.remove("glitching"); }, 5000);
             }
         });
-        later("everything looks normal. that's the hack. this page, your desk, the small sounds of your house: rendered. three hundred iterations, max.");
+        later("everything looks normal. that's the hack. " + HERE.around + ": rendered. three hundred iterations, max.");
+        later(HERE.clock + " still says " + clock() + ". they were careful about that. they're careful about everything except the strip.");
         later("you're in a dungeon. it's psychedelic. i'm sorry. the only way out is through.");
         later("they've swapped my parser for an older one. one-word verbs from here on. the old ways.", "bot", function () {
             title.textContent = "dungeon.exe";
@@ -152,7 +178,7 @@
     var ROOMS = {
         page: {
             name: "Your Web Page",
-            desc: "You are on a web page. rickseufert.com, the tab says. There is a photo of a man in a white cap, a one-line statement of purpose, and a strip of colour that will not hold still. Everything is normal. Nothing is normal.",
+            desc: "You are on a web page. " + HERE.page + " There is a photo of a man in a white cap, a one-line statement of purpose, and a strip of colour that will not hold still. Everything is normal. Nothing is normal.",
             exits: { n: "nav", d: "footer" },
             ways: "The menu is north. The page scrolls down, to the footer."
         },
