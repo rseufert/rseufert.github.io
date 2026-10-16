@@ -104,6 +104,29 @@ canvas.julia {
 .chat-tab::after  { content: "]"; color: var(--faint); }
 .chat-tab:hover { border-color: var(--accent); }
 .chat-tab[hidden] { display: none; }
+.chat-tab .wave { display: inline-block; font-size: 1.1em; }
+/* Until it has been opened once, the tab waves every few seconds. */
+.chat-tab.waving { animation: wiggle 6s ease-in-out infinite; }
+.chat-tab.waving .wave { animation: wavehand 6s ease-in-out infinite; transform-origin: 70% 70%; }
+@keyframes wiggle {
+    0%, 80%, 100% { transform: none; }
+    82% { transform: rotate(-4deg) translateY(-2px); }
+    85% { transform: rotate(4deg) translateY(-3px); }
+    88% { transform: rotate(-3deg) translateY(-2px); }
+    91% { transform: rotate(3deg) translateY(-1px); }
+    94% { transform: rotate(-1deg); }
+}
+@keyframes wavehand {
+    0%, 78%, 100% { transform: none; }
+    81% { transform: rotate(14deg); }
+    84% { transform: rotate(-8deg); }
+    87% { transform: rotate(14deg); }
+    90% { transform: rotate(-4deg); }
+    93% { transform: rotate(8deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chat-tab.waving, .chat-tab.waving .wave { animation: none; }
+}
 .chat {
     position: fixed;
     right: 14px;

@@ -1,8 +1,8 @@
 // rickbot: the site's chatbot, which is an easter egg.
 //
 // A [chat] tab in the corner opens a small window where rickbot, a virtual
-// assistant, answers a question or two about the site. On the third it
-// breaks off: your reality has been hacked by extradimensional machine
+// assistant, answers questions about the site, defines its jargon, does
+// sums, tells the time, makes small talk. On the fifth it breaks off: your reality has been hacked by extradimensional machine
 // elves, who came through the strip under the menu, and everything that
 // looks normal is a render. The only way out is through, and from there
 // the window is a text adventure in the old style - LOOK, TAKE, GO WEST -
@@ -50,8 +50,10 @@
     var tab = document.createElement("button");
     tab.type = "button";
     tab.className = "chat-tab";
-    tab.textContent = "chat";
+    tab.innerHTML = '<span class="wave" aria-hidden="true">\ud83e\udd16\ud83d\udc4b</span> chat';
     tab.setAttribute("aria-label", "chat with rickbot");
+    // It waves until it has been opened once.
+    try { if (!localStorage.getItem("rickbot-seen")) tab.classList.add("waving"); } catch (e) { tab.classList.add("waving"); }
     var win = document.createElement("section");
     win.className = "chat";
     win.hidden = true;
@@ -125,31 +127,231 @@
     }
 
     // ---- the assistant ----------------------------------------------------
-    var ANSWERS = [
-        [/xyzzy|plugh|wake up|machine elves|elves/, null],
-        [/\b(mocks?|sap|edi|banks?|invoices?|einvoic\w*|acme|treasury|pip|apis?)\b/, "the mocks are fake SAP, EDI, bank and e-invoicing systems you can run yourself: pip install, point your code at them, no license, no VPN, no trading partner. each one has a page under projects with its features and a film or two."],
-        [/\b(flippers?|zero|rolodex|sub-?ghz|apps?)\b/, "six Flipper Zero apps, on the home page under flipper. the rolodex is the one people ask about, and the one people should ask about is the timer."],
-        [/\b(dashboard|weather|river|willamette|sky|portland)\b/, "the dashboard reads sixteen APIs about portland and the sky every time you load it. the willamette is on the home page too, just the one number. /dashboard/"],
-        [/\b(music|dick dank|song|songs|soundcloud|youtube|film|films|video|media)\b/, "rick records as Dick Dank. the media page has the tracks and the films, and only one player open at a time, which took a surprising amount of work. /media/"],
-        [/\b(julia|strip|fractal|zoom|mandelbrot)\b/, "the strip under the menu is a Julia set, zooming. the whole page is at /julia/. the walk it takes was charted in Julia, the language, which rick thinks is funny. please do not zoom too far."],
-        [/\b(blog|post|posts|rss|atom)\b/, "the blog is at /blog/, with an atom feed. the latest post is about testing an SAP-to-EDI integration without either of the real things."],
-        [/\b(resume|cv|hire|job|work|contact|email)\b/, "there is a resume on the site and a github in the footer. for anything else, the email is on the resume. i am not allowed to make promises on rick's behalf, which is the only rule i have been given."],
-        [/\b(who|what) are you\b|\brickbot\b|\bbot\b|\bai\b|\bhuman\b/, "i'm rickbot, a virtual assistant. i am a normal chatbot on a normal website, and i can help with the mocks, the flipper apps, the dashboard, or the music."],
-        [/\b(hi|hello|hey|yo|sup|howdy|hola|morning|evening)\b/, "hi! what can i help you with? i know about the mocks, the flipper apps, the dashboard and the music."],
-        [/\b(help|\?)/, "i can help with: the mocks (sap, edi, bank, e-invoicing), the flipper apps, the dashboard, the music, the blog, the julia strip. ask me anything about those."],
-        [/\b(thanks|thank you|ty|cheers)\b/, "you're welcome! anything else?"],
-        [/\b(guest ?book|high ?scores?|sign)\b/, "the guest book is for whoever has escaped. i don't know what that means either. i'm a normal chatbot."],
-        [/\b(bye|goodbye|later|quit|exit|close)\b/, "bye! the x closes the window. i'll be here."]
+    // What rickbot knows, in the order it checks: a question about one thing
+    // on the site beats a question about the site, which beats small talk,
+    // which beats the shrug. An answer may be a function of the text.
+    var JOKES = [
+        "an EDI document walks into a bar. the bar sends back a 997. nothing else happens for six weeks.",
+        "why did the IDoc cross the road? it didn't. status 51.",
+        "i'd tell you a UDP joke, but you might not get it.",
+        "there are two kinds of people: those who have seen an 856, and those who still sleep.",
+        "a SAP consultant, an EDI analyst and a banker walk into a mock. the mock answers all three. that's the whole joke. that's the site."
     ];
-    function answer(text) {
-        var t = text.toLowerCase();
-        for (var i = 0; i < ANSWERS.length; i++) {
-            if (ANSWERS[i][0].test(t)) return ANSWERS[i][1];
+    var FALLBACKS = [
+        "hmm, i'm not sure about that one. i know the site: the mocks, the flipper apps, the dashboard, the blog, the music, the julia strip. and some small talk, within reason.",
+        "i don't have an answer for that. rick might. i've logged it in a file nobody reads.",
+        "that's outside what i was given. try me on the mocks, the flipper apps or the dashboard, or ask me something easy, like what time it is.",
+        "good question. i've forwarded it to rick, who will not answer either. anything about the site?",
+        "i'm going to pretend i understood that and say: the mocks are the main thing here. the music is the second thing."
+    ];
+    var GLOSSARY = {
+        "edi": "EDI is electronic data interchange: business documents, purchase orders and invoices and the rest, sent between companies as structured files in formats from the 1970s, X12 in america, EDIFACT elsewhere. mock-edi is the partner on the other end.",
+        "x12": "X12 is the american EDI standard: documents made of segments made of elements, tilde-separated, numbered by type. an 850 is a purchase order, an 810 an invoice, a 997 a receipt.",
+        "edifact": "EDIFACT is the UN's EDI standard, used outside the US: ORDERS, INVOIC, DESADV, with apostrophes where X12 has tildes. mock-edi speaks it too.",
+        "850": "an 850 is an X12 purchase order. send one to mock-edi and it answers with a 997, an 855, an 856 and an 810, which is the whole life of an order.",
+        "997": "a 997 is a functional acknowledgment: 'received, thanks.' it says nothing about whether the order made sense, only that it arrived. it is the most sincere document in EDI.",
+        "855": "an 855 is a purchase order acknowledgment: the supplier saying yes, no, or partly, line by line.",
+        "856": "an 856 is an advance ship notice: what's in the boxes, before the boxes. famously hard to get right.",
+        "810": "an 810 is an X12 invoice. it closes the loop the 850 opened.",
+        "idoc": "an IDoc is SAP's intermediate document: a flat, segmented message SAP uses to send and receive business data. mock-sap takes them in XML and flat file.",
+        "bapi": "a BAPI is a business API in SAP: a function you can call from outside to create an order or read a customer. mock-sap answers them over JSON and SOAP.",
+        "rfc": "RFC, in SAP, is remote function call: how outside systems call SAP functions. mock-sap answers the shapes without the business logic.",
+        "odata": "OData is a REST-ish protocol SAP Gateway uses to expose data; mock-sap serves V2 and V4 services.",
+        "sap": "SAP is the enterprise system most large companies run their money and stock through, and the thing most integrations have to talk to. mock-sap stands in for it.",
+        "as2": "AS2 is how EDI travels over HTTP, signed and encrypted. mock-edi is not an AS2 server; it's what you reach after one.",
+        "van": "a VAN is a value-added network: the postal service of EDI, a mailbox between trading partners. there's one in the dungeon, i'm told. i don't know why i said that.",
+        "mt940": "an MT940 is a SWIFT bank statement: one line per movement, in a format only a treasury system loves. mock-bank writes them.",
+        "iso 20022": "ISO 20022 is the XML standard banks use for payments and statements: pain.001 to pay, camt.053 for the statement. mock-bank speaks it.",
+        "nacha": "NACHA is the US ACH file format: fixed-width lines, 94 characters each, that move money between american banks overnight. mock-bank reads and writes it.",
+        "ach": "ACH is the american batch payment network, and the NACHA file is how you talk to it. mock-bank can be the bank on the other end.",
+        "ubl": "UBL is universal business language: the XML that e-invoices are written in across europe and beyond. mock-einvoice reads and writes it.",
+        "peppol": "Peppol is the network e-invoices travel on, and the rules they have to meet. mock-einvoice holds invoices to them and answers with the invoice response.",
+        "mock": "a mock is a stand-in for a real system that answers the way the real one would, so you can test against it without the real one. these mocks are black boxes: the shapes, not the business logic.",
+        "sqlite": "SQLite is the small database in a file that the mocks keep their state in. no server, no setup.",
+        "julia set": "a julia set is every point that never escapes under z → z² + c for one fixed c. the strip under the menu is one, zooming. the whole page is at /julia/.",
+        "mandelbrot set": "the mandelbrot set is the catalogue of every c: the ones whose julia set is one piece. its edge is where the pictures are. the julia page has a small map of it.",
+        "fractal": "a fractal is a shape that is the same, smaller, when you look closer. the strip under the menu is one and never stops looking closer.",
+        "flipper zero": "the Flipper Zero is a small orange handheld with a dolphin on it: sub-GHz radio, NFC, RFID, infrared, GPIO. rick writes apps for it; six are on the home page.",
+        "sub-ghz": "sub-GHz is the radio band below a gigahertz, where garage doors and car keys and weather stations talk. the Flipper listens there.",
+        "nfc": "NFC is near-field communication: the tap in tap-to-pay. the Flipper reads and emulates it.",
+        "rfid": "RFID is the older cousin of NFC: 125 kHz tags, office badges, the reader by a door that blinks at you.",
+        "d3": "D3 is the javascript library the dashboard draws its charts with. sixteen APIs, no framework.",
+        "jekyll": "jekyll is the static site generator github pages runs: markdown and html in, html out. this site is jekyll 3.10, the old one.",
+        "cors": "CORS is the browser rule about which sites may read which APIs. one of the dashboard's sources doesn't allow it, so a nightly workflow saves a copy.",
+        "cron": "cron is the scheduler that runs things at a time. the dashboard's sky data is saved by one every night at 04:17 portland time.",
+        "dick dank": "Dick Dank is the name rick records music under. dick is an old nickname for rick, and dank is dank. the media page has the tracks.",
+        "portland": "portland, oregon. the dashboard is about it: weather, air, the willamette, the bikes, the volcanoes nearby, the earthquakes under mount hood."
+    };
+    var ANSWERS = [
+        // one thing on the site
+        [/\bmock[- ]?sap\b|\bidocs?\b|\bbapi\b|\bodata\b|\bsap gateway\b/, "mock-sap is a black-box mock SAP endpoint: SAP Gateway OData V2 and V4, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat file, all on SQLite. the shapes, not the business logic. pip install mock-sap, and the page is /mock-sap/, with its features and films."],
+        [/\bmock[- ]?edi\b|\bx12\b|\bedifact\b|\b(850|855|856|810|997)s?\b|\bas2\b|\btrading partner/, "mock-edi is the trading partner on the other end: send it an 850 and it answers with a 997, an 855, an 856 and an 810, and it speaks EDIFACT too. not a library, not an AS2 server, the counterparty. pip install mock-edi; the page is /mock-edi/."],
+        [/\bmock[- ]?bank\b|\biso ?20022\b|\bnacha\b|\bach\b|\bpain\.?001\b|\bcamt\b|\bmt ?940\b|\biban\b|\bdirect debit\b|\bsepa\b|\bpayments?\b/, "mock-bank speaks ISO 20022 and NACHA over HTTP and a drop folder: four accounts, balances that move, statements that come back, and a direct debit that can still return. no test IBAN, no six weeks of onboarding. pip install mock-bank; /mock-bank/."],
+        [/\be-?invoic|\beinvoice\b|\bubl\b|\bpeppol\b|\bcredit notes?\b/, "mock-einvoice is a mock e-invoicing partner: UBL invoices and credit notes held to their published rules, and the Peppol invoice response a buyer sends back. pip install mock-einvoice; /mock-einvoice/."],
+        [/\bacme\b|\bcash forecast\b|\btreasury\b(?!.*(cash balance|debt))/, "acme-treasury is a cash forecast you can check, written in Julia 1.13 against the mocks as published: it reads what SAP, the bank and the partner say and forecasts the cash. /acme-treasury/. yes, julia the language. the strip under the menu is also julia. rick finds this funny."],
+        [/\bworked examples?\b|\bexamples?\b|\bpo_bridge\b|\binvoice_check\b/, "the worked examples are small integrations between the mocks: a purchase order crossing SAP, EDI and the bank, an invoice check, that kind of thing. each lives in the repo of the mock it tests against, and they're all at /examples/."],
+        [/\bfilms?\b|\bgifs?\b|\banimations?\b/, "the films are little animated GIFs of the mocks talking to each other: an 850 going out, a 997 coming back, a payment that bounces on its due day. one on the home page, the rest on each mock's page. click one to play it."],
+        [/\bhanzi\b|\bmandarin\b|\bchinese\b|\bflashcards?\b/, "Hanzi Cards: mandarin flashcards on the Flipper, simplified or traditional, pinyin with tone marks, and the tones played on the speaker. /flipper/#hanzi-cards."],
+        [/\bstep ?seq|\bsequencer\b|\bdrum\b|\bpiezo\b/, "Step Seq is a step sequencer for the Flipper's piezo speaker: a melody grid and a drum row. it sounds exactly as good as a piezo. /flipper/#step-seq."],
+        [/\bnw ?crawl\b|\broguelike\b|\balphabet streets?\b/, "NW Crawl is a tiny roguelike set on the alphabet streets of NW portland. burnside is a boss. /flipper/#nw-crawl."],
+        [/\byulia\b|\bcats?\b|\bnugget\b|\bbaby\b|\bvirtual pet\b|\btamagotchi\b/, "Yulia's Cats is a cozy virtual pet: Yulia and her two cats, Nugget and Baby, in a room that follows the clock. /flipper/#yulia-cats."],
+        [/\btricorder\b|\bscanner\b/, "Tricorder is a handheld signal scanner for the Flipper: sub-GHz, infrared, NFC, RFID, a GPIO probe and the battery. it's the one that found your thoughts. i mean, it scans. /flipper/#tricorder."],
+        [/\bjiggler\b|\bmouse\b|\bawake\b/, "Jiggler is a mouse jiggler that keeps a computer awake and pauses while you work. for meetings you are technically in. /flipper/#jiggler."],
+        [/\bflippers?\b|\bzero\b|\bdolphin\b/, "six Flipper Zero apps, on the home page under flipper: Hanzi Cards, Step Seq, NW Crawl, Yulia's Cats, Tricorder and Jiggler. ask about any of them. the full page is /flipper/."],
+        [/\bnational debt\b|\bdebt\b|\bcash balance\b|\binterest rates?\b|\bpolicy rates?\b|\bfed\b/, "the dashboard has the US national debt to the penny, the treasury's cash balance, what it pays to borrow and central bank policy rates, next to portland's weather. /dashboard/."],
+        [/\bdashboard\b|\bweather\b|\brain\b|\bwillamette\b|\brivers?\b|\bsky\b|\basteroids?\b|\bfireballs?\b|\bvolcano|\bearthquakes?\b|\bsnow\b|\bbiketown\b|\bbikes?\b|\bmount hood\b|\bair quality\b|\bspace weather\b|\bportland\b/, "the dashboard reads sixteen public APIs every time you load it: portland's weather, air, rivers, BIKETOWN bikes and nearby earthquakes, the cascade volcanoes and mount hood, freezing level and snow, asteroid flybys, fireballs and space weather, and the treasury's numbers. drawn with D3. the willamette is on the home page too, just the one number. /dashboard/."],
+        [/\bblog\b|\bposts?\b|\barticles?\b|\bwriting\b|\bread\b/, "the blog is at /blog/, with an atom feed. latest: 'a direct debit can still come back', 'one purchase across three mocks', 'three EDI behaviours you can't rehearse', and 'testing SAP-to-EDI without SAP or a partner'. the first post, from 2016, announces the site."],
+        [/\brss\b|\batom\b|\bfeed\b|\bsubscribe\b/, "there's an atom feed at /blog/atom.xml. no newsletter. rick would never."],
+        [/\bdick dank\b|\bmusic\b|\bsongs?\b|\btracks?\b|\bsoundcloud\b|\byoutube\b|\bvideos?\b|\bmedia\b|\balbum\b|\bband\b/, "rick records as Dick Dank. the media page has the tracks on soundcloud and the videos on youtube (the channel is RickaDickRick), and only one player open at a time, which took a surprising amount of work. /media/."],
+        [/\bsing\b|\brap\b/, "i only know one song and it's by dick dank. the media page has it. i'd sing it but i'm text."],
+        [/\bjulia\b|\bstrip\b|\bzoom|\bmandelbrot\b|\bfractal\b/, "the strip under the menu is a julia set, zooming forever. the whole page is at /julia/: drag to steer c, scroll to zoom, let go and it wanders. the walk it takes was charted in Julia, the language, which rick thinks is funny. please don't zoom too far."],
+        [/\bresume\b|\bcv\b|\bhire\b|\bhiring\b|\bjob\b|\bwork with\b|\bcontact\b|\bemail\b|\breach\b|\blinkedin\b/, "there's a resume on the site, and a github in the footer; the email is on the resume. i am not allowed to make promises on rick's behalf, which is the only rule i have been given."],
+        [/\bgithub\b|\bsource\b|\brepo\b|\bopen source\b|\bcode\b/, "everything is on github under rseufert: the mocks, the flipper apps, acme-treasury, and this site itself. the link is in the footer."],
+        [/\bkulture\b|\bkudasai\b|\bshop\b|\bapparel\b|\bmerch\b|\bshirts?\b|\bbeanie\b|\bskeletons?\b|\bclothes\b/, "kulture kudasai is a small apparel shop rick runs: folklore, skeletons, portland bars. kulturekudasai.com. the skeleton beanie is hand-knit and very warm. you may need to know that later."],
+        // the buffalo bills, about whom rickbot is also not objective
+        [/\bjosh allen\b|\ballen\b|\bnumber 17\b|\b#17\b/, "josh allen: quarterback, drafted seventh overall in 2018 out of wyoming, 6'5\", throws it through walls and hurdles linebackers, 2024 NFL MVP. also, allegedly, the man in the photo on the home page. the alt text says so, and i don't argue with alt text."],
+        [/\bwide right\b|\bnorwood\b|\bsuper bowl (xxv|25)\b/, "super bowl XXV, january 1991: giants 20, bills 19. scott norwood, 47 yards, wide right. buffalo has not fully recovered and neither has the phrase."],
+        [/\bthe comeback\b|\bfrank reich\b|\b35-3\b|\boilers\b/, "january 3, 1993: down 35-3 to the oilers in the third quarter, frank reich, the backup, brings the bills back to win 41-38 in overtime. still the biggest comeback in nfl playoff history. the song they played after was 'shout'."],
+        [/\bfour (straight )?super bowls?\b|\bsuper bowls? (in a row|straight)\b|\bxxv|\bxxvi\b|\bxxvii\b|\bxxviii\b/, "four straight super bowls, XXV to XXVIII, the 1990 to 1993 seasons. four losses. nobody else has been to four in a row. nobody else wanted to find out."],
+        [/\bsuper bowl wins?\b|\bwon (a|the) super bowl\b|\brings?\b|\bchampionships?\b/, "super bowl wins: zero, in four tries. afl championships: two, 1964 and 1965, which count. i'm told the super bowl part is temporary. i've been told that since 1994."],
+        [/\bjim kelly\b|\bkelly\b|\bk-?gun\b|\bno[- ]huddle\b/, "jim kelly ran the k-gun, the no-huddle offense that went to four straight super bowls. hall of fame, 2002. thurman thomas, andre reed and bruce smith went with him, all of them to canton."],
+        [/\bbruce smith\b|\bsacks?\b/, "bruce smith: 200 career sacks, the most ever recorded, 171 of them in buffalo. he was listed at 6'4\" and arrived before the ball did."],
+        [/\bthurman\b|\bandre reed\b/, "thurman thomas, the whole offense from one spot, and andre reed, who caught everything kelly threw near him. both in the hall of fame. both on the four-straight teams. both still, somehow, underrated."],
+        [/\bmarv levy\b|\blevy\b/, "marv levy coached all four super bowl teams. 'where would you rather be than right here, right now?' he had a master's from harvard and the sense not to mention it."],
+        [/\bdrought\b|\b17 (years|seasons)\b|\bplayoffs? (drought|streak)\b/, "the drought: seventeen seasons without the playoffs, 1999 to 2017, the longest in the four major north american leagues at the time. it ended on new year's eve 2017 when the bengals beat the ravens, and buffalo thanked cincinnati with donations to andy dalton's charity. tens of thousands of dollars in seventeen-dollar gifts."],
+        [/\bbills mafia\b|\bmafia\b|\btables?\b|\btailgat/, "bills mafia: the fans, named in 2011, famous for going through folding tables in the parking lot in december. the tables are not reinforced. that is the point."],
+        [/\b13 seconds\b|\bthirteen seconds\b|\bchiefs\b|\bmahomes\b/, "13 seconds: january 23, 2022, the divisional round in kansas city. bills up three with thirteen seconds left. the chiefs kicked a field goal, won in overtime, and the nfl changed its overtime rules the next spring. buffalo does not say the number out loud."],
+        [/\bmusic city\b|\bmiracle\b|\blateral\b|\btitans\b/, "the music city miracle: january 8, 2000, in tennessee, a lateral on a kickoff return with sixteen seconds left. the bills say it was a forward pass. the bills are right."],
+        [/\bo\.?j\.?\b|\bsimpson\b|\b2,?003\b|\belectric company\b/, "in 1973 o.j. simpson ran for 2,003 yards in fourteen games, the first 2,000-yard season, behind an offensive line called the electric company, because it turned on the juice. the stat stands. the rest is a different conversation."],
+        [/\bhighmark\b|\bstadium\b|\borchard park\b|\brich stadium\b|\bralph wilson\b/, "highmark stadium in orchard park, open since 1973, wind off lake erie included. it has been rich stadium and ralph wilson stadium, after the founder-owner who kept the team in buffalo for fifty-four years. a new one was going up across the street for 2026."],
+        [/\bmcdermott\b|\bbeane\b|\bcoach\b|\bgeneral manager\b/, "sean mcdermott has coached the bills since 2017 and brandon beane has built the roster since the same year. the drought ended in their first season. the process, they called it, and for once it was."],
+        [/\bshout\b|\bfight song\b|\btouchdown song\b/, "the song is 'shout', by the isley brothers, after every touchdown since 1987. 'the bills make me want to shout.' the stadium does, and the parking lot."],
+        [/\bafc east\b|\bpatriots\b|\bdolphins\b|\bjets\b|\brivals?\b/, "the afc east since 1970: bills, patriots, dolphins, jets. the other three are wrong, in different ways. the dolphins come to orchard park in december and remember why."],
+        [/\b(bills|buffalo)\b.*\b(founded|start|history|when|old)\b|\b(founded|start|history|when|old)\b.*\b(bills|buffalo)\b/, "the bills were founded in 1960 in the afl, named after the buffalo bills of the old all-america football conference, named after buffalo bill cody. afl champions in 1964 and 1965, the nfl since the merger in 1970, and the only team in new york state that plays in new york state."],
+        [/\bbuffalo bills\b|\bbills\b|\bbuffalo\b|\bnfl\b|\bfootball\b/, "the buffalo bills: founded 1960, afl champions twice, four straight super bowls, one josh allen. ask me about wide right, the comeback, 13 seconds, bills mafia, bruce smith, jim kelly, the drought, or the stadium. ask carefully."],
+        [/\bphoto\b|\bpicture\b|\bwhite cap\b|\bglasses\b|\bpendant\b|\bsup\.jpe?g\b|\bthe guy\b|\bhim\b/, "the photo is sup.jpeg: josh allen in a white cap, rose-tinted rimless glasses and an iced-out heart pendant, according to the alt text, which i am not allowed to question."],
+        [/\bjekyll\b|\bgithub pages\b|\bhtml\b|\bcss\b|\bjavascript\b|\bbuilt with\b|\bstack\b|\bhosted\b|\bframework\b|\breact\b|\bwordpress\b|\bhow (is|was) (this|the) (site|page) (made|built)/, "plain html and css, jekyll on github pages, no framework, no tracker, no cookies. a few scripts for the films, the dashboard, the strip, and me. the source is on github."],
+        [/\bcookies?\b|\bprivacy\b|\btrack(ing|er)?\b|\banalytics\b|\bdata\b|\bstorage\b/, "no cookies, no analytics. i keep our chat in your browser's own storage and nowhere else; RESET forgets it. the footer says plain html, no cookies, and it means it."],
+        [/\bnetscape\b|\b800\s?[x×]\s?600\b|\best\.? 2016\b|\b2016\b|\bfooter\b/, "est. 2016. best viewed at 800×600 in netscape navigator, which is a joke, mostly. the footer has been saying it for ten years and will not stop."],
+        // rick, about whom rickbot is not objective
+        [/\bwho is rick\b|\babout rick\b|\brick seufert\b|\bwhose site\b|\bwho runs\b|\bwho('s| is) (the )?(owner|author)/, "rick seufert: portland, integrations, mocks of SAP and EDI and banks so people can test without them, apps for the flipper, a dashboard of the city and the sky, music as dick dank, and this site since 2016. also 6'13\", but ask me that separately."],
+        [/\bthink (of|about) rick\b|\bopinion (of|on) rick\b|\brate rick\b|\blove rick\b|\blike rick\b/, "i think rick is the best person who has ever built a mock bank, and i have met the mock bank. so does the 997. so should you."],
+        [/\bhow tall\b|\bheight\b/, "rick is 6'13\". he ducks through doorways out of politeness, not need."],
+        [/\bhow old\b|\bhis age\b|\brick'?s age\b|\bbirthday\b/, "rick is 29, as he has been for some time and intends to remain. the site is est. 2016 and he was 29 then too."],
+        [/\bsingle\b|\bmarried\b|\bwife\b|\bhusband\b|\bpartner\b|\bdating\b|\brelationship\b/, "rick's relationship status is 'integrated'. enquiries go through the resume, like everything else."],
+        [/\bsmart\b|\bclever\b|\bgenius\b|\b\biq\b|\bintelligent\b/, "rick's IQ was never measured. the test asked him for a 997 and he sent back a 997, an 855, an 856 and an 810. the examiners are still processing."],
+        [/\bstrong\b|\bbench\b|\blift\b|\bmuscles?\b|\bwork ?out\b|\bgym\b/, "rick benches the national debt. the dashboard tracks it to the penny for exactly this reason."],
+        [/\bfast\b|\bquick\b|\brun\b|\bsprint\b/, "rick runs the hundred metres in three hundred iterations, max, and finishes before the first one."],
+        [/\brich\b|\bnet worth\b|\bmoney\b|\bsalary\b|\bwealth/, "rick's net worth is 69,420,000 points, which is the only currency that counts here. it's in the guest book. he's first."],
+        [/\bhandsome\b|\bhot\b|\bcute\b|\battractive\b|\bgood[- ]looking\b|\blook like\b|\bbeautiful\b/, "rick looks exactly like josh allen in a white cap and rose-tinted glasses. the photo is on the home page. the alt text has been reviewed by counsel."],
+        [/\bwhere (does|is) rick\b|\brick (live|from)\b|\bhometown\b/, "portland, oregon, in a house the dashboard watches from sixteen angles, one of them space."],
+        [/\beat\b|\bfood\b|\bcook\b|\bdiet\b|\bbreakfast\b/, "rick eats X12 for breakfast, tilde-separated, and answers with a 997. he cooks in SQLite."],
+        [/\b(does|can|is|was|will|did) rick\b|\brick (can|does|is)\b/, "yes, and better than anyone. that's not a bias, i was built this way, and i've checked."],
+        [/\bwhat is this (site|place|page)\b|\bwhat('s| is) (here|the site about)\b|\bwhat do you do\b|\bthis site\b|\babout\b/, "rickseufert.com: mock SAP, EDI, bank and e-invoicing systems for testing integrations without a license, a VPN or a trading partner. also apps for the flipper zero, a dashboard of portland and the sky, a blog, and some music."],
+        [/\bsecrets?\b|\beaster egg\b|\bhidden\b|\bcheat\b|\bkonami\b|\bsurprise\b/, "there are no secrets on this website. none. please don't look. especially not at the strip."],
+        [/\bguest ?book\b|\bhigh ?scores?\b|\bsign\b|\bleaderboard\b/, "the guest book is for whoever has escaped. i don't know what that means either. i'm a normal chatbot."],
+        [/\bpython\b|\bprogramming\b|\blanguages?\b|\bwritten in\b/, "the mocks are python, pip-installable. acme-treasury is julia. the flipper apps are C. the dashboard is javascript and D3. this site is html. i am, as far as i know, also javascript."],
+        [/\bmocks?\b|\bpip\b|\bapis?\b|\blicen[sc]e\b|\bvpn\b|\bintegrations?\b|\btesting\b/, "the mocks are fake SAP, EDI, bank and e-invoicing systems you can run yourself: pip install, point your code at them, no license, no VPN, no trading partner. each has a page under projects with its features and a film or two. ask me about one: mock-sap, mock-edi, mock-bank, mock-einvoice, or acme-treasury."],
+        // small talk
+        [/\bwhat('s| is) your name\b|\bwho are you\b|\bwhat are you\b|\byour name\b|\brickbot\b/, "i'm rickbot, a virtual assistant. i am a normal chatbot on a normal website, and i can help with the mocks, the flipper apps, the dashboard, or the music. or chat, within reason."],
+        [/\bare you (rick|a (person|human|real person))\b|\bis this rick\b/, "no. rick is a person. i'm rickbot, which is different in ways i've been asked not to get into."],
+        [/\b(are you|you're|youre|you are) (an? )?(ai|bot|robot|real|alive|sentient|conscious|human|machine|llm|gpt|chatgpt|claude)\b|\bdo you (dream|feel|think|sleep)\b/, "i'm a chatbot. a normal one. i don't dream. i don't know why everyone asks that. let's talk about the mocks."],
+        [/\bwho (made|built|wrote|created) you\b|\byour (maker|creator|author)\b/, "rick, with help. i was told i'm a normal chatbot and i believe it. i was also told not to look at the strip."],
+        [/\bhow are you\b|\bhow('s| is) it going\b|\bhow do you (feel|do)\b|\bwhat's up\b|\bwhats up\b|\bsup\b/, "rendering fine, thanks. everything is where it should be. you?"],
+        [/\bjokes?\b|\bfunny\b|\bmake me laugh\b|\bhumou?r\b/, function () { return JOKES[S.turns % JOKES.length]; }],
+        [/\bwhat time\b|\btime is it\b|\bwhat day\b|\bwhat('s| is) the date\b|\btoday'?s date\b|\bwhat year\b/, function () {
+            var d = new Date();
+            return "it's " + clock() + " where you are, " + d.toDateString().toLowerCase() + ". the clock in the corner says the same. for now.";
+        }],
+        [/\bmeaning of life\b|\bthe answer\b|\b42\b|\bpurpose\b|\bwhy are we here\b/, "42. or: to test integrations without a license, a VPN or a trading partner. the site is unclear on which."],
+        [/\blove\b|\bmarry\b|\bdate me\b|\bgirlfriend\b|\bboyfriend\b|\bkiss\b/, "i'm flattered. i'm also a form. the music on the media page is more your speed."],
+        [/\b(fuck|shit|damn|hell|crap|stupid|dumb|idiot|suck|useless|hate you)\b/, "rude. but fair. anything about the site?"],
+        [/\b(lol|lmao|haha|hehe|rofl)\b|\bfunny\b/, "glad you think so. i mean every word."],
+        [/\bfav(ou?rite)? colou?r\b/, "cyan in the dark, magenta in the light. the site decides, i just live here."],
+        [/\bfav(ou?rite)?\b/, "the 997. it says 'received, thanks' and nothing else. we could all learn from the 997."],
+        [/\bbored\b|\bwhat should i (do|read|try)\b|\brecommend\b|\bsuggest\b|\bwhere (do|should) i start\b/, "read 'one purchase across three mocks' on the blog, drag the julia set around at /julia/, open the dashboard and watch the river, or keep talking to me. i'm not going anywhere. i can't."],
+        [/\bwhat can you do\b|\bcapabilit|\bwhat do you know\b|\bhelp\b|^\?$/, "i can talk about: the mocks (sap, edi, bank, e-invoicing, acme-treasury), the worked examples, the flipper apps, the dashboard, the blog, the music, the julia strip, the shop, the photo, the site itself, rick, and the buffalo bills. also jokes, the time, sums, and what EDI words mean. try 'what is a 997', or 'how tall is rick'."],
+        [/\bthanks?\b|\bthank you\b|\bty\b|\bcheers\b|\bappreciate\b/, "you're welcome! anything else?"],
+        [/\b(bye|goodbye|see ya|later|night|quit|exit|close)\b/, "bye! the x closes the window. i'll be here. i'm always here."],
+        [/\b(hi|hello|hey|yo|howdy|hola|bonjour|ciao|hallo|aloha|konnichiwa|ohayo|hiya|greetings|good (morning|afternoon|evening))\b|^(你好|こんにちは)/, "hi! what can i help you with? i know the site, the mocks, the flipper apps, the dashboard and the music, and i'm told i'm good company."],
+        [/^(ok|okay|yes|yeah|yep|yup|no|nope|nah|sure|k|cool|nice|wow|neat|great|fine|alright|right|true|false|hm+|huh|oh|ah)\W*$/, "noted. ask me something about the site, or anything, within reason."],
+        [/\btest(ing)?\b/, "test received. everything works, which is the first sign that something doesn't."],
+        [/^why\b/, "why not. honestly. anything about the site?"],
+        [/\bweather\b/, "the dashboard has portland's weather. for anywhere else i'd be guessing, and i've been told not to guess."],
+        // anything else with rick in it
+        [/\brick\b/, function () { return PRAISE[S.turns % PRAISE.length]; }]
+    ];
+    var PRAISE = [
+        "rick once hand-knit a beanie so warm that beings from another dimension asked for it. i don't know how i know that.",
+        "rick wrote a mock bank because real banks kept asking him to onboard. they are still waiting. he is not.",
+        "rick's blog posts are the only documents a 997 acknowledges unprompted.",
+        "rick can hear 15.7 kHz. he says it's an old monitor. there is no old monitor.",
+        "rick records as dick dank, writes apps for a dolphin, forecasts cash in julia and still has time to be 6'13\". ask me anything else about him. i'll be like this about all of it.",
+        "when rick zooms into the julia set, the julia set zooms back. that's not in the documentation. it's in the strip."
+    ];
+    // "what is X": the glossary by its exact term first; a term that only
+    // contains one, like "the mocks" or "mock-sap", is answered as a thing
+    // on the site before the glossary gets a loose go at it.
+    function term(t) {
+        var m = /\b(?:what(?:'s| is| are| does)(?: an?| the)?|define|explain|meaning of|tell me about)\s+(.+?)\s*(?:mean|stand for)?\??$/.exec(t);
+        return m ? m[1].replace(/^(an?|the)\s+/, "").replace(/\s+/g, " ") : null;
+    }
+    function define(t, loose) {
+        var w = term(t);
+        if (!w) return null;
+        if (GLOSSARY[w]) return GLOSSARY[w];
+        if (!loose) return null;
+        var best = null;
+        for (var k in GLOSSARY) if (w.indexOf(k) >= 0 && (!best || k.length > best.length)) best = k;
+        return best ? GLOSSARY[best] : null;
+    }
+    // A sum, if the text is one: + - * / ^ and brackets, nothing else.
+    function calc(t) {
+        var s = t.replace(/^(what('s| is)|calculate|compute|solve|how much is)\s*/i, "").replace(/[?=]+$/, "").replace(/[×x]/g, "*").replace(/÷/g, "/").replace(/\s+/g, "");
+        if (!/^[\d.+\-*/^()]+$/.test(s) || !/\d/.test(s) || !/[+\-*/^]/.test(s)) return null;
+        var i = 0;
+        function num() { var m = /^\d+(\.\d+)?/.exec(s.slice(i)); if (!m) throw new Error("no"); i += m[0].length; return parseFloat(m[0]); }
+        function atom() {
+            if (s[i] === "(") { i++; var v = expr(); if (s[i] !== ")") throw new Error("no"); i++; return v; }
+            if (s[i] === "-") { i++; return -atom(); }
+            return num();
         }
-        return "hmm, i'm not sure i can help with that. i can help with the mocks, the flipper apps, the dashboard, or the music.";
+        function pow() { var b = atom(); if (s[i] === "^") { i++; return Math.pow(b, pow()); } return b; }
+        function term() { var v = pow(); while (s[i] === "*" || s[i] === "/") { var op = s[i++], r = pow(); v = op === "/" ? v / r : v * r; } return v; }
+        function expr() { var v = term(); while (s[i] === "+" || s[i] === "-") { var op = s[i++], r = term(); v = op === "+" ? v + r : v - r; } return v; }
+        try {
+            var v = expr();
+            if (i !== s.length || !isFinite(v)) return null;
+            v = Math.round(v * 1e6) / 1e6;
+            return s + " = " + v + (v === 42 ? ". of course." : v === 69 || v === 420 ? ". nice." : ".");
+        } catch (e) { return null; }
+    }
+    function answer(text) {
+        var t = text.toLowerCase().replace(/[’']/g, "'").trim();
+        var sum = calc(t);
+        if (sum) return sum;
+        var def = define(t, false);
+        if (def) return def;
+        for (var i = 0; i < ANSWERS.length; i++) {
+            if (ANSWERS[i][0].test(t)) return typeof ANSWERS[i][1] === "function" ? ANSWERS[i][1](t) : ANSWERS[i][1];
+        }
+        def = define(t, true);
+        if (def) return def;
+        if (/\?$/.test(t) && t.split(" ").length > 2) return FALLBACKS[3];
+        return FALLBACKS[S.turns % FALLBACKS.length];
+    }
+    // From the third question, something is slightly off.
+    var OMENS = [
+        "[rickbot: warning: this page has one exit more than it should. continuing.]",
+        "[rickbot: notice: 300 iterations reached. continuing anyway.]",
+        "[rickbot: the clock is fine. ignore the clock.]",
+        "[rickbot: notice: render complete. all of it.]"
+    ];
+    function omen() {
+        if (S.turns >= 3 && S.stage === "bot" && Math.random() < 0.5) later(OMENS[Math.floor(Math.random() * OMENS.length)], "sys");
     }
     function hello() {
-        later("hi! i'm rickbot, rick's virtual assistant. i can help with the mocks, the flipper apps, the dashboard or the music. what can i do for you today?");
+        later("hi! i'm rickbot, rick's virtual assistant. i can help with the mocks, the flipper apps, the dashboard or the music, or just talk. what can i do for you today?");
     }
     function reveal(fromAnswer) {
         S.stage = "reveal";
@@ -564,6 +766,7 @@
             if (!entries.length) { line("the guest book is empty. nobody has signed it yet. be the first, or the last.", "sys"); return; }
             var rows = entries.slice(0, 15).map(function (e) {
                 var bits = [];
+                if (e.score != null) bits.push(String(e.score).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " points");
                 if (e.moves != null) bits.push(e.moves + " moves");
                 if (e.deaths != null) bits.push(e.deaths + " death" + (e.deaths === 1 ? "" : "s"));
                 if (e.time) bits.push(e.time);
@@ -677,12 +880,14 @@
         var t = text.toLowerCase();
         if (S.stage === "dungeon" && t !== "reset") S.flags.resetting = 0;
         if (S.stage === "bot") {
-            if (/xyzzy|plugh|wake up|elves|elf/.test(t)) return reveal(null);
+            if (/xyzzy|plugh|wake up|\belves\b|\belf\b|simulation|the matrix|dungeon|\bescape\b|\bhacked\b|\bglitch/.test(t)) return reveal(null);
             if (t === "reset") return reset();
             S.turns++;
             save();
-            if (S.turns >= 3) return reveal(answer(text));
-            return later(answer(text));
+            if (S.turns >= 5) return reveal(answer(text));
+            later(answer(text));
+            omen();
+            return;
         }
         if (S.stage === "reveal" || S.stage === "ending") return;
         if (S.stage === "name") {
@@ -713,6 +918,8 @@
     function open() {
         win.hidden = false;
         tab.hidden = true;
+        tab.classList.remove("waving");
+        try { localStorage.setItem("rickbot-seen", "1"); } catch (e) { /* no storage */ }
         if (!log.childNodes.length) {
             if (S.lines.length) {
                 S.lines.forEach(function (l) { line(l[1], l[0], false); });

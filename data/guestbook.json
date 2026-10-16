@@ -1,5 +1,17 @@
 {
- "about": "Who has escaped rickbot's dungeon and signed: the open issues on rseufert/rseufert.github.io titled 'guestbook:'. Written by tools/guestbook.py.",
- "updated": "2026-10-16T18:53:52Z",
- "entries": []
+ "about": "Who has escaped rickbot's dungeon and signed: the house, then the open issues on rseufert/rseufert.github.io titled 'guestbook:', newest first. Written by tools/guestbook.py.",
+ "updated": "2026-10-16T19:49:53Z",
+ "entries": [
+  {
+   "name": "RICK",
+   "score": 69420000,
+   "moves": null,
+   "deaths": null,
+   "time": null,
+   "message": "the house always wins. sign below.",
+   "by": "rseufert",
+   "when": "2016-08-30",
+   "url": "https://rickseufert.com/"
+  }
+ ]
 }
