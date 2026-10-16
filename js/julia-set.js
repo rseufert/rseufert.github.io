@@ -1,7 +1,8 @@
 // The strip under the menu is a Julia set, drawn by the graphics card and
 // zooming for ever into one of its fixed points while c, the parameter,
-// walks a loop round the Mandelbrot set. The loop, and the fixed point to
-// zoom into, come from js/julia-set.json, charted by tools/julia_set.jl.
+// walks back and forth along an arc round the Mandelbrot set. The arc, and
+// the fixed point to zoom into, come from js/julia-set.json, charted by
+// tools/julia_set.jl.
 //
 // The endless zoom: a Julia set is its own image under z -> z^2 + c, so the
 // view near a repelling fixed point a looks the same after being pulled
@@ -83,18 +84,16 @@
         }
     }
 
-    // The walk: each row of the chart is c, a and how long to linger with a
-    // and with 1 - a. Both laps are laid end to end, with the argument of
-    // lambda unwrapped along them so the turning never jumps.
-    var legs, total, winding, s0;
+    // The walk: each row of the chart is c, the fixed point a and how long to
+    // linger there on the way to the next. The argument of lambda = 2a is
+    // unwrapped along the arc so the turning never jumps.
+    var legs, total, s0;
     function lay(chart) {
         s0 = chart.s0;
         legs = [];
         var at = 0, arg = 0, last = null;
-        chart.samples.concat(chart.samples).forEach(function (row, i) {
-            var second = i >= chart.samples.length;
-            var a = second ? [1 - row[2], -row[3]] : [row[2], row[3]];
-            var raw = Math.atan2(2 * a[1], 2 * a[0]);
+        chart.samples.forEach(function (row) {
+            var raw = Math.atan2(row[3], row[2]);
             if (last !== null) {
                 var d = raw - last;
                 if (d > Math.PI) d -= 2 * Math.PI;
@@ -104,33 +103,29 @@
                 arg = raw;
             }
             last = raw;
-            legs.push({ c: [row[0], row[1]], a: a, arg: arg, at: at, dwell: second ? row[5] : row[4] });
-            at += second ? row[5] : row[4];
+            legs.push({ c: [row[0], row[1]], a: [row[2], row[3]], arg: arg, at: at, dwell: row[4] });
+            at += row[4];
         });
-        total = at;
-        var back = Math.atan2(2 * legs[0].a[1], 2 * legs[0].a[0]) - last;
-        if (back > Math.PI) back -= 2 * Math.PI;
-        if (back < -Math.PI) back += 2 * Math.PI;
-        winding = arg + back - legs[0].arg;
+        total = at - legs[legs.length - 1].dwell;   // the last point is where the walk turns
     }
 
     function lerp(x, y, f) { return x + (y - x) * f; }
 
-    // Where the walk is at clock time t, in seconds.
+    // Where the walk is at clock time t, in seconds: out along the arc, then back.
     function where(t) {
-        var laps = Math.floor(t / total), s = t - laps * total;
-        var lo = 0, hi = legs.length - 1;
+        var s = t % (2 * total);
+        if (s > total) s = 2 * total - s;
+        var lo = 0, hi = legs.length - 2;
         while (lo < hi) {
             var mid = (lo + hi + 1) >> 1;
             if (legs[mid].at <= s) lo = mid; else hi = mid - 1;
         }
-        var from = legs[lo], to = legs[(lo + 1) % legs.length];
-        var f = (s - from.at) / from.dwell;
-        var toArg = lo + 1 < legs.length ? to.arg : from.arg + (legs[0].arg + winding - from.arg);
+        var from = legs[lo], to = legs[lo + 1];
+        var f = Math.min((s - from.at) / from.dwell, 1);
         return {
             c: [lerp(from.c[0], to.c[0], f), lerp(from.c[1], to.c[1], f)],
             a: [lerp(from.a[0], to.a[0], f), lerp(from.a[1], to.a[1], f)],
-            arg: lerp(from.arg, toArg, f) + laps * winding
+            arg: lerp(from.arg, to.arg, f)
         };
     }
 
@@ -151,7 +146,7 @@
 
     var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var playing = false, seen = true, raf = 0;
-    // Seconds since the strip was first switched on, so the laps stay few.
+    // Seconds since the strip was first switched on.
     var EPOCH = Date.UTC(2026, 9, 16) / 1000;
     function clock() { return Date.now() / 1000 - EPOCH; }
     function frame() {
