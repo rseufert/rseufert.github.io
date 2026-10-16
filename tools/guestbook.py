@@ -25,6 +25,18 @@ import urllib.request
 from pathlib import Path
 
 REPO = "rseufert/rseufert.github.io"
+# The house always goes first.
+HOUSE = {
+    "name": "RICK",
+    "score": 69420000,
+    "moves": None,
+    "deaths": None,
+    "time": None,
+    "message": "the house always wins. sign below.",
+    "by": "rseufert",
+    "when": "2016-08-30",
+    "url": "https://rickseufert.com/",
+}
 OUT = Path(__file__).resolve().parent.parent / "data" / "guestbook.json"
 PREFIX = "guestbook:"
 FIELDS = {"name": 40, "moves": 6, "deaths": 6, "time": 12, "message": 280}
@@ -90,14 +102,15 @@ def main():
     signed = [i for i in issues() if i["title"].lower().startswith(PREFIX)]
     entries = [e for e in (entry(i) for i in signed) if e]
     entries.sort(key=lambda e: e["when"], reverse=True)
+    entries.insert(0, HOUSE)
     book = {
-        "about": f"Who has escaped rickbot's dungeon and signed: the open issues on {REPO} titled 'guestbook:'. Written by tools/guestbook.py.",
+        "about": f"Who has escaped rickbot's dungeon and signed: the house, then the open issues on {REPO} titled 'guestbook:', newest first. Written by tools/guestbook.py.",
         "updated": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "entries": entries,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n")
-    print(f"{len(entries)} signed; wrote {args.out}")
+    print(f"{len(entries) - 1} signed, plus the house; wrote {args.out}")
 
 
 if __name__ == "__main__":
