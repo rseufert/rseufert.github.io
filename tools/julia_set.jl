@@ -17,7 +17,7 @@
 # For each c it tracks the fixed point α = (1 - sqrt(1 - 4c)) / 2 by
 # continuity. Going once round the loop swaps the two fixed points, so the
 # page walks the loop twice, once with α and once with 1 - α, and the strip
-# never repeats itself within twelve minutes. Each view is scored by how much
+# never repeats itself within the hour. Each view is scored by how much
 # there is to see - the entropy of the escape times in the strip's window -
 # and the page lingers where it is rich and hurries past where it is plain.
 #
@@ -30,7 +30,7 @@ const SAMPLES = 540     # points on the loop
 const S0 = 0.11         # half the window's height, in the plane, before the zoom
 const ASPECT = 8.7      # the strip's width over its height
 const MAXIT = 200       # same as the shader
-const TOTAL = 720.0     # seconds for both laps
+const TOTAL = 3600.0    # seconds for both laps: an hour before it repeats
 const OUT = joinpath(@__DIR__, "..", "js", "julia-set.json")
 
 # z_N(c) and dz_N/dc, from z_0 = c, so z_N is the Böttcher coordinate to the 2^N.
