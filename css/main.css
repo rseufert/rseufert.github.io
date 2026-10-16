@@ -86,6 +86,89 @@ canvas.julia {
     background: #000;
 }
 
+/* rickbot, the chat in the corner (js/chat.js): a window in the hero's
+   chrome. The tab is a bracketed word like the menu's. */
+.chat-tab {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 20;
+    font: 0.95em var(--mono);
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    padding: 6px 10px;
+    cursor: pointer;
+}
+.chat-tab::before { content: "["; color: var(--faint); }
+.chat-tab::after  { content: "]"; color: var(--faint); }
+.chat-tab:hover { border-color: var(--accent); }
+.chat-tab[hidden] { display: none; }
+.chat {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    width: 440px;
+    max-width: calc(100vw - 28px);
+    height: 500px;
+    max-height: calc(100vh - 28px);
+    border: 2px solid var(--ink);
+    background: var(--bg);
+    color: var(--ink);
+    box-shadow: 8px 8px 0 var(--accent);
+    font: 14px/1.5 var(--mono);
+}
+.chat[hidden] { display: none; }
+.chat .titlebar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 3px 8px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 0.9em;
+}
+.chat .titlebar button { background: none; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 0 2px; }
+.chat .titlebar button:hover { color: var(--accent); }
+.chat .log { flex: 1; overflow-y: auto; padding: 10px 12px; overscroll-behavior: contain; }
+.chat .log p { margin: 0 0 8px; white-space: pre-wrap; }
+.chat .log .you { color: var(--accent); }
+.chat .log .you::before { content: "> "; color: var(--faint); }
+.chat .log .sys { color: var(--faint); }
+.chat .log .room { font-weight: bold; margin-bottom: 2px; }
+.chat .log .typing::after { content: "\2026"; }
+.chat .log pre { margin: 0 0 8px; font: inherit; color: var(--soft); overflow-x: auto; }
+.chat .line { display: flex; border-top: 1px solid var(--rule); }
+.chat .line .prompt { padding: 8px 0 8px 12px; color: var(--accent); }
+.chat .line input {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    padding: 8px;
+}
+.chat .line input:focus { outline: none; }
+.chat .line:focus-within { border-top-color: var(--accent); }
+.chat .line input:disabled { color: var(--faint); }
+.chat.glitching { animation: chatglitch 0.5s steps(4) infinite; }
+@keyframes chatglitch {
+    0%   { transform: translate(2px, 0); box-shadow: 8px 8px 0 #ff0050, -3px 0 0 #00e5ff; }
+    50%  { transform: translate(-2px, 1px); box-shadow: 8px 8px 0 #00e5ff, 3px 0 0 #ff0050; }
+    100% { transform: none; box-shadow: 8px 8px 0 var(--accent); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chat.glitching { animation: none; }
+}
+@media (max-width: 700px) {
+    .chat { right: 8px; bottom: 8px; left: 8px; width: auto; max-width: none; height: 72vh; box-shadow: 4px 4px 0 var(--accent); }
+    .chat-tab { right: 8px; bottom: 8px; }
+}
+
 /* The Julia page: the set to steer (julia/index.html, js/julia.js). */
 .julia-page .lede { color: var(--soft); }
 .julia-page .stage {

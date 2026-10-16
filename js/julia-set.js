@@ -88,6 +88,8 @@
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [2.0, 1.0, 1.0], [0.00, 0.25, 0.25]],   // neon pink and teal
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.00, 0.10, 0.20]]    // sunset
     ];
+    // A seventh, the machine elves', for whoever got them home (js/chat.js).
+    try { if (localStorage.getItem("elf")) PALETTES.push([[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.30, 0.65, 0.15]]); } catch (e) { /* no storage */ }
 
     function fit() {
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
