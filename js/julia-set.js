@@ -26,7 +26,7 @@
     if (!ok) { canvas.remove(); return; }
 
     var MAXIT = 200;
-    var CYCLE = 9;        // seconds per pullback
+    var CYCLE = 40;       // seconds per pullback: a slow drift inwards
     var frag = [
         "precision highp float;",
         "uniform vec2 uRes, uC, uA, uLam;",
@@ -145,7 +145,7 @@
         gl.uniform2f(U.uLam, mag * Math.cos(ang), mag * Math.sin(ang));
         gl.uniform1f(U.uS0, s0);
         gl.uniform1f(U.uP, phase);
-        gl.uniform1f(U.uHue, (t / 90) % 1);
+        gl.uniform1f(U.uHue, (t / 300) % 1);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
