@@ -114,6 +114,13 @@ The [chat] tab in the corner of every page is rickbot (`js/chat.js`), a
 virtual assistant that answers a question or two about the site and then
 confesses: reality has been hacked by extradimensional machine elves, who
 came through the strip, and the window becomes a text adventure in the old
-style through a dungeon made of the site. Escaping reboots reality and
-leaves the elves' palette on the strip. It all runs in the page; the
-conversation is kept in localStorage, and RESET starts over.
+style through a dungeon made of the site. Escaping reboots reality, puts
+the elves' palette on the strip, dreams the home page's photo through a
+Julia set (`js/hero.js`), and ends on a high score table and the guest
+book. The table is local; the guest book is shared, web 0.9 style: SIGN
+opens a prefilled issue on this repo titled `guestbook: NAME`, and
+`guestbook.yml` compiles the open ones into `guestbook.json` on the
+`sky-data` branch (`tools/guestbook.py`), where the chat reads it;
+`data/guestbook.json` on `master` is the fallback. Close an issue to take
+an entry out. The rest runs in the page; the conversation is kept in
+localStorage, and RESET starts over.

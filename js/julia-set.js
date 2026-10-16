@@ -89,7 +89,8 @@
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.00, 0.10, 0.20]]    // sunset
     ];
     // A seventh, the machine elves', for whoever got them home (js/chat.js).
-    try { if (localStorage.getItem("elf")) PALETTES.push([[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.30, 0.65, 0.15]]); } catch (e) { /* no storage */ }
+    var ELF = [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.30, 0.65, 0.15]];
+    try { if (localStorage.getItem("elf")) PALETTES.push(ELF); } catch (e) { /* no storage */ }
 
     function fit() {
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -153,12 +154,29 @@
             visit = { start: Math.random() * 2 * total, palette: Math.floor(Math.random() * PALETTES.length) };
             try { sessionStorage.setItem("julia", JSON.stringify(visit)); } catch (e) { /* no storage: a fresh pick each page */ }
         }
-        var pal = PALETTES[visit.palette];
+        wear(visit.palette);
+    }
+    function wear(i) {
+        var pal = PALETTES[i];
         gl.uniform3fv(U.uPa, pal[0]);
         gl.uniform3fv(U.uPb, pal[1]);
         gl.uniform3fv(U.uPc, pal[2]);
         gl.uniform3fv(U.uPd, pal[3]);
     }
+    // The moment the elves go home (js/chat.js), the strip puts on their palette.
+    window.addEventListener("elves", function () {
+        if (PALETTES.length < 7) PALETTES.push(ELF);
+        if (!visit) return;
+        visit.palette = 6;
+        try { sessionStorage.setItem("julia", JSON.stringify(visit)); } catch (e) { /* no storage */ }
+        wear(6);
+        if (!playing) draw(clock());
+        var link = canvas.parentNode;
+        if (!still && link && link.classList) {
+            link.classList.add("glitching");
+            setTimeout(function () { link.classList.remove("glitching"); }, 1500);
+        }
+    });
 
     function draw(t) {
         fit();

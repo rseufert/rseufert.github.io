@@ -8,8 +8,10 @@
 // the window is a text adventure in the old style - LOOK, TAKE, GO WEST -
 // through a dungeon made of the site: the SAP vault, the EDI corridor,
 // the mock bank, the Flipper nest, the media loft, the machine elf bazaar
-// and, if you ignore the elves, the Julia set. Escape reboots reality and
-// leaves the elves' palette on the strip.
+// and, if you ignore the elves, the Julia set. Escape reboots reality,
+// switches the strip to the elves' palette, dreams the photo on the home
+// page (js/hero.js), and ends on a high score table and the guest book,
+// which is an issue on the repo, web 0.9 style (tools/guestbook.py).
 //
 // All of it is here; nothing is sent anywhere. The conversation is kept
 // in localStorage so it carries from page to page. RESET starts over.
@@ -82,7 +84,7 @@
 
     // ---- output -----------------------------------------------------------
     function line(text, cls, keep) {
-        var p = document.createElement("p");
+        var p = document.createElement(cls === "art" ? "pre" : "p");
         if (cls) p.className = cls;
         p.textContent = text;
         log.appendChild(p);
@@ -136,6 +138,7 @@
         [/\b(hi|hello|hey|yo|sup|howdy|hola|morning|evening)\b/, "hi! what can i help you with? i know about the mocks, the flipper apps, the dashboard and the music."],
         [/\b(help|\?)/, "i can help with: the mocks (sap, edi, bank, e-invoicing), the flipper apps, the dashboard, the music, the blog, the julia strip. ask me anything about those."],
         [/\b(thanks|thank you|ty|cheers)\b/, "you're welcome! anything else?"],
+        [/\b(guest ?book|high ?scores?|sign)\b/, "the guest book is for whoever has escaped. i don't know what that means either. i'm a normal chatbot."],
         [/\b(bye|goodbye|later|quit|exit|close)\b/, "bye! the x closes the window. i'll be here."]
     ];
     function answer(text) {
@@ -169,6 +172,7 @@
             prompt.textContent = ">";
             S.stage = "dungeon";
             S.room = "page";
+            S.began = Date.now();
             save();
         });
         later("type LOOK.", "sys");
@@ -446,9 +450,37 @@
         log.appendChild(pre);
         line("You are at " + here().name + ". The colon is a ladder.", "sys");
     }
+    // ---- the ending -------------------------------------------------------
+    var BANNER = [
+        " ___ ___ ___   _   ___ ___ ___",
+        "| __/ __/ __| /_\\ | _ \\ __|   \\",
+        "| _|\\__ \\ (__/ _ \\|  _/ _|| |) |",
+        "|___|___/\\___/_/ \\_\\_| |___|___/"
+    ].join("\n");
+    function pad(s, n, right) {
+        s = String(s);
+        while (s.length < n) s = right ? " " + s : s + " ";
+        return s;
+    }
+    function mmss(secs) {
+        secs = Math.max(0, Math.round(secs));
+        return Math.floor(secs / 60) + ":" + pad(secs % 60, 2, true).replace(" ", "0");
+    }
+    function rank(moves, deaths) {
+        var r = moves <= 32 ? "Principal Integration Architect" : moves <= 48 ? "Senior Integration Specialist" : "Junior Integration Specialist";
+        return deaths === 0 ? r + ", Null-Safe" : r;
+    }
+    function run() {
+        return { moves: S.moves, deaths: S.deaths, secs: S.began && S.ended ? (S.ended - S.began) / 1000 : 0 };
+    }
+    function stats() {
+        var r = run();
+        return "moves: " + r.moves + "   deaths: " + r.deaths + "   time: " + mmss(r.secs) + "\nrank: " + rank(r.moves, r.deaths);
+    }
     function escape() {
-        S.stage = "escaped";
+        S.stage = "ending";
         S.inv.splice(S.inv.indexOf("token"), 1);
+        S.ended = Date.now();
         save();
         try { localStorage.setItem("elf", "1"); } catch (e) { /* no storage */ }
         try {
@@ -463,12 +495,87 @@
             "[ ok ] stopping elves.service (they wave)",
             "[ ok ] restoring /home/you",
             "[ ok ] zoom level 1.0",
-            "[ ok ] three hundred iterations, max",
-            "REALITY RESTORED."
-        ].forEach(function (t, i) { later(t, "sys", i === 7 ? function () { title.textContent = "rickbot.exe"; } : null); });
-        later("nothing looks different. it never did. that was the hack.");
-        later("the elves left something on the strip under the menu: a palette, theirs, green. it's yours now. it shows up on every page.");
-        later("thanks for getting me out. i'm a normal chatbot again. type AGAIN to do it all over, or close the window and get on with your day, which is real, probably.");
+            "[ ok ] three hundred iterations, max"
+        ].forEach(function (t) { later(t, "sys"); });
+        later("REALITY RESTORED.", "sys", function () {
+            title.textContent = "rickbot.exe";
+            // The strip and the photo on the home page hear this (js/julia-set.js, js/hero.js).
+            try { window.dispatchEvent(new CustomEvent("elves")); } catch (e) { /* old browser */ }
+            if (!still) {
+                win.classList.add("glitching");
+                setTimeout(function () { win.classList.remove("glitching"); }, 1800);
+            }
+        });
+        later(BANNER, "art");
+        later(stats(), "sys");
+        later("nothing looks different. it never did. that was the hack. except: the strip under the menu. the elves left their palette on it, green, on every page, for whoever got them home. and the photo on the home page has gone a bit elf. hover over it.");
+        later("one more thing. the high score table. what shall we call you? initials, a handle, your true name, whichever renders.", "bot", function () {
+            S.stage = "name";
+            save();
+        });
+    }
+    var SCORES = "rickbot-scores";
+    function scores() {
+        try { return JSON.parse(localStorage.getItem(SCORES)) || []; } catch (e) { return []; }
+    }
+    function record(name) {
+        var r = run(), list = scores();
+        list.push({ name: name, moves: r.moves, deaths: r.deaths, secs: Math.round(r.secs), when: new Date().toISOString().slice(0, 10) });
+        list.sort(function (a, b) { return a.moves - b.moves || a.secs - b.secs; });
+        list = list.slice(0, 10);
+        try { localStorage.setItem(SCORES, JSON.stringify(list)); } catch (e) { /* no storage */ }
+        return list;
+    }
+    function table(list, mark) {
+        var rows = [" #  " + pad("name", 18) + " " + pad("moves", 5, true) + " " + pad("deaths", 6, true) + "  time"];
+        list.forEach(function (e, i) {
+            rows.push(pad(i + 1, 2, true) + "  " + pad(e.name.slice(0, 18), 18) + " " + pad(e.moves, 5, true) + " " + pad(e.deaths, 6, true) + "  " + pad(mmss(e.secs), 5, true) + (e === mark ? " <" : ""));
+        });
+        return rows.join("\n");
+    }
+    function issueURL() {
+        var r = run();
+        var body = "name: " + (S.name || "anonymous") + "\nmoves: " + r.moves + "\ndeaths: " + r.deaths + "\ntime: " + mmss(r.secs) +
+            "\nmessage: \n\n--\nSigned from rickseufert.com after escaping rickbot's dungeon. Keep the lines above as they are, except the message, which is yours (280 characters; links are dropped). A workflow reads open issues titled \"guestbook:\" into the guest book, and closing one takes it out.";
+        return "https://github.com/rseufert/rseufert.github.io/issues/new?title=" + encodeURIComponent("guestbook: " + (S.name || "anonymous")) + "&body=" + encodeURIComponent(body);
+    }
+    function sign() {
+        if (!S.name) { line("Escape first. The guest book is for whoever got out.", "sys"); return; }
+        var url = issueURL();
+        var opened = window.open(url, "_blank", "noopener");
+        var p = document.createElement("p");
+        p.className = "sys";
+        p.appendChild(document.createTextNode(opened ? "the guest book is open in a new tab, a github issue, prefilled. write a message if you like and submit it. if it didn't open: " : "open the guest book, a github issue, prefilled: "));
+        var a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = "sign here \u2197";
+        p.appendChild(a);
+        log.appendChild(p);
+        log.scrollTop = log.scrollHeight;
+        S.lines.push(["sys", "SIGN opens the guest book, a github issue, prefilled."]);
+        save();
+    }
+    function guestbook() {
+        line("fetching the guest book\u2026", "sys");
+        function show(book) {
+            var entries = (book && book.entries) || [];
+            if (!entries.length) { line("the guest book is empty. nobody has signed it yet. be the first, or the last.", "sys"); return; }
+            var rows = entries.slice(0, 15).map(function (e) {
+                var bits = [];
+                if (e.moves != null) bits.push(e.moves + " moves");
+                if (e.deaths != null) bits.push(e.deaths + " death" + (e.deaths === 1 ? "" : "s"));
+                if (e.time) bits.push(e.time);
+                return e.name + "  \u2014  " + bits.join(", ") + "  \u2014  " + e.when + (e.message ? "\n   \u201c" + e.message + "\u201d" : "");
+            });
+            line(rows.join("\n"), "art");
+            line(entries.length + " signed. SIGN to add yours.", "sys");
+        }
+        fetch("https://raw.githubusercontent.com/rseufert/rseufert.github.io/sky-data/guestbook.json", { cache: "no-cache" })
+            .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+            .catch(function () { return fetch("/data/guestbook.json").then(function (r) { return r.json(); }); })
+            .then(show, function () { line("the guest book is out of reach just now. the elves, probably.", "sys"); });
     }
 
     function dungeon(text) {
@@ -493,6 +600,8 @@
             case "help": case "?": case "commands": return line("Verbs the old parser knows: LOOK, EXAMINE thing, TAKE thing, DROP thing, INVENTORY, GO north (or just N, S, E, W, U, D, OUT), USE thing, GIVE thing, TALK, MAP, HINT, SCORE, RESET. And one or two it won't admit to.", "sys");
             case "hint": case "hints": case "clue": return hint();
             case "map": return map();
+            case "guestbook": case "book": case "scores": case "highscores": return guestbook();
+            case "sign": return sign();
             case "score": return line("Your score is " + (S.inv.length + (S.flags.gate ? 1 : 0) + (S.flags.rfid ? 1 : 0) + (S.flags.traded ? 2 : 0)) + " of 8, in " + S.moves + " moves, with " + S.deaths + " death" + (S.deaths === 1 ? "" : "s") + ". This gives you the rank of Junior Integration Specialist.", "sys");
             case "xyzzy": return line("A hollow voice says \"fool.\"", "sys");
             case "plugh": return line("Nothing happens. Wrong cave.", "sys");
@@ -529,6 +638,7 @@
         S = fresh();
         S.lines = lines;
         S.stage = "dungeon";
+        S.began = Date.now();
         for (var id in ITEMS) ITEMS[id].at = ITEMS[id].home;
         save();
         title.textContent = "dungeon.exe";
@@ -574,10 +684,25 @@
             if (S.turns >= 3) return reveal(answer(text));
             return later(answer(text));
         }
-        if (S.stage === "reveal") return;
+        if (S.stage === "reveal" || S.stage === "ending") return;
+        if (S.stage === "name") {
+            var name = text.replace(/\s+/g, " ").trim().slice(0, 40) || "anonymous";
+            if (name.toLowerCase() === "reset") return reset();
+            S.name = name;
+            S.stage = "escaped";
+            save();
+            var list = record(name), mine = null;
+            list.forEach(function (e) { if (e.name === name && !mine) mine = e; });
+            later(table(list, mine), "art");
+            later("that's the local table, yours alone, in this browser. the guest book is shared, the web 0.9 way: it's an issue on github. type SIGN to open one, prefilled, or GUESTBOOK to read who's been through before you. AGAIN replays the dungeon.");
+            return;
+        }
         if (S.stage === "escaped") {
             if (t === "again" || t === "restart" || t === "play") return again();
             if (t === "reset") return reset();
+            if (t === "sign") return sign();
+            if (/^(guestbook|book|scores|highscores|table)$/.test(t)) return guestbook();
+            if (/^(local|my scores|mine)$/.test(t)) return line(table(scores()), "art");
             return later(answer(text));
         }
         dungeon(text);
