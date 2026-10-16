@@ -13,9 +13,11 @@
 // makes of either square root of w. Colours shift by one iteration over the
 // cycle, so the last frame is the first and the zoom never ends.
 //
-// Everything runs off the clock, so the strip is at the same place on every
-// page. A visitor who asked for less motion gets one still frame, and a
-// click pauses or plays.
+// Each visit starts somewhere along the walk at random, where the walk
+// lingers most likely, in one of a few palettes, and keeps both for the
+// visit, so the strip is at the same place on every page but a different
+// one next time. A visitor who asked for less motion gets one still frame,
+// and a click pauses or plays.
 (function () {
     "use strict";
     var canvas = document.querySelector("canvas.julia");
@@ -32,8 +34,9 @@
         "precision highp float;",
         "uniform vec2 uRes, uC, uA, uLam;",
         "uniform float uS0, uP, uHue;",
+        "uniform vec3 uPa, uPb, uPc, uPd;",
         "vec2 mul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }",
-        "vec3 pal(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67))); }",
+        "vec3 pal(float t) { return uPa + uPb * cos(6.2832 * (uPc * t + uPd)); }",
         "void main() {",
         "  vec2 u = uS0 * (gl_FragCoord.xy - 0.5 * uRes) / (0.5 * uRes.y);",
         "  vec2 w = mul(uA, uA) + mul(uLam, u) + (1.0 - uP) * mul(u, u);",
@@ -71,9 +74,19 @@
     gl.enableVertexAttribArray(p);
     gl.vertexAttribPointer(p, 2, gl.FLOAT, false, 0, 0);
     var U = {};
-    ["uRes", "uC", "uA", "uLam", "uS0", "uP", "uHue"].forEach(function (name) {
+    ["uRes", "uC", "uA", "uLam", "uS0", "uP", "uHue", "uPa", "uPb", "uPc", "uPd"].forEach(function (name) {
         U[name] = gl.getUniformLocation(prog, name);
     });
+
+    // Palettes, as cosine waves: a + b cos(2 pi (c t + d)), one wave per channel.
+    var PALETTES = [
+        [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.00, 0.33, 0.67]],   // rainbow
+        [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 0.5], [0.80, 0.90, 0.30]],   // cyan, magenta, acid green
+        [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 0.7, 0.4], [0.00, 0.15, 0.20]],   // fire
+        [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [2.0, 1.0, 0.0], [0.50, 0.20, 0.25]],   // violet and gold
+        [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [2.0, 1.0, 1.0], [0.00, 0.25, 0.25]],   // neon pink and teal
+        [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.00, 0.10, 0.20]]    // sunset
+    ];
 
     function fit() {
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -129,8 +142,24 @@
         };
     }
 
+    // The visit's start along the walk and its palette, kept for the visit.
+    var visit;
+    function choose() {
+        try { visit = JSON.parse(sessionStorage.getItem("julia")); } catch (e) { visit = null; }
+        if (!visit || typeof visit.start !== "number" || !PALETTES[visit.palette]) {
+            visit = { start: Math.random() * 2 * total, palette: Math.floor(Math.random() * PALETTES.length) };
+            try { sessionStorage.setItem("julia", JSON.stringify(visit)); } catch (e) { /* no storage: a fresh pick each page */ }
+        }
+        var pal = PALETTES[visit.palette];
+        gl.uniform3fv(U.uPa, pal[0]);
+        gl.uniform3fv(U.uPb, pal[1]);
+        gl.uniform3fv(U.uPc, pal[2]);
+        gl.uniform3fv(U.uPd, pal[3]);
+    }
+
     function draw(t) {
         fit();
+        t += visit.start;
         var w = where(t);
         var phase = (t / CYCLE) % 1;
         var mag = Math.pow(2 * Math.hypot(w.a[0], w.a[1]), 1 - phase), ang = w.arg * (1 - phase);
@@ -163,6 +192,7 @@
 
     fetch("/js/julia-set.json").then(function (r) { return r.json(); }).then(function (chart) {
         lay(chart);
+        choose();
         if ("IntersectionObserver" in window) {
             new IntersectionObserver(function (entries) {
                 seen = entries[0].isIntersecting;
