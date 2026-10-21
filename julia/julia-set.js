@@ -1,7 +1,7 @@
 // The strip under the menu is a Julia set, drawn by the graphics card and
 // zooming for ever into one of its fixed points while c, the parameter,
 // walks back and forth along an arc round the Mandelbrot set. The arc, and
-// the fixed point to zoom into, come from js/julia-set.json, charted by
+// the fixed point to zoom into, come from julia/julia-set.json, charted by
 // tools/julia_set.jl.
 //
 // The endless zoom: a Julia set is its own image under z -> z^2 + c, so the
@@ -88,7 +88,7 @@
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [2.0, 1.0, 1.0], [0.00, 0.25, 0.25]],   // neon pink and teal
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.00, 0.10, 0.20]]    // sunset
     ];
-    // A seventh, the machine elves', for whoever got them home (js/chat.js).
+    // A seventh, the machine elves', for whoever got them home (chat/chat.js).
     var ELF = [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.30, 0.65, 0.15]];
     try { if (localStorage.getItem("elf")) PALETTES.push(ELF); } catch (e) { /* no storage */ }
 
@@ -163,7 +163,7 @@
         gl.uniform3fv(U.uPc, pal[2]);
         gl.uniform3fv(U.uPd, pal[3]);
     }
-    // The moment the elves go home (js/chat.js), the strip puts on their palette.
+    // The moment the elves go home (chat/chat.js), the strip puts on their palette.
     window.addEventListener("elves", function () {
         if (PALETTES.length < 7) PALETTES.push(ELF);
         if (!visit) return;
@@ -210,7 +210,7 @@
         if (on && !raf) raf = requestAnimationFrame(frame);
     }
 
-    fetch("/js/julia-set.json").then(function (r) { return r.json(); }).then(function (chart) {
+    fetch("/julia/julia-set.json").then(function (r) { return r.json(); }).then(function (chart) {
         lay(chart);
         choose();
         if ("IntersectionObserver" in window) {

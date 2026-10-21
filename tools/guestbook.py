@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compile the guest book from the repo's issues into data/guestbook.json.
 
-Whoever escapes rickbot's dungeon (js/chat.js) is offered the guest book,
+Whoever escapes rickbot's dungeon (chat/chat.js) is offered the guest book,
 web 0.9 style. Signing opens a prefilled issue on this repo titled
 "guestbook: NAME", with the run's numbers and a message in the body. This
 script reads the open issues with that title, keeps the fields it knows,

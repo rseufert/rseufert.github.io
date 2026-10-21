@@ -1,0 +1,37 @@
+/* The Julia page: the stylesheet for julia/index.html. The site's bones are in css/main.css;
+   this page links this file after it (the layout reads `css:` from the front matter). */
+
+/* The Julia page: the set to steer (julia/index.html, julia/julia.js). */
+.julia-page .lede { color: var(--soft); }
+.julia-page .stage {
+    display: block;
+    width: 100%;
+    height: 62vh;
+    min-height: 300px;
+    background: #000;
+    cursor: grab;
+    touch-action: none;
+}
+.julia-page .stage.dragging { cursor: grabbing; }
+.julia-page .bar { display: flex; gap: 20px; align-items: flex-start; margin: 14px 0 30px; }
+.julia-page .map { flex: none; width: 180px; height: 120px; background: #000; cursor: crosshair; touch-action: none; }
+.julia-page .read { min-width: 0; }
+.julia-page .c { display: block; font: 15px var(--mono); margin: 2px 0 8px; }
+.julia-page .hint { font: 13px var(--mono); color: var(--faint); margin: 0 0 10px; }
+.julia-page .hint var { font-style: normal; color: var(--soft); }
+.julia-page kbd { font: inherit; color: var(--soft); }
+.julia-page .buttons { margin: 0; }
+.julia-page button {
+    font: 13px var(--mono);
+    color: var(--ink);
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.julia-page button:hover, .julia-page button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 700px) {
+    .julia-page .stage { height: 52vh; }
+    .julia-page .bar { flex-direction: column; gap: 12px; }
+}

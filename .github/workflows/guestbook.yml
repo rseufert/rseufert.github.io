@@ -1,7 +1,7 @@
 name: guest book
 
 # Whoever escapes rickbot's dungeon can sign the guest book, which is an
-# issue on this repo titled "guestbook: NAME" (js/chat.js opens it,
+# issue on this repo titled "guestbook: NAME" (chat/chat.js opens it,
 # prefilled). This compiles the open ones into guestbook.json whenever an
 # issue changes, and commits it to the sky-data branch beside sky.json,
 # since master is protected; the chat reads it from raw.githubusercontent.com

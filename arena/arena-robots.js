@@ -1,7 +1,7 @@
-// The arena's presets (js/arena-engine.js has the dialect): six tanks, each
+// The arena's presets (arena/arena-engine.js has the dialect): six tanks, each
 // a lesson, RICK, who learns, JOSH, who hurdles, DICE, who rolls, and the
 // starter that loads into the editor. They are strings so
-// the page can show them and node can fight them (tools/arena_test.js).
+// the page can show them and node can fight them (arena/arena_test.js).
 (function (root, factory) {
     if (typeof module === "object" && module.exports) module.exports = factory();
     else root.ArenaRobots = factory();

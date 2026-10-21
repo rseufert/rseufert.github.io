@@ -1,5 +1,5 @@
 // The photo on the home page, after the elves: whoever has got them home
-// (rickbot's dungeon, js/chat.js, leaves a flag) sees it dreamed. The
+// (rickbot's dungeon, chat/chat.js, leaves a flag) sees it dreamed. The
 // graphics card draws the photo through a Julia set: each pixel's point is
 // squared and shifted a few times, z -> z^2 + c, and the photo is sampled
 // again at each stop, mirrored and tiled, so the face comes back doubled,

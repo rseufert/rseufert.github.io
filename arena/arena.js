@@ -1,4 +1,4 @@
-// The arena page (arena/index.html): draws a match from js/arena-engine.js
+// The arena page (arena/index.html): draws a match from arena/arena-engine.js
 // on a canvas, keeps the score, shows the selected tank's registers, and
 // runs the editor: assemble the visitor's tank, fight the ticked presets,
 // save to localStorage, share by link (#r=, the program; #preset=, one of

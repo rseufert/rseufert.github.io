@@ -1,10 +1,10 @@
 #!/usr/bin/env julia
-# Chart the walk the strip under the site's menu takes (js/julia-set.js).
+# Chart the walk the strip under the site's menu takes (julia/julia-set.js).
 #
 # The strip is a Julia set, drawn by the visitor's graphics card, zooming
 # for ever into one of its fixed points while the parameter c walks a loop
 # around the Mandelbrot set. This script, in Julia, works out the loop and
-# writes it to js/julia-set.json; the page only has to follow it.
+# writes it to julia/julia-set.json; the page only has to follow it.
 #
 # The walk follows an equipotential of the Mandelbrot set: every c on it
 # has the same potential G(c) = log R, so each one is the same small distance
@@ -25,7 +25,7 @@
 # escape - and the page lingers where it is rich and hurries where it is
 # plain.
 #
-#     julia tools/julia_set.jl          # writes js/julia-set.json
+#     julia tools/julia_set.jl          # writes julia/julia-set.json
 #
 # No packages. The JSON is written by hand.
 
@@ -36,7 +36,7 @@ const S0 = 0.11         # half the window's height, in the plane, before the zoo
 const ASPECT = 8.7      # the strip's width over its height
 const MAXIT = 200       # same as the shader
 const TOTAL = 1800.0    # seconds for one way along the arc
-const OUT = joinpath(@__DIR__, "..", "js", "julia-set.json")
+const OUT = joinpath(@__DIR__, "..", "julia", "julia-set.json")
 
 # z_N(c) and dz_N/dc, from z_0 = c, so z_N is the Böttcher coordinate to the 2^N.
 function orbit(c, N)
