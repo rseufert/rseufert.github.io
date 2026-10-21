@@ -230,11 +230,31 @@
         if (entries.length < 2) { statusEl.textContent = "pick at least one opponent."; return; }
         var seed = parseInt($("arena-seed").value, 10) || 1;
         try { match = new A.Match(entries, { seed: seed }); } catch (e) { statusEl.textContent = String(e.message); return; }
+        fought = { entries: entries, seed: seed };
         arm(match);
         selected = 0;
+        slow = 0; after = 0; frames = 0;
+        scrub.max = 0; scrub.value = 0;
         statusEl.textContent = "fight.";
         play(true);
     }
+    var fought = null, slow = 0, after = 0, frames = 0, scrubbing = false;
+    // The scrubber: a seeded match is the same every time, so any tick can
+    // be had again by fighting it over from the start, which takes no time.
+    var scrub = $("arena-scrub");
+    function rebuild(tick) {
+        if (!fought) return;
+        playing = false; $("arena-pause").textContent = "resume";
+        match = new A.Match(fought.entries, { seed: fought.seed });
+        arm(match);
+        scrubbing = true;
+        for (var i = 0; i < tick && !match.over; i++) step();
+        scrubbing = false;
+        FX.feed.forEach(function (f, n) { f.t = n < FX.feed.length - 1 ? 250 : 0; });
+        slow = 0; after = match.over ? 90 : 0;
+        draw();
+    }
+    scrub.addEventListener("input", function () { rebuild(parseInt(scrub.value, 10) || 0); });
     function play(on) {
         playing = on;
         $("arena-pause").textContent = on ? "pause" : "resume";
@@ -244,13 +264,22 @@
     function frame() {
         raf = 0;
         if (!match) return;
+        frames++;
         var n = parseInt($("arena-speed").value, 10) || 1;
-        if (playing) for (var i = 0; i < n && !match.over; i++) step();
+        if (playing && !match.over) {
+            if (slow > 0) { slow--; if (frames % 4 === 0) step(); }     // a kill, slowly
+            else for (var i = 0; i < n && !match.over; i++) step();
+            scrub.max = match.tick; scrub.value = match.tick;
+        }
         draw();
         if (match.over) {
-            playing = false;
-            $("arena-pause").textContent = "resume";
-            statusEl.textContent = match.winner ? match.winner.name + " wins, after " + Math.round(match.tick / 60) + " seconds." : "nobody wins. everybody burned.";
+            if (playing) {
+                playing = false;
+                $("arena-pause").textContent = "resume";
+                statusEl.textContent = match.winner ? match.winner.name + " wins, after " + Math.round(match.tick / 60) + " seconds." : "nobody wins. everybody burned.";
+                after = 120;
+            }
+            if (after > 0) { after--; raf = requestAnimationFrame(frame); }
             return;
         }
         if (playing) raf = requestAnimationFrame(frame);
@@ -267,18 +296,32 @@
     // any speed.
     var FX = null;
     function arm(m) {
-        FX = { trails: [], muzzle: [], flash: [], floats: [], sparks: [], feed: [], logSeen: 0, shots: [] };
+        FX = { trails: [], muzzle: [], flash: [], floats: [], sparks: [], debris: [], scorch: [], walls: [], feed: [], logSeen: 0, shots: [], winner: 0 };
         m.robots.forEach(function (r) { FX.trails.push([]); FX.muzzle.push(0); FX.flash.push(0); FX.shots.push(0); });
         var hurt = m.hurt.bind(m);
         m.hurt = function (r, amount, by, how) {
             var before = r.armor;
             hurt(r, amount, by, how);
+            if (scrubbing) { if (before > 0 && r.armor <= 0) FX.scorch.push({ x: r.x, y: r.y }); return; }
             var lost = Math.round(before - Math.max(0, r.armor));
             if (lost > 0 && how !== "wore out") FX.floats.push({ x: r.x, y: r.y - 30, text: "-" + lost, c: how === "burned up" ? "#ff5a2e" : "#ffffff", t: 0 });
-            if (how === "shot" || how === "rammed") FX.flash[r.id] = 8;
-            if (how === "drove into a wall") sparks(r.x, r.y, 14, "#ffd27a");
+            if (how === "shot" || how === "rammed") { FX.flash[r.id] = 8; sound(how === "shot" ? "hit" : "ram"); }
+            if (how === "drove into a wall") { sparks(r.x, r.y, 14, "#ffd27a"); FX.walls.push({ x: r.x, y: r.y, t: 0 }); sound("wall"); }
             if (how === "rammed") sparks(r.x, r.y, 4, "#ffffff");
+            if (before > 0 && r.armor <= 0) die(r);
         };
+    }
+    // A death: debris, a scorch mark that stays, a moment of slow motion.
+    function die(r) {
+        var c = COLORS[r.id % COLORS.length];
+        FX.scorch.push({ x: r.x, y: r.y });
+        for (var i = 0; i < 14; i++) {
+            var a = Math.random() * 2 * Math.PI, v = 1.5 + Math.random() * 6;
+            FX.debris.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, rot: Math.random() * 6.3, spin: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * 10, h: 3 + Math.random() * 5, c: i % 3 ? c : "#55555f", t: 0, life: 40 + Math.random() * 50 });
+        }
+        sparks(r.x, r.y, 24, "#ffd27a");
+        if (match.alive().length > 1) slow = 70;
+        sound("kill");
     }
     function sparks(x, y, n, c) {
         for (var i = 0; i < n; i++) {
@@ -291,7 +334,7 @@
         match.update();
         match.robots.forEach(function (r, i) {
             if (r.alive) { var tr = FX.trails[i]; tr.push(r.x, r.y); if (tr.length > 240) tr.splice(0, 2); }
-            if (r.shots > FX.shots[i]) { FX.shots[i] = r.shots; FX.muzzle[i] = 5; }
+            if (r.shots > FX.shots[i]) { FX.shots[i] = r.shots; if (!scrubbing) { FX.muzzle[i] = 5; sound("shot"); } }
         });
         while (FX.logSeen < match.log.length) FX.feed.push({ text: match.log[FX.logSeen++].replace(/^tick \d+: /, ""), t: 0 });
     }
@@ -306,34 +349,136 @@
         FX.feed.forEach(function (f) { f.t++; });
         FX.feed = FX.feed.filter(function (f) { return f.t < 360; });
         if (FX.feed.length > 5) FX.feed.splice(0, FX.feed.length - 5);
+        FX.debris.forEach(function (d) { d.t++; d.x += d.vx; d.y += d.vy; d.vx *= 0.93; d.vy *= 0.93; d.rot += d.spin; d.spin *= 0.95; });
+        FX.debris = FX.debris.filter(function (d) { return d.t < d.life; });
+        FX.walls.forEach(function (w) { w.t++; });
+        FX.walls = FX.walls.filter(function (w) { return w.t < 30; });
+        if (match.over) FX.winner++;
+        budget = 3;
+    }
+
+    // ---- sound, behind a toggle: shots, hits, walls, kills, the heat ----
+    var audio = null, budget = 3, soundOn = false;
+    try { soundOn = localStorage.getItem("arena-sound") === "1"; } catch (e) { soundOn = false; }
+    var soundButton = $("arena-sound");
+    soundButton.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    soundButton.addEventListener("click", function () {
+        soundOn = !soundOn;
+        soundButton.setAttribute("aria-pressed", soundOn ? "true" : "false");
+        try { localStorage.setItem("arena-sound", soundOn ? "1" : "0"); } catch (e) { /* no storage */ }
+        if (soundOn && !audio) audio = makeAudio();
+        if (audio && audio.ac.state === "suspended") audio.ac.resume();
+    });
+    function makeAudio() {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        var ac = new AC(), master = ac.createGain();
+        master.gain.value = 0.5; master.connect(ac.destination);
+        var noise = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), data = noise.getChannelData(0);
+        for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        function burst(len, gain, freq, type) {
+            var s = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter();
+            s.buffer = noise; f.type = type || "lowpass"; f.frequency.value = freq;
+            g.gain.setValueAtTime(gain, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + len);
+            s.connect(f); f.connect(g); g.connect(master); s.start(); s.stop(ac.currentTime + len);
+        }
+        function tone(type, from, to, len, gain) {
+            var o = ac.createOscillator(), g = ac.createGain();
+            o.type = type; o.frequency.setValueAtTime(from, ac.currentTime); o.frequency.exponentialRampToValueAtTime(to, ac.currentTime + len);
+            g.gain.setValueAtTime(gain, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + len);
+            o.connect(g); g.connect(master); o.start(); o.stop(ac.currentTime + len + 0.05);
+        }
+        // the heat: a whine that rises with the selected tank's heat
+        var whine = ac.createOscillator(), wg = ac.createGain();
+        whine.type = "sine"; whine.frequency.value = 400; wg.gain.value = 0; whine.connect(wg); wg.connect(master); whine.start();
+        return {
+            ac: ac,
+            shot: function () { burst(0.08, 0.35, 1800, "highpass"); tone("square", 220, 90, 0.06, 0.08); },
+            hit: function () { burst(0.12, 0.3, 500); tone("sine", 140, 60, 0.12, 0.25); },
+            ram: function () { burst(0.06, 0.15, 900, "bandpass"); },
+            wall: function () { burst(0.15, 0.3, 2500, "bandpass"); tone("triangle", 800, 200, 0.12, 0.1); },
+            kill: function () { burst(0.7, 0.8, 400); tone("sawtooth", 160, 30, 0.6, 0.3); },
+            heat: function (h) { wg.gain.setTargetAtTime(h > 150 ? Math.min(0.06, (h - 150) / 4000) : 0, ac.currentTime, 0.1); whine.frequency.setTargetAtTime(300 + h * 2.5, ac.currentTime, 0.1); }
+        };
+    }
+    function sound(kind) {
+        if (!soundOn || !audio || scrubbing || budget <= 0) return;
+        budget--;
+        audio[kind]();
     }
 
     // ---- drawing ----------------------------------------------------------
     function fit() {
         var dpr = Math.min(window.devicePixelRatio || 1, 2), w = Math.round(canvas.clientWidth * dpr);
-        if (canvas.width !== w) { canvas.width = w; canvas.height = w; }
+        if (canvas.width !== w) { canvas.width = w; canvas.height = w; scan = null; }
     }
     var MONO = "Menlo, Consolas, monospace";
+    // The camera: the whole field, the selected tank, or whatever is left
+    // of the fight, framed. It eases toward where it is going.
+    var cam = { x: 500, y: 500, z: 1 }, cameraEl = $("arena-camera"), scan = null;
+    function aim() {
+        var want = { x: 500, y: 500, z: 1 }, mode = cameraEl.value;
+        if (match && mode === "follow") {
+            var r = match.robots[selected];
+            if (r && r.alive) want = { x: r.x, y: r.y, z: 2.4 };
+        } else if (match && mode === "frame") {
+            var alive = match.alive(), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+            alive.forEach(function (r) { x0 = Math.min(x0, r.x); y0 = Math.min(y0, r.y); x1 = Math.max(x1, r.x); y1 = Math.max(y1, r.y); });
+            if (alive.length) {
+                var w = Math.max(x1 - x0, y1 - y0) + 320;
+                want = { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: Math.max(1, Math.min(2.6, 1000 / w)) };
+            }
+        }
+        var e = still ? 1 : 0.08;
+        cam.x += (want.x - cam.x) * e; cam.y += (want.y - cam.y) * e; cam.z += (want.z - cam.z) * e;
+    }
+    function world(ctx2, k) { ctx2.setTransform(k * cam.z, 0, 0, k * cam.z, k * (500 - cam.z * cam.x), k * (500 - cam.z * cam.y)); }
+    function toScreen(x, y, k) { return { x: k * (500 + cam.z * (x - cam.x)), y: k * (500 + cam.z * (y - cam.y)) }; }
     function draw() {
         fit();
-        var k = canvas.width / A.SIZE;
-        ctx.setTransform(k, 0, 0, k, 0, 0);
+        var k = canvas.width / A.SIZE, dpr = canvas.width / canvas.clientWidth, W = canvas.width;
+        aim();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = "#060608";
+        ctx.fillRect(0, 0, W, W);
+        world(ctx, k);
+        // the field
         ctx.fillStyle = "#0b0b10";
         ctx.fillRect(0, 0, A.SIZE, A.SIZE);
         ctx.strokeStyle = "rgba(255,255,255,0.06)";
-        ctx.lineWidth = 1 / k;
+        ctx.lineWidth = 1 / (k * cam.z);
         for (var g = 100; g < A.SIZE; g += 100) { ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, A.SIZE); ctx.moveTo(0, g); ctx.lineTo(A.SIZE, g); ctx.stroke(); }
+        ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 3;
+        ctx.strokeRect(1.5, 1.5, A.SIZE - 3, A.SIZE - 3);
         if (!match) {
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             ctx.fillStyle = "rgba(255,255,255,0.35)";
-            ctx.font = "28px " + MONO;
+            ctx.font = "22px " + MONO;
             ctx.textAlign = "center";
-            ctx.fillText("the arena", A.SIZE / 2, A.SIZE / 2 - 10);
-            ctx.font = "16px " + MONO;
-            ctx.fillText("1000 × 1000. walls hurt.", A.SIZE / 2, A.SIZE / 2 + 22);
+            ctx.fillText("the arena", W / dpr / 2, W / dpr / 2 - 8);
+            ctx.font = "13px " + MONO;
+            ctx.fillText("1000 × 1000. walls hurt.", W / dpr / 2, W / dpr / 2 + 16);
             score();
             return;
         }
         ctx.lineCap = "round"; ctx.lineJoin = "round";
+        // the walls lit where they were hit
+        FX.walls.forEach(function (w) {
+            var a = 1 - w.t / 30, len = 90;
+            ctx.strokeStyle = "rgba(255, 210, 120, " + (0.8 * a) + ")"; ctx.lineWidth = 6;
+            ctx.beginPath();
+            if (w.x < 40) { ctx.moveTo(2, w.y - len); ctx.lineTo(2, w.y + len); }
+            else if (w.x > A.SIZE - 40) { ctx.moveTo(A.SIZE - 2, w.y - len); ctx.lineTo(A.SIZE - 2, w.y + len); }
+            else if (w.y < 40) { ctx.moveTo(w.x - len, 2); ctx.lineTo(w.x + len, 2); }
+            else { ctx.moveTo(w.x - len, A.SIZE - 2); ctx.lineTo(w.x + len, A.SIZE - 2); }
+            ctx.stroke();
+        });
+        // what burned
+        FX.scorch.forEach(function (m) {
+            var grad = ctx.createRadialGradient(m.x, m.y, 4, m.x, m.y, 48);
+            grad.addColorStop(0, "rgba(0,0,0,0.85)"); grad.addColorStop(0.6, "rgba(20,12,8,0.5)"); grad.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(m.x, m.y, 48, 0, 2 * Math.PI); ctx.fill();
+        });
         // where each has been
         match.robots.forEach(function (r, i) {
             var tr = FX.trails[i], c = COLORS[i % COLORS.length], n = tr.length / 2;
@@ -357,45 +502,53 @@
                 if (s.hit) { ctx.strokeStyle = hex(c, 0.45 * fade); ctx.lineWidth = 1.5; ctx.stroke(); }
             }
         });
-        // the tanks
+        // the tanks, and the wrecks
         match.robots.forEach(function (r, i) {
             var c = COLORS[i % COLORS.length], flash = FX.flash[i] > 0;
             var x = r.x + (flash ? (Math.random() - 0.5) * 7 : 0), y = r.y + (flash ? (Math.random() - 0.5) * 7 : 0);
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(r.heading * Math.PI / 180);
-            var hull = r.alive ? (flash ? "#ffffff" : warm(c, r.heat / 475)) : "#3a3a44";
-            if (r.alive && r.down) hull = hex(c, 0.45);
+            if (!r.alive) {                                    // a wreck: the hull broken in two, dark
+                ctx.fillStyle = "#2c2c33";
+                ctx.rotate(0.25); ctx.fillRect(-17, -12, 16, 24);
+                ctx.rotate(-0.6); ctx.fillRect(3, -11, 14, 22);
+                ctx.fillStyle = "#1a1a1f"; ctx.fillRect(-17, -12, 16, 4); ctx.fillRect(3, 7, 14, 4);
+                ctx.restore();
+                ctx.fillStyle = "#55555f"; ctx.font = "15px " + MONO; ctx.textAlign = "center";
+                ctx.fillText(r.name, x, y - 32);
+                return;
+            }
+            var hull = flash ? "#ffffff" : warm(c, r.heat / 475);
+            if (r.down) hull = hex(c, 0.45);
             ctx.fillStyle = hull;
             ctx.fillRect(-17, -12, 34, 24);                   // the hull
-            ctx.fillStyle = r.alive ? "#0b0b10" : "#222";
+            ctx.fillStyle = "#0b0b10";
             ctx.fillRect(-17, -12, 34, 4); ctx.fillRect(-17, 8, 34, 4);   // tracks
             ctx.restore();
-            if (r.alive) {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate((r.heading + r.turret) * Math.PI / 180);
-                ctx.strokeStyle = r.down ? hex(c, 0.5) : "#ffffff"; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(28, 0); ctx.stroke();
-                if (FX.muzzle[i] > 0) {                        // the flash at the barrel
-                    var fl = FX.muzzle[i] / 5;
-                    ctx.fillStyle = "rgba(255, 240, 180, " + (0.9 * fl) + ")";
-                    ctx.beginPath(); ctx.arc(30, 0, 6 + 10 * (1 - fl), 0, 2 * Math.PI); ctx.fill();
-                }
-                ctx.restore();
-                // armor, as an arc; heat warms the hull
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = "rgba(255,255,255,0.12)";
-                ctx.beginPath(); ctx.arc(x, y, 25, 0, 2 * Math.PI); ctx.stroke();
-                ctx.strokeStyle = r.armor > 30 ? hex(c, 0.9) : "#ff0050";
-                ctx.beginPath(); ctx.arc(x, y, 25, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * Math.max(0, r.armor) / 100); ctx.stroke();
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate((r.heading + r.turret) * Math.PI / 180);
+            ctx.strokeStyle = r.down ? hex(c, 0.5) : "#ffffff"; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(28, 0); ctx.stroke();
+            if (FX.muzzle[i] > 0) {                            // the flash at the barrel
+                var fl = FX.muzzle[i] / 5;
+                ctx.fillStyle = "rgba(255, 240, 180, " + (0.9 * fl) + ")";
+                ctx.beginPath(); ctx.arc(30, 0, 6 + 10 * (1 - fl), 0, 2 * Math.PI); ctx.fill();
             }
-            ctx.fillStyle = r.alive ? hex(c, 0.9) : "#55555f";
+            ctx.restore();
+            // armor, as an arc; heat warms the hull
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "rgba(255,255,255,0.12)";
+            ctx.beginPath(); ctx.arc(x, y, 25, 0, 2 * Math.PI); ctx.stroke();
+            ctx.strokeStyle = r.armor > 30 ? hex(c, 0.9) : "#ff0050";
+            ctx.beginPath(); ctx.arc(x, y, 25, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * Math.max(0, r.armor) / 100); ctx.stroke();
+            ctx.fillStyle = hex(c, 0.9);
             ctx.font = "15px " + MONO;
             ctx.textAlign = "center";
             ctx.fillText(r.name, x, y - 32);
-            if (r.alive && r.down) { ctx.fillStyle = "#ff0050"; ctx.font = "11px " + MONO; ctx.fillText("overheated", x, y + 42); }
-            if (i === selected && r.alive) { ctx.strokeStyle = hex(c, 0.5); ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(x, y, 34, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]); }
+            if (r.down) { ctx.fillStyle = "#ff0050"; ctx.font = "11px " + MONO; ctx.fillText("overheated", x, y + 42); }
+            if (i === selected) { ctx.strokeStyle = hex(c, 0.5); ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(x, y, 34, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]); }
         });
         // missiles: a streak with a hot head
         match.missiles.forEach(function (m) {
@@ -411,29 +564,64 @@
             var t = b.t / 18;
             ctx.strokeStyle = "rgba(255, 200, 80, " + (1 - t) + ")"; ctx.lineWidth = b.size > 20 ? 4 : 2;
             ctx.beginPath(); ctx.arc(b.x, b.y, b.size * (0.3 + t), 0, 2 * Math.PI); ctx.stroke();
-            if (b.size > 20) { ctx.fillStyle = "rgba(255, 120, 40, " + (0.5 * (1 - t)) + ")"; ctx.beginPath(); ctx.arc(b.x, b.y, b.size * t, 0, 2 * Math.PI); ctx.fill(); }
+            if (b.size > 20) { ctx.fillStyle = "rgba(255, 120, 40, " + (0.5 * (1 - t)) + ")"; ctx.beginPath(); ctx.arc(b.x, b.y, b.size * t * 1.6, 0, 2 * Math.PI); ctx.fill(); }
+        });
+        FX.debris.forEach(function (d) {
+            ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot);
+            ctx.globalAlpha = 1 - d.t / d.life; ctx.fillStyle = d.c; ctx.fillRect(-d.w / 2, -d.h / 2, d.w, d.h);
+            ctx.restore();
         });
         FX.sparks.forEach(function (p) {
             ctx.strokeStyle = p.c; ctx.globalAlpha = 1 - p.t / p.life; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 2, p.y - p.vy * 2); ctx.stroke();
         });
         ctx.globalAlpha = 1;
-        // what it cost
-        ctx.font = "bold 16px " + MONO; ctx.textAlign = "center";
+        // ---- the overlay, in screen pixels ----
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var S = W / dpr;
+        ctx.font = "bold 13px " + MONO; ctx.textAlign = "center";
         FX.floats.forEach(function (f) {
+            var p = toScreen(f.x, f.y, k / dpr);
             ctx.globalAlpha = f.t < 35 ? 1 : 1 - (f.t - 35) / 15;
-            ctx.fillStyle = f.c; ctx.fillText(f.text, f.x, f.y);
+            ctx.fillStyle = f.c; ctx.fillText(f.text, p.x, p.y);
         });
         ctx.globalAlpha = 1;
+        // a vignette, and the lines of an old screen
+        var vg = ctx.createRadialGradient(S / 2, S / 2, S * 0.45, S / 2, S / 2, S * 0.78);
+        vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.55)");
+        ctx.fillStyle = vg; ctx.fillRect(0, 0, S, S);
+        if (!scan) {
+            var sc = document.createElement("canvas"); sc.width = 1; sc.height = 3;
+            var c2 = sc.getContext("2d"); c2.fillStyle = "rgba(0,0,0,0.18)"; c2.fillRect(0, 2, 1, 1);
+            scan = ctx.createPattern(sc, "repeat");
+        }
+        ctx.fillStyle = scan; ctx.fillRect(0, 0, S, S);
+        if (slow > 0) { ctx.fillStyle = "rgba(255,255,255," + (0.05 * slow / 70) + ")"; ctx.fillRect(0, 0, S, S); }
         // the feed, and the clock
-        ctx.font = "13px " + MONO; ctx.textAlign = "left";
+        ctx.font = "11px " + MONO; ctx.textAlign = "left";
         FX.feed.forEach(function (f, n) {
             ctx.fillStyle = "rgba(255,255,255," + (f.t < 300 ? 0.75 : 0.75 * (1 - (f.t - 300) / 60)) + ")";
-            ctx.fillText(f.text, 12, 22 + n * 17);
+            ctx.fillText(f.text, 10, 18 + n * 15);
         });
         ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.font = "12px " + MONO;
-        ctx.fillText("tick " + match.tick + "  seed " + match.seed, 10, A.SIZE - 10);
+        ctx.font = "10px " + MONO;
+        ctx.fillText("tick " + match.tick + "  seed " + match.seed + (slow > 0 ? "  slow" : ""), 8, S - 8);
+        if (match.over) {                                      // the winner, large, and the rest in the dark
+            var w = Math.min(1, FX.winner / 25);
+            ctx.fillStyle = "rgba(0,0,0," + (0.45 * w) + ")"; ctx.fillRect(0, 0, S, S);
+            ctx.textAlign = "center"; ctx.globalAlpha = w;
+            if (match.winner) {
+                ctx.fillStyle = COLORS[match.winner.id % COLORS.length]; ctx.font = "bold " + Math.round(S / 9) + "px " + MONO;
+                ctx.fillText(match.winner.name, S / 2, S / 2 + S / 40);
+                ctx.fillStyle = "#ffffff"; ctx.font = "13px " + MONO;
+                ctx.fillText("wins, after " + Math.round(match.tick / 60) + " seconds", S / 2, S / 2 + S / 12);
+            } else {
+                ctx.fillStyle = "#ffffff"; ctx.font = "bold " + Math.round(S / 14) + "px " + MONO;
+                ctx.fillText("nobody", S / 2, S / 2);
+            }
+            ctx.globalAlpha = 1;
+        }
+        if (audio && soundOn) { var sel = match.robots[selected]; audio.heat(sel && sel.alive ? sel.heat : 0); }
         age();
         score();
         debug();
@@ -484,13 +672,15 @@
     }
     canvas.addEventListener("click", function (ev) {
         if (!match) return;
-        var rect = canvas.getBoundingClientRect(), x = (ev.clientX - rect.left) / rect.width * A.SIZE, y = (ev.clientY - rect.top) / rect.height * A.SIZE;
+        var rect = canvas.getBoundingClientRect(), sx = (ev.clientX - rect.left) / rect.width * A.SIZE, sy = (ev.clientY - rect.top) / rect.height * A.SIZE;
+        var x = (sx - 500) / cam.z + cam.x, y = (sy - 500) / cam.z + cam.y;
         var best = 0, bestD = Infinity;
         match.robots.forEach(function (r, i) { var d = Math.hypot(r.x - x, r.y - y); if (d < bestD) { bestD = d; best = i; } });
         selected = best;
         draw();
     });
     window.addEventListener("resize", draw);
+    cameraEl.addEventListener("change", draw);
 
     recall();
     draw();
