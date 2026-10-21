@@ -1,0 +1,81 @@
+/* The overworld: the stylesheet for city/index.html. The site's bones are in css/main.css;
+   this page links this file after it (the layout reads `css:` from the front matter). */
+
+.city-page .lede { color: var(--soft); }
+.city-page .stage {
+    position: relative;
+    width: 100%;
+    height: 64vh;
+    min-height: 340px;
+    background: #000;
+    overflow: hidden;
+}
+.city-page .stage:fullscreen { width: 100vw; height: 100vh; }
+.city-page canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: crosshair;
+}
+.city-page .stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.2) 2px 3px),
+        radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.6) 100%);
+}
+.city-page .veil {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.66);
+    color: #c9c9d1;
+    font: 14px/1.6 var(--mono);
+}
+.city-page .veil[hidden] { display: none; }
+.city-page .veil p { max-width: 480px; margin: 0 0 14px; }
+.city-page .veil .banner {
+    font-size: 28px;
+    letter-spacing: 0.3em;
+    color: #00e5ff;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+}
+.city-page .veil button, .city-page .bar button, .city-page .enter {
+    font: 13px var(--mono);
+    color: var(--ink);
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    padding: 6px 14px;
+    cursor: pointer;
+}
+.city-page .veil button { color: #00e5ff; background: #000; border-color: #00e5ff; padding: 8px 22px; letter-spacing: 0.1em; }
+.city-page .veil button:hover { background: #00e5ff; color: #000; }
+.city-page .bar button:hover, .city-page .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.city-page .enter {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    z-index: 1;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border-color: #fff;
+    padding: 12px 22px;
+}
+.city-page .enter[hidden] { display: none; }
+.city-page .bar { margin: 14px 0 30px; }
+.city-page .hint { font: 13px var(--mono); color: var(--faint); margin: 0 0 10px; }
+.city-page kbd { font: inherit; color: var(--soft); }
+.city-page .buttons { margin: 0; }
+.city-page .where { font: 13px var(--mono); color: var(--faint); margin-left: 8px; }
+
+@media (max-width: 700px) {
+    .city-page .stage { height: 60vh; min-height: 300px; }
+}
