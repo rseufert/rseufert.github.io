@@ -46,7 +46,12 @@
         text.split("\n").forEach(function (l) { if (l.charAt(0) === ";") out.push(l.replace(/^;\s*/, "")); });
         return out.join(" ");
     }
-    R.order.forEach(function (n, i) { enlist(n, R.robots[n], preamble(R.robots[n]), i < 3, "#preset=" + n, rosterEl); });
+    R.groups.forEach(function (g) {
+        var h = document.createElement("h3"), p = document.createElement("p"), ul = document.createElement("ul");
+        h.textContent = g.name; p.className = "lede"; p.textContent = g.about;
+        rosterEl.appendChild(h); rosterEl.appendChild(p); rosterEl.appendChild(ul);
+        g.tanks.forEach(function (n) { enlist(n, R.robots[n], preamble(R.robots[n]), order.length < 3, "#preset=" + n, ul); });
+    });
 
     // The ones sent in: open issues on the repo titled "tank:", each refought
     // through the gauntlet by a workflow and listed in tanks.json on the

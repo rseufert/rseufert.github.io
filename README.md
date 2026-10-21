@@ -147,7 +147,7 @@ dialect, pick opponents from ten presets, and watch them fight.
 `arena/arena-engine.js` is the assembler and the simulation, with no page in
 it, so it runs in the browser (`arena/arena.js` draws it), in node and in
 rickbot's dungeon, where FIGHT in the arena room borrows a preset;
-`arena/arena-robots.js` holds the presets and the starter. The dialect, the
+`arena/arena-robots.js` holds the presets, Rick's Rogues (the tanks written to beat them) and the starter. The dialect, the
 ports and the rules are at the foot of the page and the top of the engine.
 A visitor's tank is kept in named slots in the browser, as a file, or in a
 share link, and can be sent in: the gauntlet (`arena/arena-gauntlet.js`)
