@@ -383,6 +383,7 @@
         }
         timer = setInterval(tick, 30);
         tick();
+        try { localStorage.setItem("intro-played", String(seed)); } catch (e) { /* the projectionist will not know */ }
         return {
             bpm: s.bpm, key: s.key,
             shown: function () {

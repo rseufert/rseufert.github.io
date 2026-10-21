@@ -19,6 +19,12 @@
 (function () {
     "use strict";
     var KEY = "rickbot";
+    // Footprints: the paths you have been to on this site, kept in this
+    // browser only, so the city's errands can tell you went (city/city.js).
+    try {
+        var fp = JSON.parse(localStorage.getItem("footprints")) || [], here0 = location.pathname;
+        if (fp.indexOf(here0) < 0) { fp.push(here0); if (fp.length > 80) fp.shift(); localStorage.setItem("footprints", JSON.stringify(fp)); }
+    } catch (e) { /* no storage, no footprints */ }
     var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // What the visitor is holding, so the hack can be described from where
     // they sit: a desk, a phone in the hand, or a tablet.

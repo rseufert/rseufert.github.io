@@ -183,7 +183,13 @@ match in the arena's own engine, the Julia set is the river, the dashboard
 a weather station on a hill, the blog a row of mailboxes (one a post, from
 `site.posts`), the backrooms a manhole, the mocks the towers, and rickbot
 the helpdesk. Street signs are in the elves' script until you stand still.
-The layout is shuffled from the date and the sky follows the clock.
+The layout is shuffled from the date. The sky is the real one over Portland
+at the real time (`city/sky.js`: ~170 stars in 25 constellations, the Sun
+and the Moon, placed from the sidereal time), with a time-lapse to watch
+the Dipper go round Polaris, and ten people with optional errands that
+send you to the rest of the site and check, when you come back, that you
+went (`chat/chat.js` keeps footprints of the pages visited, in the browser
+only).
 
 ## Licence
 
