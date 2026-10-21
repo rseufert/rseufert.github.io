@@ -32,6 +32,9 @@ the presets, and press fight. Everything runs in this page.</p>
     <h2>Opponents</h2>
     <p class="lede">Nine presets, each a lesson: six ways to fight, RICK, who learns, JOSH, who hurdles, and DICE, who rolls. Tick the ones to fight, and <em>read</em> one to load it into the editor.</p>
     <ul id="arena-roster"></ul>
+    <h3>Sent in</h3>
+    <p class="lede">Tanks visitors sent in, each refought here before it was listed. The bar: win 24 of 36 duels against the presets, four seeds each, without a fault; the starter wins 21, RICK 23. Tick one to fight it, <em>read</em> one to see how.</p>
+    <ul id="arena-sent"><li class="none">loading&hellip;</li></ul>
   </div>
   <div class="editor">
     <h2>Your tank</h2>
@@ -39,10 +42,19 @@ the presets, and press fight. Everything runs in this page.</p>
     <p class="errors" id="arena-errors"></p>
     <p class="buttons">
       <button type="button" id="arena-assemble">assemble &amp; fight</button>
-      <button type="button" id="arena-save">save</button>
+      <button type="button" id="arena-send">send it in</button>
       <button type="button" id="arena-share">share link</button>
       <button type="button" id="arena-starter">start over</button>
     </p>
+    <p class="buttons files">
+      <button type="button" id="arena-save">save as&hellip;</button>
+      <select id="arena-slots" aria-label="saved tanks"><option value="">no saved tanks</option></select>
+      <button type="button" id="arena-delete">delete</button>
+      <button type="button" id="arena-export">export file</button>
+      <button type="button" id="arena-import">import file</button>
+      <input type="file" id="arena-file" accept=".txt,.at2,.asm,text/plain" hidden>
+    </p>
+    <p class="hint">The editor keeps your last edit on its own. <em>Save as</em> keeps a named copy in this browser; a file or the share link keeps one anywhere. <em>Send it in</em> runs the gauntlet here, and if your tank gets through, offers an issue on GitHub; a workflow refights it and lists it above under your GitHub name.</p>
   </div>
 </div>
 
@@ -66,4 +78,5 @@ the presets, and press fight. Everything runs in this page.</p>
 </div>
 <script src="/arena/arena-engine.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/arena/arena-robots.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/arena/arena-gauntlet.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/arena/arena.js?v={{ site.time | date: '%s' }}"></script>

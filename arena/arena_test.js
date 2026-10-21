@@ -7,6 +7,7 @@
 var path = require("path");
 var A = require(path.join(__dirname, "arena-engine.js"));
 var R = require(path.join(__dirname, "arena-robots.js"));
+var G = require(path.join(__dirname, "arena-gauntlet.js"));
 var bad = 0;
 function fail(msg) { console.error("FAIL " + msg); bad++; }
 
@@ -34,6 +35,16 @@ names.forEach(function (a) {
 var six = new A.Match(names.map(function (n) { return { source: R.robots[n] }; }), { seed: 7 });
 six.run(30000);
 if (!six.over || !six.winner) fail("the six-way match has no winner");
+
+// The gauntlet: a preset's program under another name gets through; the
+// starter, a preset's name, and a program that does not assemble do not.
+var josh = G.run(R.robots.josh.replace(/^#name\s+\S+/m, "#name VISITOR"));
+if (!josh.ok) fail("JOSH under another name did not get through the gauntlet: " + josh.wins + " of " + josh.total);
+var starter = G.run(R.starter.replace(/^#name\s+\S+/m, "#name VISITOR"));
+if (starter.ok) fail("the starter got through the gauntlet");
+if (!G.run(R.robots.josh).errors.length) fail("a preset's name was allowed through the gauntlet");
+if (!G.run("#name X\nmov ax, ").errors.length) fail("a program that does not assemble was allowed through the gauntlet");
+console.log("the gauntlet: JOSH " + josh.wins + " of " + josh.total + ", the starter " + starter.wins + " of " + starter.total + ", the bar " + G.BAR);
 
 console.log("pairings, 4 seeds each: wins");
 names.forEach(function (n) { console.log("  " + n.padEnd(8) + String(wins[n]).padStart(3)); });

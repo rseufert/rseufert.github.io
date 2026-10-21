@@ -9,7 +9,10 @@ dialect, pick opponents from the presets, and watch them fight.
 | `arena-robots.js` | the nine presets and the starter |
 | `arena.js` | the page: the canvas, the score panel, the debug view, the editor, saving and sharing |
 | `index.html`, `arena.css` | the page and its stylesheet; the dialect reference is at the foot of the page |
+| `arena-gauntlet.js` | the gauntlet a tank sent in has to get through; runs in the page and in node |
 | `arena_test.js` | the headless test, `node arena/arena_test.js` |
+| `tools/tanks.py`, `.github/workflows/tanks.yml` | the tanks sent in, refought and compiled from issues |
+| `data/tanks.json` | the sent-in list's fallback copy on master |
 | `arena.png`, `share.jpg` | the home tile and the share image |
 
 ## The dialect
@@ -44,8 +47,32 @@ tuned to beat RICK and split CIRCLER), DICE (rolls: a random move or shot
 each pass). The balance is measured headlessly; `arena_test.js` prints who
 beats whom over several seeds.
 
-## Sharing
+## Keeping a tank
 
-The editor saves to `localStorage` (`arena-robot`); `#preset=name` loads a
-preset into it, and the share button puts your tank in the address as
-`#r=` base64.
+The editor keeps the last edit on its own (`localStorage`, `arena-robot`).
+*Save as* keeps a named copy in the browser (`arena-tanks`, a name to a
+program); the select loads one and *delete* drops it. *Export file* downloads
+the program as `name.txt` and *import file* reads one back, so a tank can be
+kept or passed around outside the browser. *Share link* puts the program in
+the address as `#r=` base64; `#preset=name` loads a preset and `#sent=name`
+one of the tanks sent in.
+
+## Tanks sent in
+
+A visitor's tank can join the roster if it is good enough. *Send it in* runs
+the gauntlet in the page (`arena-gauntlet.js`): a duel against each of the
+nine presets over seeds 1 to 4, 36 in all, one a turn so the page keeps up.
+The bar is 24 wins without a fault (the starter wins 21, RICK 23, SNIPER 24,
+JOSH 29), a `#name` of up to 12 characters that is not a preset's, and a
+program under 16 000 characters. A tank that passes is offered a prefilled
+GitHub issue titled `tank: NAME` with the program in a code block (or, if
+too long for an address, the body goes by the clipboard). `tanks.yml` runs
+on issue events and daily: `tools/tanks.py` reads the open `tank:` issues,
+takes each program out of its code block, refights it through the same
+gauntlet in node, and writes the ones that pass, best record first and one a
+name, to `tanks.json` on the `sky-data` branch; the page reads it from
+raw.githubusercontent.com, falling back to `data/tanks.json`, and lists
+them under the presets with their record and the sender's GitHub name, to
+fight or to read. Closing an issue takes a tank out. The programs run only
+inside the interpreter, which is bounded, and the page puts names and
+programs in as text.
