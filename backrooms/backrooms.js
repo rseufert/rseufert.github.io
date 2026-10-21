@@ -21,6 +21,7 @@
     var go = document.getElementById("backrooms-go");
     var soundButton = document.getElementById("backrooms-sound");
     var fullButton = document.getElementById("backrooms-full");
+    var unfillButton = document.getElementById("backrooms-unfill");
     var resetButton = document.getElementById("backrooms-reset");
     var ghostLink = document.getElementById("backrooms-ghost");
     var depthOut = document.getElementById("backrooms-depth");
@@ -883,10 +884,30 @@
         mode = "title"; things = [];
         title();
     });
-    fullButton.addEventListener("click", function () {
-        if (document.fullscreenElement) document.exitFullscreen();
-        else if (stage.requestFullscreen) stage.requestFullscreen();
-    });
+    // Fullscreen, or the nearest thing: iPhones have no Fullscreen API for
+    // anything but video (Safari and Chrome alike), so there the stage is
+    // pinned over the page instead, with a button to let it go.
+    function filled() { return stage.classList.contains("filled"); }
+    function fill(on) {
+        stage.classList.toggle("filled", on);
+        document.body.classList.toggle("filled", on);
+        if (unfillButton) unfillButton.hidden = !on;
+        fullButton.setAttribute("aria-pressed", on ? "true" : "false");
+        setTimeout(resize, 50);
+    }
+    function fullscreen() {
+        if (document.fullscreenElement) { document.exitFullscreen(); return; }
+        if (filled()) { fill(false); return; }
+        if (stage.requestFullscreen) {
+            var p = stage.requestFullscreen();
+            if (p && p.catch) p.catch(function () { fill(true); });
+            return;
+        }
+        fill(true);
+    }
+    fullButton.addEventListener("click", fullscreen);
+    if (unfillButton) unfillButton.addEventListener("click", function () { fill(false); });
+    addEventListener("keydown", function (e) { if (e.code === "Escape" && filled()) fill(false); });
     soundButton.addEventListener("click", function () {
         saved.sound = saved.sound ? 0 : 1; save();
         soundButton.setAttribute("aria-pressed", saved.sound ? "true" : "false");

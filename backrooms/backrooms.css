@@ -81,3 +81,32 @@
 @media (max-width: 700px) {
     .backrooms-page .stage { height: 60vh; min-height: 280px; }
 }
+
+/* Fullscreen without the Fullscreen API (iPhones): the stage pinned over the page. */
+.backrooms-page .stage.filled {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    aspect-ratio: auto;
+}
+body.filled { overflow: hidden; }
+.backrooms-page .unfill {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font: 22px/38px var(--mono);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #fff;
+    border-radius: 0;
+    cursor: pointer;
+}
+.backrooms-page .unfill[hidden] { display: none; }

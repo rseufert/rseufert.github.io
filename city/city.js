@@ -29,6 +29,7 @@
     var go = document.getElementById("city-go");
     var soundButton = document.getElementById("city-sound");
     var fullButton = document.getElementById("city-full");
+    var unfillButton = document.getElementById("city-unfill");
     var enterButton = document.getElementById("city-enter");
     var whereOut = document.getElementById("city-where");
 
@@ -1375,7 +1376,30 @@
         lock();
     }
     go.addEventListener("click", begin);
-    fullButton.addEventListener("click", function () { if (document.fullscreenElement) document.exitFullscreen(); else if (stage.requestFullscreen) stage.requestFullscreen(); });
+    // Fullscreen, or the nearest thing: iPhones have no Fullscreen API for
+    // anything but video (Safari and Chrome alike), so there the stage is
+    // pinned over the page instead, with a button to let it go.
+    function filled() { return stage.classList.contains("filled"); }
+    function fill(on) {
+        stage.classList.toggle("filled", on);
+        document.body.classList.toggle("filled", on);
+        if (unfillButton) unfillButton.hidden = !on;
+        fullButton.setAttribute("aria-pressed", on ? "true" : "false");
+        setTimeout(resize, 50);
+    }
+    function fullscreen() {
+        if (document.fullscreenElement) { document.exitFullscreen(); return; }
+        if (filled()) { fill(false); return; }
+        if (stage.requestFullscreen) {
+            var p = stage.requestFullscreen();
+            if (p && p.catch) p.catch(function () { fill(true); });
+            return;
+        }
+        fill(true);
+    }
+    fullButton.addEventListener("click", fullscreen);
+    if (unfillButton) unfillButton.addEventListener("click", function () { fill(false); });
+    addEventListener("keydown", function (e) { if (e.code === "Escape" && filled()) fill(false); });
     var soundOn = true;
     try { soundOn = localStorage.getItem("city-sound") !== "0"; } catch (e) { /* on */ }
     soundButton.addEventListener("click", function () {
