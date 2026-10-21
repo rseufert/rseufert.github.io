@@ -229,6 +229,11 @@
         [/\bafc east\b|\bpatriots\b|\bdolphins\b|\bjets\b|\brivals?\b/, "the afc east since 1970: bills, patriots, dolphins, jets. the other three are wrong, in different ways. the dolphins come to orchard park in december and remember why."],
         [/\b(bills|buffalo)\b.*\b(founded|start|history|when|old)\b|\b(founded|start|history|when|old)\b.*\b(bills|buffalo)\b/, "the bills were founded in 1960 in the afl, named after the buffalo bills of the old all-america football conference, named after buffalo bill cody. afl champions in 1964 and 1965, the nfl since the merger in 1970, and the only team in new york state that plays in new york state."],
         [/\bbuffalo bills\b|\bbills\b|\bbuffalo\b|\bnfl\b|\bfootball\b/, "the buffalo bills: founded 1960, afl champions twice, four straight super bowls, one josh allen. ask me about wide right, the comeback, 13 seconds, bills mafia, bruce smith, jim kelly, the drought, or the stadium. ask carefully."],
+        [/\bbackrooms?\b|\bnoclip(ped)?\b|\bliminal\b|\bunder the site\b/, function () {
+            var deep = 0;
+            try { deep = (JSON.parse(localStorage.getItem("backrooms")) || {}).best || 0; } catch (e) { deep = 0; }
+            return "under the site there are backrooms: /backrooms/. wireframe, a hum at 60 hz, levels grown from a seed, and something tall that only moves while you are not looking. find the way down. there is no bottom." + (deep ? " you have been to level " + deep + ". it remembers." : " you have not been. it is expecting you.");
+        }],
         [/\bat-?robots?\b|\barena\b|\btanks?\b|\brobot (wars?|battles?|games?)\b|\bprogram (a|my) robot\b|\brobots\b/, "the arena at /arena/ is an homage to AT-Robots, the DOS game from 1992: write a tank in a little assembly dialect, pick opponents from six presets, and watch them fight. ports and interrupts, heat and armor, walls that hurt. read SENTRY first, then beat it."],
         [/\bphoto\b|\bpicture\b|\bwhite cap\b|\bglasses\b|\bpendant\b|\bsup\.jpe?g\b|\bthe guy\b|\bhim\b/, "the photo is sup.jpeg: josh allen in a white cap, rose-tinted rimless glasses and an iced-out heart pendant, according to the alt text, which i am not allowed to question."],
         [/\bjekyll\b|\bgithub pages\b|\bhtml\b|\bcss\b|\bjavascript\b|\bbuilt with\b|\bstack\b|\bhosted\b|\bframework\b|\breact\b|\bwordpress\b|\bhow (is|was) (this|the) (site|page) (made|built)/, "plain html and css, jekyll on github pages, no framework, no tracker, no cookies. a few scripts for the films, the dashboard, the strip, and me. the source is on github."],
@@ -422,7 +427,7 @@
         },
         dev: {
             name: "/dev/reality",
-            desc: "A small room with one terminal. The prompt reads  reality#  and waits. A sticky note on the monitor: DO NOT REBOOT WITHOUT ROOT TOKEN. Beneath it, in a different hand: seriously.",
+            desc: "A small room with one terminal. The prompt reads  reality#  and waits. A sticky note on the monitor: DO NOT REBOOT WITHOUT ROOT TOKEN. Beneath it, in a different hand: seriously. In the corner, a hatch in the floor, unlabelled, humming.",
             exits: { e: "bank" },
             ways: "The bank is east."
         },
@@ -569,6 +574,7 @@
         if (words.indexOf("altar") >= 0 || words.indexOf("mailbox") >= 0) { line(S.room === "corridor" ? "A VAN mailbox, brass, warm. A slot the width of a purchase order. A sign: FEED ME AN 850 AND I WILL THANK YOU." : "There is no altar here."); return; }
         if (words.indexOf("gate") >= 0) { line(S.room === "corridor" ? (S.flags.gate ? "The gate stands open, thanked." : "Iron, X12-compliant. NO ENTRY WITHOUT A 997. There is a slot for one.") : "There is no gate here."); return; }
         if (words.indexOf("terminal") >= 0 || words.indexOf("prompt") >= 0) { line(S.room === "dev" ? "reality# _  It is waiting for a token. It has been waiting for some time." : S.room === "vault" ? "SAP GUI, 1998. A transaction code field blinks. You could type VA01 into it for the rest of your life." : "No terminal here. Only this one."); return; }
+        if (words.indexOf("hatch") >= 0 || (words.indexOf("floor") >= 0 && S.room === "dev")) { line(S.room === "dev" ? "A hatch, steel, no handle. It hums at 60 Hz, which is the sound of a floor that is not the bottom. The verb for it is NOCLIP." : "No hatch here. The floor is load-bearing, mostly."); return; }
         if (words.indexOf("note") >= 0 || words.indexOf("sticky") >= 0) { line(S.room === "dev" ? "DO NOT REBOOT WITHOUT ROOT TOKEN. seriously." : "No note here."); return; }
         if (words.indexOf("reader") >= 0 || words.indexOf("door") >= 0) { line(S.room === "loft" ? "An RFID reader, 125 kHz, the cheap kind. It would open for the right card, or for something that could pretend to be one." : "You see nothing special."); return; }
         if (words.indexOf("elves") >= 0 || words.indexOf("elf") >= 0) { line(S.room === "bazaar" ? "Self-transforming, machine, elves. Also cold. One of them is wearing a scarf made of a scarf." : "No elves here. You'd know."); return; }
@@ -675,6 +681,16 @@
         if (!has("flipper")) return line("The bazaar door wants a card. The Flipper nest is east of the menu.");
         if (!S.flags.rfid) return line("USE the Flipper at the reader in the media loft, up from the menu.");
         line("Look again. The dungeon repeats itself for a reason.");
+    }
+    function noclip() {
+        if (S.room !== "dev") { line("You push at the floor. It holds. There is a hatch in /dev/reality, west of the bank, that would not."); return; }
+        line("You noclip. The hatch was never locked; it was only closed. Under the floor of the dungeon there is more dungeon, drawn in lines, humming, and something at the end of a hall that was not there before.", "sys");
+        var p = document.createElement("p"), a = document.createElement("a");
+        p.className = "sys";
+        a.href = "/backrooms/"; a.textContent = "fall through to /backrooms/";
+        p.appendChild(a);
+        log.appendChild(p);
+        log.scrollTop = log.scrollHeight;
     }
     function map() {
         var m = [
@@ -841,13 +857,14 @@
             case "open": case "unlock": return examine(rest.length ? rest : ["door"]);
             case "reboot": case "restart": return has("token") && S.room === "dev" ? escape() : line(S.room === "dev" ? "reality# reboot\npermission denied. the sticky note sighs." : "You can't reboot from here. Reality is west of the bank.");
             case "swim": case "jump": case "dive": if (S.room === "river") { S.deaths++; S.room = "dash"; return line("You swim. The river is a sparkline. You are a data point now, briefly, and then you are on the dashboard, wet, and alive, which the heron notes.", "sys"); } return line("Not here.");
-            case "help": case "?": case "commands": return line("Verbs the old parser knows: LOOK, EXAMINE thing, TAKE thing, DROP thing, INVENTORY, GO north (or just N, S, E, W, U, D, OUT), USE thing, GIVE thing, TALK, MAP, HINT, SCORE, RESET. And one or two it won't admit to.", "sys");
+            case "help": case "?": case "commands": return line("Verbs the old parser knows: LOOK, EXAMINE thing, TAKE thing, DROP thing, INVENTORY, GO north (or just N, S, E, W, U, D, OUT), USE thing, GIVE thing, TALK, MAP, HINT, SCORE, RESET. And one or two it won't admit to, one of which is a way down.", "sys");
             case "hint": case "hints": case "clue": return hint();
             case "map": return map();
             case "guestbook": case "book": case "scores": case "highscores": return guestbook();
             case "fight": case "battle": case "bet": return fight();
             case "sign": return sign();
             case "score": return line("Your score is " + (S.inv.length + (S.flags.gate ? 1 : 0) + (S.flags.rfid ? 1 : 0) + (S.flags.traded ? 2 : 0)) + " of 8, in " + S.moves + " moves, with " + S.deaths + " death" + (S.deaths === 1 ? "" : "s") + ". This gives you the rank of Junior Integration Specialist.", "sys");
+            case "noclip": return noclip();
             case "xyzzy": return line("A hollow voice says \"fool.\"", "sys");
             case "plugh": return line("Nothing happens. Wrong cave.", "sys");
             case "wake": return line("You are awake. That is what it feels like from inside.");
