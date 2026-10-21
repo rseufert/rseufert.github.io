@@ -124,3 +124,15 @@ opens a prefilled issue on this repo titled `guestbook: NAME`, and
 `data/guestbook.json` on `master` is the fallback. Close an issue to take
 an entry out. The rest runs in the page; the conversation is kept in
 localStorage, and RESET starts over.
+
+`arena/` is an homage to AT-Robots: write a tank in a small assembly
+dialect, pick opponents from six presets, and watch them fight.
+`js/arena-engine.js` is the assembler and the simulation, with no page in
+it, so it runs in the browser (`js/arena.js` draws it), in node and in
+rickbot's dungeon, where FIGHT in the arena room borrows a preset;
+`js/arena-robots.js` holds the presets and the starter. The dialect, the
+ports and the rules are at the foot of the page and the top of the engine.
+
+```bash
+node tools/arena_test.js      # every preset assembles and every pairing ends; who beats whom
+```

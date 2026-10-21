@@ -229,6 +229,7 @@
         [/\bafc east\b|\bpatriots\b|\bdolphins\b|\bjets\b|\brivals?\b/, "the afc east since 1970: bills, patriots, dolphins, jets. the other three are wrong, in different ways. the dolphins come to orchard park in december and remember why."],
         [/\b(bills|buffalo)\b.*\b(founded|start|history|when|old)\b|\b(founded|start|history|when|old)\b.*\b(bills|buffalo)\b/, "the bills were founded in 1960 in the afl, named after the buffalo bills of the old all-america football conference, named after buffalo bill cody. afl champions in 1964 and 1965, the nfl since the merger in 1970, and the only team in new york state that plays in new york state."],
         [/\bbuffalo bills\b|\bbills\b|\bbuffalo\b|\bnfl\b|\bfootball\b/, "the buffalo bills: founded 1960, afl champions twice, four straight super bowls, one josh allen. ask me about wide right, the comeback, 13 seconds, bills mafia, bruce smith, jim kelly, the drought, or the stadium. ask carefully."],
+        [/\bat-?robots?\b|\barena\b|\btanks?\b|\brobot (wars?|battles?|games?)\b|\bprogram (a|my) robot\b|\brobots\b/, "the arena at /arena/ is an homage to AT-Robots, the DOS game from 1992: write a tank in a little assembly dialect, pick opponents from six presets, and watch them fight. ports and interrupts, heat and armor, walls that hurt. read SENTRY first, then beat it."],
         [/\bphoto\b|\bpicture\b|\bwhite cap\b|\bglasses\b|\bpendant\b|\bsup\.jpe?g\b|\bthe guy\b|\bhim\b/, "the photo is sup.jpeg: josh allen in a white cap, rose-tinted rimless glasses and an iced-out heart pendant, according to the alt text, which i am not allowed to question."],
         [/\bjekyll\b|\bgithub pages\b|\bhtml\b|\bcss\b|\bjavascript\b|\bbuilt with\b|\bstack\b|\bhosted\b|\bframework\b|\breact\b|\bwordpress\b|\bhow (is|was) (this|the) (site|page) (made|built)/, "plain html and css, jekyll on github pages, no framework, no tracker, no cookies. a few scripts for the films, the dashboard, the strip, and me. the source is on github."],
         [/\bcookies?\b|\bprivacy\b|\btrack(ing|er)?\b|\banalytics\b|\bdata\b|\bstorage\b/, "no cookies, no analytics. i keep our chat in your browser's own storage and nowhere else; RESET forgets it. the footer says plain html, no cookies, and it means it."],
@@ -439,9 +440,15 @@
         },
         nest: {
             name: "The Flipper Nest",
-            desc: "Six small apps roost here like dolphins with opinions. One is a rolodex. One is a timer. One is sniffing sub-GHz, and it has found your thoughts, and they are mostly about lunch.",
-            exits: { w: "nav" },
-            ways: "The menu is west."
+            desc: "Six small apps roost here like dolphins with opinions. One is a rolodex. One is a timer. One is sniffing sub-GHz, and it has found your thoughts, and they are mostly about lunch. From the east comes the sound of small engines.",
+            exits: { w: "nav", e: "arena" },
+            ways: "The menu is west. The engines are east."
+        },
+        arena: {
+            name: "The Arena",
+            desc: "A square of packed sand, a thousand by a thousand, lit from above by nothing. Six tanks the size of toasters idle along the walls, one colour each, turrets twitching. A scoreboard reads 0. The elves bet on these; the odds are in a colour. A sign: FIGHT, AND WE'LL LEND YOU ONE.",
+            exits: { w: "nest" },
+            ways: "The nest is west."
         },
         loft: {
             name: "The Media Loft",
@@ -565,6 +572,7 @@
         if (words.indexOf("note") >= 0 || words.indexOf("sticky") >= 0) { line(S.room === "dev" ? "DO NOT REBOOT WITHOUT ROOT TOKEN. seriously." : "No note here."); return; }
         if (words.indexOf("reader") >= 0 || words.indexOf("door") >= 0) { line(S.room === "loft" ? "An RFID reader, 125 kHz, the cheap kind. It would open for the right card, or for something that could pretend to be one." : "You see nothing special."); return; }
         if (words.indexOf("elves") >= 0 || words.indexOf("elf") >= 0) { line(S.room === "bazaar" ? "Self-transforming, machine, elves. Also cold. One of them is wearing a scarf made of a scarf." : "No elves here. You'd know."); return; }
+        if (words.indexOf("tanks") >= 0 || words.indexOf("tank") >= 0 || words.indexOf("scoreboard") >= 0) { line(S.room === "arena" ? "Six of them: SENTRY, CIRCLER, RAMMER, SNIPER, DODGER and BRICK, written in something like assembly by someone like rick. BRICK is wrong on purpose. The elves favour RAMMER, for the noise." : "No tanks here."); return; }
         if (words.indexOf("heron") >= 0) { line(S.room === "river" ? "The heron regards you. It has seen worse integrations." : "No heron here."); return; }
         if (words.indexOf("box") >= 0) { line(S.room === "footer" ? (ITEMS.beanie.at === "footer" ? "A box of merch. Inside, one skeleton beanie, hand-knit." : "An empty box of merch.") : "No box here."); return; }
         if (words.indexOf("strip") >= 0 || words.indexOf("colour") >= 0 || words.indexOf("color") >= 0) { line("The strip zooms, forever, into itself. If you look long enough you can see where the elves came through. Don't."); return; }
@@ -622,6 +630,39 @@
         if (S.room === "dev") { line("You say hello to the terminal. reality# says nothing. It is waiting for something, and it is not hello."); return; }
         line("You talk. The dungeon listens. It does not reply, which is its right.");
     }
+    // The arena: borrow a tank, fight two of the others, headless, and hear
+    // how it went. The engine loads when it is first needed.
+    function fight() {
+        if (S.room !== "arena") { line("There is nothing to fight here but the parser, and it would win."); return; }
+        line("An elf hands you a tank. It is warm.", "sys");
+        function go() {
+            var A = window.Arena, R = window.ArenaRobots, names = R.order.slice();
+            var mine = names.splice(Math.floor(Math.random() * names.length), 1)[0];
+            var foes = [];
+            while (foes.length < 2) foes.push(names.splice(Math.floor(Math.random() * names.length), 1)[0]);
+            var m = new A.Match([{ source: R.robots[mine] }, { source: R.robots[foes[0]] }, { source: R.robots[foes[1]] }], { seed: Math.floor(Math.random() * 99999) + 1 });
+            m.run(30000);
+            var me = m.robots[0];
+            line("They give you " + me.name + ". Against you: " + foes[0].toUpperCase() + " and " + foes[1].toUpperCase() + ". The elves make a noise like a modem.");
+            m.log.filter(function (l) { return /destroyed|burned|wall/.test(l); }).slice(0, 4).forEach(function (l) { line(l.replace(/^tick (\d+): /, function (_, t) { return "At " + (t / 60).toFixed(1) + "s, "; }) + "."); });
+            var secs = (m.tick / 60).toFixed(0);
+            if (m.winner === me) line("After " + secs + " seconds, " + me.name + " stands alone with " + Math.round(me.armor) + " armor. The elves pay out, in a colour. You keep nothing but the feeling.");
+            else if (me.alive) line("After " + secs + " seconds it is called on armor: " + m.winner.name + " wins. " + me.name + " survives, which the elves say is not the same.");
+            else line("After " + secs + " seconds " + m.winner.name + " wins. " + me.name + " did not. \"It was a loan,\" says an elf, and takes the wreck.");
+            line("The real arena is at /arena/, with an editor. Write a better one.", "sys");
+            S.flags.fought = (S.flags.fought || 0) + 1;
+            save();
+        }
+        if (window.Arena && window.ArenaRobots) { go(); return; }
+        var left = 2;
+        ["/js/arena-engine.js", "/js/arena-robots.js"].forEach(function (src) {
+            var sc = document.createElement("script");
+            sc.src = src;
+            sc.onload = function () { if (--left === 0) go(); };
+            sc.onerror = function () { line("The tanks won't start. The elves blame the network.", "sys"); };
+            document.body.appendChild(sc);
+        });
+    }
     function hint() {
         if (S.room === "julia") return line("Out.");
         if (has("token")) return line("The terminal is west of the bank. It wants the token. USE it there.");
@@ -641,7 +682,7 @@
             "               |                      |",
             "            [dash]                 [loft]",
             "               |                      :",
-            " [/dev]-[bank]-[corridor]-[vault]-[menu]-[nest]",
+            " [/dev]-[bank]-[corridor]-[vault]-[menu]-[nest]-[arena]",
             "                                      |",
             "                                   [page]",
             "                                      |",
@@ -804,6 +845,7 @@
             case "hint": case "hints": case "clue": return hint();
             case "map": return map();
             case "guestbook": case "book": case "scores": case "highscores": return guestbook();
+            case "fight": case "battle": case "bet": return fight();
             case "sign": return sign();
             case "score": return line("Your score is " + (S.inv.length + (S.flags.gate ? 1 : 0) + (S.flags.rfid ? 1 : 0) + (S.flags.traded ? 2 : 0)) + " of 8, in " + S.moves + " moves, with " + S.deaths + " death" + (S.deaths === 1 ? "" : "s") + ". This gives you the rank of Junior Integration Specialist.", "sys");
             case "xyzzy": return line("A hollow voice says \"fool.\"", "sys");

@@ -1,0 +1,68 @@
+---
+layout: default
+title: Arena
+description: An homage to AT-Robots. Write a tank in a small assembly language, pick your opponents from six presets, and watch them fight.
+image: /arena/share.jpg
+---
+<div class="arena-page">
+<h1>Arena</h1>
+<p class="lede">An homage to <a href="https://en.wikipedia.org/wiki/AT-Robots">AT-Robots</a>, the DOS game of 1992: you wrote a tank in a small
+assembly language and watched it fight. Write one below, in the spirit of the original, pick your opponents from
+the presets, and press fight. Everything runs in this page.</p>
+
+<div class="stage">
+  <canvas id="arena-canvas" width="640" height="640" aria-label="the arena: tanks fighting"></canvas>
+  <div class="side">
+    <p class="controls">
+      <button type="button" id="arena-fight">fight</button>
+      <button type="button" id="arena-pause">pause</button>
+      <button type="button" id="arena-step">step</button>
+      <label>speed <select id="arena-speed"><option selected>1</option><option>2</option><option>4</option><option>8</option></select>&times;</label>
+      <label>seed <input id="arena-seed" type="number" min="1" max="99999" value="1" size="5"></label>
+    </p>
+    <ol class="score" id="arena-score"></ol>
+    <p class="status" id="arena-status">pick your opponents, write your tank, and fight.</p>
+    <div class="debug" id="arena-debug" hidden></div>
+  </div>
+</div>
+
+<div class="workshop">
+  <div class="roster">
+    <h2>Opponents</h2>
+    <p class="lede">Six presets, each a lesson. Tick the ones to fight, and <em>read</em> one to load it into the editor.</p>
+    <ul id="arena-roster"></ul>
+  </div>
+  <div class="editor">
+    <h2>Your tank</h2>
+    <div class="code"><pre class="gutter" id="arena-gutter" aria-hidden="true"></pre><textarea id="arena-source" spellcheck="false" autocomplete="off" aria-label="your tank's program" rows="24"></textarea></div>
+    <p class="errors" id="arena-errors"></p>
+    <p class="buttons">
+      <button type="button" id="arena-assemble">assemble &amp; fight</button>
+      <button type="button" id="arena-save">save</button>
+      <button type="button" id="arena-share">share link</button>
+      <button type="button" id="arena-starter">start over</button>
+    </p>
+  </div>
+</div>
+
+<details class="reference">
+  <summary>The dialect</summary>
+  <p>A program is lines of <code>op a, b</code>. Operands are the registers <code>ax bx cx dx</code>, numbers, memory as
+  <code>[n]</code> or <code>[ax]</code>, and labels, written <code>:name</code> on a line of their own. Comments start with
+  <code>;</code>. Every tick each tank runs five instructions; <code>delay n</code> spends n of them.</p>
+  <table>
+    <tr><th>arithmetic</th><td><code>mov add sub mpy div mod and or xor not neg xchg</code></td></tr>
+    <tr><th>compare, jump</th><td><code>cmp a, b</code> then <code>jmp je jne jg jl jge jle</code> to a label</td></tr>
+    <tr><th>calls, stack, loops</th><td><code>call ret push pop</code>; <code>do n</code> then <code>loop label</code></td></tr>
+    <tr><th>ports</th><td><code>opo port, value</code> writes, <code>ipo port, place</code> reads</td></tr>
+    <tr><th>read ports</th><td><code>speedo</code> (1) <code>heat</code> (2) <code>compass</code> (3) <code>tofs</code> turret offset (4) <code>theading</code> (5) <code>damage</code> (6) <code>scan</code> range in the arc, 0 for none (7) <code>accuracy</code> where in the arc, &minus;2..2 (8) <code>radar</code> range to the nearest, any direction (9) <code>random</code> (10)</td></tr>
+    <tr><th>write ports</th><td><code>throttle</code> &minus;75..100 (11) <code>rotate</code> the turret by (12) <code>aim</code> set the turret offset (13) <code>steer</code> turn the body by (14) <code>fire</code> with an adjustment of &minus;4..4 (15) <code>arc</code> the scanner's half-angle, 1..64 (17) <code>overburn</code> 1 or 0 (18) <code>shutdown</code> the heat to shut down at (20)</td></tr>
+    <tr><th>interrupts</th><td><code>int @locate</code> ax, bx = x, y &middot; <code>int @keepshift</code> ax = 1 to let the turret keep its heading &middot; <code>@overburn</code> &middot; <code>@id</code> &middot; <code>@timer</code> &middot; <code>@angle</code> ax, bx = a point, ax = the heading to it &middot; <code>@game</code> ax = tanks alive &middot; <code>@collisions</code> &middot; <code>@resetcol</code> &middot; <code>@kills</code> &middot; <code>@reset</code> &middot; <code>@destruct</code></td></tr>
+    <tr><th>config</th><td><code>#config scanner=3 weapon=3 armor=2 engine=2 heatsinks=2</code>: twelve points, 0 to 5 each. Scanner is range, weapon is damage, armor is what you take, engine is speed, heatsinks shed the heat that firing and overburn build. At 475 heat a tank shuts down until it cools; at 500 it burns.</td></tr>
+  </table>
+  <p>Headings are degrees, 0 to the right, clockwise on screen. The arena is 1000 by 1000. Walls hurt in proportion to speed. A missile flies straight, a little wild, and a tank fires at most every eight ticks. The match ends with one tank standing, or after five minutes, on armor.</p>
+</details>
+</div>
+<script src="/js/arena-engine.js"></script>
+<script src="/js/arena-robots.js"></script>
+<script src="/js/arena.js"></script>
