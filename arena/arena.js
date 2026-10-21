@@ -373,6 +373,7 @@
         var AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return null;
         var ac = new AC(), master = ac.createGain();
+        if (window.Unmute) Unmute(ac);
         master.gain.value = 0.5; master.connect(ac.destination);
         var noise = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), data = noise.getChannelData(0);
         for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;

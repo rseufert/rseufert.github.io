@@ -85,7 +85,13 @@ WebAudio, built on the first click and behind the sound toggle: the hum is a
 60 Hz sawtooth through a slowly wandering lowpass, a 120 Hz sine and a
 60.7 Hz sine beating against it, dropping a semitone a level; footsteps are
 filtered noise; a 38 Hz drone and a wavering 1.87 kHz whine rise as it nears;
-the fall is a sine sweep down, the catch a sawtooth sweep and a burst.
+the fall is a sine sweep down, the catch a sawtooth sweep and a burst. On a
+touch screen the mix is for a phone's speaker, which carries little under
+300 Hz: the hum's lowpass opens to 700 Hz with a third harmonic added, the
+steps go up to 1.2 kHz and the master to 0.9. `js/unmute.js` plays a
+moment of silence through an audio element and resumes the context on
+return, which is what an iPhone needs to let Web Audio through its ringer
+switch and its locks.
 
 ## Controls and state
 

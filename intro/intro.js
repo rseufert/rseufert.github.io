@@ -305,6 +305,7 @@
         var AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return null;
         var ac = new AC(), master = ac.createGain();
+        if (window.Unmute) Unmute(ac);
         master.gain.value = 0.33;
         var comp = ac.createDynamicsCompressor();
         comp.threshold.value = -18; comp.ratio.value = 4;
