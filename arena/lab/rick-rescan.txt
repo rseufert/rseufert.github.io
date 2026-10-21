@@ -1,0 +1,205 @@
+#name RICK
+; Not on the roster: RICK with one lesson from HERON grafted on, and
+; measured worse. a fine rescan (arc 2) before the shot, and its own motion taken out of the drift: gauntlet 14 of 40, from 23.
+#config scanner=4 weapon=3 armor=2 engine=2 heatsinks=1
+; RICK learns. Two things, in memory, while it fights.
+; Where the target is going: it keeps the turret on whatever it sees,
+; times how fast the bearing drifts between sightings, fires that far
+; ahead so a runner meets the shot, and swings the turret ahead too, so
+; it does not lose them. And whether sitting or driving gets it hurt:
+; every five seconds it scores the spell just gone against the spells
+; before, and does whatever has cost it least, trying the other now and
+; then in case the opponents have changed their minds.
+;
+; memory: [1] tick of the last sighting  [2] drift, degrees per 64 ticks
+; [3] tick the spell began  [4] damage then  [5] this spell: 0 sit,
+; 1 drive  [6] damage taken sitting  [7] spells sat  [8] damage taken
+; driving  [9] spells driven  [10] spells so far  [23] movement seen
+; [24] how far the turret was swung ahead  [25] the lead for the next
+; shot  [30] loops
+  opo arc, 8
+  mov ax, 1
+  int @keepshift        ; the turret keeps its heading while the body turns
+  mov [5], 1            ; start by driving
+  mov [1], -100         ; no sighting yet
+  call begin
+:main
+  call look
+  add [30], 1
+  mov ax, [30]
+  and ax, 3
+  cmp ax, 0
+  jne main              ; three looks for every drive and clock
+  call drive
+  call clock
+  jmp main
+
+:look                   ; scan; on a sighting, track it, time it, lead it
+  ipo scan, ax
+  cmp ax, 0
+  je lost
+  mov dx, ax            ; dx = range
+  ipo accuracy, bx
+  mpy bx, 2             ; a quarter of an 8-degree arc is 2 degrees
+  opo rotate, bx        ; turret onto the target
+  opo arc, 2
+  ipo scan, cx
+  cmp cx, 0
+  je coarse
+  ipo accuracy, cx
+  opo rotate, cx        ; and onto it within half a degree
+  add bx, cx
+:coarse
+  opo arc, 8
+  opo fire, [25]        ; at once, with the lead worked out last time
+  add bx, [24]          ; plus how far the turret was swung ahead last time
+  mov [23], bx          ; how far it had moved
+  int @timer            ; ax = tick
+  mov cx, ax
+  sub cx, [1]           ; ticks since the last sighting
+  mov [1], ax
+  cmp cx, 40            ; too long ago to trust
+  jg fresh
+  cmp cx, 0
+  je fresh
+  mov ax, [23]
+  mpy ax, 64
+  div ax, cx
+  mov [2], ax           ; drift, degrees per 64 ticks
+  ipo tofs, ax          ; less our own motion's share: speed x sin(angle off the nose) / range
+  mov cx, 1
+  cmp ax, 180
+  jle own
+  sub ax, 360
+  neg ax
+  mov cx, -1
+:own
+  mov bx, 180
+  sub bx, ax
+  mpy ax, bx
+  ipo speedo, bx
+  mpy ax, bx
+  mpy ax, cx
+  div ax, 48
+  div ax, dx
+  sub [2], ax
+  jmp lead
+:fresh
+  mov [2], 0
+:lead
+  mov cx, dx
+  div cx, 50            ; ticks the missile needs to get there
+  mpy cx, [2]
+  div cx, 128           ; degrees ahead, in quarters of the arc
+  cmp cx, 4
+  jle l1
+  mov cx, 4
+:l1
+  cmp cx, -4
+  jge l2
+  mov cx, -4
+:l2
+  mov [25], cx          ; the lead for the next shot
+  mov ax, [2]
+  div ax, 8             ; where they will be in eight ticks
+  mov [24], ax
+  opo rotate, ax        ; keep the turret ahead of them
+  ret
+:lost                   ; nothing in the arc
+  int @timer
+  sub ax, [1]
+  cmp ax, 30
+  jg sweep              ; long gone: sweep for them
+  mov ax, [2]           ; just lost: keep swinging the way they were going
+  div ax, 4
+  cmp ax, 0
+  jne hunt
+  mov ax, 6             ; no drift known: small steps
+:hunt
+  add [24], ax          ; it counts as swing-ahead, so the sums stay true
+  opo rotate, ax
+  ret
+:sweep
+  mov [24], 0
+  opo rotate, 15        ; nearly the whole arc: find them fast
+  ret
+
+:drive                  ; when driving, circle, and turn hard near a wall
+  cmp [5], 0
+  je nodrive
+  int @locate           ; ax = x, bx = y
+  cmp ax, 150
+  jl turn
+  cmp ax, 850
+  jg turn
+  cmp bx, 150
+  jl turn
+  cmp bx, 850
+  jg turn
+  opo steer, 3
+  ret
+:turn
+  opo steer, 20
+:nodrive
+  ret
+
+:begin                  ; a new spell: note the time and the damage
+  int @timer
+  mov [3], ax
+  ipo damage, ax
+  mov [4], ax
+  cmp [5], 0
+  je sit
+  opo throttle, 70
+  ret
+:sit
+  opo throttle, 0
+  ret
+
+:clock                  ; every 300 ticks, score the spell and choose
+  int @timer
+  sub ax, [3]
+  cmp ax, 300
+  jl done
+  ipo damage, ax
+  sub ax, [4]           ; damage taken this spell
+  cmp [5], 0
+  jne drove
+  add [6], ax
+  add [7], 1
+  jmp choose
+:drove
+  add [8], ax
+  add [9], 1
+:choose
+  add [10], 1
+  mov ax, [10]
+  mod ax, 4
+  cmp ax, 0
+  jne compare
+  mov ax, 1             ; every fourth spell, try the other thing
+  sub ax, [5]
+  mov [5], ax
+  jmp restart
+:compare                ; average damage per spell, times 100
+  cmp [7], 0
+  je pick_sit           ; never sat: find out
+  cmp [9], 0
+  je pick_drive         ; never driven: find out
+  mov ax, [6]
+  mpy ax, 100
+  div ax, [7]
+  mov bx, [8]
+  mpy bx, 100
+  div bx, [9]
+  cmp ax, bx
+  jl pick_sit
+:pick_drive
+  mov [5], 1
+  jmp restart
+:pick_sit
+  mov [5], 0
+:restart
+  call begin
+:done
+  ret

@@ -1,0 +1,587 @@
+#name LAP
+#config scanner=3 weapon=4 armor=2 engine=1 heatsinks=2
+; LAP: not on the roster. The idea that aimed right and fired too slowly.
+; Everything is worked out on the field, not from the turret: each pass
+; the scan is turned into where the target is (a sine table, our position,
+; the bearing and range), so our own driving never spoils the sums. A
+; runner is shot ahead of itself. A tank going round in tight circles
+; (CIRCLER, once its steer queue saturates: 45 ticks a lap, 40 across)
+; comes back to where it was, so for it the shots are paced to a lap less
+; the flight and the latency, and each is aimed where it was a shot ago,
+; which is where it will be when the missile lands. That part works: within
+; two degrees, at a shot every 28 ticks. What does not: the pass is too
+; long to keep up with the target between shots, the circling test takes
+; too long to trip, and the whole is outscored by HERON's plain orbit. To
+; finish it, sample the target every eight ticks or so in a loop that does
+; nothing else, and leave the sums to the gaps. See arena/lab/README.md.
+; memory: [21] tick last pass  [23] range  [24] which way round  [25] at a wall
+; [26] next scan's tick (lap)  [37] scan tick (lap)  [27] aim, absolute  [30] passes  [31] ticks of last pass
+; [32] refinds  [33] laps entered  [34] now  [35] lap shots  [36] empty sweeps
+; [40..47],[48..55],[56..63] ring of 8 by pass: x, y, tick  [70],[71] us  [72],[73] sin, cos
+; [74],[75] it now  [76],[77] its speed x16  [78..81] it a shot ago, two shots ago (lap)
+; [82],[83] the point to shoot at  [84],[85] the point to look at next
+; [100..190] sine x1000 by degree
+  mov [100], 0
+  mov [101], 17
+  mov [102], 35
+  mov [103], 52
+  mov [104], 70
+  mov [105], 87
+  mov [106], 105
+  mov [107], 122
+  mov [108], 139
+  mov [109], 156
+  mov [110], 174
+  mov [111], 191
+  mov [112], 208
+  mov [113], 225
+  mov [114], 242
+  mov [115], 259
+  mov [116], 276
+  mov [117], 292
+  mov [118], 309
+  mov [119], 326
+  mov [120], 342
+  mov [121], 358
+  mov [122], 375
+  mov [123], 391
+  mov [124], 407
+  mov [125], 423
+  mov [126], 438
+  mov [127], 454
+  mov [128], 469
+  mov [129], 485
+  mov [130], 500
+  mov [131], 515
+  mov [132], 530
+  mov [133], 545
+  mov [134], 559
+  mov [135], 574
+  mov [136], 588
+  mov [137], 602
+  mov [138], 616
+  mov [139], 629
+  mov [140], 643
+  mov [141], 656
+  mov [142], 669
+  mov [143], 682
+  mov [144], 695
+  mov [145], 707
+  mov [146], 719
+  mov [147], 731
+  mov [148], 743
+  mov [149], 755
+  mov [150], 766
+  mov [151], 777
+  mov [152], 788
+  mov [153], 799
+  mov [154], 809
+  mov [155], 819
+  mov [156], 829
+  mov [157], 839
+  mov [158], 848
+  mov [159], 857
+  mov [160], 866
+  mov [161], 875
+  mov [162], 883
+  mov [163], 891
+  mov [164], 899
+  mov [165], 906
+  mov [166], 914
+  mov [167], 921
+  mov [168], 927
+  mov [169], 934
+  mov [170], 940
+  mov [171], 946
+  mov [172], 951
+  mov [173], 956
+  mov [174], 961
+  mov [175], 966
+  mov [176], 970
+  mov [177], 974
+  mov [178], 978
+  mov [179], 982
+  mov [180], 985
+  mov [181], 988
+  mov [182], 990
+  mov [183], 993
+  mov [184], 995
+  mov [185], 996
+  mov [186], 998
+  mov [187], 999
+  mov [188], 999
+  mov [189], 1000
+  mov [190], 1000
+  opo arc, 16
+  mov ax, 1
+  int @keepshift
+  mov [24], 1
+:search
+  ipo scan, ax
+  cmp ax, 0
+  jne found
+  opo rotate, 29
+  add [36], 1
+  mov ax, [36]
+  cmp ax, 13
+  jl search
+  mov [36], 0
+  call middle
+  jmp search
+:found
+  mov [36], 0
+  add [32], 1
+  ipo accuracy, bx
+  mpy bx, 8
+  opo rotate, bx
+  opo arc, 4
+  ipo scan, ax
+  mov [23], ax
+  call where
+  int @timer
+  mov [21], ax
+  mov [31], 20
+  mov cx, 0
+:fill
+  mov ax, cx
+  add ax, 40
+  mov bx, [74]
+  mov [ax], bx
+  add ax, 8
+  mov bx, [75]
+  mov [ax], bx
+  add ax, 8
+  mov bx, cx
+  sub bx, 7
+  mpy bx, 20
+  add bx, [21]
+  mov [ax], bx
+  add cx, 1
+  cmp cx, 8
+  jl fill
+  mov [30], 7
+  mov ax, [74]
+  mov [82], ax
+  mov [84], ax
+  mov ax, [75]
+  mov [83], ax
+  mov [85], ax
+; ---- the fast loop ----
+:track
+  mov ax, [84]
+  mov bx, [85]
+  int @angle            ; the turret at where it should be, from where we are now
+  ipo compass, bx
+  sub ax, bx
+  opo aim, ax
+  opo arc, 10
+  ipo scan, ax
+  cmp ax, 0
+  je lost
+  ipo accuracy, bx
+  mpy bx, 5
+  opo rotate, bx
+  opo arc, 4
+  ipo scan, ax
+  cmp ax, 0
+  je lost
+  mov [23], ax
+  ipo accuracy, bx
+  mpy bx, 2
+  opo rotate, bx
+  opo arc, 2
+  ipo scan, ax
+  cmp ax, 0
+  je coarse
+  ipo accuracy, bx
+  opo rotate, bx
+:coarse
+  opo arc, 4
+  jmp fireit
+:coarsej
+  ipo scan, ax
+  cmp ax, 0
+  je coarse
+  ipo accuracy, bx
+  opo rotate, bx
+  jmp coarse
+:fireit
+  ipo tofs, dx
+  mov ax, [82]
+  mov bx, [83]
+  int @angle
+  ipo compass, bx
+  sub ax, bx
+  opo aim, ax
+  opo fire, 0
+  opo aim, dx
+  int @timer
+  mov [34], ax
+  mov bx, ax
+  sub bx, [21]
+  mov [31], bx
+  mov [21], ax
+  call where
+  add [30], 1
+  mov ax, [30]
+  and ax, 7
+  add ax, 40
+  mov bx, [74]
+  mov [ax], bx
+  add ax, 8
+  mov bx, [75]
+  mov [ax], bx
+  add ax, 8
+  mov bx, [34]
+  mov [ax], bx
+  ; its speed, over two passes
+  mov ax, [30]
+  add ax, 6
+  and ax, 7
+  add ax, 40
+  mov cx, [74]
+  sub cx, [ax]
+  add ax, 8
+  mov dx, [75]
+  sub dx, [ax]
+  add ax, 8
+  mov bx, [34]
+  sub bx, [ax]
+  cmp bx, 1
+  jge spd
+  mov bx, 1
+:spd
+  mpy cx, 16
+  div cx, bx
+  mov [76], cx
+  mpy dx, 16
+  div dx, bx
+  mov [77], dx
+  ; going round in circles? moving, but nowhere new after six passes
+  mov ax, [30]
+  add ax, 7
+  and ax, 7
+  add ax, 40
+  mov bx, [74]
+  sub bx, [ax]
+  cmp bx, 0
+  jge b1
+  neg bx
+:b1
+  add ax, 8
+  mov cx, [75]
+  sub cx, [ax]
+  cmp cx, 0
+  jge b2
+  neg cx
+:b2
+  add bx, cx
+  cmp bx, 30
+  jl aimit
+  mov ax, [30]
+  add ax, 2
+  and ax, 7
+  add ax, 40
+  mov bx, [74]
+  sub bx, [ax]
+  cmp bx, 0
+  jge b3
+  neg bx
+:b3
+  add ax, 8
+  mov cx, [75]
+  sub cx, [ax]
+  cmp cx, 0
+  jge b4
+  neg cx
+:b4
+  add bx, cx
+  cmp bx, 70
+  jl lapmode
+:aimit                  ; ahead of it by its speed x (flight + a pass + four ticks)
+  mov ax, [23]
+  div ax, 50
+  add ax, [31]
+  add ax, 4
+  mov cx, [76]
+  mpy cx, ax
+  div cx, 16
+  add cx, [74]
+  mov dx, [77]
+  mpy dx, ax
+  div dx, 16
+  add dx, [75]
+  mov [82], cx
+  mov [83], dx
+  mov ax, [76]
+  mpy ax, [31]
+  div ax, 16
+  add ax, [74]
+  mov [84], ax          ; where it will be at the next scan
+  mov bx, [77]
+  mpy bx, [31]
+  div bx, 16
+  add bx, [75]
+  mov [85], bx
+  call drive
+  jmp track
+; ---- the lap loop ----
+:lapmode
+  add [33], 1
+  mov ax, [74]
+  mov [78], ax
+  mov [80], ax
+  mov ax, [75]
+  mov [79], ax
+  mov [81], ax
+  int @timer
+  add ax, 10
+  mov [26], ax
+:lap
+  int @timer
+  cmp ax, [26]
+  jge lscan
+  call drive            ; steer while there is time
+  delay 15
+  jmp lap
+:lscan
+  int @timer
+  mov [37], ax          ; when this sample is taken
+  mov ax, [78]
+  mov bx, [79]
+  int @angle            ; the turret at where it was last shot, from here
+  ipo compass, bx
+  sub ax, bx
+  opo aim, ax
+  opo arc, 14
+  ipo scan, ax
+  cmp ax, 0
+  je llost
+  ipo accuracy, bx
+  mpy bx, 7
+  opo rotate, bx
+  opo arc, 4
+  ipo scan, ax
+  cmp ax, 0
+  je llost
+  mov [23], ax
+  ipo accuracy, bx
+  mpy bx, 2
+  opo rotate, bx
+  opo arc, 2
+  ipo scan, ax
+  cmp ax, 0
+  je lcoarse
+  ipo accuracy, bx
+  opo rotate, bx
+:lcoarse
+  opo arc, 4
+  ipo tofs, dx
+  mov ax, [78]
+  mov bx, [79]
+  int @angle            ; where it was a shot ago, from here: a lap later it is back
+  ipo compass, bx
+  sub ax, bx
+  opo aim, ax
+  opo fire, 0
+  opo aim, dx
+  add [35], 1
+  int @timer
+  sub ax, [37]          ; the sample was this long before the shot
+  mov [36], ax
+  call where
+  ; still circling? out of a circle's reach since the last shot means a runner
+  mov bx, [74]
+  sub bx, [78]
+  cmp bx, 0
+  jge b5
+  neg bx
+:b5
+  mov cx, [75]
+  sub cx, [79]
+  cmp cx, 0
+  jge b6
+  neg cx
+:b6
+  add bx, cx
+  cmp bx, 130
+  jge runner
+  mov ax, [74]
+  mov [78], ax
+  mov ax, [75]
+  mov [79], ax
+  mov ax, [23]
+  div ax, 50
+  add ax, [36]
+  neg ax
+  add ax, 45            ; the next sample a lap less the flight and the latency after this one
+  cmp ax, 9
+  jge paced
+  mov ax, 9
+:paced
+  add ax, [37]
+  mov [26], ax
+  int @timer
+  mov [21], ax
+  jmp lap
+:runner
+  int @timer
+  mov [21], ax
+  mov [31], 20
+  mov cx, 0
+  jmp fill
+:llost
+  opo arc, 32
+  ipo scan, ax
+  cmp ax, 0
+  je lgone
+  ipo accuracy, bx
+  mpy bx, 16
+  opo rotate, bx
+  opo arc, 14
+  ipo scan, ax
+  cmp ax, 0
+  je lgone
+  ipo accuracy, bx
+  mpy bx, 7
+  opo rotate, bx
+  jmp lscan
+:lgone
+  opo arc, 16
+  jmp search
+; ---- where it is: from our place, the bearing and the range ----
+:where
+  int @locate
+  mov [70], ax
+  mov [71], bx
+  ipo theading, ax
+  call sine
+  mov [72], cx
+  ipo theading, ax
+  add ax, 90
+  call sine
+  mov [73], cx
+  mov ax, [23]
+  mpy ax, [73]
+  div ax, 1000
+  add ax, [70]
+  mov [74], ax
+  mov ax, [23]
+  mpy ax, [72]
+  div ax, 1000
+  add ax, [71]
+  mov [75], ax
+  ret
+:sine                   ; ax = degrees -> cx = sine x1000
+  add ax, 720
+  mod ax, 360
+  mov dx, 1
+  cmp ax, 180
+  jle s1
+  sub ax, 180
+  mov dx, -1
+:s1
+  cmp ax, 90
+  jle s2
+  neg ax
+  add ax, 180
+:s2
+  add ax, 100
+  mov cx, [ax]
+  mpy cx, dx
+  ret
+; ---- driving: off the walls, else across its line of sight at 380-550 ----
+:drive
+  int @locate
+  cmp ax, 170
+  jl wall
+  cmp ax, 830
+  jg wall
+  cmp bx, 170
+  jl wall
+  cmp bx, 830
+  jg wall
+  mov [25], 0
+:orbit
+  mov cx, 90
+  mov ax, [23]
+  cmp ax, 650
+  jl near
+  mov cx, 60
+  jmp want
+:near
+  cmp ax, 300
+  jg want
+  mov cx, 120
+:want
+  mpy cx, [24]
+  ipo tofs, bx
+  sub bx, cx
+  add bx, 540
+  mod bx, 360
+  sub bx, 180
+  cmp bx, 40
+  jl cap1
+  mov bx, 40
+:cap1
+  cmp bx, -40
+  jg cap2
+  mov bx, -40
+:cap2
+  opo steer, bx
+  opo throttle, 100
+  ret
+:wall
+  cmp [25], 0
+  jne orbit
+  mov [25], 1
+  neg [24]              ; round the other way, which turns us off the wall
+  jmp orbit
+:middle
+  mov ax, 500
+  mov bx, 500
+  int @angle
+  ipo compass, bx
+  sub ax, bx
+  add ax, 540
+  mod ax, 360
+  sub ax, 180
+  cmp ax, 60
+  jl cap3
+  mov ax, 60
+:cap3
+  cmp ax, -60
+  jg cap4
+  mov ax, -60
+:cap4
+  opo steer, ax
+  opo throttle, 100
+  ret
+:lost
+  opo arc, 32
+  ipo scan, ax
+  cmp ax, 0
+  je gone
+  ipo accuracy, bx
+  mpy bx, 16
+  opo rotate, bx
+  opo arc, 10
+  ipo scan, ax
+  cmp ax, 0
+  je gone
+  ipo accuracy, bx
+  mpy bx, 5
+  opo rotate, bx
+  opo arc, 4
+  ipo scan, ax
+  cmp ax, 0
+  je gone
+  mov [23], ax
+  ipo accuracy, bx
+  mpy bx, 2
+  opo rotate, bx
+  opo arc, 2
+  jmp coarsej
+:gone
+  opo arc, 16
+  jmp search

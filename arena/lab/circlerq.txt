@@ -1,0 +1,32 @@
+#name QUIET
+#config scanner=3 weapon=2 armor=2 engine=4 heatsinks=1
+; Drives hard and turns away from walls, so it ends up circling the
+; arena. The turret keeps its own heading (int @keepshift) and sweeps
+; while the body does the driving.
+  mov ax, 1
+  int @keepshift
+  opo arc, 12
+  opo throttle, 100
+:drive
+  int @locate           ; ax = x, bx = y
+  cmp ax, 120
+  jl bounce
+  cmp ax, 880
+  jg bounce
+  cmp bx, 120
+  jl bounce
+  cmp bx, 880
+  jg bounce
+  jmp look
+:bounce
+  opo steer, 25         ; turn, and keep turning until clear
+:look
+  ipo scan, ax
+  cmp ax, 0
+  je sweep
+  ipo accuracy, bx
+  nop
+  jmp drive
+:sweep
+  opo rotate, 16
+  jmp drive

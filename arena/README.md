@@ -8,6 +8,7 @@ dialect, pick opponents from the presets, and watch them fight.
 | `arena-engine.js` | the assembler and the simulation; no page in it, so it runs in the browser, in node and in rickbot's dungeon (UMD) |
 | `arena-robots.js` | the ten presets and the starter |
 | `arena_lab.js` | duel one tank against another over many seeds: wins, hit rates, aim error, how much it moved |
+| `lab/` | not on the roster: the tank that aimed right and fired too slowly, the test that found its rule, the RICK grafts that measured worse; see its README |
 | `arena.js` | the page: the canvas, the score panel, the debug view, the editor, saving and sharing |
 | `index.html`, `arena.css` | the page and its stylesheet; the dialect reference is at the foot of the page |
 | `arena-gauntlet.js` | the gauntlet a tank sent in has to get through; runs in the page and in node |
