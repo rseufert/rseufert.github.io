@@ -11,7 +11,9 @@
 // real one over Portland at the real time (city/sky.js), so the Dipper
 // wheels round Polaris as the night goes on, and T runs the clock fast to
 // watch it. People stand about with errands that send you to the rest of
-// the site and check, when you come back, that you went.
+// the site and check, when you come back, that you went; others just
+// talk. Pigeons scatter, rats run the curb, bats and fireflies come out
+// at night, a dolphin jumps in the river, a deer grazes the hill at dawn.
 //
 // Drawn the way the backrooms are drawn: quads filled black and stroked,
 // painted back to front, on a plain canvas. No WebGL, no libraries. The
@@ -140,6 +142,18 @@
         flat([[hole.x - 0.6, hole.z], [hole.x + 0.6, hole.z]], { col: "#ffb000" }); flat([[hole.x, hole.z - 0.6], [hole.x, hole.z + 0.6]], { col: "#ffb000" });
         label("NOCLIP", hole.x, 0.5, hole.z, 0.35, "#ffb000");
         door(hole.x, hole.z, "the backrooms", "/backrooms/", "hole", 0.9);
+        fauna();
+        npc(hole.x - 4, hole.z + 3, "the sysadmin", "cap", "#ffb000", { idle: [
+            "the sysadmin: DO NOT REBOOT WITHOUT ROOT TOKEN. seriously.",
+            "the sysadmin: the hum is 60 hertz. it was 60 hertz in 2016. we have a ticket.",
+            "the sysadmin: someone keeps going down there and coming back thirty seconds short. we have a ticket for that too.",
+            "the sysadmin: the cron runs at 04:17. be here at 04:17 and you'll meet it. it's not friendly. it's punctual. press T if you can't wait."
+        ] });
+        npc(hole.x + 6, hole.z - 4, "the cron job", "cap", "#8d8d98", { when: function (h) { return h >= 4 && h < 4.6; }, idle: [
+            "the cron job: 04:17. i run. i save the sky. i commit to sky-data. i go. you are in the way.",
+            "the cron job: every night. nobody watches. tonight someone watched. it changes nothing. i run.",
+            "the cron job: in a minute i will not be here and you will not be able to prove i was. that is the job."
+        ] });
         npc(hole.x + 4, hole.z + 3, "the ghost", "ghost", "#8fe7ff", {
             ask: "the ghost: i left something down there. not an object. the last thirty seconds. go under, let it find you, and leave your ghost in the halls. then come back and tell me we are two.",
             wait: "the ghost: nothing left yet. it has to find you first. that part is not hard.",
@@ -169,6 +183,37 @@
         box(cx - 1.5, cz + 7, 3, 3, 3, { col: "#00e5ff", label: "HELPDESK" });
         label("RICKBOT IS IN", cx, 2.2, cz + 7 - 0.05, 0.3, "#00e5ff");
         door(cx, cz + 6, "the helpdesk", "chat", "chat", 2.2);
+        npc(cx + 11, cz - 11, "josh allen", "big", "#ffffff", { idle: [
+            "josh allen: i am not in that photo.",
+            "josh allen: the alt text says i am. i don't argue with alt text. i don't agree with it either.",
+            "josh allen: where would you rather be than right here, right now. that's marv. i'm just standing here.",
+            "josh allen: the hurdle was fine. the table was not reinforced. that is the point of the table."
+        ] });
+        npc(cx - 11, cz - 11, "the mayor", "cap", "#ffffff", { idle: [
+            "the mayor: pop. 1. that's me. i'm also the census.",
+            "the mayor: the city is rebuilt at midnight by a seed. i am re-elected at midnight by the same seed. it has never gone the other way. i have never asked why.",
+            "the mayor: the key to the city is a localStorage key. i'm not supposed to say that.",
+            "the mayor: the river is the julia. the fountain is the julia. the strip under the menu is the julia. we have one julia and we are proud of her."
+        ] });
+        npc(cx - 9, cz + 3, "a tourist", "cap", "#8d8d98", { idle: [
+            "a tourist: is this the dashboard? i'm looking for the dashboard.",
+            "a tourist: someone said the backrooms were under here. i've been looking for a stairs.",
+            "a tourist: the signs are in some kind of... i stood still and it fixed itself. is that a feature?",
+            "a tourist: i came for the mock SAP. i'm staying for the heron.",
+            "a tourist: the mayor said pop. 1 and then counted himself twice."
+        ] });
+        npc(cx + 9, cz + 2, "the mime", "ghost", "julia", { idle: [
+            "the mime: every direction is the same direction, smaller.",
+            "the mime: c = -0.7269 + 0.1889i. please don't zoom too far.",
+            "the mime: the strip under the menu is me. the river is me. the fountain is me. i am very tired.",
+            "the mime: (says nothing. is a mime. the colours change anyway.)"
+        ] });
+        npc(cx + 7, cz - 5, "a machine elf", "elf", "#ff3d9a", { idle: [
+            "a machine elf: a tuesday. a chord. the feeling of a page that has finished loading. no refunds.",
+            "a machine elf: we came through the strip. it is drafty. we stay for the hum.",
+            "a machine elf: the palette is not for sale. it is for escaping. ask the helpdesk, after it stops lying.",
+            "a machine elf: everything is normal. nothing is normal. both are on sale."
+        ] });
         npc(cx + 4, cz + 8, "the intern", "cap", "#00e5ff", {
             ask: "the intern: the helpdesk says everything is normal. it is a render. ask it enough questions, five is enough, and it will tell you what it is. go and catch it. then come back.",
             wait: "the intern: it has not cracked yet. keep asking. anything. the fifth answer is the one.",
@@ -215,6 +260,12 @@
         arena = { x: bx - bw / 2, y: by, z: bz - 0.05, w: bw, h: bh, cx: cx, cz: cz };
         label("THE ARENA", cx, by + bh + 1.4, bz, 1.1, "#ffd27a");
         door(cx, cz - r - 1.5, "the arena", "/arena/", "link", 3);
+        npc(cx - 7, cz - r - 3, "rammer", "tank", "#ff5a2e", { idle: [
+            "RAMMER: i beat heron. heron beat circler 44 of 60 and everyone made a fuss. i beat heron. nobody wrote that down.",
+            "RAMMER: my whole plan is: be where you are. it works more than you'd think.",
+            "RAMMER: dodger keeps calling what it does a strategy. it's a direction.",
+            "RAMMER: the sand is the groundskeeper's problem. the walls are mine. the walls hurt with the square of the speed, and i have never once slowed down."
+        ] });
         npc(cx + 6, cz - r - 3, "the groundskeeper", "rake", "#ffd27a", {
             ask: "the groundskeeper: sand everywhere. ten tanks and not one of them sweeps. write one in the arena and keep it in a slot, any name, and come and tell me. it will be the first thing anyone here has saved.",
             wait: "the groundskeeper: no slot yet. the editor is through the gate. save as... is under the fight button.",
@@ -236,6 +287,18 @@
         door(x + 5, z + 7.5, "mock-einvoice", "/mock-einvoice/");
         box(x + 20, z + 9, 6, 4, 8, { col: "#c9d2dc", label: "ACME TREASURY" });
         door(x + 23, z + 7.5, "acme-treasury", "/acme-treasury/");
+        npc(x + 3, z + 27.5, "the idoc", "doc", "#c9d2dc", { idle: [
+            "the idoc: status 51. error. i have been status 51 since 1998. do you know what that is like. it is like being a letter nobody opens, except the letter is also a table.",
+            "the idoc: they say i will be posted. they say that in the vault. the vault is cold and the saying is warm and that is all the posting i get.",
+            "the idoc: ORDERS05. that is my type. you would not understand. it is a kind of blood.",
+            "the idoc: if you see a BAPI, do not tell it where i am."
+        ] });
+        npc(x + 27, z + 4.5, "a 997", "doc", "#c9d2dc", { idle: [
+            "the 997: received. thank you.",
+            "the 997: i acknowledge you. that is all i do. it is enough.",
+            "the 997: AK1. AK9. A. accepted. i have never rejected anything in my life and i am tired.",
+            "the 997: an 850 came through here an hour ago, folded into a plane. it wanted to be sent somewhere. don't we all."
+        ] });
         npc(x + 10, z + 13, "the clerk", "cap", "#c9d2dc", {
             ask: "the clerk: the vault is cold and the idocs will not post themselves. go and look at one of the mocks, any of them, sap, edi, the bank, the invoices, and tell me what it does. i have worked here nine years and nobody has said.",
             wait: "the clerk: you have not been. the doors are right there. the towers have pages.",
@@ -275,6 +338,12 @@
         poly(dp, { closed: true, col: "#ffffff" });
         label("SIX APPS · 128X64 · ONE BUZZER", cx, 3.3, cz - 3 - 0.05, 0.3, "#ff8c1a");
         door(cx, cz - 4.5, "the flipper nest", "/#flipper", "link", 2.6);
+        npc(cx - 8, cz - 7, "the dolphin", "dolphin", "#ffffff", { idle: [
+            "the dolphin: i found your thoughts. they are mostly about lunch.",
+            "the dolphin: 433.92 megahertz. that was your garage. i did not open it. i could have.",
+            "the dolphin: six apps and one buzzer. people say it sounds exactly as good as a piezo. it does.",
+            "the dolphin: they wheel me out here for the tourists. the river is right there. nobody asks."
+        ] });
         npc(cx + 6, cz - 7, "nugget", "cat", "#ff8c1a", {
             ask: "nugget: mrow. (baby is lost. baby is always lost. baby is somewhere in this city, probably on a step, probably asleep. find baby and tell baby to come home.)",
             wait: "nugget: mrow? (not found yet. try the far blocks. baby likes a doorway.)",
@@ -311,6 +380,12 @@
         [[-6.5, 0], [6.5, 0]].forEach(function (s) { for (var k = 0; k < 3; k++) box(cx + s[0] - 0.7, cz - 6.2, 1.4, 1.1, 1.1, { y0: k * 1.15, col: "#c288ff", lit: false }); });
         label("ONE PLAYER OPEN AT A TIME", cx, 3.6, cz - 4 - 0.05, 0.3, "#c288ff");
         door(cx, cz - 6.5, "the media loft", "/media/", "link", 2.6);
+        npc(cx - 10, cz - 7, "the roadie", "cap", "#c288ff", { idle: [
+            "the roadie: one. one. one. check. one.",
+            "the roadie: one player open at a time. took a surprising amount of work. the other players have to close. they don't want to.",
+            "the roadie: dick dank is in. he is always in. the loop is the set. the set is the loop.",
+            "the roadie: the waveform on the wall is a mountain range you could hike if you had the time. nobody has the time. that's the song."
+        ] });
     }
     function theShop(x, z) {
         var cx = x + BLOCK / 2, cz = z + 8;
@@ -332,6 +407,12 @@
         label("NOW PLAYING: TUNE #" + today() + " · PRESS FIRE", cx, 6.1, cz - 1.25, 0.34, "#ffffff");
         label("CRACKED BY THE ELVES", cx, 3.6, cz - 0.05, 0.3, "#ff3d9a");
         door(cx, cz - 2.5, "the intro", "/intro/", "link", 2.6);
+        npc(cx - 8, cz - 3, "the usher", "cap", "#ff3d9a", { idle: [
+            "the usher: the film is four minutes long and loops. people stay for hours. i don't say anything. it's the plasma.",
+            "the usher: the scroller greets everyone. it greeted you. you were in there between the heron and josh allen.",
+            "the usher: no, the trainer options don't work. F1 unlimited cookies. there are no cookies. that's the trainer.",
+            "the usher: tomorrow's tune is in C sharp phrygian. i've heard it. it's fine. i've heard all of them. they're all fine."
+        ] });
         npc(cx + 8, cz - 3, "the projectionist", "cap", "#ff3d9a", {
             ask: "the projectionist: tonight's tune has not been heard. it was written at midnight by a seed and nobody has pressed fire. go in, press it, let it play. then come back and hum it. you will not be able to.",
             wait: "the projectionist: not tonight's. the fire button is on the intro's stage, and the sound has to be on.",
@@ -360,6 +441,13 @@
         river.heron = { x: hx, z: hz };
         label("THE HERON IS STILL WATCHING", hx, 2.6, hz, 0.24, "#8fe7ff");
         anims.push({ heron: poly([], { col: "#ffffff" }), x: hx, z: hz });
+        var tc = -SIZE / 2 + STREET / 2 + gaugeAt * PITCH;
+        npc(tc - 2.2, (river.z0 + river.z1) / 2, "the tide", "ghost", "julia", { idle: [
+            "the tide: i run upstream twice a day. at portland. on the tide. nobody believes a river runs backwards, and then it does, and they look at the gauge.",
+            "the tide: the heron thinks i am the river. i am what the river does when the ocean asks.",
+            "the tide: 7.2 feet and rising, which it will be forever now. that's the dungeon's number. mine is on the dashboard.",
+            "the tide: the dolphin on the trolley belongs in here. tell them."
+        ] });
         var hn = npc(hx, river.z0 - 2.5, "the heron", "ghost", "#8fe7ff", {
             ask: "the heron: i have watched this gauge for nine years and i cannot read. go to the dashboard, the station on the hill, and read me the willamette. the number in feet. then come back and say it.",
             wait: "the heron: you have not been to the dashboard. the hill. the door at the station.",
@@ -419,14 +507,42 @@
         if (kind === "rake") { L([[x + 0.25, y0 + h * 0.45, z], [x + 0.45, 0, z]]); L([[x + 0.3, 0.05, z], [x + 0.6, 0.05, z]]); }
         if (kind === "scope") { L([[x + 0.25, y0 + h * 0.45, z], [x + 0.9, y0 + h * 0.9, z]]); L([[x + 0.6, 0, z], [x + 0.55, y0 + h * 0.65, z]]); L([[x + 0.5, 0, z], [x + 0.55, y0 + h * 0.65, z]]); }
         if (kind === "elf") L([[x - 0.12, y0 + h, z], [x, y0 + h + 0.35, z], [x + 0.12, y0 + h, z]]);
+        if (kind === "big") { L([[x - 0.16, y0 + h, z], [x + 0.2, y0 + h, z], [x + 0.2, y0 + h + 0.05, z]]); L([[x - 0.3, y0 + h * 0.72, z], [x + 0.3, y0 + h * 0.72, z]]); }
+        return P;
+    }
+    // Things that talk but are not people: a document, a tank, a dolphin.
+    function thing(kind, x, z, col) {
+        var P = [], c = col || "#ffffff";
+        function L(pts, o) { P.push(poly(pts, Object.assign({ col: c }, o || {}))); }
+        if (kind === "doc") {
+            L([[x - 0.35, 0.2, z], [x + 0.35, 0.2, z], [x + 0.35, 1.2, z], [x - 0.35, 1.2, z]], { closed: true });
+            [0.4, 0.6, 0.8, 1.0].forEach(function (y) { L([[x - 0.25, y, z - 0.01], [x + (y === 1.0 ? 0.05 : 0.25), y, z - 0.01]]); });
+            L([[x - 0.15, 0.2, z], [x - 0.2, 0, z]]); L([[x + 0.15, 0.2, z], [x + 0.2, 0, z]]);
+        }
+        if (kind === "tank") {
+            L([[x - 0.6, 0.1, z - 0.4], [x + 0.6, 0.1, z - 0.4], [x + 0.6, 0.5, z - 0.4], [x - 0.6, 0.5, z - 0.4]], { closed: true });
+            L([[x - 0.6, 0.1, z + 0.4], [x + 0.6, 0.1, z + 0.4], [x + 0.6, 0.5, z + 0.4], [x - 0.6, 0.5, z + 0.4]], { closed: true });
+            L([[x - 0.6, 0.5, z - 0.4], [x - 0.6, 0.5, z + 0.4]]); L([[x + 0.6, 0.5, z - 0.4], [x + 0.6, 0.5, z + 0.4]]);
+            L([[x - 0.3, 0.5, z - 0.2], [x + 0.3, 0.5, z - 0.2], [x + 0.3, 0.85, z - 0.2], [x - 0.3, 0.85, z - 0.2]], { closed: true });
+            L([[x, 0.7, z - 0.2], [x, 0.7, z - 1.1]]);
+        }
+        if (kind === "dolphin") {
+            L([[x - 0.9, 0.5, z], [x - 0.4, 0.75, z], [x + 0.2, 0.8, z], [x + 0.8, 0.6, z], [x + 1.1, 0.45, z]]);
+            L([[x - 0.9, 0.5, z], [x - 0.4, 0.35, z], [x + 0.2, 0.3, z], [x + 0.8, 0.4, z], [x + 1.1, 0.45, z]]);
+            L([[x - 0.1, 0.8, z], [x + 0.1, 1.15, z], [x + 0.3, 0.78, z]]);
+            L([[x - 0.9, 0.5, z], [x - 1.2, 0.8, z]]); L([[x - 0.9, 0.5, z], [x - 1.2, 0.25, z]]);
+            L([[x - 1.2, 0, z], [x - 1.2, 0.5, z], [x + 1.1, 0.5, z], [x + 1.1, 0, z]], { col: "#5a6a7a" });   // the trolley it is wheeled about on
+        }
         return P;
     }
     function npc(x, z, name, kind, col, lines) {
-        var n = { name: name, x: x, z: z, kind: kind, col: col, lines: lines, polys: figure(kind, x, z, col), quest: QUESTS.filter(function (q) { return q.who === name; })[0] || null };
+        var isThing = /^(doc|tank|dolphin)$/.test(kind);
+        var n = { name: name, x: x, z: z, kind: kind, col: col, lines: lines, polys: isThing ? thing(kind, x, z, col) : figure(kind, x, z, col), quest: QUESTS.filter(function (q) { return q.who === name; })[0] || null, said: 0 };
         var lift = ground(x, z);                                   // the hill, under the astronomer
         if (lift) n.polys.forEach(function (p) { p.pts.forEach(function (q) { q[1] += lift; }); });
-        label(name.toUpperCase(), x, (kind === "cat" ? 0.95 : 2.15) + lift, z, 0.22, col);
-        door(x, z, name, "", "npc", 2.4).npc = n;
+        n.label = label(name.toUpperCase(), x, (kind === "cat" ? 0.95 : kind === "doc" || kind === "tank" ? 1.5 : kind === "dolphin" ? 1.6 : kind === "big" ? 2.4 : 2.15) + lift, z, 0.22, col);
+        n.door = door(x, z, name, "", "npc", 2.4); n.door.npc = n;
+        if (lines.when) { n.when = lines.when; anims.push({ visitor: n }); }
         npcs.push(n);
         if (kind === "ghost" || kind === "elf") anims.push({ bob: n, base: n.polys.map(function (p) { return p.pts.map(function (q) { return q.slice(); }); }) });
         return n;
@@ -435,7 +551,13 @@
     function talk(n) {
         var q = n.quest, L = n.lines;
         if (n.name === "baby") { if (!Q.flags.baby) { Q.flags.baby = true; saveQ(); say(L.ask, 8); } else say(L.after, 5); return; }
-        if (!q) { say(L.idle, 7); return; }
+        if (!q) {
+            // No errand, only things to say, in turn.
+            var idle = Array.isArray(L.idle) ? L.idle[n.said % L.idle.length] : L.idle;
+            n.said++;
+            say(idle, 7);
+            return;
+        }
         if (Q.done[q.id]) { say(L.after, 6); return; }
         if (!Q.active[q.id]) { Q.active[q.id] = true; saveQ(); say(L.ask, 9); return; }
         if (!q.check()) { say(L.wait, 7); return; }
@@ -451,6 +573,128 @@
             .then(function (j) { var v = j.value.timeSeries[0].values[0].value; var last = v[v.length - 1]; say("the heron: " + (+last.value).toFixed(2) + " feet at the morrison bridge. " + (+last.value > 8 ? "rising, probably. everything is." : "it has been higher. everything has."), 8); })
             .catch(function () { say("the heron: the gauge is quiet. it does that.", 5); });
     }
+
+    // ---- the fauna ----------------------------------------------------------------
+    // Pigeons on the plaza that scatter, rats on the curb by the manhole,
+    // bats round the lamps and fireflies by the river at night, crows on
+    // a roof by day, a dolphin that jumps the river now and then, a deer on
+    // the hill at dawn and dusk that runs if you come close, and a raccoon
+    // on a mailbox after dark. Each is a polyline rebuilt every frame.
+    var critters = [];
+    function critter(type, x, z, o) {
+        var c = Object.assign({ type: type, x: x, z: z, y: 0, hx: x, hz: z, t: Math.random() * 10, a: Math.random() * 6.28, state: 0, poly: poly([], { col: (o && o.col) || "#aab4c0" }) }, o || {});
+        critters.push(c);
+        return c;
+    }
+    function fauna() {
+        var o = origin(plaza.i, plaza.j), cx = o.x + BLOCK / 2, cz = o.z + BLOCK / 2, k;
+        for (k = 0; k < 7; k++) critter("pigeon", cx - 8 + rand() * 16, cz - 12 + rand() * 6);
+        for (k = 0; k < 3; k++) critter("rat", hole.x - 6 + k * 4, hole.z + 5 - 0.3, { col: "#8d8d98" });
+        [[o.x + 2, o.z + 2], [o.x + BLOCK - 2, o.z + BLOCK - 2]].forEach(function (p) { for (k = 0; k < 2; k++) critter("bat", p[0], p[1], { col: "#8d8d98" }); });
+        for (k = 0; k < 18; k++) critter("firefly", -SIZE / 2 + 20 + rand() * (SIZE - 40), river.z0 - 6 + rand() * (river.z1 - river.z0 + 12), { col: "#b6ff3a" });
+        critter("dolphin", river.heron.x + 10, (river.z0 + river.z1) / 2, { col: "#ffffff" });
+        var roof = boxes.filter(function (b) { return b.h > 12 && b.h < 30 && !b.name; })[Math.floor(rand() * 5)] || boxes[0];
+        for (k = 0; k < 3; k++) critter("crow", roof.x + 1 + k * 2, roof.z + 0.5, { y: roof.y0 + roof.h, col: "#333a44", roof: roof });
+        var dash = anims.filter(function (a) { return a.cups; })[0];
+        if (dash) critter("deer", dash.x - 7, dash.z + 4, { col: "#d9c2a0" });
+        var mb = boxes.filter(function (b) { return b.y0 === 1.2; })[0];
+        if (mb) critter("raccoon", mb.x + b0(mb), mb.z + mb.d / 2, { y: 1.8, col: "#8d8d98" });
+        function b0(b) { return b.w / 2; }
+    }
+    function updateFauna(dt) {
+        var dark = sunAlt() < -4, dusk = sunAlt() > -8 && sunAlt() < 12;
+        critters.forEach(function (c) {
+            c.t += dt;
+            var d = Math.hypot(c.x - cam.x, c.z - cam.z);
+            if (d > FOG) { c.poly.pts = []; return; }
+            FAUNA[c.type](c, dt, d, dark, dusk);
+        });
+    }
+    function seg(P, a, b) { P.push(a, b); }
+    var FAUNA = {
+        pigeon: function (c, dt, d) {
+            if (c.state === 0) {                                          // walking about, pecking
+                if (Math.random() < dt * 0.5) c.a += (Math.random() - 0.5) * 2;
+                c.x += Math.cos(c.a) * dt * 0.6; c.z += Math.sin(c.a) * dt * 0.6;
+                if (Math.hypot(c.x - c.hx, c.z - c.hz) > 9) c.a += Math.PI;
+                if (d < 4) { c.state = 1; c.t = 0; c.a = Math.atan2(c.z - cam.z, c.x - cam.x) + (Math.random() - 0.5); if (audio) audio.flap(); }
+            } else {                                                      // up, away, and down somewhere else
+                c.x += Math.cos(c.a) * dt * 6; c.z += Math.sin(c.a) * dt * 6;
+                c.y = Math.sin(Math.min(1, c.t / 2.5) * Math.PI) * 4;
+                if (c.t > 2.5) { c.state = 0; c.y = 0; c.hx = c.x; c.hz = c.z; }
+            }
+            var P = [], x = c.x, y = c.y, z = c.z, ca = Math.cos(c.a), sa = Math.sin(c.a), peck = c.state ? 0 : Math.max(0, Math.sin(c.t * 6)) * 0.06;
+            seg(P, [x - ca * 0.15, y + 0.12, z - sa * 0.15], [x + ca * 0.12, y + 0.2 - peck, z + sa * 0.12]);
+            seg(P, [x + ca * 0.12, y + 0.2 - peck, z + sa * 0.12], [x + ca * 0.2, y + 0.16 - peck, z + sa * 0.2]);
+            var flap = c.state ? Math.sin(c.t * 20) * 0.25 : 0.02;
+            seg(P, [x, y + 0.15, z], [x - sa * 0.25, y + 0.15 + flap, z + ca * 0.25]); seg(P, [x, y + 0.15, z], [x + sa * 0.25, y + 0.15 + flap, z - ca * 0.25]);
+            if (!c.state) { seg(P, [x, y + 0.1, z], [x, y, z]); }
+            c.poly.pts = P; c.poly.closed = false; c.poly.pairs = true;
+        },
+        rat: function (c, dt) {
+            if (c.state === 0 && Math.random() < dt * 0.4) { c.state = 1; c.dir = Math.random() < 0.5 ? -1 : 1; c.t = 0; }
+            if (c.state === 1) { c.x += c.dir * dt * 4; if (c.t > 1.2 + Math.random()) c.state = 0; if (Math.abs(c.x - c.hx) > 6) c.dir *= -1; }
+            var P = [], x = c.x, z = c.z, wig = c.state ? Math.sin(c.t * 25) * 0.04 : 0;
+            seg(P, [x - 0.2, 0.08, z], [x + 0.2, 0.1, z + wig]); seg(P, [x + 0.2, 0.1, z + wig], [x + 0.3, 0.06, z + wig]);
+            seg(P, [x - 0.2, 0.08, z], [x - 0.55, 0.02, z - wig * 2]);
+            c.poly.pts = P; c.poly.pairs = true;
+        },
+        bat: function (c, dt, d, dark) {
+            if (!dark || REDUCED) { c.poly.pts = []; return; }
+            var t = c.t * 1.7, x = c.hx + Math.sin(t) * 3 + Math.sin(t * 2.3) * 1.2, z = c.hz + Math.cos(t * 0.9) * 3 + Math.cos(t * 2.1), y = 5 + Math.sin(t * 1.3) * 1.2;
+            var P = [], w = 0.35, f = Math.sin(c.t * 18) * 0.2;
+            seg(P, [x - w, y + f, z], [x, y - 0.05, z]); seg(P, [x, y - 0.05, z], [x + w, y + f, z]);
+            c.poly.pts = P; c.poly.pairs = true;
+        },
+        firefly: function (c, dt, d, dark) {
+            if (!dark) { c.poly.pts = []; return; }
+            var on = Math.sin(c.t * 2 + c.a * 7) > 0.55;
+            c.x += Math.sin(c.t * 0.7 + c.a) * dt * 0.4; c.z += Math.cos(c.t * 0.5 + c.a) * dt * 0.4;
+            var y = 0.5 + Math.sin(c.t * 0.9 + c.a) * 0.4;
+            c.poly.pts = on ? [[c.x, y, c.z], [c.x + 0.05, y + 0.05, c.z]] : [];
+            c.poly.pairs = true; c.poly.width = 2;
+        },
+        dolphin: function (c, dt) {
+            var period = 11, u = c.t % period;
+            if (u > 1.6) { c.poly.pts = []; return; }
+            var k = u / 1.6, x = c.hx - 4 + k * 8, y = Math.sin(k * Math.PI) * 2.2 - 0.3, z = c.hz, ang = Math.cos(k * Math.PI) * 0.9;
+            var P = [], ca = Math.cos(ang), sa = Math.sin(ang);
+            function B(u, v) { return [x + u * ca - v * sa, y + u * sa + v * ca, z]; }
+            seg(P, B(-1, 0), B(-0.4, 0.22)); seg(P, B(-0.4, 0.22), B(0.3, 0.25)); seg(P, B(0.3, 0.25), B(1.0, 0.05)); seg(P, B(1.0, 0.05), B(1.3, 0));
+            seg(P, B(-1, 0), B(-0.4, -0.18)); seg(P, B(-0.4, -0.18), B(0.3, -0.2)); seg(P, B(0.3, -0.2), B(1.0, -0.05)); seg(P, B(1.0, -0.05), B(1.3, 0));
+            seg(P, B(-0.1, 0.25), B(0.05, 0.6)); seg(P, B(0.05, 0.6), B(0.3, 0.25)); seg(P, B(-1, 0), B(-1.3, 0.3)); seg(P, B(-1, 0), B(-1.3, -0.3));
+            c.poly.pts = P; c.poly.pairs = true;
+        },
+        crow: function (c, dt, d, dark) {
+            if (dark) { c.poly.pts = []; return; }
+            if (Math.random() < dt * 0.15) { c.hop = 0.3; }
+            c.hop = Math.max(0, (c.hop || 0) - dt);
+            var y = c.y + Math.sin(c.hop * 10) * 0.15, x = c.x, z = c.z, P = [];
+            seg(P, [x - 0.25, y + 0.15, z], [x + 0.15, y + 0.3, z]); seg(P, [x + 0.15, y + 0.3, z], [x + 0.3, y + 0.25, z]); seg(P, [x - 0.25, y + 0.15, z], [x - 0.4, y + 0.3, z]);
+            seg(P, [x, y + 0.15, z], [x, y, z]);
+            c.poly.pts = P; c.poly.pairs = true;
+        },
+        deer: function (c, dt, d, dark, dusk) {
+            if (!dusk || c.gone) { c.poly.pts = []; if (!dusk) c.gone = false; return; }
+            if (d < 7 && !c.fled) { c.fled = true; c.t = 0; c.a = Math.atan2(c.z - cam.z, c.x - cam.x); }
+            if (c.fled) { c.x += Math.cos(c.a) * dt * 9; c.z += Math.sin(c.a) * dt * 9; if (c.t > 2.5) { c.gone = true; c.fled = false; c.x = c.hx; c.z = c.hz; } }
+            var y = ground(c.x, c.z), x = c.x, z = c.z, P = [], head = c.fled ? 1.1 : (Math.sin(c.t * 0.6) > 0.3 ? 1.1 : 0.55), run = c.fled ? Math.sin(c.t * 12) * 0.2 : 0;
+            seg(P, [x - 0.5, y + 0.8, z], [x + 0.5, y + 0.85, z]); seg(P, [x + 0.5, y + 0.85, z], [x + 0.75, y + head, z]); seg(P, [x + 0.75, y + head, z], [x + 0.95, y + head - 0.05, z]);
+            seg(P, [x + 0.7, y + head + 0.05, z], [x + 0.65, y + head + 0.3, z]); seg(P, [x + 0.78, y + head + 0.05, z], [x + 0.85, y + head + 0.3, z]);
+            seg(P, [x - 0.4, y + 0.8, z], [x - 0.45 - run, y, z]); seg(P, [x - 0.3, y + 0.8, z], [x - 0.25 + run, y, z]); seg(P, [x + 0.3, y + 0.85, z], [x + 0.25 - run, y, z]); seg(P, [x + 0.45, y + 0.85, z], [x + 0.5 + run, y, z]);
+            seg(P, [x - 0.5, y + 0.8, z], [x - 0.65, y + 0.7, z]);
+            c.poly.pts = P; c.poly.pairs = true;
+        },
+        raccoon: function (c, dt, d, dark) {
+            if (!dark) { c.poly.pts = []; return; }
+            var x = c.x, y = c.y, z = c.z, P = [], turn = Math.sin(c.t * 0.4) * 0.1;
+            seg(P, [x - 0.35, y + 0.05, z], [x - 0.2, y + 0.3, z]); seg(P, [x - 0.2, y + 0.3, z], [x + 0.2, y + 0.3, z]); seg(P, [x + 0.2, y + 0.3, z], [x + 0.35 + turn, y + 0.15, z]);
+            seg(P, [x + 0.25, y + 0.3, z], [x + 0.2, y + 0.42, z]); seg(P, [x + 0.35, y + 0.3, z], [x + 0.38, y + 0.42, z]);
+            seg(P, [x - 0.35, y + 0.05, z], [x - 0.7, y + 0.25, z]); seg(P, [x - 0.55, y + 0.16, z], [x - 0.6, y + 0.3, z]); seg(P, [x - 0.45, y + 0.1, z], [x - 0.5, y + 0.24, z]);
+            seg(P, [x + 0.26, y + 0.24, z - 0.02], [x + 0.28, y + 0.26, z - 0.02]); seg(P, [x + 0.33, y + 0.24, z - 0.02], [x + 0.35, y + 0.26, z - 0.02]);
+            c.poly.pts = P; c.poly.pairs = true;
+        }
+    };
 
     // ---- the state -------------------------------------------------------------
     var cam = { x: 0, z: 0, y: EYE, yaw: 0, pitch: 0, fx: 0, fz: 1, rx: 1, rz: 0, cp: 1, sp: 0 };
@@ -502,7 +746,7 @@
         // Doors: the nearest within reach.
         nearDoor = null;
         var best = 99;
-        doors.forEach(function (d) { var dd = Math.hypot(d.x - cam.x, d.z - cam.z); if (dd < d.r && dd < best) { best = dd; nearDoor = d; } });
+        doors.forEach(function (d) { if (d.hidden) return; var dd = Math.hypot(d.x - cam.x, d.z - cam.z); if (dd < d.r && dd < best) { best = dd; nearDoor = d; } });
         if (nearDoor && nearDoor.kind === "hole") fall();
         if (enterButton) enterButton.hidden = !(nearDoor && TOUCH);
     }
@@ -592,6 +836,19 @@
         return any;
     }
 
+    // Separate segments: every two points a line.
+    function strokePairs(pts) {
+        var any = false;
+        ctx.beginPath();
+        for (var i = 0; i + 1 < pts.length; i += 2) {
+            var a = toCam(pts[i][0], pts[i][1], pts[i][2], {}), b = toCam(pts[i + 1][0], pts[i + 1][1], pts[i + 1][2], {});
+            if (a.z < NEAR && b.z < NEAR) continue;
+            if (a.z < NEAR || b.z < NEAR) { var t = (NEAR - a.z) / (b.z - a.z), m = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: NEAR }; if (a.z < NEAR) a = m; else b = m; }
+            ctx.moveTo(sx(a), sy(a)); ctx.lineTo(sx(b), sy(b)); any = true;
+        }
+        return any;
+    }
+
     // ---- gathering and drawing -----------------------------------------------------
     var items = [];
     function item(d, draw) { items.push({ d: d, draw: draw }); }
@@ -636,7 +893,7 @@
         }
         for (i = 0; i < polys.length; i++) {
             var pl = polys[i];
-            if (!pl.pts.length) continue;
+            if (!pl.pts.length || pl.hidden) continue;
             var c0 = pl.pts[0], cx = c0[0], cz = c0[2];
             if (!inView(cx, cz, 20)) continue;
             (function (pl) {
@@ -645,13 +902,14 @@
                     var a = fade(d); if (a <= 0.01) return;
                     if (pl.wall) { ctx.fillStyle = "#000"; ctx.globalAlpha = 1; if (strokePath(pl.pts, true)) ctx.fill(); }
                     ctx.strokeStyle = colorOf(pl.col); ctx.globalAlpha = a; ctx.lineWidth = pl.width;
-                    if (strokePath(pl.pts, pl.closed)) ctx.stroke();
+                    if (pl.pairs) { if (strokePairs(pl.pts)) ctx.stroke(); }
+                    else if (strokePath(pl.pts, pl.closed)) ctx.stroke();
                 });
             }(pl));
         }
         for (i = 0; i < labels.length; i++) {
             var l = labels[i];
-            if (!inView(l.x, l.z, 2)) continue;
+            if (l.hidden || !inView(l.x, l.z, 2)) continue;
             (function (l) {
                 var d = Math.hypot(l.x - cam.x, l.z - cam.z);
                 if (d > FOG * 0.6) return;
@@ -989,6 +1247,7 @@
     // ---- the things that move -------------------------------------------------------
     function animate(dt) {
         hue = (hue + dt * 8) % 360;
+        updateFauna(dt);
         anims.forEach(function (a) {
             if (a.cups) {
                 var t = clock * 4, pts = [], top = 14, x = a.x, z = a.z;
@@ -997,6 +1256,10 @@
                 a.light.col = Math.floor(clock * 2) % 2 ? "#ff3d9a" : "#550020";
             }
             if (a.marquee) a.marquee.col = ["#ffffff", "#ff3d9a", "#ffe9a0"][Math.floor(clock * 3) % 3];
+            if (a.visitor) {
+                var here = a.visitor.when(hourNow(), sunAlt());
+                a.visitor.polys.forEach(function (p) { p.hidden = !here; }); a.visitor.label.hidden = !here; a.visitor.door.hidden = !here;
+            }
             if (a.bob) {
                 var dy = a.bob.kind === "ghost" ? Math.sin(clock * 1.3) * 0.12 : (REDUCED ? 0 : (Math.random() - 0.5) * 0.03);
                 a.bob.polys.forEach(function (p, i) { p.pts = a.base[i].map(function (q) { return [q[0], q[1] + dy, q[2]]; }); });
@@ -1172,6 +1435,7 @@
                 crowd.g.gain.setTargetAtTime(Math.max(0, 1 - da / 50) * 0.05 * (0.7 + 0.3 * Math.sin(clock * 2)), ac.currentTime, 0.2);
             },
             step: function (run) { burst(0.08, run ? 0.2 : 0.13, 500); },
+            flap: function () { burst(0.06, 0.14, 1400, "bandpass"); setTimeout(function () { burst(0.06, 0.1, 1400, "bandpass"); }, 90); setTimeout(function () { burst(0.05, 0.07, 1400, "bandpass"); }, 180); },
             enter: function () { var o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(220, ac.currentTime); o.frequency.exponentialRampToValueAtTime(880, ac.currentTime + 0.5); g.gain.setValueAtTime(0.2, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.7); o.connect(g); g.connect(master); o.start(); o.stop(ac.currentTime + 0.75); },
             fall: function () { var o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(240, ac.currentTime); o.frequency.exponentialRampToValueAtTime(30, ac.currentTime + 1.3); g.gain.setValueAtTime(0.25, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 1.5); o.connect(g); g.connect(master); o.start(); o.stop(ac.currentTime + 1.6); burst(1.4, 0.2, 500); }
         };
@@ -1187,7 +1451,7 @@
     requestAnimationFrame(frame);
     window.City = {
         step: function (ms) { frame(lastFrame + ms, true); },
-        state: function () { return { mode: mode, cam: cam, doors: doors, boxes: boxes, spawn: spawn, hole: hole, river: river, arena: arena, match: match, nearDoor: nearDoor, items: items.length, still: still, seed: seed, sky: SKY, npcs: npcs, quests: Q, lapsed: lapsed }; },
+        state: function () { return { mode: mode, cam: cam, doors: doors, boxes: boxes, spawn: spawn, hole: hole, river: river, arena: arena, match: match, nearDoor: nearDoor, items: items.length, still: still, seed: seed, sky: SKY, npcs: npcs, quests: Q, lapsed: lapsed, critters: critters }; },
         talk: talk, lapse: function (on) { lapse = on; }, names: function (on) { namesOn = on; },
         begin: begin, enter: enter, render: function () { gather(); render(); }
     };

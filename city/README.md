@@ -91,6 +91,29 @@ astronomer turns the names on). Q is the log. All ten done: the sign and
 the HUD read POP. 2 and a magenta star labelled YOU appears 4.5° from the
 pole, so it never sets.
 
+## The talkers and the fauna
+
+Fourteen more figures have no errand, only `idle` lines said in turn: the
+IDoc and the 997 (a `doc` figure, a sheet with lines), RAMMER (a `tank`),
+the dolphin (on a trolley), the tide, Josh Allen (`big`), the mayor, a
+tourist, the mime (in the Julia's colours), a machine elf, the usher, the
+roadie, the sysadmin, and the cron job, which has a `when(hour, sunAlt)`
+and is only there from 04:00 to 04:36; the time-lapse brings it round.
+Hidden things carry a `hidden` flag that the gatherer, the labels and the
+doors respect.
+
+`critters` are polylines rebuilt every frame by `FAUNA[type]`, drawn as
+separate segments (`pairs`): seven pigeons walking and pecking on the
+plaza that fly off when you come within four metres (a flap of filtered
+noise) and land where they end up; three rats running the curb by the
+manhole; four bats on summed sines round two plaza lamps and eighteen
+fireflies blinking by the river, both only when the Sun is 4° under; three
+crows hopping on a mid-height roof by day; a dolphin that arcs out of the
+river for 1.6 s every 11 s near the heron; a deer on the hill when the Sun
+is between −8° and 12°, grazing and looking up, that runs off if you come
+within seven metres and comes back at the next dawn; and a raccoon with
+two bright eyes on a mailbox after dark.
+
 ## Drawing
 
 As the backrooms: quads filled black and stroked, painted back to front.
