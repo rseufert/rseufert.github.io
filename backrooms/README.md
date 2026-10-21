@@ -9,6 +9,7 @@ that walks when you are not looking. Find the way down. There is no bottom.
 | `backrooms.js` | the whole game: the generator, the renderer, the stalker, the sound |
 | `index.html`, `backrooms.css` | the page and its stylesheet |
 | `backrooms.png`, `share.jpg` | the home tile and the share image, captured from the game |
+| `../tools/ghosts.py`, `../.github/workflows/ghosts.yml` | the ghosts sent in, compiled from issues to `ghosts.json` on the `sky-data` branch |
 
 ## Drawing
 
@@ -54,6 +55,30 @@ a walk. There are 1 + level/2 of them, up to 5. One that falls far behind, or
 goes unseen for 25 s at a distance, is somewhere nearer now. Within 0.45 cells
 it has you: FOUND, and back to the start of the level with it somewhere new.
 
+## Ghosts
+
+Whoever it finds leaves a ghost. While you play, the camera's position and
+yaw are recorded ten times a second and the last thirty seconds kept; FOUND
+packs them into one line, `bk1:SEED:LEVEL:HZ:DATA`, six URL-safe base64
+characters a sample (x and z in 64ths of a cell, yaw in 4096ths of a turn),
+and stores it in `localStorage` under `backrooms-ghosts` (the newest forty).
+Entering a level gathers the ghosts of that seed and level, yours first and
+then the ones sent in, eight at most, and each walks its half minute again
+from a staggered start, loops after twenty seconds of rest, and is drawn as
+a pale blue figure in nine lines with legs that swing with the distance it
+has walked; where it ends, a cross on the floor and `found here · who`. They
+are occluded like the figures are, by line of sight. The first one you see
+on a level gets a line of text and a tick.
+
+Seeds come from a dozen (`FLOORS`), so that visitors share floors; `#seed=`
+takes any number. The *leave your ghost* link opens a prefilled issue titled
+`ghost: level L of seed S` with the line in a code block; `ghosts.yml` runs
+`tools/ghosts.py`, which keeps the open ones that match the shape, newest
+first, twenty a floor and four hundred in all, and commits `ghosts.json` to
+the `sky-data` branch, which the page fetches with `data/ghosts.json` on
+master as the fallback. Closing the issue lays the ghost to rest. Nothing in
+an issue is evaluated; a line that is not a ghost is left out.
+
 ## Sound
 
 WebAudio, built on the first click and behind the sound toggle: the hum is a
@@ -68,5 +93,5 @@ WASD or arrows walk, the mouse looks under pointer lock (click the stage;
 drag to look where the lock is refused), shift runs, esc pauses; on a touch
 screen the left thumb walks and the right looks. Fullscreen on the stage.
 Progress (seed, level, deepest, times found, sound) is in `localStorage` under
-`backrooms`; rickbot reads it. `window.Backrooms` exposes the generator and
+`backrooms`, and the ghosts under `backrooms-ghosts`; rickbot reads both. `window.Backrooms` exposes the generator and
 the state for poking at in the console.

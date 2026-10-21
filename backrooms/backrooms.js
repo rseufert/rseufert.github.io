@@ -4,7 +4,8 @@
 // that go on, a drop ceiling, a hum at 60 Hz, and something that walks
 // when you are not looking. Every level is grown from a seed, so a level
 // is the same each time you fall into it, and the next one is bigger,
-// lower and redder. There is no bottom.
+// lower and redder. There is no bottom. Whoever it finds leaves a ghost:
+// their last thirty seconds, walking the same halls for whoever comes next.
 //
 // Drawn as vectors on a plain canvas: each wall, floor and ceiling tile
 // is a quad filled black and stroked in phosphor, painted back to front,
@@ -21,6 +22,7 @@
     var soundButton = document.getElementById("backrooms-sound");
     var fullButton = document.getElementById("backrooms-full");
     var resetButton = document.getElementById("backrooms-reset");
+    var ghostLink = document.getElementById("backrooms-ghost");
     var depthOut = document.getElementById("backrooms-depth");
 
     var KEY = "backrooms";
@@ -37,11 +39,15 @@
     var WALK = 2.0, RUN = 3.3;
 
     // ---- the record --------------------------------------------------------
+    // Seeds come from a dozen, so that visitors share floors and meet each
+    // other's ghosts; #seed= in the address takes any number.
+    var FLOORS = 12;
+    function freshSeed() { return 1 + Math.floor(Math.random() * FLOORS); }
     var saved = load();
     function load() {
         var s = null;
         try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
-        if (!s || typeof s.seed !== "number") s = { seed: 1 + Math.floor(Math.random() * 999999), level: 0, best: 0, deaths: 0, sound: 1 };
+        if (!s || typeof s.seed !== "number") s = { seed: freshSeed(), level: 0, best: 0, deaths: 0, sound: 1 };
         var m = /seed=(\d+)/.exec(location.hash), l = /level=(\d+)/.exec(location.hash);
         if (m) s.seed = +m[1];
         if (l) s.level = Math.min(+l[1], 60);
@@ -49,7 +55,10 @@
     }
     function save() {
         try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* a visit's worth */ }
-        if (depthOut) depthOut.textContent = "level " + saved.level + " · deepest " + saved.best + " · found " + saved.deaths + " time" + (saved.deaths === 1 ? "" : "s");
+        if (depthOut) {
+            var n = ghostCount();
+            depthOut.textContent = "seed " + saved.seed + " · level " + saved.level + " · deepest " + saved.best + " · found " + saved.deaths + " time" + (saved.deaths === 1 ? "" : "s") + (n ? " · " + n + " ghost" + (n === 1 ? "" : "s") + " on this seed" : "");
+        }
     }
 
     // ---- random ------------------------------------------------------------
@@ -214,10 +223,12 @@
         things = [];
         var count = Math.min(1 + Math.floor(level / 2), 5);
         for (var i = 0; i < count; i++) spawn(10 + i * 3, 18 + i * 3);
-        sawExit = false; sawThing = false; levelClock = 0; fieldAt = -1;
+        sawExit = false; sawThing = false; sawGhost = false; levelClock = 0; fieldAt = -1;
+        rec = []; recClock = 0;
         saved.level = level;
         if (level > saved.best) saved.best = level;
         save();
+        haunt();
         var text = level < ARRIVALS.length ? ARRIVALS[level] : DEEPER[(level * 7 + saved.seed) % DEEPER.length].replace("%", level);
         say(again ? "the start again. it is somewhere else now. so is the way down, probably not." : text, 7);
         if (audio) audio.level(level);
@@ -296,9 +307,115 @@
     }
     function found() {
         mode = "found"; modeClock = 0;
+        keepGhost();
         saved.deaths++; save();
         if (audio) audio.found();
         say("", 0);
+    }
+
+    // ---- ghosts ------------------------------------------------------------
+    // Whoever it finds leaves a ghost: their last thirty seconds, ten
+    // positions a second, kept in this browser for this seed and level, and
+    // sent in if they choose, as an issue titled "ghost:" that a workflow
+    // compiles into ghosts.json on the sky-data branch (tools/ghosts.py). On
+    // the same seed and level the ghosts walk that half minute again, and
+    // again, and are found where they were found. They cannot see you. It
+    // cannot see them.
+    var B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    var HZ = 10, KEEP = 30 * HZ, GKEY = "backrooms-ghosts", MOST = 8;
+    var rec = [], recClock = 0, ghosts = [], book = null, lastGhost = null, sawGhost = false;
+    function enc(v) { v = Math.max(0, Math.min(4095, Math.round(v))); return B64.charAt(v >> 6) + B64.charAt(v & 63); }
+    function dec(s, i) { return B64.indexOf(s.charAt(i)) * 64 + B64.indexOf(s.charAt(i + 1)); }
+    // A ghost is one line: bk1:seed:level:hz: then six characters a sample,
+    // x and z in 64ths of a cell and the yaw in 4096ths of a turn.
+    function pack(samples, seed, level) {
+        var s = "bk1:" + seed + ":" + level + ":" + HZ + ":";
+        for (var i = 0; i < samples.length; i += 3) {
+            var yaw = samples[i + 2] % (Math.PI * 2);
+            if (yaw < 0) yaw += Math.PI * 2;
+            s += enc(samples[i] * 64) + enc(samples[i + 1] * 64) + enc(yaw / (Math.PI * 2) * 4095);
+        }
+        return s;
+    }
+    function unpack(path) {
+        var m = /^bk1:(\d{1,7}):(\d{1,2}):(\d{1,2}):([A-Za-z0-9_-]{18,1800})$/.exec(path || "");
+        if (!m || m[4].length % 6) return null;
+        var pts = [], d = m[4];
+        for (var i = 0; i < d.length; i += 6) pts.push([dec(d, i) / 64, dec(d, i + 2) / 64, dec(d, i + 4) / 4095 * Math.PI * 2]);
+        return { seed: +m[1], level: +m[2], hz: +m[3] || HZ, pts: pts };
+    }
+    function record(dt) {
+        recClock += dt;
+        if (recClock < 1 / HZ) return;
+        recClock -= 1 / HZ;
+        rec.push(cam.x, cam.z, cam.yaw);
+        if (rec.length > KEEP * 3) rec.splice(0, rec.length - KEEP * 3);
+    }
+    function localGhosts() {
+        var g = [];
+        try { g = JSON.parse(localStorage.getItem(GKEY)) || []; } catch (e) { g = []; }
+        return Array.isArray(g) ? g : [];
+    }
+    function allGhosts() { return localGhosts().concat(book && book.ghosts || []); }
+    function ghostCount() {
+        var seen = {}, n = 0;
+        allGhosts().forEach(function (g) { if (g && g.seed === saved.seed && !seen[g.path]) { seen[g.path] = 1; n++; } });
+        return n;
+    }
+    function keepGhost() {
+        if (rec.length < 3 * HZ * 3) return;                   // under three seconds is not a ghost
+        var ghost = { seed: saved.seed, level: L.level, when: new Date().toISOString().slice(0, 10), path: pack(rec, saved.seed, L.level), mine: true };
+        var g = localGhosts();
+        g.unshift(ghost);
+        try { localStorage.setItem(GKEY, JSON.stringify(g.slice(0, 40))); } catch (e) { /* a visit's worth */ }
+        offer(ghost);
+    }
+    function offer(ghost) {
+        lastGhost = ghost;
+        if (!ghostLink) return;
+        var body = "seed: " + ghost.seed + "\nlevel: " + ghost.level + "\nfound: " + ghost.when + "\n\n```\n" + ghost.path + "\n```\n\nLeft from rickseufert.com/backrooms/#seed=" + ghost.seed + "&level=" + ghost.level + ": the last thirty seconds before it found me. Keep the code block as it is; a workflow reads open issues titled \"ghost:\" into the backrooms, where whoever walks this seed and level will meet it. Closing the issue lays it to rest.";
+        ghostLink.href = "https://github.com/rseufert/rseufert.github.io/issues/new?title=" + encodeURIComponent("ghost: level " + ghost.level + " of seed " + ghost.seed) + "&body=" + encodeURIComponent(body);
+        ghostLink.textContent = "leave your ghost (level " + ghost.level + ")";
+        ghostLink.hidden = false;
+    }
+    function haunt() {
+        // The ghosts of this seed and level: yours first, then the ones sent in.
+        ghosts = [];
+        var seen = {};
+        allGhosts().forEach(function (g) {
+            if (!g || ghosts.length >= MOST || g.seed !== saved.seed || g.level !== L.level || seen[g.path]) return;
+            var u = unpack(g.path);
+            if (!u || u.seed !== g.seed || u.level !== g.level) return;
+            seen[g.path] = 1;                                    // yours, once it is sent in, is one ghost
+            ghosts.push({ pts: u.pts, hz: u.hz, t: -2 - ghosts.length * 1.5, rest: 0, by: g.by || null, mine: !!g.mine, seen: false, walked: 0, x: u.pts[0][0], z: u.pts[0][1], yaw: u.pts[0][2], done: false, lift: 0.22 + 0.07 * (ghosts.length % 4) });
+        });
+    }
+    function walk(dt) {
+        ghosts.forEach(function (g) {
+            if (g.done) {
+                g.rest += dt;
+                if (g.rest > 20) { g.done = false; g.t = -1; g.rest = 0; g.x = g.pts[0][0]; g.z = g.pts[0][1]; }
+                return;
+            }
+            g.t += dt;
+            if (g.t < 0) return;
+            var k = g.t * g.hz, n = g.pts.length - 1;
+            if (k >= n) {
+                g.done = true; g.x = g.pts[n][0]; g.z = g.pts[n][1];
+                if (audio && g.seen && visible(g.x, g.z)) audio.tick();
+                return;
+            }
+            var i = Math.floor(k), fr = k - i, a = g.pts[i], b = g.pts[i + 1];
+            var x = a[0] + (b[0] - a[0]) * fr, z = a[1] + (b[1] - a[1]) * fr;
+            g.walked += Math.hypot(x - g.x, z - g.z); g.x = x; g.z = z;
+            var dy = Math.atan2(Math.sin(b[2] - a[2]), Math.cos(b[2] - a[2]));
+            g.yaw = a[2] + dy * fr;
+            if (!g.seen && visible(g.x, g.z) && Math.hypot(g.x - cam.x, g.z - cam.z) < fogRadius() * 0.8) {
+                g.seen = true;
+                if (!sawGhost) { sawGhost = true; say(g.mine ? "that is you. that was you. it is still walking." : "someone was here before you. they are still here, a little.", 6); }
+                if (audio) audio.tick();
+            }
+        });
     }
 
     // ---- moving ------------------------------------------------------------
@@ -452,6 +569,7 @@
         ctx.globalAlpha = 1;
         notes(horizon, col, bright);
         figures(horizon, bright);
+        apparitions(horizon, bright);
         hud(col);
         if (near < 3 && !REDUCED && mode === "play") glitch((3 - near) / 3);
         if (mode === "found") foundScreen();
@@ -551,6 +669,40 @@
         });
         ctx.globalAlpha = 1;
     }
+    // The ghosts: a person in a few lines, see-through, pale blue, walking
+    // its last half minute with the legs it had; where it ends, a cross on
+    // the floor and who it was.
+    function apparitions(horizon, bright) {
+        ghosts.forEach(function (g) {
+            if (g.t < 0) return;
+            var d = Math.hypot(g.x - cam.x, g.z - cam.z);
+            if (d > fogRadius() || !visible(g.x, g.z)) return;
+            var a = fade(d) * bright * 0.75;
+            ctx.strokeStyle = "#8fe7ff";
+            if (g.done) {
+                ctx.lineWidth = 1.5; ctx.globalAlpha = a * (0.7 + 0.3 * Math.sin(clock * 2 + g.walked));
+                segment(g.x - 0.22, 0.004, g.z - 0.22, g.x + 0.22, 0.004, g.z + 0.22, horizon);
+                segment(g.x - 0.22, 0.004, g.z + 0.22, g.x + 0.22, 0.004, g.z - 0.22, horizon);
+                ctx.globalAlpha = a * 0.9;
+                label(g.mine ? "you were found here" : "found here" + (g.by ? " · " + g.by : ""), g.x, g.lift, g.z, horizon, "#8fe7ff", 0.045);
+                return;
+            }
+            if (!REDUCED) a *= 0.7 + 0.3 * Math.random();        // it is not quite there
+            var rx = cam.rx, rz = cam.rz, h = 0.62, swing = Math.sin(g.walked * 7) * 0.07;
+            function P(u, v) { return [g.x + rx * u, v, g.z + rz * u]; }
+            var lines = [
+                [P(0, 0.16), P(0, h * 0.8)],                                                                   // body
+                [P(-0.045, h * 0.8), P(0.045, h * 0.8)], [P(0.045, h * 0.8), P(0.045, h)], [P(0.045, h), P(-0.045, h)], [P(-0.045, h), P(-0.045, h * 0.8)], // head
+                [P(0, h * 0.72), P(0.09, h * 0.45 + swing)], [P(0, h * 0.72), P(-0.09, h * 0.45 - swing)],   // arms
+                [P(0, 0.16), P(0.06 + swing, 0)], [P(0, 0.16), P(-0.06 - swing, 0)]                            // legs
+            ];
+            ctx.globalAlpha = a * 0.25; ctx.lineWidth = 3;
+            lines.forEach(function (s) { segment(s[0][0], s[0][1], s[0][2], s[1][0], s[1][1], s[1][2], horizon); });
+            ctx.globalAlpha = a; ctx.lineWidth = 1;
+            lines.forEach(function (s) { segment(s[0][0], s[0][1], s[0][2], s[1][0], s[1][1], s[1][2], horizon); });
+        });
+        ctx.globalAlpha = 1;
+    }
     function hud(col) {
         ctx.font = "12px " + MONO; ctx.fillStyle = col; ctx.textBaseline = "top";
         ctx.globalAlpha = 0.85;
@@ -594,6 +746,7 @@
         ctx.fillText("FOUND", W / 2, H / 2);
         ctx.font = "13px " + MONO; ctx.fillStyle = "#fff";
         ctx.fillText("it puts you back at the start. it does not put you back the same.", W / 2, H / 2 + 50);
+        if (lastGhost && lastGhost.level === L.level && t > 0.8) ctx.fillText("your last thirty seconds stay here, walking.", W / 2, H / 2 + 72);
         ctx.globalAlpha = 1;
     }
     function dropScreen() {
@@ -612,7 +765,7 @@
     // ---- the loop ----------------------------------------------------------
     function frame(now) {
         requestAnimationFrame(frame);
-        var dt = Math.min(0.05, (now - lastFrame) / 1000 || 0);
+        var dt = Math.min(0.05, Math.max(0, (now - lastFrame) / 1000 || 0));
         var t0 = performance.now();
         lastFrame = now;
         clock += dt; modeClock += dt;
@@ -622,6 +775,8 @@
             cam.fx = Math.sin(cam.yaw); cam.fz = Math.cos(cam.yaw); cam.rx = Math.cos(cam.yaw); cam.rz = -Math.sin(cam.yaw);
             move(dt);
             stalk(dt);
+            record(dt);
+            walk(dt);
             // The lights are old.
             if (!REDUCED) {
                 if (blackout > 0) blackout -= dt;
@@ -723,7 +878,7 @@
     }
     go.addEventListener("click", begin);
     resetButton.addEventListener("click", function () {
-        saved.seed = 1 + Math.floor(Math.random() * 999999); saved.level = 0; save();
+        saved.seed = freshSeed(); saved.level = 0; save();
         if (document.exitPointerLock) document.exitPointerLock();
         mode = "title"; things = [];
         title();
@@ -814,11 +969,24 @@
     }
 
     // ---- go ----------------------------------------------------------------
+    // The ghosts sent in, from the sky-data branch, with the copy on master
+    // as the fallback; the page is whole without them.
+    fetch("https://raw.githubusercontent.com/rseufert/rseufert.github.io/sky-data/ghosts.json", { cache: "no-cache" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .catch(function () { return fetch("/data/ghosts.json").then(function (r) { return r.json(); }); })
+        .then(function (b) {
+            if (!b || !Array.isArray(b.ghosts)) return;
+            book = b;
+            if (L && mode !== "title") haunt();
+            save();
+        })
+        .catch(function () { /* unhaunted */ });
+    if (localGhosts().length) offer(localGhosts()[0]);
     resize();
     addEventListener("resize", resize);
     document.addEventListener("fullscreenchange", function () { setTimeout(resize, 50); });
     save();
     title();
     requestAnimationFrame(frame);
-    window.Backrooms = { generate: generate, field: field, state: function () { return { mode: mode, cam: cam, level: L, things: things, msg: msg, clock: clock, saved: saved }; }, render: function () { gather(); render(); } };
+    window.Backrooms = { generate: generate, field: field, pack: pack, unpack: unpack, state: function () { return { mode: mode, cam: cam, level: L, things: things, ghosts: ghosts, msg: msg, clock: clock, saved: saved }; }, render: function () { gather(); render(); } };
 })();

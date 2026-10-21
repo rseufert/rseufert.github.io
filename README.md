@@ -8,7 +8,7 @@ works, so a piece can be read and discussed on its own:
 | [`julia/`](julia/) | the Julia set strip under the menu, and the page to steer it | [README](julia/README.md) |
 | [`chat/`](chat/) | rickbot, the chat in the corner that becomes a dungeon | [README](chat/README.md) |
 | [`arena/`](arena/) | an homage to AT-Robots: tanks in a small assembly dialect | [README](arena/README.md) |
-| [`backrooms/`](backrooms/) | a wireframe under the site, levels grown from a seed | [README](backrooms/README.md) |
+| [`backrooms/`](backrooms/) | a wireframe under the site, levels grown from a seed, ghosts of whoever it found | [README](backrooms/README.md) |
 | [`dashboard/`](dashboard/) | public data feeds, drawn with D3 | [README](dashboard/README.md) |
 
 `css/main.css` is the site's bones; a toy's stylesheet sits in its folder and
@@ -158,6 +158,15 @@ and lists in `tanks.json` on the `sky-data` branch for the page to show.
 ```bash
 node arena/arena_test.js      # every preset assembles and every pairing ends; who beats whom
 ```
+
+`backrooms/` is a wireframe under the site: levels grown from a seed, a hum
+at 60 Hz, and something that only moves while you are not looking. Whoever
+it finds leaves a ghost, their last thirty seconds, which walks the same
+seed and level again for them and for whoever comes next. A ghost lives in
+the browser until it is left, which opens an issue titled `ghost: level L of
+seed S`; `ghosts.yml` compiles the open ones with `tools/ghosts.py` into
+`ghosts.json` on the `sky-data` branch, with `data/ghosts.json` on `master`
+as the fallback. Close an issue to lay one to rest.
 
 ## Licence
 
