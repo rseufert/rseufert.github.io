@@ -931,14 +931,19 @@
         if (!AC) return null;
         var ac = new AC(), master = ac.createGain();
         master.gain.value = 0; master.connect(ac.destination);
+        if (window.Unmute) Unmute(ac);
+        // A phone's speaker carries nothing much under 300 Hz, so on a touch
+        // screen the hum is let through brighter, with a harmonic, and the
+        // steps are higher, and everything is louder.
+        var PHONE = TOUCH, LOUD = PHONE ? 0.9 : 0.6;
         function osc(type, freq, gain, dest) {
             var o = ac.createOscillator(), g = ac.createGain();
             o.type = type; o.frequency.value = freq; g.gain.value = gain;
             o.connect(g); g.connect(dest || master); o.start();
             return { o: o, g: g };
         }
-        var lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 220; lp.connect(master);
-        var hum1 = osc("sawtooth", 60, 0.05, lp), hum2 = osc("sine", 120, 0.02), hum3 = osc("sine", 60.7, 0.025);
+        var lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = PHONE ? 700 : 220; lp.connect(master);
+        var hum1 = osc("sawtooth", 60, PHONE ? 0.07 : 0.05, lp), hum2 = osc("sine", 120, PHONE ? 0.04 : 0.02), hum3 = osc("sine", 60.7, 0.025), hum4 = osc("sine", 180, PHONE ? 0.03 : 0);
         var lfo = osc("sine", 0.11, 60, null); lfo.g.disconnect(); lfo.g.connect(lp.frequency);
         var thing = osc("sine", 38, 0), whine = osc("sine", 1870, 0), wlfo = osc("sine", 6, 9, null);
         wlfo.g.disconnect(); wlfo.g.connect(whine.o.frequency);
@@ -956,7 +961,8 @@
                 quietNow = q;
                 if (ac.state === "suspended") ac.resume();
                 master.gain.cancelScheduledValues(ac.currentTime);
-                master.gain.linearRampToValueAtTime(q ? 0 : 0.6, ac.currentTime + 0.4);
+                master.gain.setValueAtTime(master.gain.value, ac.currentTime);
+                master.gain.linearRampToValueAtTime(q ? 0 : LOUD, ac.currentTime + 0.4);
             },
             level: function (level) {
                 base = 60 * Math.pow(2, -level / 12);          // a semitone lower each level
@@ -964,13 +970,14 @@
                 hum1.o.frequency.exponentialRampToValueAtTime(base, t);
                 hum2.o.frequency.exponentialRampToValueAtTime(base * 2, t);
                 hum3.o.frequency.exponentialRampToValueAtTime(base * 1.012, t);
+                hum4.o.frequency.exponentialRampToValueAtTime(base * 3, t);
             },
             near: function (d, level) {
                 var k = Math.max(0, 1 - d / 8); k *= k;
                 thing.g.gain.setTargetAtTime(k * 0.35, ac.currentTime, 0.1);
                 whine.g.gain.setTargetAtTime(k * 0.012, ac.currentTime, 0.1);
             },
-            step: function (run) { burst(0.09, run ? 0.25 : 0.16, 320); },
+            step: function (run) { burst(0.09, run ? 0.25 : 0.16, PHONE ? 1200 : 320); },
             tick: function () { burst(0.04, 0.12, 4000, "bandpass"); },
             found: function () {
                 burst(1.2, 0.7, 1200);

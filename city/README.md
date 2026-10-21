@@ -140,7 +140,10 @@ the arena's wall except at the gate, and the edge of the world.
 Behind a toggle kept in `localStorage` under `city-sound`: wind (looped
 noise through a wandering lowpass), footsteps, the river louder as you
 near it, a 60 Hz hum rising over the manhole, a murmur near the arena, a
-rising sweep on entering and a falling one on falling in.
+rising sweep on entering and a falling one on falling in. On a touch screen
+the wind, the water and the hum are let through brighter and the steps
+higher, for a phone's speaker, and the master is louder; `js/unmute.js`
+does what an iPhone needs before Web Audio is heard.
 
 ## Poking
 

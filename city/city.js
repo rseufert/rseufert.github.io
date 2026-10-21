@@ -1424,6 +1424,8 @@
         if (!AC) return null;
         var ac = new AC(), master = ac.createGain();
         master.gain.value = 0; master.connect(ac.destination);
+        if (window.Unmute) Unmute(ac);
+        var PHONE = TOUCH, LOUD = PHONE ? 0.9 : 0.6;                 // a phone's speaker: brighter and louder
         var noise = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), data = noise.getChannelData(0);
         for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
         function loop(freq, gain, type) {
@@ -1432,11 +1434,11 @@
             s.connect(fl); fl.connect(g); g.connect(master); s.start();
             return { g: g, f: fl };
         }
-        var wind = loop(380, 0.08), lfo = ac.createOscillator(), lg = ac.createGain();
-        lfo.frequency.value = 0.07; lg.gain.value = 220; lfo.connect(lg); lg.connect(wind.f.frequency); lfo.start();
-        var water = loop(900, 0), crowd = loop(700, 0, "bandpass");
+        var wind = loop(PHONE ? 900 : 380, PHONE ? 0.12 : 0.08), lfo = ac.createOscillator(), lg = ac.createGain();
+        lfo.frequency.value = 0.07; lg.gain.value = PHONE ? 400 : 220; lfo.connect(lg); lg.connect(wind.f.frequency); lfo.start();
+        var water = loop(PHONE ? 1600 : 900, 0), crowd = loop(700, 0, "bandpass");
         var hum = ac.createOscillator(), hg = ac.createGain(), hl = ac.createBiquadFilter();
-        hum.type = "sawtooth"; hum.frequency.value = 60; hl.type = "lowpass"; hl.frequency.value = 180; hg.gain.value = 0;
+        hum.type = "sawtooth"; hum.frequency.value = 60; hl.type = "lowpass"; hl.frequency.value = PHONE ? 600 : 180; hg.gain.value = 0;
         hum.connect(hl); hl.connect(hg); hg.connect(master); hum.start();
         function burst(len, gain, freq, type) {
             var s = ac.createBufferSource(), g = ac.createGain(), fl = ac.createBiquadFilter();
@@ -1448,7 +1450,8 @@
             quiet: function (q) {
                 if (ac.state === "suspended") ac.resume();
                 master.gain.cancelScheduledValues(ac.currentTime);
-                master.gain.linearRampToValueAtTime(q ? 0 : 0.6, ac.currentTime + 0.4);
+                master.gain.setValueAtTime(master.gain.value, ac.currentTime);
+                master.gain.linearRampToValueAtTime(q ? 0 : LOUD, ac.currentTime + 0.4);
             },
             where: function (cam, hole, river, arena) {
                 var dr = river ? Math.max(0, Math.min(Math.abs(cam.z - river.z0), Math.abs(cam.z - river.z1), cam.z > river.z0 && cam.z < river.z1 ? 0 : 99)) : 99;
@@ -1458,7 +1461,7 @@
                 var da = arena ? Math.hypot(cam.x - arena.cx, cam.z - arena.cz) : 99;
                 crowd.g.gain.setTargetAtTime(Math.max(0, 1 - da / 50) * 0.05 * (0.7 + 0.3 * Math.sin(clock * 2)), ac.currentTime, 0.2);
             },
-            step: function (run) { burst(0.08, run ? 0.2 : 0.13, 500); },
+            step: function (run) { burst(0.08, run ? 0.2 : 0.13, PHONE ? 1200 : 500); },
             flap: function () { burst(0.06, 0.14, 1400, "bandpass"); setTimeout(function () { burst(0.06, 0.1, 1400, "bandpass"); }, 90); setTimeout(function () { burst(0.05, 0.07, 1400, "bandpass"); }, 180); },
             enter: function () { var o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(220, ac.currentTime); o.frequency.exponentialRampToValueAtTime(880, ac.currentTime + 0.5); g.gain.setValueAtTime(0.2, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.7); o.connect(g); g.connect(master); o.start(); o.stop(ac.currentTime + 0.75); },
             fall: function () { var o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(240, ac.currentTime); o.frequency.exponentialRampToValueAtTime(30, ac.currentTime + 1.3); g.gain.setValueAtTime(0.25, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 1.5); o.connect(g); g.connect(master); o.start(); o.stop(ac.currentTime + 1.6); burst(1.4, 0.2, 500); }

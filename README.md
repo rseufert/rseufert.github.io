@@ -161,6 +161,11 @@ and lists in `tanks.json` on the `sky-data` branch for the page to show.
 node arena/arena_test.js      # every preset assembles and every pairing ends; who beats whom
 ```
 
+`js/unmute.js` is what an iPhone needs before Web Audio is heard (a
+moment of silence through an audio element, so the ringer switch does not
+mute the page, and a resume on return); the backrooms, the city, the intro
+and the arena load it.
+
 `backrooms/` is a wireframe under the site: levels grown from a seed, a hum
 at 60 Hz, and something that only moves while you are not looking. Whoever
 it finds leaves a ghost, their last thirty seconds, which walks the same
