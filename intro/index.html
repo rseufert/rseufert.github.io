@@ -1,0 +1,43 @@
+---
+layout: default
+css: /intro/intro.css
+title: Intro
+description: A cracktro for rickseufert.com. A plasma, a starfield, copper bars, a logo turning in three dimensions, a scroller on a sine wave greeting everyone, and a chiptune written at midnight by a seed.
+image: /intro/share.jpg
+nostrip: true
+---
+<div class="intro-page">
+<h1>Intro</h1>
+<p class="lede">Before a cracked game loaded, there was this. A plasma, a starfield, copper bars, the
+logo turning in three dimensions, a scroller on a sine wave greeting everyone the group knew, and a
+chiptune, all of it on a machine with less memory than this paragraph. The site has one now. The
+machine elves cracked it; the original was supplied by Rick. The tune is written from the date, so
+there is a new one at midnight and the same one all day.</p>
+
+<div class="stage" id="intro-room">
+  <canvas id="intro-stage" width="480" height="270" aria-label="the intro: a plasma, stars, copper bars, the logo RICK turning, and a scroller"></canvas>
+  <div class="veil" id="intro-veil">
+    <p class="banner">RICK / ELVES</p>
+    <p>a cracktro, with sound. press fire.</p>
+    <p><button type="button" id="intro-go">fire</button></p>
+  </div>
+</div>
+
+<div class="bar">
+  <p class="hint"><kbd>n</kbd> another tune &middot; <kbd>m</kbd> silence &middot; <kbd>f</kbd> the whole screen &middot; the greetings scroll by on their own</p>
+  <p class="buttons"><button type="button" id="intro-sound">sound</button> <button type="button" id="intro-next">another tune</button> <button type="button" id="intro-full">fullscreen</button> <output id="intro-tune" class="tune"></output></p>
+</div>
+
+<p>It is drawn on a canvas 480 pixels wide, scaled up without smoothing, so the pixels are the
+size they used to be. The letters are a stroke font kept as line segments; the logo is the same
+letters pushed out into a third dimension, turned, and projected by hand, front and back joined so
+they read as solid, which they are not. The copper bars are the Amiga's trick of changing the colour
+between scanlines, done here with rectangles. The tune is a four-channel tracker on WebAudio: a
+pulse lead with a second voice a little sharp, a triangle bass, the chord played one note at a time
+very quickly, which is how a chip with three voices pretended to have more, and drums made of noise
+and a falling sine. The song, a key, a scale, a progression, a tempo, two melodies and a bass figure,
+is drawn by a seeded random from the date; the row playing is in the corner, as a tracker showed
+it. <a href="https://github.com/rseufert/rseufert.github.io/blob/master/intro/intro.js">One script</a>,
+no library. Greetings to everyone in the scroller, and to you.</p>
+</div>
+<script src="/intro/intro.js?v={{ site.time | date: '%s' }}"></script>
