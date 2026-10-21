@@ -17,6 +17,23 @@ dialect, pick opponents from the presets, and watch them fight.
 | `data/tanks.json` | the sent-in list's fallback copy on master |
 | `arena.png`, `share.jpg` | the home tile and the share image |
 
+## Watching
+
+The engine keeps only what the fight needs; the page draws the rest
+(`arena.js`, the effects layer). It hooks a match's `hurt` and reads its
+log, recording as the engine steps and ageing as frames draw, so it looks
+the same at any speed: trails, missile streaks and muzzle flashes, hit
+flashes and floating damage, sparks and a lit wall where one was hit,
+armor as an arc and heat as the hull warming toward red, scans that linger,
+a kill feed, debris and a scorch mark and a wreck where a tank died, a
+moment of slow motion on a kill while others still stand, and the winner's
+name at the end. The camera shows the whole field, frames whatever is left
+of the fight, or follows the selected tank (click one). Sound is behind a
+toggle, kept in `localStorage`: shots, hits, walls, kills, and a whine that
+rises with the selected tank's heat. The replay slider scrubs the match
+back to any tick: a seeded match is the same every time, so it is simply
+fought over from the start to that point, in no time at all.
+
 ## The dialect
 
 Registers `ax bx cx dx`, memory `[n]`, labels `:name`, `#name` and `#config`

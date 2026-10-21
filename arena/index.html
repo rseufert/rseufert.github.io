@@ -21,7 +21,10 @@ the presets, and press fight. Everything runs in this page.</p>
       <button type="button" id="arena-step">step</button>
       <label>speed <select id="arena-speed"><option selected>1</option><option>2</option><option>4</option><option>8</option></select>&times;</label>
       <label>seed <input id="arena-seed" type="number" min="1" max="99999" value="1" size="5"></label>
+      <label>camera <select id="arena-camera"><option value="whole" selected>whole</option><option value="frame">the fight</option><option value="follow">selected</option></select></label>
+      <button type="button" id="arena-sound">sound</button>
     </p>
+    <p class="replay"><label>replay <input type="range" id="arena-scrub" min="0" max="0" value="0" step="1" aria-label="scrub the match back to any tick"></label></p>
     <ol class="score" id="arena-score"></ol>
     <p class="status" id="arena-status">pick your opponents, write your tank, and fight.</p>
     <div class="debug" id="arena-debug" hidden></div>
