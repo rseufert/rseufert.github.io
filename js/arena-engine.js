@@ -31,15 +31,16 @@
 // The arena is 1000 by 1000. Each tick every tank runs five instructions
 // (delay n costs n), then moves; heat from firing and overburn is shed by
 // the heatsinks, a tank at 475 shuts down until it cools, and at 500 it
-// burns. Missiles fly straight and miss. Walls hurt in proportion to speed.
-// The match ends with one tank standing, or on the time limit, on armor.
+// burns. Missiles fly straight and miss. Walls hurt with the square of the
+// speed. After a minute everyone loses two points of armor a second. The
+// match ends with one tank standing, or on the time limit, on armor.
 (function (root, factory) {
     if (typeof module === "object" && module.exports) module.exports = factory();
     else root.Arena = factory();
 }(typeof self !== "undefined" ? self : this, function () {
     "use strict";
 
-    var SIZE = 1000, RADIUS = 15, CYCLES = 5, MAX_TICKS = 18000;
+    var SIZE = 1000, RADIUS = 15, CYCLES = 5, MAX_TICKS = 12000;
     var REGS = { ax: 0, bx: 1, cx: 2, dx: 3 };
     var PORTS = {
         speedo: 1, heat: 2, compass: 3, tofs: 4, theading: 5, damage: 6, scan: 7, accuracy: 8, radar: 9, random: 10,
@@ -294,7 +295,7 @@
         }
     };
 
-    Match.prototype.maxSpeed = function (r) { return 4 * r.factor("engine") * (r.overburn ? 1.3 : 1); };
+    Match.prototype.maxSpeed = function (r) { return 3.5 * r.factor("engine") * (r.overburn ? 1.3 : 1); };
     Match.prototype.scanRange = function (r) { return 500 * r.factor("scanner"); };
 
     // The scanner: the nearest other tank within the arc, and where in it.
@@ -326,10 +327,10 @@
         if (r.cooldown > 0 || r.down) return;
         r.cooldown = 8;
         r.shots++;
-        var spread = (this.rand() - 0.5) * 3;
+        var spread = (this.rand() - 0.5) * 1.5;
         var h = norm(r.heading + r.turret + adjust * r.arc / 4 + spread);
         r.heat += 15 * (r.overburn ? 1.5 : 1);
-        this.missiles.push({ x: r.x, y: r.y, h: h, owner: r.id, speed: 30 * (r.overburn ? 1.25 : 1), range: 1500,
+        this.missiles.push({ x: r.x, y: r.y, h: h, owner: r.id, speed: 50 * (r.overburn ? 1.25 : 1), range: 1500,
             damage: 8 * r.factor("weapon") * (r.overburn ? 1.3 : 1) });
     };
     Match.prototype.kill = function (r, by, how) {
@@ -387,7 +388,7 @@
             if (r.y < RADIUS) { r.y = RADIUS; hit = true; }
             if (r.y > SIZE - RADIUS) { r.y = SIZE - RADIUS; hit = true; }
             if (hit) {
-                if (Math.abs(r.speed) > 1) { self.hurt(r, Math.abs(r.speed), null, "drove into a wall"); r.collisions++; self.bursts.push({ x: r.x, y: r.y, t: 0, size: 10 }); }
+                if (Math.abs(r.speed) > 1) { self.hurt(r, r.speed * r.speed / 2, null, "drove into a wall"); r.collisions++; self.bursts.push({ x: r.x, y: r.y, t: 0, size: 10 }); }
                 r.speed = 0;
             }
         });
@@ -399,13 +400,16 @@
             if (d < 2 * RADIUS && d > 0) {
                 var push = (2 * RADIUS - d) / 2;
                 a.x -= dx / d * push; a.y -= dy / d * push; b.x += dx / d * push; b.y += dy / d * push;
-                a.speed *= 0.5; b.speed *= 0.5; a.collisions++; b.collisions++;
-                self.hurt(a, 1, b, "rammed"); self.hurt(b, 1, a, "rammed");
+                a.speed *= 0.5; b.speed *= 0.5;
+                if (self.tick % 6 === 0) {
+                    a.collisions++; b.collisions++;
+                    self.hurt(a, 2, b, "rammed"); self.hurt(b, 2, a, "rammed");
+                }
             }
         }
         // missiles
         this.missiles = this.missiles.filter(function (m) {
-            var steps = 4, dx = Math.cos(m.h * RAD) * m.speed / steps, dy = Math.sin(m.h * RAD) * m.speed / steps;
+            var steps = 5, dx = Math.cos(m.h * RAD) * m.speed / steps, dy = Math.sin(m.h * RAD) * m.speed / steps;
             for (var s = 0; s < steps; s++) {
                 m.x += dx; m.y += dy; m.range -= m.speed / steps;
                 if (m.x < 0 || m.y < 0 || m.x > SIZE || m.y > SIZE || m.range <= 0) { self.bursts.push({ x: m.x, y: m.y, t: 0, size: 6 }); return false; }
@@ -422,6 +426,8 @@
             return true;
         });
         this.bursts = this.bursts.filter(function (b) { return ++b.t < 18; });
+        // After a minute the crowd gets bored: everyone loses two points of armor a second.
+        if (this.tick > 3600 && this.tick % 30 === 0) alive.forEach(function (r) { self.hurt(r, 1, null, "wore out"); });
         this.tick++;
         var left = this.alive();
         if (left.length <= 1 || this.tick >= this.maxTicks) {

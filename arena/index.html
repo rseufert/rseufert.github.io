@@ -60,7 +60,7 @@ the presets, and press fight. Everything runs in this page.</p>
     <tr><th>interrupts</th><td><code>int @locate</code> ax, bx = x, y &middot; <code>int @keepshift</code> ax = 1 to let the turret keep its heading &middot; <code>@overburn</code> &middot; <code>@id</code> &middot; <code>@timer</code> &middot; <code>@angle</code> ax, bx = a point, ax = the heading to it &middot; <code>@game</code> ax = tanks alive &middot; <code>@collisions</code> &middot; <code>@resetcol</code> &middot; <code>@kills</code> &middot; <code>@reset</code> &middot; <code>@destruct</code></td></tr>
     <tr><th>config</th><td><code>#config scanner=3 weapon=3 armor=2 engine=2 heatsinks=2</code>: twelve points, 0 to 5 each. Scanner is range, weapon is damage, armor is what you take, engine is speed, heatsinks shed the heat that firing and overburn build. At 475 heat a tank shuts down until it cools; at 500 it burns.</td></tr>
   </table>
-  <p>Headings are degrees, 0 to the right, clockwise on screen. The arena is 1000 by 1000. Walls hurt in proportion to speed. A missile flies straight, a little wild, and a tank fires at most every eight ticks. The match ends with one tank standing, or after five minutes, on armor.</p>
+  <p>Headings are degrees, 0 to the right, clockwise on screen. The arena is 1000 by 1000. Walls hurt with the square of the speed; ramming costs both tanks. A missile flies straight, a little wild, and a tank fires at most every eight ticks. After a minute everyone loses two points of armor a second, so a match that has gone quiet still ends; it ends with one tank standing, or on armor.</p>
 </details>
 </div>
 <script src="/js/arena-engine.js"></script>
