@@ -19,18 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-What the licence covers
-
-The MIT licence above applies to the code in this repository: the scripts,
-stylesheets, page templates, tools and workflows, including the toys (the
-Julia strip and page, rickbot, the arena, the backrooms, the dashboard).
-
-It does not apply to the content. The blog posts, the resume, the photographs
-and other images, the films and the music references are copyright Rick
-Seufert, all rights reserved, unless a file says otherwise. Third-party
-material belongs to its owners: D3 and topojson-client carry their own
-licences (dashboard/), the Natural Earth coastlines are public domain, and
-the photograph of Josh Allen on the home page is not mine to license.
