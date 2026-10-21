@@ -15,7 +15,7 @@ works, so a piece can be read and discussed on its own:
 the page names it in its front matter (`css:`), which the layout links after
 the bones. `js/` holds only what the site shares: the films, the hero photo's
 dream, the home page's one dashboard tile. The code is MIT; the posts and
-pictures are not (see [LICENSE](LICENSE)).
+pictures are not (see the licence note at the end).
 
 The home page is an index: one film, the purchase that crosses all three
 mocks, then each project as a tile, the dashboard as one of its numbers, the
@@ -153,3 +153,16 @@ ports and the rules are at the foot of the page and the top of the engine.
 ```bash
 node arena/arena_test.js      # every preset assembles and every pairing ends; who beats whom
 ```
+
+## Licence
+
+The [MIT licence](LICENSE) applies to the code in this repository: the scripts,
+stylesheets, page templates, tools and workflows, including the toys (the
+Julia strip and page, rickbot, the arena, the backrooms, the dashboard).
+
+It does not apply to the content. The blog posts, the resume, the photographs
+and other images, the films and the music references are copyright Rick
+Seufert, all rights reserved, unless a file says otherwise. Third-party
+material belongs to its owners: D3 and topojson-client carry their own
+licences (dashboard/), the Natural Earth coastlines are public domain, and
+the photograph of Josh Allen on the home page is not mine to license.
