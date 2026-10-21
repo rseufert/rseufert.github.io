@@ -34,7 +34,7 @@ the presets, and press fight. Everything runs in this page.</p>
   </div>
   <div class="editor">
     <h2>Your tank</h2>
-    <div class="code"><pre class="gutter" id="arena-gutter" aria-hidden="true"></pre><textarea id="arena-source" spellcheck="false" autocomplete="off" aria-label="your tank's program" rows="24"></textarea></div>
+    <div class="code"><pre class="gutter" id="arena-gutter" aria-hidden="true"></pre><textarea id="arena-source" spellcheck="false" autocomplete="off" aria-label="your tank's program" rows="24" cols="72"></textarea></div>
     <p class="errors" id="arena-errors"></p>
     <p class="buttons">
       <button type="button" id="arena-assemble">assemble &amp; fight</button>
@@ -63,6 +63,6 @@ the presets, and press fight. Everything runs in this page.</p>
   <p>Headings are degrees, 0 to the right, clockwise on screen. The arena is 1000 by 1000. Walls hurt with the square of the speed; ramming costs both tanks. A missile flies straight, a little wild, and a tank fires at most every eight ticks. After a minute everyone loses two points of armor a second, so a match that has gone quiet still ends; it ends with one tank standing, or on armor.</p>
 </details>
 </div>
-<script src="/js/arena-engine.js"></script>
-<script src="/js/arena-robots.js"></script>
-<script src="/js/arena.js"></script>
+<script src="/js/arena-engine.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/js/arena-robots.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/js/arena.js?v={{ site.time | date: '%s' }}"></script>
