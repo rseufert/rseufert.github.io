@@ -11,7 +11,8 @@
 //
 //   read   1 speedo  2 heat  3 compass  4 tofs (turret offset)  5 theading
 //          6 damage  7 scan (range to the nearest enemy in the scanner's arc,
-//          0 for none)  8 accuracy (-2..2, where in the arc it was)  9 radar
+//          0 for none)  8 accuracy (-2..2, where in the arc the last scan
+//          found it)  9 radar
 //          (range to the nearest enemy, any direction)  10 random
 //   write 11 throttle (-75..100)  12 rotate (turn the turret by)  13 aim
 //          (set the turret offset)  14 steer (turn the body by)  15 fire
@@ -272,7 +273,7 @@
             case 5: return Math.round(norm(r.heading + r.turret));
             case 6: return Math.round(100 - r.armor);
             case 7: return this.scan(r);
-            case 8: return r.lastScan && r.scanAge === 0 ? r.lastScan.accuracy : 0;
+            case 8: return r.lastScan ? r.lastScan.accuracy : 0;   // the last scan's, until the next
             case 9: return this.radar(r);
             case 10: return Math.floor(this.rand() * 65536);
             default: return 0;

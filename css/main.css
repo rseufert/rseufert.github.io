@@ -197,9 +197,9 @@ canvas.julia {
 /* The arena (arena/index.html, js/arena.js): the canvas, a side panel, the
    roster and the editor. */
 .arena-page .lede { color: var(--soft); }
-.arena-page .stage { display: flex; gap: 20px; align-items: flex-start; margin: 20px 0; }
-.arena-page canvas { flex: none; width: 520px; max-width: 100%; height: auto; aspect-ratio: 1; background: #0b0b10; border: 1px solid var(--rule); }
-.arena-page .side { flex: 1; min-width: 0; font: 13px/1.5 var(--mono); }
+.arena-page .stage { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin: 20px 0; }
+.arena-page canvas { flex: 1 1 340px; min-width: 0; width: 100%; max-width: min(520px, 100%); height: auto; aspect-ratio: 1; background: #0b0b10; border: 1px solid var(--rule); }
+.arena-page .side { flex: 1 1 240px; min-width: 0; font: 13px/1.5 var(--mono); }
 .arena-page .controls { margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
 .arena-page label { font: inherit; color: var(--soft); }
 .arena-page button, .arena-page select, .arena-page input[type=number] {
@@ -242,8 +242,7 @@ canvas.julia {
 .arena-page .reference td { padding: 6px 0; border-top: 1px solid var(--code-rule); }
 .arena-page .reference code { font-family: var(--mono); background: var(--code-bg); padding: 1px 4px; }
 @media (max-width: 900px) {
-    .arena-page .stage, .arena-page .workshop { flex-direction: column; }
-    .arena-page canvas { width: 100%; }
+    .arena-page .workshop { flex-direction: column; }
     .arena-page .roster { flex: none; }
 }
 
