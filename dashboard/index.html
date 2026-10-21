@@ -1,5 +1,6 @@
 ---
 layout: default
+css: /dashboard/dashboard.css
 title: "dashboard: Portland, mountains, sky, Treasury"
 description: "Public data feeds drawn with D3: the US national debt to the penny, the Treasury's cash balance, what it pays to borrow, central bank policy rates, and Portland's weather, air, rivers, BIKETOWN bikes and nearby earthquakes, the Cascade volcanoes and Mount Hood's earthquakes, freezing level and snow, and asteroid flybys, fireballs, space weather and NASA's natural event tracker."
 ---
@@ -193,6 +194,6 @@ description: "Public data feeds drawn with D3: the US national debt to the penny
 		<details class="table"><summary>table</summary><div></div></details>
 	</figure>
 </section><!-- /.dash -->
-<script src="/js/d3.v7.min.js?v={{ site.time | date: '%s' }}" defer></script>
-<script src="/js/topojson-client.min.js?v={{ site.time | date: '%s' }}" defer></script>
-<script src="/js/dashboard.js?v={{ site.time | date: '%s' }}" defer></script>
+<script src="/dashboard/d3.v7.min.js?v={{ site.time | date: '%s' }}" defer></script>
+<script src="/dashboard/topojson-client.min.js?v={{ site.time | date: '%s' }}" defer></script>
+<script src="/dashboard/dashboard.js?v={{ site.time | date: '%s' }}" defer></script>

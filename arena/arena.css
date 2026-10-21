@@ -1,0 +1,54 @@
+/* The arena: the stylesheet for arena/index.html. The site's bones are in css/main.css;
+   this page links this file after it (the layout reads `css:` from the front matter). */
+
+/* The arena (arena/index.html, arena/arena.js): the canvas, a side panel, the
+   roster and the editor. */
+.arena-page .lede { color: var(--soft); }
+.arena-page .stage { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin: 20px 0; }
+.arena-page canvas { flex: 1 1 340px; min-width: 0; width: 100%; max-width: min(520px, 100%); height: auto; aspect-ratio: 1; background: #0b0b10; border: 1px solid var(--rule); }
+.arena-page .side { flex: 1 1 240px; min-width: 0; font: 13px/1.5 var(--mono); }
+.arena-page .controls { margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.arena-page label { font: inherit; color: var(--soft); }
+.arena-page button, .arena-page select, .arena-page input[type=number] {
+    font: 13px var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 5px 10px; cursor: pointer;
+}
+.arena-page input[type=number] { width: 70px; cursor: text; }
+.arena-page button:hover { border-color: var(--accent); color: var(--accent); }
+.arena-page .score { list-style: none; padding: 0; margin: 0 0 10px; }
+.arena-page .score li { display: grid; grid-template-columns: 110px 1fr 1fr 90px; gap: 8px; align-items: center; margin: 0 0 6px; }
+.arena-page .score li.dead { opacity: 0.5; }
+.arena-page .score .pick { padding: 2px 4px; border: 1px solid transparent; background: none; text-align: left; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.arena-page .score li.selected .pick { border-color: var(--rule); }
+.arena-page .score .swatch { flex: none; width: 10px; height: 10px; }
+.arena-page .score .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arena-page .score .bar { display: block; height: 8px; background: var(--code-rule); }
+.arena-page .score .bar span { display: block; height: 100%; background: var(--accent); }
+.arena-page .score .bar.heat span { background: #ff0050; }
+.arena-page .score .state { color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arena-page .status { color: var(--soft); margin: 0 0 10px; }
+.arena-page .debug { white-space: pre-wrap; color: var(--faint); background: var(--code-bg); border: 1px solid var(--code-rule); padding: 8px 10px; font-size: 12px; }
+.arena-page .workshop { display: flex; gap: 30px; align-items: flex-start; margin: 30px 0; }
+.arena-page .roster { flex: 0 0 300px; }
+.arena-page .roster ul { list-style: none; padding: 0; margin: 0; font: 13px/1.5 var(--mono); }
+.arena-page .roster li { margin: 0 0 10px; }
+.arena-page .roster label { font-weight: bold; }
+.arena-page .roster .about { display: block; color: var(--soft); font-family: inherit; }
+.arena-page .editor { flex: 1; min-width: 0; }
+.arena-page h2 { font-size: 1.4em; margin: 0 0 6px; }
+.arena-page .code { display: flex; border: 1px solid var(--rule); background: var(--code-bg); font: 13px/1.45 var(--mono); }
+.arena-page .gutter { margin: 0; padding: 10px 8px; color: var(--faint); text-align: right; user-select: none; overflow: hidden; border-right: 1px solid var(--code-rule); font: inherit; }
+.arena-page textarea { flex: 1; min-width: 0; margin: 0; padding: 10px; border: 0; background: none; color: var(--ink); font: inherit; resize: vertical; white-space: pre; overflow: auto; tab-size: 2; }
+.arena-page textarea:focus { outline: none; }
+.arena-page .code:focus-within { border-color: var(--accent); }
+.arena-page .errors { white-space: pre-wrap; color: #ff0050; font: 13px/1.5 var(--mono); margin: 8px 0; min-height: 1.5em; }
+.arena-page .buttons { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.arena-page .reference { margin: 30px 0; }
+.arena-page .reference summary { cursor: pointer; font-family: var(--mono); color: var(--accent); }
+.arena-page .reference table { border-collapse: collapse; margin: 12px 0; font-size: 0.95em; }
+.arena-page .reference th { text-align: left; vertical-align: top; padding: 6px 12px 6px 0; white-space: nowrap; font-family: var(--mono); font-weight: normal; color: var(--soft); }
+.arena-page .reference td { padding: 6px 0; border-top: 1px solid var(--code-rule); }
+.arena-page .reference code { font-family: var(--mono); background: var(--code-bg); padding: 1px 4px; }
+@media (max-width: 900px) {
+    .arena-page .workshop { flex-direction: column; }
+    .arena-page .roster { flex: none; }
+}

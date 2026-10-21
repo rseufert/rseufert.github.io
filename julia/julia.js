@@ -16,7 +16,7 @@
 // is magnified.
 //
 // Left alone for a while, unless pinned, c eases onto the walk the strip
-// follows (js/julia-set.json, charted by tools/julia_set.jl) and wanders
+// follows (julia/julia-set.json, charted by tools/julia_set.jl) and wanders
 // along it. The palette is the visit's, shared with the strip through
 // sessionStorage, and changing it here changes the strip on the other
 // pages too. Letting go of a view puts c and the zoom in the address, so
@@ -95,7 +95,7 @@
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [2.0, 1.0, 1.0], [0.00, 0.25, 0.25]],
         [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.00, 0.10, 0.20]]
     ];
-    // A seventh, the machine elves', for whoever got them home (js/chat.js).
+    // A seventh, the machine elves', for whoever got them home (chat/chat.js).
     var ELF = [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0], [0.30, 0.65, 0.15]];
     try { if (localStorage.getItem("elf")) PALETTES.push(ELF); } catch (e) { /* no storage */ }
     window.addEventListener("elves", function () {
@@ -417,6 +417,6 @@
     if (!recall()) {
         c = target = [-0.7269, 0.1889];
     }
-    fetch("/js/julia-set.json").then(function (r) { return r.json(); }).then(lay, function () { legs = null; });
+    fetch("/julia/julia-set.json").then(function (r) { return r.json(); }).then(lay, function () { legs = null; });
     raf = requestAnimationFrame(frame);
 })();

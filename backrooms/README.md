@@ -1,0 +1,72 @@
+# Backrooms
+
+You noclipped out of the site. Under it there is only wireframe: rooms that
+go on, a drop ceiling, a hum at 60 Hz, notes on the walls, and something tall
+that walks when you are not looking. Find the way down. There is no bottom.
+
+| file | what |
+| --- | --- |
+| `backrooms.js` | the whole game: the generator, the renderer, the stalker, the sound |
+| `index.html`, `backrooms.css` | the page and its stylesheet |
+| `backrooms.png`, `share.jpg` | the home tile and the share image, captured from the game |
+
+## Drawing
+
+Vector graphics on a plain 2D canvas, the way the arcades did them before
+pixels were cheap. Every wall, floor tile and ceiling tile is a quad in world
+space. Each frame gathers the quads within the fog radius, sorts them far to
+near, transforms them into camera space, clips them against the near plane,
+projects them, fills them black and strokes them in phosphor: a painter's
+algorithm, which is how a wireframe keeps what is behind a wall behind it. The
+stroke fades with distance (the fog), the lights flicker, and deeper down
+they black out. A second, wide, faint stroke is the glow; it switches itself
+off when a frame takes more than 18 ms. Scanlines and a vignette are CSS on
+the stage. When it is close, slices of the frame are copied sideways.
+
+Constants at the top: `NEAR` 0.06, `EYE` 0.42 (ceilings start at 0.8), `FOV`
+78°, `WALK` 2 and `RUN` 3.3 cells a second. The focal length is the longer of
+the horizontal and a 70° vertical, so a phone in portrait gets a narrower
+view rather than a taller one.
+
+## Levels
+
+`generate(seed, level)` is deterministic, so a level is the same each time
+you fall into it, and `#seed=N&level=M` in the address reproduces one. The
+grid is 16 + 3·level cells a side, up to 44. Rooms are dropped until they
+overlap (the backrooms are not architecture), joined by L-shaped corridors
+with a few extra for loops, pillars grow on a 3-cell grid where there is room,
+nooks open off the sides, and whatever the start cannot reach is filled back
+in. The way down is a cell among the farthest 15%. Each level is a semitone
+lower in the hum and a colour further along (amber, acid, cyan, magenta, red,
+violet, white); from level 3 ceilings vary room to room and a lintel is drawn
+where they step; from level 8 the odd hall is tall. Notes are placed on walls
+at least four steps from the start, from a list of site lore. The fog radius
+is 11 − 0.6·level, no less than 4.5.
+
+## It
+
+A tall stooped figure in a few white lines, red up close, with static where a
+face would be; it flickers when far. It walks the breadth-first distance field
+toward you while you are not looking and freezes while you are (within
+9 − 0.6·level cells, no less than 3; beyond that it keeps coming even in view).
+Speed is 1.4 + 0.22·level cells a second, up to 3, so from level 4 it outpaces
+a walk. There are 1 + level/2 of them, up to 5. One that falls far behind, or
+goes unseen for 25 s at a distance, is somewhere nearer now. Within 0.45 cells
+it has you: FOUND, and back to the start of the level with it somewhere new.
+
+## Sound
+
+WebAudio, built on the first click and behind the sound toggle: the hum is a
+60 Hz sawtooth through a slowly wandering lowpass, a 120 Hz sine and a
+60.7 Hz sine beating against it, dropping a semitone a level; footsteps are
+filtered noise; a 38 Hz drone and a wavering 1.87 kHz whine rise as it nears;
+the fall is a sine sweep down, the catch a sawtooth sweep and a burst.
+
+## Controls and state
+
+WASD or arrows walk, the mouse looks under pointer lock (click the stage;
+drag to look where the lock is refused), shift runs, esc pauses; on a touch
+screen the left thumb walks and the right looks. Fullscreen on the stage.
+Progress (seed, level, deepest, times found, sound) is in `localStorage` under
+`backrooms`; rickbot reads it. `window.Backrooms` exposes the generator and
+the state for poking at in the console.

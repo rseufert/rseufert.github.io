@@ -1,8 +1,8 @@
 // The arena (arena/index.html): an homage to AT-Robots, Ed Toton's DOS game
 // of 1992, in which you wrote a tank in a small assembly language and watched
 // it fight. This is the assembler and the simulation, with no page in it, so
-// the same file runs the match in the browser (js/arena.js draws it), in node
-// (tools/arena_test.js) and in rickbot's dungeon (js/chat.js).
+// the same file runs the match in the browser (arena/arena.js draws it), in node
+// (arena/arena_test.js) and in rickbot's dungeon (chat/chat.js).
 //
 // The dialect is in the spirit of AT-Robots 2, not a copy of it. A robot is
 // lines of   op a, b   with registers ax bx cx dx, numbers, memory [n] or

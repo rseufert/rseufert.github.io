@@ -661,7 +661,7 @@
         }
         if (window.Arena && window.ArenaRobots) { go(); return; }
         var left = 2;
-        ["/js/arena-engine.js", "/js/arena-robots.js"].forEach(function (src) {
+        ["/arena/arena-engine.js", "/arena/arena-robots.js"].forEach(function (src) {
             var sc = document.createElement("script");
             sc.src = src;
             sc.onload = function () { if (--left === 0) go(); };
@@ -758,7 +758,7 @@
         ].forEach(function (t) { later(t, "sys"); });
         later("REALITY RESTORED.", "sys", function () {
             title.textContent = "rickbot.exe";
-            // The strip and the photo on the home page hear this (js/julia-set.js, js/hero.js).
+            // The strip and the photo on the home page hear this (julia/julia-set.js, js/hero.js).
             try { window.dispatchEvent(new CustomEvent("elves")); } catch (e) { /* old browser */ }
             if (!still) {
                 win.classList.add("glitching");

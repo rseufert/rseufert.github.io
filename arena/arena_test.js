@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Fight the arena's presets headlessly (js/arena-engine.js, js/arena-robots.js):
+// Fight the arena's presets headlessly (arena/arena-engine.js, arena/arena-robots.js):
 // every preset assembles, every pairing ends, nobody faults, and the
 // six-way match has a winner. Prints a table of who beats whom.
 //
-//     node tools/arena_test.js
+//     node arena/arena_test.js
 var path = require("path");
-var A = require(path.join(__dirname, "..", "js", "arena-engine.js"));
-var R = require(path.join(__dirname, "..", "js", "arena-robots.js"));
+var A = require(path.join(__dirname, "arena-engine.js"));
+var R = require(path.join(__dirname, "arena-robots.js"));
 var bad = 0;
 function fail(msg) { console.error("FAIL " + msg); bad++; }
 

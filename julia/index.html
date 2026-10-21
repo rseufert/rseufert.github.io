@@ -1,5 +1,6 @@
 ---
 layout: default
+css: /julia/julia.css
 title: Julia
 description: A Julia set to steer. Drag it to change c, scroll to zoom, click to pin it, and it wanders on its own when left alone.
 image: /julia/share.jpg
@@ -32,9 +33,9 @@ the catalogue of every <var>c</var>: inside it the Julia set is one piece, outsi
 a cloud of dust, and the edge is where the pictures are. The wander keeps
 just outside that edge, on an equipotential of the set, which is what the Julia
 script works out. The drawing is the
-<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/julia.js">graphics card's</a>:
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/julia/julia.js">graphics card's</a>:
 every pixel runs its own orbit, three hundred steps at most, sixty times a second.
 Letting go of a view you like puts <var>c</var> and the zoom in the address, so the
 link brings it back; pinning it keeps it from wandering off while you look.</p>
 </div>
-<script src="/js/julia.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/julia/julia.js?v={{ site.time | date: '%s' }}"></script>

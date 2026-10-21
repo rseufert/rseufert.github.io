@@ -1,5 +1,22 @@
 # rseufert.github.io
 
+Each of the site's toys is a folder of its own, with a README that says how it
+works, so a piece can be read and discussed on its own:
+
+| folder | what | notes |
+| --- | --- | --- |
+| [`julia/`](julia/) | the Julia set strip under the menu, and the page to steer it | [README](julia/README.md) |
+| [`chat/`](chat/) | rickbot, the chat in the corner that becomes a dungeon | [README](chat/README.md) |
+| [`arena/`](arena/) | an homage to AT-Robots: tanks in a small assembly dialect | [README](arena/README.md) |
+| [`backrooms/`](backrooms/) | a wireframe under the site, levels grown from a seed | [README](backrooms/README.md) |
+| [`dashboard/`](dashboard/) | public data feeds, drawn with D3 | [README](dashboard/README.md) |
+
+`css/main.css` is the site's bones; a toy's stylesheet sits in its folder and
+the page names it in its front matter (`css:`), which the layout links after
+the bones. `js/` holds only what the site shares: the films, the hero photo's
+dream, the home page's one dashboard tile. The code is MIT; the posts and
+pictures are not (see [LICENSE](LICENSE)).
+
 The home page is an index: one film, the purchase that crosses all three
 mocks, then each project as a tile, the dashboard as one of its numbers, the
 Willamette right now (`js/home-dashboard.js`, plain SVG, so the home page
@@ -72,7 +89,7 @@ python3 tools/film_stills.py           # write any still that is missing or stal
 python3 tools/film_stills.py --check   # what CI runs
 ```
 
-`dashboard/index.html` draws public data feeds with D3 (`js/dashboard.js`):
+`dashboard/index.html` draws public data feeds with D3 (`dashboard/dashboard.js`):
 Portland's weather, air, rivers, bikes and earthquakes; the Cascade
 volcanoes' alert levels and earthquakes, and Mount Hood's freezing level,
 snow and avalanche danger; asteroids, fireballs, space weather and NASA's
@@ -93,24 +110,24 @@ python3 tools/sky_data.py --check   # fetch and validate, write nothing
 ```
 
 The strip under the menu on every page is a Julia set, drawn by the
-visitor's graphics card (`js/julia-set.js`, WebGL) and zooming for ever into
+visitor's graphics card (`julia/julia-set.js`, WebGL) and zooming for ever into
 one of its fixed points while the parameter walks back and forth along an
 arc round the Mandelbrot set. The arc is charted in Julia: `tools/julia_set.jl`
 traces an equipotential just outside the set from its cusp to just short of
 its needle, follows a fixed point along it, scores how much of each view is
-near the set, and writes `js/julia-set.json`, which is all the page needs. Each visit starts somewhere along the walk at random, in
+near the set, and writes `julia/julia-set.json`, which is all the page needs. Each visit starts somewhere along the walk at random, in
 one of a few palettes, and keeps both for the visit, so the strip is at the
 same place on every page but different next time; it holds still for a
 visitor who asked for less motion, and is a link to `julia/`, the same set
-writ large and steerable (`js/julia.js`): a drag moves c, scrolling
+writ large and steerable (`julia/julia.js`): a drag moves c, scrolling
 zooms, letting go puts c and the view in the address, a click pins the set,
 and left alone it wanders the same walk. Change a constant at the top of the script and rerun it:
 
 ```bash
-julia tools/julia_set.jl            # writes js/julia-set.json; no packages
+julia tools/julia_set.jl            # writes julia/julia-set.json; no packages
 ```
 
-The [chat] tab in the corner of every page is rickbot (`js/chat.js`), a
+The [chat] tab in the corner of every page is rickbot (`chat/chat.js`), a
 virtual assistant that answers a question or two about the site and then
 confesses: reality has been hacked by extradimensional machine elves, who
 came through the strip, and the window becomes a text adventure in the old
@@ -127,12 +144,12 @@ localStorage, and RESET starts over.
 
 `arena/` is an homage to AT-Robots: write a tank in a small assembly
 dialect, pick opponents from six presets, and watch them fight.
-`js/arena-engine.js` is the assembler and the simulation, with no page in
-it, so it runs in the browser (`js/arena.js` draws it), in node and in
+`arena/arena-engine.js` is the assembler and the simulation, with no page in
+it, so it runs in the browser (`arena/arena.js` draws it), in node and in
 rickbot's dungeon, where FIGHT in the arena room borrows a preset;
-`js/arena-robots.js` holds the presets and the starter. The dialect, the
+`arena/arena-robots.js` holds the presets and the starter. The dialect, the
 ports and the rules are at the foot of the page and the top of the engine.
 
 ```bash
-node tools/arena_test.js      # every preset assembles and every pairing ends; who beats whom
+node arena/arena_test.js      # every preset assembles and every pairing ends; who beats whom
 ```

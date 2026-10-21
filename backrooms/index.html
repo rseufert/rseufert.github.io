@@ -1,5 +1,6 @@
 ---
 layout: default
+css: /backrooms/backrooms.css
 title: Backrooms
 description: You noclipped out of rickseufert.com. Under it there is only wireframe, a hum at 60 Hz, levels that grow from a seed, and something that walks when you are not looking. There is no bottom.
 image: /backrooms/share.jpg
@@ -29,10 +30,10 @@ into it, and the next is bigger, lower, and a semitone down. Find the way down. 
 <p>The drawing is the kind the arcades did before they had pixels to spare: every wall, floor tile and
 ceiling tile is a four-sided figure, filled black and outlined in phosphor, painted from the back of the
 room to the front, which is how a wireframe keeps what is behind a wall behind it. No WebGL, no library;
-<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/backrooms.js">one script</a> on a
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/backrooms/backrooms.js">one script</a> on a
 plain canvas. The levels are rooms dropped on a grid until they overlap, joined by corridors, with pillars
 where there is room for them and the unreachable parts filled back in; the way down is wherever is
 farthest from where you fell. It only moves while you are not looking, which is a rule the elves
 insisted on. If you have been to the bazaar, the place is in colour.</p>
 </div>
-<script src="/js/backrooms.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/backrooms/backrooms.js?v={{ site.time | date: '%s' }}"></script>
