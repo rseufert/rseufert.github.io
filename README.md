@@ -149,6 +149,11 @@ it, so it runs in the browser (`arena/arena.js` draws it), in node and in
 rickbot's dungeon, where FIGHT in the arena room borrows a preset;
 `arena/arena-robots.js` holds the presets and the starter. The dialect, the
 ports and the rules are at the foot of the page and the top of the engine.
+A visitor's tank is kept in named slots in the browser, as a file, or in a
+share link, and can be sent in: the gauntlet (`arena/arena-gauntlet.js`)
+duels it against every preset, and if it wins 24 of 36 it goes in as an
+issue titled `tank: NAME`, which `tanks.yml` refights with `tools/tanks.py`
+and lists in `tanks.json` on the `sky-data` branch for the page to show.
 
 ```bash
 node arena/arena_test.js      # every preset assembles and every pairing ends; who beats whom

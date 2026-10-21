@@ -1,0 +1,58 @@
+name: tanks sent in
+
+# A tank that gets through the arena's gauntlet can be sent in, which is an
+# issue on this repo titled "tank: NAME" with the program in a code block
+# (arena/arena.js opens it, prefilled). This refights every one in node and
+# compiles the ones that pass into tanks.json, committed to the sky-data
+# branch beside the guest book, since master is protected; the arena page
+# reads it from raw.githubusercontent.com (tools/tanks.py). Closing an issue
+# takes its tank out.
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted]
+  schedule:
+    - cron: "17 12 * * *"   # once a day too, in case an event is missed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: sky-data            # the sky and guest book workflows push the same branch
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    name: refight the tanks sent in
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, 'tank:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: python tools/tanks.py --out "$RUNNER_TEMP/tanks.json"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: commit to sky-data if changed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898338+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth 1 origin sky-data; then
+            git worktree add -B sky-data "$RUNNER_TEMP/branch" FETCH_HEAD
+          else
+            git worktree add --orphan -b sky-data "$RUNNER_TEMP/branch"
+          fi
+          cp "$RUNNER_TEMP/tanks.json" "$RUNNER_TEMP/branch/tanks.json"
+          cd "$RUNNER_TEMP/branch"
+          git add tanks.json
+          if git diff --cached --quiet; then
+            echo "no change"
+            exit 0
+          fi
+          git commit -m "Refight the tanks sent in"
+          git push origin sky-data
