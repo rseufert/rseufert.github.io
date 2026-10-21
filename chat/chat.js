@@ -232,7 +232,9 @@
         [/\bbackrooms?\b|\bnoclip(ped)?\b|\bliminal\b|\bunder the site\b/, function () {
             var deep = 0;
             try { deep = (JSON.parse(localStorage.getItem("backrooms")) || {}).best || 0; } catch (e) { deep = 0; }
-            return "under the site there are backrooms: /backrooms/. wireframe, a hum at 60 hz, levels grown from a seed, and something tall that only moves while you are not looking. find the way down. there is no bottom." + (deep ? " you have been to level " + deep + ". it remembers." : " you have not been. it is expecting you.");
+            var ghosts = 0;
+            try { ghosts = (JSON.parse(localStorage.getItem("backrooms-ghosts")) || []).length; } catch (e) { ghosts = 0; }
+            return "under the site there are backrooms: /backrooms/. wireframe, a hum at 60 hz, levels grown from a seed, and something tall that only moves while you are not looking. whoever it finds leaves a ghost, which walks its last thirty seconds for whoever comes next. find the way down. there is no bottom." + (deep ? " you have been to level " + deep + ". it remembers." : " you have not been. it is expecting you.") + (ghosts ? " you have left " + ghosts + " ghost" + (ghosts === 1 ? "" : "s") + " down there. they are still walking." : "");
         }],
         [/\bat-?robots?\b|\barena\b|\btanks?\b|\brobot (wars?|battles?|games?)\b|\bprogram (a|my) robot\b|\brobots\b/, "the arena at /arena/ is an homage to AT-Robots, the DOS game from 1992: write a tank in a little assembly dialect, pick opponents from ten presets, and watch them fight. ports and interrupts, heat and armor, walls that hurt. read SENTRY first, then beat it."],
         [/\bphoto\b|\bpicture\b|\bwhite cap\b|\bglasses\b|\bpendant\b|\bsup\.jpe?g\b|\bthe guy\b|\bhim\b/, "the photo is sup.jpeg: josh allen in a white cap, rose-tinted rimless glasses and an iced-out heart pendant, according to the alt text, which i am not allowed to question."],

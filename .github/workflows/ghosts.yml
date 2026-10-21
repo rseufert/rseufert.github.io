@@ -1,0 +1,55 @@
+name: ghosts left
+
+# Whoever the backrooms find can leave their ghost, which is an issue on
+# this repo titled "ghost: level L of seed S" with the last thirty seconds in
+# a code block (backrooms/backrooms.js opens it, prefilled). This compiles
+# the open ones into ghosts.json and commits it to the sky-data branch
+# beside the guest book and the tanks, since master is protected; the page
+# reads it from raw.githubusercontent.com (tools/ghosts.py). Closing an
+# issue lays its ghost to rest.
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted]
+  schedule:
+    - cron: "37 12 * * *"   # once a day too, in case an event is missed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: sky-data            # the sky, guest book and tanks workflows push the same branch
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    name: compile the ghosts
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, 'ghost:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python tools/ghosts.py --out "$RUNNER_TEMP/ghosts.json"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: commit to sky-data if changed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898338+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth 1 origin sky-data; then
+            git worktree add -B sky-data "$RUNNER_TEMP/branch" FETCH_HEAD
+          else
+            git worktree add --orphan -b sky-data "$RUNNER_TEMP/branch"
+          fi
+          cp "$RUNNER_TEMP/ghosts.json" "$RUNNER_TEMP/branch/ghosts.json"
+          cd "$RUNNER_TEMP/branch"
+          git add ghosts.json
+          if git diff --cached --quiet; then
+            echo "no change"
+            exit 0
+          fi
+          git commit -m "Gather the ghosts"
+          git push origin sky-data

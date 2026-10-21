@@ -58,7 +58,7 @@
     97% { opacity: 0.6; }
 }
 @media (prefers-reduced-motion: reduce) { .backrooms-page .veil .banner { animation: none; } }
-.backrooms-page .veil button, .backrooms-page .bar button {
+.backrooms-page .veil button, .backrooms-page .bar button, .backrooms-page .bar a.button {
     font: 13px var(--mono);
     color: var(--ink);
     background: var(--code-bg);
@@ -69,6 +69,9 @@
 .backrooms-page .veil button { color: #ffb000; background: #000; border-color: #ffb000; padding: 8px 22px; letter-spacing: 0.1em; }
 .backrooms-page .veil button:hover { background: #ffb000; color: #000; }
 .backrooms-page .bar button:hover, .backrooms-page .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.backrooms-page .bar a.button { display: inline-block; text-decoration: none; color: #8fe7ff; border-color: #8fe7ff; }
+.backrooms-page .bar a.button:hover { background: #8fe7ff; color: #000; }
+.backrooms-page .bar a.button[hidden] { display: none; }
 .backrooms-page .bar { margin: 14px 0 30px; }
 .backrooms-page .hint { font: 13px var(--mono); color: var(--faint); margin: 0 0 10px; }
 .backrooms-page kbd { font: inherit; color: var(--soft); }
