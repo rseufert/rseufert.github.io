@@ -9,6 +9,7 @@ works, so a piece can be read and discussed on its own:
 | [`chat/`](chat/) | rickbot, the chat in the corner that becomes a dungeon | [README](chat/README.md) |
 | [`arena/`](arena/) | an homage to AT-Robots: tanks in a small assembly dialect | [README](arena/README.md) |
 | [`backrooms/`](backrooms/) | a wireframe under the site, levels grown from a seed, ghosts of whoever it found | [README](backrooms/README.md) |
+| [`intro/`](intro/) | a cracktro: plasma, stars, copper bars, a 3D logo, a scroller, a chiptune from the date | [README](intro/README.md) |
 | [`dashboard/`](dashboard/) | public data feeds, drawn with D3 | [README](dashboard/README.md) |
 
 `css/main.css` is the site's bones; a toy's stylesheet sits in its folder and
@@ -168,11 +169,17 @@ seed S`; `ghosts.yml` compiles the open ones with `tools/ghosts.py` into
 `ghosts.json` on the `sky-data` branch, with `data/ghosts.json` on `master`
 as the fallback. Close an issue to lay one to rest.
 
+`intro/` is a cracktro, the screen that played before a cracked game loaded:
+a plasma, a starfield, copper bars, the logo extruded and turning, a sine
+scroller greeting every part of the site, and a four-channel chiptune on
+WebAudio composed from a seed that is the date, so there is a new tune at
+midnight. One script on a 480-pixel canvas scaled up without smoothing.
+
 ## Licence
 
 The [MIT licence](LICENSE) applies to the code in this repository: the scripts,
 stylesheets, page templates, tools and workflows, including the toys (the
-Julia strip and page, rickbot, the arena, the backrooms, the dashboard).
+Julia strip and page, rickbot, the arena, the backrooms, the intro, the dashboard).
 
 It does not apply to the content. The blog posts, the resume, the photographs
 and other images, the films and the music references are copyright Rick
