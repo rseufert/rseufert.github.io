@@ -13,8 +13,9 @@ the arena is a stadium with a live match on the scoreboard, the Julia set is the
 is a weather station on a hill, the blog is a row of mailboxes, the backrooms are a manhole, the mocks
 are the towers, Dick Dank is on at the loft, and rickbot runs the helpdesk kiosk on the plaza. The
 streets are named in the elves' script, which drifts back into English while you stand still. The
-city is laid out from the date, so it rebuilds itself at midnight, and the sky is whatever time it is
-where you are.</p>
+city is laid out from the date, so it rebuilds itself at midnight. The sky is the real one over Portland
+at the real time, stars and all, and people stand about with errands that send you to the rest of the
+site.</p>
 
 <div class="stage" id="city-room">
   <canvas id="city-stage" aria-label="the city, in wireframe; walk with the keys, look with the mouse, enter a door with E"></canvas>
@@ -27,7 +28,7 @@ where you are.</p>
 </div>
 
 <div class="bar">
-  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>e</kbd> enters a door &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks, right thumb looks, and a button appears at a door</p>
+  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>e</kbd> enters a door or talks to someone &middot; <kbd>t</kbd> runs the clock &middot; <kbd>c</kbd> names the stars &middot; <kbd>q</kbd> the errands &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks, right thumb looks, and a button appears at a door</p>
   <p class="buttons"><button type="button" id="city-sound">sound</button> <button type="button" id="city-full">fullscreen</button> <output id="city-where" class="where"></output></p>
 </div>
 
@@ -42,11 +43,50 @@ named from the site's lore; <code>#seed=N</code> in the address asks for another
 <code>#hour=N</code> for another sky. The scoreboard at the arena runs a real match in the arena's
 own engine, six tanks drawn as points on the board's plane, and starts another when it ends.
 <a href="https://github.com/rseufert/rseufert.github.io/blob/master/city/city.js">One script</a>,
-no library, plus the arena's engine for the scoreboard.</p>
+no library, plus the arena's engine for the scoreboard and
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/city/sky.js">the sky</a>.</p>
+
+<h2>The sky</h2>
+<p>Look up. The stars are the real ones, about 170 of the brighter ones in 25 constellations, placed for
+Portland at whatever time it is: a star's fixed place on the sky (its right ascension and declination)
+is turned into where it stands over your head from the local sidereal time, which is the clock the sky
+keeps, and the latitude. Stand still, or press <kbd>c</kbd>, and the constellations are named; the
+lines are the ones a chart draws. The Sun and the Moon are placed by short formulae good to about a
+degree, the Moon with its phase, and the sky's colour follows the Sun's height: the stars come out
+through twilight, when the Sun is three to twelve degrees under the horizon, which in Portland in
+October is about forty minutes.</p>
+
+<p>The mechanics, since the astronomer on the hill will ask. The Earth turns once a day about an axis
+that points, near enough, at Polaris, so Polaris holds still, and it stands as high above the northern
+horizon as your latitude: 45.5&deg; here, straight overhead at the pole, on the horizon at the equator.
+Everything else wheels round it anticlockwise, fifteen degrees an hour, which you can watch by pressing
+<kbd>t</kbd>: the Big Dipper, the seven bright stars of Ursa Major, goes round the pole like a clock hand
+once a day and never dips below the horizon from here, because it is closer to the pole than 45.5&deg;;
+so do the Little Dipper, Cassiopeia (the W, across the pole from the Dipper, so one is high when the other
+is low), Cepheus and Draco. The two stars at the lip of the Dipper's bowl, Merak and Dubhe, point at
+Polaris, five bowl-widths on; the dashed line is that. Stars farther from the pole rise in the east and
+set in the west: Orion, the dogs, the twins, the lion, the scorpion. And a sidereal day is four minutes
+shorter than a solar one, because the Earth also goes round the Sun, so each night's sky is four minutes
+ahead of the last; after six months that is twelve hours, which is why Orion belongs to winter evenings
+and Scorpius to summer, and why running the clock a full day brings the Dipper back four minutes short of
+where it started. The pole itself drifts, 26,000 years a lap: Thuban in Draco's tail was the pole star when
+the pyramids were built, and Vega in Lyra will be in 12,000 years.</p>
+
+<h2>The people</h2>
+<p>Ten of them, with errands, all optional, every one of which sends you somewhere else on the site: the
+heron wants the gauge read on the dashboard; the elf wants you to go under; the groundskeeper wants a tank
+kept in a slot; the projectionist wants tonight's tune heard; the postman wants a letter read; the ghost
+wants company; Nugget wants Baby found, who is asleep in a doorway on a far block; the clerk wants to know
+what the mocks do; the intern wants the helpdesk caught lying; and the astronomer wants the sky watched
+round once. When you come back they check: the pages you have been to (kept in this browser, nowhere
+else), the backrooms' record, the ghosts, the arena's slots, the intro's tune, rickbot's dungeon.
+<kbd>q</kbd> is the list. Run every one and the town's population goes up by one, and the elves name a
+star after you, up by Polaris, so it never sets.</p>
 </div>
 <script>
 window.CityPosts = [{% for post in site.posts limit:6 %}{ "title": {{ post.title | jsonify }}, "url": {{ post.url | jsonify }} }{% unless forloop.last %}, {% endunless %}{% endfor %}];
 </script>
 <script src="/arena/arena-engine.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/arena/arena-robots.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/city/sky.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/city/city.js?v={{ site.time | date: '%s' }}"></script>

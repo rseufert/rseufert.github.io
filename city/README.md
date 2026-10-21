@@ -5,7 +5,8 @@ part of the site is a building you can walk up to and enter.
 
 | file | what |
 | --- | --- |
-| `city.js` | the whole thing: the layout, the landmarks, the renderer, the sky, the sound |
+| `city.js` | the whole thing: the layout, the landmarks, the people and their errands, the renderer, the sound |
+| `sky.js` | the real sky: a catalogue of ~170 stars in 25 constellations with their lines, and the arithmetic that places them, the Sun and the Moon over Portland at a moment |
 | `index.html`, `city.css` | the page and its stylesheet; the page also loads the arena's engine and presets for the scoreboard |
 | `city.png`, `share.jpg` | the home tile and the share image, captured from the canvas |
 
@@ -37,6 +38,59 @@ at every corner in the elves' script, three strokes a letter drawn by the
 seed, and give way to English a letter at a time once you have stood still
 for most of a second.
 
+## The sky
+
+`sky.js` keeps the brighter stars of 25 constellations (name, right
+ascension in hours, declination in degrees, magnitude, J2000) and the lines
+a chart draws between them. `compute(date, lat, lon)` turns the moment into
+local sidereal time (from the Julian date: GMST = 18.697374558 +
+24.06570982441908 · days since J2000, plus the longitude in hours) and each
+star's hour angle into altitude and azimuth, and returns unit directions
+(x east, y up, z north), the constellation centroids with a line of lore
+each, the Sun (mean longitude and anomaly, two terms of the equation of
+centre, then ecliptic to equatorial) and the Moon (the largest terms of
+its longitude and latitude, and its phase from the elongation), both good
+to about a degree. The city computes it every frame for Portland
+(45.52° N, 122.68° W) at the clock's time, `#hour=N` on today's date if the
+address says so, plus however far the time-lapse has run.
+
+The city draws the sky's gradient from the Sun's altitude (keyframes at
+−14°, −9°, −5°, −1.5°, 1.5°, 8° and 30°), the stars fading in between −3°
+and −12° with sizes by magnitude, the lines faint, Polaris ringed and
+labelled with the latitude, the Merak–Dubhe pointer line dashed to
+Polaris when the names are on, constellation names at the centroids when
+you stand still or press C, M31 as a smudge, the Sun as a disc and the
+Moon with its phase (the lit half, then an ellipse for the terminator).
+The camera now pitches properly (a rotation, not a shear) from −57° to
++83°, so you can look nearly straight up. T runs the clock at an hour
+every 1.3 seconds and shows the offset in the corner.
+
+The mechanics the page explains: the Earth turns about an axis that points
+near Polaris, so Polaris stands still at an altitude equal to the latitude
+and everything wheels round it anticlockwise at 15° an hour; stars within
+the latitude of the pole (the Dipper, the Little Dipper, Cassiopeia,
+Cepheus, Draco) never set from here; the sidereal day is four minutes
+short of the solar one, so each night's sky is four minutes ahead of the
+last and the seasons have their own constellations; the pole drifts over
+26,000 years (Thuban was the pole star, Vega will be).
+
+## The people
+
+Ten figures (a person in nine lines with a cap, a rake or a telescope, a
+cat, a ghost, an elf), each a door of kind `npc` that talks instead of
+entering, each with an errand that sends you elsewhere on the site, all
+optional. `QUESTS` holds each with a `check()` that reads what the rest of
+the site leaves in `localStorage`: `footprints` (chat.js now records every
+path visited, 80 at most, in this browser only), `backrooms` (found or
+gone down), `backrooms-ghosts`, `arena-tanks`, `intro-played` (the intro
+now writes today's seed when the tune starts), `rickbot` (a room means
+the hack happened), and the city's own flags (Baby found, the clock run
+24 hours). Progress is in `city-quests`. Talking offers, then waits, then
+thanks and runs `then` (the heron fetches the live USGS reading; the
+astronomer turns the names on). Q is the log. All ten done: the sign and
+the HUD read POP. 2 and a magenta star labelled YOU appears 4.5° from the
+pole, so it never sets.
+
 ## Drawing
 
 As the backrooms: quads filled black and stroked, painted back to front.
@@ -54,7 +108,7 @@ real match in the arena's engine, six presets drawn as points on the
 board's plane, ticked sixty a second, with another match six seconds after
 the end; without the engine it reads NO SIGNAL.
 
-Constants at the top: `EYE` 1.7, `FOV` 75°, `WALK` 7 and `RUN` 12 a second,
+Constants at the top: `EYE` 1.7, `FOV` 75°, `WALK` 7 and `RUN` 12 a second, `LAT` and `LON` for the sky,
 `FOG` 80. Collision is against the boxes, the river except on the bridges,
 the arena's wall except at the gate, and the edge of the world.
 
