@@ -372,8 +372,9 @@
         "; two ticks, so a runner is never out of the arc for long and the",
         "; shots go where the runner is, not where it was. Then, every eighth",
         "; pass, a thought about moving: stand for twenty ticks so the shots",
-        "; are true, dash somewhere random for ten so a leader's guess is",
-        "; wrong, and turn hard off the walls. The turret keeps its heading",
+        "; are true, dash for ten across their line of sight, one way or the",
+        "; other, so a leader's guess is wrong and a straight shot passes",
+        "; behind (HERON's lesson), and turn hard off the walls. The turret keeps its heading",
         "; through all of it.",
         "; memory: [11] tick this phase began  [12] phase: 0 standing, 1 dashing",
         "; [30] passes",
@@ -425,9 +426,15 @@
         "  cmp cx, 20            ; stand for twenty",
         "  jl moved",
         "  ipo random, bx",
-        "  mod bx, 240",
-        "  sub bx, 120           ; then somewhere else, -120..119 from here",
-        "  opo steer, bx",
+        "  and bx, 1",
+        "  mpy bx, 180",
+        "  sub bx, 90            ; then across their line of sight, one way or the other",
+        "  ipo tofs, cx",
+        "  sub cx, bx",
+        "  add cx, 540",
+        "  mod cx, 360",
+        "  sub cx, 180",
+        "  opo steer, cx",
         "  opo throttle, 100",
         "  mov [12], 1",
         "  mov [11], ax",
@@ -740,5 +747,11 @@
         "  jmp look"
     ].join("\n");
 
-    return { robots: robots, order: ["sentry", "circler", "rammer", "sniper", "dodger", "brick", "rick", "josh", "dice", "heron"], starter: starter };
+    // The roster, in two parts: the presets, six ways to fight, and Rick's
+    // Rogues, the ones written to beat them.
+    var groups = [
+        { name: "The presets", about: "Six ways to fight, each a lesson. Read SENTRY first, then write your own.", tanks: ["sentry", "circler", "rammer", "sniper", "dodger", "brick"] },
+        { name: "Rick's Rogues", about: "Written to beat the presets, and each other. RICK learns, JOSH hurdles, DICE rolls, HERON circles.", tanks: ["rick", "josh", "dice", "heron"] }
+    ];
+    return { robots: robots, order: ["sentry", "circler", "rammer", "sniper", "dodger", "brick", "rick", "josh", "dice", "heron"], groups: groups, starter: starter };
 }));

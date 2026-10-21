@@ -37,7 +37,11 @@ every 6 ticks of contact; after tick 3600 everyone wears out by 1 armor every
 30 ticks, so a match always ends. Random numbers come from a seeded
 generator, so a seed replays a match.
 
-## The presets
+## The roster
+
+Two rows: the presets, six ways to fight, and Rick's Rogues, the ones
+written to beat them (`groups` in `arena-robots.js`; the page draws a
+heading for each).
 
 SENTRY (stands and scans), CIRCLER (orbits and fires), RAMMER (charges),
 SNIPER (long scans, overburn), DODGER (sidesteps and stops before walls),
