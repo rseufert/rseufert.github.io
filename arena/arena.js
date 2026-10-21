@@ -1,5 +1,6 @@
 // The arena page (arena/index.html): draws a match from arena/arena-engine.js
 // on a canvas, keeps the score, shows the selected tank's registers, and
+// draws what the engine does not keep (trails, flashes, the feed), and
 // runs the editor: assemble the visitor's tank, fight the ticked presets
 // and the tanks sent in, save to named slots in localStorage (and the last
 // edit, always), export and import a file, share by link (#r=, the
@@ -229,6 +230,7 @@
         if (entries.length < 2) { statusEl.textContent = "pick at least one opponent."; return; }
         var seed = parseInt($("arena-seed").value, 10) || 1;
         try { match = new A.Match(entries, { seed: seed }); } catch (e) { statusEl.textContent = String(e.message); return; }
+        arm(match);
         selected = 0;
         statusEl.textContent = "fight.";
         play(true);
@@ -243,7 +245,7 @@
         raf = 0;
         if (!match) return;
         var n = parseInt($("arena-speed").value, 10) || 1;
-        if (playing) for (var i = 0; i < n && !match.over; i++) match.update();
+        if (playing) for (var i = 0; i < n && !match.over; i++) step();
         draw();
         if (match.over) {
             playing = false;
@@ -256,13 +258,62 @@
     $("arena-fight").addEventListener("click", start);
     $("arena-assemble").addEventListener("click", function () { start(); canvas.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "nearest" }); });
     $("arena-pause").addEventListener("click", function () { if (match && !match.over) play(!playing); });
-    $("arena-step").addEventListener("click", function () { if (match && !match.over) { playing = false; $("arena-pause").textContent = "resume"; match.update(); draw(); } });
+    $("arena-step").addEventListener("click", function () { if (match && !match.over) { playing = false; $("arena-pause").textContent = "resume"; step(); draw(); } });
+
+    // ---- effects: what the engine does not keep but the eye wants -------------
+    // Trails, muzzle flashes, hit flashes and shakes, floating damage, sparks
+    // off the walls, a feed of what the engine logged. Recorded as the match
+    // steps (step), aged as frames are drawn (draw), so they look the same at
+    // any speed.
+    var FX = null;
+    function arm(m) {
+        FX = { trails: [], muzzle: [], flash: [], floats: [], sparks: [], feed: [], logSeen: 0, shots: [] };
+        m.robots.forEach(function (r) { FX.trails.push([]); FX.muzzle.push(0); FX.flash.push(0); FX.shots.push(0); });
+        var hurt = m.hurt.bind(m);
+        m.hurt = function (r, amount, by, how) {
+            var before = r.armor;
+            hurt(r, amount, by, how);
+            var lost = Math.round(before - Math.max(0, r.armor));
+            if (lost > 0 && how !== "wore out") FX.floats.push({ x: r.x, y: r.y - 30, text: "-" + lost, c: how === "burned up" ? "#ff5a2e" : "#ffffff", t: 0 });
+            if (how === "shot" || how === "rammed") FX.flash[r.id] = 8;
+            if (how === "drove into a wall") sparks(r.x, r.y, 14, "#ffd27a");
+            if (how === "rammed") sparks(r.x, r.y, 4, "#ffffff");
+        };
+    }
+    function sparks(x, y, n, c) {
+        for (var i = 0; i < n; i++) {
+            var a = Math.random() * 2 * Math.PI, v = 2 + Math.random() * 5;
+            FX.sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, c: c, t: 0, life: 10 + Math.random() * 12 });
+        }
+    }
+    // One engine tick, with the effects it leaves recorded.
+    function step() {
+        match.update();
+        match.robots.forEach(function (r, i) {
+            if (r.alive) { var tr = FX.trails[i]; tr.push(r.x, r.y); if (tr.length > 240) tr.splice(0, 2); }
+            if (r.shots > FX.shots[i]) { FX.shots[i] = r.shots; FX.muzzle[i] = 5; }
+        });
+        while (FX.logSeen < match.log.length) FX.feed.push({ text: match.log[FX.logSeen++].replace(/^tick \d+: /, ""), t: 0 });
+    }
+    // Age the frame-timed effects by one drawn frame.
+    function age() {
+        var i;
+        for (i = 0; i < FX.muzzle.length; i++) { if (FX.muzzle[i] > 0) FX.muzzle[i]--; if (FX.flash[i] > 0) FX.flash[i]--; }
+        FX.floats.forEach(function (f) { f.t++; f.y -= 0.9; });
+        FX.floats = FX.floats.filter(function (f) { return f.t < 50; });
+        FX.sparks.forEach(function (p) { p.t++; p.x += p.vx; p.y += p.vy; p.vx *= 0.88; p.vy *= 0.88; });
+        FX.sparks = FX.sparks.filter(function (p) { return p.t < p.life; });
+        FX.feed.forEach(function (f) { f.t++; });
+        FX.feed = FX.feed.filter(function (f) { return f.t < 360; });
+        if (FX.feed.length > 5) FX.feed.splice(0, FX.feed.length - 5);
+    }
 
     // ---- drawing ----------------------------------------------------------
     function fit() {
         var dpr = Math.min(window.devicePixelRatio || 1, 2), w = Math.round(canvas.clientWidth * dpr);
         if (canvas.width !== w) { canvas.width = w; canvas.height = w; }
     }
+    var MONO = "Menlo, Consolas, monospace";
     function draw() {
         fit();
         var k = canvas.width / A.SIZE;
@@ -274,62 +325,124 @@
         for (var g = 100; g < A.SIZE; g += 100) { ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, A.SIZE); ctx.moveTo(0, g); ctx.lineTo(A.SIZE, g); ctx.stroke(); }
         if (!match) {
             ctx.fillStyle = "rgba(255,255,255,0.35)";
-            ctx.font = "28px Menlo, Consolas, monospace";
+            ctx.font = "28px " + MONO;
             ctx.textAlign = "center";
             ctx.fillText("the arena", A.SIZE / 2, A.SIZE / 2 - 10);
-            ctx.font = "16px Menlo, Consolas, monospace";
+            ctx.font = "16px " + MONO;
             ctx.fillText("1000 × 1000. walls hurt.", A.SIZE / 2, A.SIZE / 2 + 22);
             score();
             return;
         }
+        ctx.lineCap = "round"; ctx.lineJoin = "round";
+        // where each has been
+        match.robots.forEach(function (r, i) {
+            var tr = FX.trails[i], c = COLORS[i % COLORS.length], n = tr.length / 2;
+            if (n < 2) return;
+            ctx.lineWidth = 3;
+            for (var p = 1; p < n; p += 4) {
+                var q = Math.min(n - 1, p + 4), a = (p / n) * (r.alive ? 0.45 : 0.2);
+                ctx.strokeStyle = hex(c, a);
+                ctx.beginPath(); ctx.moveTo(tr[2 * (p - 1)], tr[2 * (p - 1) + 1]);
+                for (var m = p; m <= q; m++) ctx.lineTo(tr[2 * m], tr[2 * m + 1]);
+                ctx.stroke();
+            }
+        });
+        // what each can see
         match.robots.forEach(function (r, i) {
             var c = COLORS[i % COLORS.length];
-            // scan wedge
-            if (r.alive && r.lastScan && r.scanAge < 2) {
-                var s = r.lastScan, a0 = (s.heading - s.arc) * Math.PI / 180, a1 = (s.heading + s.arc) * Math.PI / 180;
+            if (r.alive && r.lastScan && r.scanAge < 16) {
+                var s = r.lastScan, a0 = (s.heading - s.arc) * Math.PI / 180, a1 = (s.heading + s.arc) * Math.PI / 180, fade = 1 - r.scanAge / 16;
                 ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.arc(r.x, r.y, Math.min(s.range, 1500), a0, a1); ctx.closePath();
-                ctx.fillStyle = s.hit ? hex(c, 0.28) : hex(c, 0.1); ctx.fill();
+                ctx.fillStyle = hex(c, (s.hit ? 0.2 : 0.05) * fade); ctx.fill();
+                if (s.hit) { ctx.strokeStyle = hex(c, 0.45 * fade); ctx.lineWidth = 1.5; ctx.stroke(); }
             }
+        });
+        // the tanks
+        match.robots.forEach(function (r, i) {
+            var c = COLORS[i % COLORS.length], flash = FX.flash[i] > 0;
+            var x = r.x + (flash ? (Math.random() - 0.5) * 7 : 0), y = r.y + (flash ? (Math.random() - 0.5) * 7 : 0);
             ctx.save();
-            ctx.translate(r.x, r.y);
+            ctx.translate(x, y);
             ctx.rotate(r.heading * Math.PI / 180);
-            ctx.fillStyle = r.alive ? (r.down ? hex(c, 0.45) : c) : "#3a3a44";
+            var hull = r.alive ? (flash ? "#ffffff" : warm(c, r.heat / 475)) : "#3a3a44";
+            if (r.alive && r.down) hull = hex(c, 0.45);
+            ctx.fillStyle = hull;
             ctx.fillRect(-17, -12, 34, 24);                   // the hull
             ctx.fillStyle = r.alive ? "#0b0b10" : "#222";
             ctx.fillRect(-17, -12, 34, 4); ctx.fillRect(-17, 8, 34, 4);   // tracks
             ctx.restore();
             if (r.alive) {
                 ctx.save();
-                ctx.translate(r.x, r.y);
+                ctx.translate(x, y);
                 ctx.rotate((r.heading + r.turret) * Math.PI / 180);
                 ctx.strokeStyle = r.down ? hex(c, 0.5) : "#ffffff"; ctx.lineWidth = 4;
                 ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(28, 0); ctx.stroke();
+                if (FX.muzzle[i] > 0) {                        // the flash at the barrel
+                    var fl = FX.muzzle[i] / 5;
+                    ctx.fillStyle = "rgba(255, 240, 180, " + (0.9 * fl) + ")";
+                    ctx.beginPath(); ctx.arc(30, 0, 6 + 10 * (1 - fl), 0, 2 * Math.PI); ctx.fill();
+                }
                 ctx.restore();
+                // armor, as an arc; heat warms the hull
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "rgba(255,255,255,0.12)";
+                ctx.beginPath(); ctx.arc(x, y, 25, 0, 2 * Math.PI); ctx.stroke();
+                ctx.strokeStyle = r.armor > 30 ? hex(c, 0.9) : "#ff0050";
+                ctx.beginPath(); ctx.arc(x, y, 25, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * Math.max(0, r.armor) / 100); ctx.stroke();
             }
             ctx.fillStyle = r.alive ? hex(c, 0.9) : "#55555f";
-            ctx.font = "15px Menlo, Consolas, monospace";
+            ctx.font = "15px " + MONO;
             ctx.textAlign = "center";
-            ctx.fillText(r.name, r.x, r.y - 24);
-            if (i === selected && r.alive) { ctx.strokeStyle = hex(c, 0.5); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(r.x, r.y, 30, 0, 2 * Math.PI); ctx.stroke(); }
+            ctx.fillText(r.name, x, y - 32);
+            if (r.alive && r.down) { ctx.fillStyle = "#ff0050"; ctx.font = "11px " + MONO; ctx.fillText("overheated", x, y + 42); }
+            if (i === selected && r.alive) { ctx.strokeStyle = hex(c, 0.5); ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(x, y, 34, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]); }
         });
+        // missiles: a streak with a hot head
         match.missiles.forEach(function (m) {
             var c = COLORS[m.owner % COLORS.length], dx = Math.cos(m.h * Math.PI / 180), dy = Math.sin(m.h * Math.PI / 180);
-            ctx.strokeStyle = hex(c, 0.6); ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.moveTo(m.x - dx * 26, m.y - dy * 26); ctx.lineTo(m.x, m.y); ctx.stroke();
+            var grad = ctx.createLinearGradient(m.x - dx * 70, m.y - dy * 70, m.x, m.y);
+            grad.addColorStop(0, hex(c, 0)); grad.addColorStop(1, hex(c, 0.9));
+            ctx.strokeStyle = grad; ctx.lineWidth = 5;
+            ctx.beginPath(); ctx.moveTo(m.x - dx * 70, m.y - dy * 70); ctx.lineTo(m.x, m.y); ctx.stroke();
             ctx.fillStyle = "#ffffff";
-            ctx.fillRect(m.x - 3, m.y - 3, 6, 6);
+            ctx.beginPath(); ctx.arc(m.x, m.y, 3.5, 0, 2 * Math.PI); ctx.fill();
         });
         match.bursts.forEach(function (b) {
             var t = b.t / 18;
-            ctx.strokeStyle = "rgba(255, 200, 80, " + (1 - t) + ")"; ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(255, 200, 80, " + (1 - t) + ")"; ctx.lineWidth = b.size > 20 ? 4 : 2;
             ctx.beginPath(); ctx.arc(b.x, b.y, b.size * (0.3 + t), 0, 2 * Math.PI); ctx.stroke();
+            if (b.size > 20) { ctx.fillStyle = "rgba(255, 120, 40, " + (0.5 * (1 - t)) + ")"; ctx.beginPath(); ctx.arc(b.x, b.y, b.size * t, 0, 2 * Math.PI); ctx.fill(); }
+        });
+        FX.sparks.forEach(function (p) {
+            ctx.strokeStyle = p.c; ctx.globalAlpha = 1 - p.t / p.life; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 2, p.y - p.vy * 2); ctx.stroke();
+        });
+        ctx.globalAlpha = 1;
+        // what it cost
+        ctx.font = "bold 16px " + MONO; ctx.textAlign = "center";
+        FX.floats.forEach(function (f) {
+            ctx.globalAlpha = f.t < 35 ? 1 : 1 - (f.t - 35) / 15;
+            ctx.fillStyle = f.c; ctx.fillText(f.text, f.x, f.y);
+        });
+        ctx.globalAlpha = 1;
+        // the feed, and the clock
+        ctx.font = "13px " + MONO; ctx.textAlign = "left";
+        FX.feed.forEach(function (f, n) {
+            ctx.fillStyle = "rgba(255,255,255," + (f.t < 300 ? 0.75 : 0.75 * (1 - (f.t - 300) / 60)) + ")";
+            ctx.fillText(f.text, 12, 22 + n * 17);
         });
         ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.font = "12px Menlo, Consolas, monospace";
-        ctx.textAlign = "left";
+        ctx.font = "12px " + MONO;
         ctx.fillText("tick " + match.tick + "  seed " + match.seed, 10, A.SIZE - 10);
+        age();
         score();
         debug();
+    }
+    // A colour warmed toward red by t (0..1): the hull as the heat climbs.
+    function warm(c, t) {
+        t = Math.max(0, Math.min(1, t));
+        var r = parseInt(c.slice(1, 3), 16), g = parseInt(c.slice(3, 5), 16), b = parseInt(c.slice(5, 7), 16);
+        return "rgb(" + Math.round(r + (255 - r) * t) + "," + Math.round(g * (1 - t) + 40 * t) + "," + Math.round(b * (1 - t) + 30 * t) + ")";
     }
     function hex(c, a) {
         return "rgba(" + parseInt(c.slice(1, 3), 16) + "," + parseInt(c.slice(3, 5), 16) + "," + parseInt(c.slice(5, 7), 16) + "," + a + ")";
@@ -382,5 +495,5 @@
     recall();
     draw();
     // For poking at from the console: the running match, and a redraw.
-    window.ArenaPage = { match: function () { return match; }, draw: draw, start: start, select: function (i) { selected = i; draw(); } };
+    window.ArenaPage = { match: function () { return match; }, draw: draw, step: step, start: start, select: function (i) { selected = i; draw(); } };
 })();
