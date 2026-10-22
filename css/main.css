@@ -74,6 +74,14 @@ nav a::before { content: "["; color: var(--faint); }
 nav a::after  { content: "]"; color: var(--faint); }
 nav a:hover { text-decoration: none; }
 nav a:hover::before, nav a:hover::after { color: var(--accent); }
+/* The menu is two rows, the work and then the play; the play row steps back
+   a little, so it reads as the toys without a heading. */
+nav { margin: 0.95em 0; }
+nav ul { margin: 0; }
+nav ul + ul { margin-top: 4px; }
+nav ul.play a { color: var(--soft); }
+nav ul.play a::before, nav ul.play a::after { color: var(--rule); }
+nav ul.play a:hover { color: var(--accent); }
 
 /* The strip under the menu: a Julia set, drawn by julia/julia-set.js. The
    height is fixed so the page does not move when it loads; without
@@ -419,7 +427,7 @@ code {
     nav ul {
         display: flex;
         flex-wrap: wrap;
-        gap: 4px 10px;
+        gap: 4px 8px;
     }
     nav ul li {
         margin-right: 0;
