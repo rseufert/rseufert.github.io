@@ -15,19 +15,21 @@
 			<link rel="alternate" type="application/atom+xml" title="Rick Seufert's Blog" href="/blog/atom.xml">
 		</head>
 		<body>
+			<!-- Two rows: the work, then the play. ~ is home, as it is at a prompt. -->
 			<nav>
 	    		<ul>
-	        		<!--<li><a href="/">Home</a></li>-->
+	        		<li><a href="/" aria-label="home" title="home">~</a></li>
 	        		<li><a href="/#projects">projects</a></li>
 	        		<li><a href="/dashboard/">dashboard</a></li>
 	        		<li><a href="/#flipper">flipper</a></li>
-	        		<li><a href="/arena/">arena</a></li>
-	        		<li><a href="/backrooms/">backrooms</a></li>
 	        		<li><a href="/blog/">blog</a></li>
 	        		<li><a href="/media/">media</a></li>
+	    		</ul>
+	    		<ul class="play">
+	        		<li><a href="/arena/">arena</a></li>
+	        		<li><a href="/backrooms/">backrooms</a></li>
 	        		<li><a href="/intro/">intro</a></li>
 	        		<li><a href="/city/">city</a></li>
-	        		
 	    		</ul>
 			</nav>
 			{% unless page.nostrip %}<a class="julia" href="/julia/" title="a julia set, zooming; click for the whole page"><canvas class="julia" aria-hidden="true"></canvas></a>
