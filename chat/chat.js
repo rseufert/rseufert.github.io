@@ -415,7 +415,7 @@
         },
         nav: {
             name: "The Menu",
-            desc: "Five bracketed doors stand in a row, monospace, lowercase. [projects] is west. [dashboard] is north. [flipper] is east. [media] is up a short ladder. [blog] is closed for renovations, which it has been saying since 2019.",
+            desc: "Six bracketed doors stand in a row, monospace, lowercase, and four more beneath them in a dimmer ink. [~] is the page you are standing on, south, which is what home means at a prompt. [projects] is west. [dashboard] is north. [flipper] is east. [media] is up a short ladder. [blog] is closed for renovations, which it has been saying since 2019. The dim row is the toys: [arena] is past the nest, [backrooms] is under /dev, and [intro] and [city] open onto the real site, which from in here is the dungeon's outside.",
             exits: { w: "vault", n: "dash", e: "nest", u: "loft", s: "page" },
             ways: "The page is south."
         },
