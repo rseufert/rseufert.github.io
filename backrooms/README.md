@@ -79,6 +79,26 @@ the `sky-data` branch, which the page fetches with `data/ghosts.json` on
 master as the fallback. Closing the issue lays the ghost to rest. Nothing in
 an issue is evaluated; a line that is not a ghost is left out.
 
+## Static and root
+
+F (or the button on a phone) is static: for `FUZZ` (4) seconds the
+stalkers stop, stop finding, and are drawn as noise where they stood, so
+you can walk through one that blocks the only corridor; then `COOL` (45)
+seconds before it works again. The bottom right of the HUD shows ready,
+the countdown, or the seconds left. A burst of highpassed noise plays.
+
+` is root: a session above the floor. Mode `root` stops the stalkers and
+the clock, keeps the ghosts walking, and shows the level from overhead:
+open cells outlined, the exit pulsing, the stalkers as red crosses, every
+ghost as a dot with its trail and its name, and you as an arrow where you
+were standing. Tab climbs into a ghost: the camera takes its recorded
+position and yaw, so you watch its last thirty seconds from its own
+eyes, with a marker where you stand; tab again for the next, then back to
+the map. ` leaves and puts you back. Without the root token (the elves'
+palette in `localStorage`, from escaping rickbot's dungeon) a session
+lasts twenty seconds. There is no server, so nobody is watched live; the
+recordings, all at once, are the superuser's view.
+
 ## Sound
 
 WebAudio, built on the first click and behind the sound toggle: the hum is a

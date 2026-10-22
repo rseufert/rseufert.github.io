@@ -22,11 +22,12 @@ thirty seconds, walking the same halls for whoever comes next. Find the way down
     <p><button type="button" id="backrooms-go">noclip</button></p>
   </div>
   <button type="button" class="unfill" id="backrooms-unfill" hidden aria-label="leave fullscreen">&times;</button>
+  <button type="button" class="static" id="backrooms-static" hidden>static</button>
 </div>
 
 <div class="bar">
-  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks and right thumb looks</p>
-  <p class="buttons"><button type="button" id="backrooms-sound">sound</button> <button type="button" id="backrooms-full">fullscreen</button> <button type="button" id="backrooms-reset">start over</button> <a class="button" id="backrooms-ghost" href="https://github.com/rseufert/rseufert.github.io/issues/new" target="_blank" rel="noopener" hidden>leave your ghost</a> <output id="backrooms-depth" class="depth"></output></p>
+  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>f</kbd> is static &middot; <kbd>`</kbd> is root &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks and right thumb looks</p>
+  <p class="buttons"><button type="button" id="backrooms-sound">sound</button> <button type="button" id="backrooms-full">fullscreen</button> <button type="button" id="backrooms-root">root</button> <button type="button" id="backrooms-reset">start over</button> <a class="button" id="backrooms-ghost" href="https://github.com/rseufert/rseufert.github.io/issues/new" target="_blank" rel="noopener" hidden>leave your ghost</a> <output id="backrooms-depth" class="depth"></output></p>
 </div>
 
 <p>The drawing is the kind the arcades did before they had pixels to spare: every wall, floor tile and
@@ -45,6 +46,15 @@ after. Seeds come from a dozen, so the floors are shared. A ghost lives in your 
 reads the open ones into the backrooms for everyone
 (<a href="https://github.com/rseufert/rseufert.github.io/blob/master/tools/ghosts.py">tools/ghosts.py</a>),
 and closing the issue lays it to rest. They cannot see you. It cannot see them.</p>
+
+<p>Two more things, for when it stands in the one corridor you need. <kbd>f</kbd> is <em>static</em>: for four
+seconds every one of them is noise, standing where it stood, and you can walk straight through; then it is
+most of a minute before the trick works again, and it does not know what happened either. <kbd>`</kbd> is
+<em>root</em>: a session above the floor, the whole level from overhead with every recording of it walking at
+once, yours and everyone's who sent theirs in, and <kbd>tab</kbd> climbs into any one of them to watch their
+last thirty seconds from where they stood. There is no server under this site, so nobody can be watched as
+they play; the recordings are the next thing to it, and all of them at once is the superuser's view. Without
+the root token, which is kept in rickbot's dungeon under <code>/dev</code>, a session lasts twenty seconds.</p>
 </div>
 <script src="/js/unmute.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/backrooms/backrooms.js?v={{ site.time | date: '%s' }}"></script>

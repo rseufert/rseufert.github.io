@@ -6,6 +6,10 @@
 // is the same each time you fall into it, and the next one is bigger,
 // lower and redder. There is no bottom. Whoever it finds leaves a ghost:
 // their last thirty seconds, walking the same halls for whoever comes next.
+// F is static: four seconds in which it is only noise and you can walk
+// through it, then most of a minute before it works again. ` is root: a
+// session above the floor, every recording on it walking at once, and a
+// seat behind any one pair of eyes.
 //
 // Drawn as vectors on a plain canvas: each wall, floor and ceiling tile
 // is a quad filled black and stroked in phosphor, painted back to front,
@@ -25,6 +29,8 @@
     var resetButton = document.getElementById("backrooms-reset");
     var ghostLink = document.getElementById("backrooms-ghost");
     var depthOut = document.getElementById("backrooms-depth");
+    var staticButton = document.getElementById("backrooms-static");
+    var rootButton = document.getElementById("backrooms-root");
 
     var KEY = "backrooms";
     var MONO = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
@@ -197,7 +203,7 @@
     // ---- the state ---------------------------------------------------------
     var L = null;                 // the level
     var cam = { x: 0, z: 0, y: EYE, yaw: 0, pitch: 0, fx: 0, fz: 1, rx: 1, rz: 0 };
-    var mode = "title";           // title, play, pause, found, drop
+    var mode = "title";           // title, play, pause, found, drop, root
     var things = [];              // what walks here
     var keys = {};
     var msg = { text: "", at: 0, until: 0 };
@@ -269,21 +275,35 @@
     }
 
     // ---- the ones that walk ------------------------------------------------
+    // Static: F. For four seconds every one of them is noise, standing where
+    // it stood, and you can walk through it; then it is most of a minute
+    // before the trick works again. It does not know what happened either.
+    var FUZZ = 4, COOL = 45, fuzz = 0, fuzzCool = 0;
+    function useStatic() {
+        if (mode !== "play") return;
+        if (fuzz > 0) return;
+        if (fuzzCool > 0) { say("static is still coming back. " + Math.ceil(fuzzCool) + " seconds.", 3); return; }
+        fuzz = FUZZ; fuzzCool = COOL;
+        say("it is noise now. go through it. four seconds.", 4);
+        if (audio) audio.fuzz();
+    }
     function stalk(dt) {
         var px = Math.floor(cam.x), pz = Math.floor(cam.z), key = pz * L.n + px;
         if (key !== fieldAt) { playerField = field(L.grid, L.n, px, pz); fieldAt = key; }
         var freeze = Math.max(3, 9 - L.level * 0.6);
         var speed = Math.min(1.4 + L.level * 0.22, 3.0);
+        var fuzzed = fuzz > 0;
         near = 99;
         things.slice().forEach(function (t) {
             var dx = cam.x - t.x, dz = cam.z - t.z, d = Math.hypot(dx, dz);
-            if (d < near) near = d;
+            if (d < near && !fuzzed) near = d;
             var seen = visible(t.x, t.z);
             if (seen) {
                 if (!t.seen) { say(sawThing ? "closer." : "something is standing at the end of the hall. it was not there before.", 5); sawThing = true; }
                 t.unseenFor = 0;
             } else t.unseenFor += dt;
             t.seen = seen;
+            if (fuzzed) return;                        // noise does not walk, and does not find
             if (d < 0.45 && mode === "play") { found(); return; }
             if (seen && d < freeze) return;            // it does not move while you watch
             // Far off, or forgotten: it is somewhere nearer, now.
@@ -305,6 +325,77 @@
             var mx = t.tx - t.x, mz = t.tz - t.z, m = Math.hypot(mx, mz);
             if (m > 0) { var step = Math.min(m, speed * dt); t.x += mx / m * step; t.z += mz / m * step; }
         });
+    }
+    // Root: `. A session above the floor: every recording of it walking at
+    // once, seen from above, and a seat behind any one pair of eyes. Without
+    // the token from the dungeon under /dev it lasts twenty seconds.
+    var root = { view: 0, left: 0, cam: null, ROOT: 20 };
+    function su() {
+        if (mode === "root") { exitRoot("root session closed."); return; }
+        if (mode !== "play") return;
+        mode = "root"; modeClock = 0;
+        root.view = 0; root.left = ELF ? Infinity : root.ROOT;
+        root.cam = { x: cam.x, z: cam.z, yaw: cam.yaw, pitch: cam.pitch };
+        if (document.exitPointerLock && locked) document.exitPointerLock();
+        keys = {}; stick.x = stick.y = 0;
+        say("root@backrooms:~# " + (ELF ? "token accepted. " : "no token: twenty seconds. ") + "every recording on this floor, at once. tab climbs into one. ` leaves.", 9);
+        if (audio) audio.tick();
+    }
+    function exitRoot(text) {
+        mode = "play"; modeClock = 0;
+        cam.x = root.cam.x; cam.z = root.cam.z; cam.yaw = root.cam.yaw; cam.pitch = root.cam.pitch;
+        say(text, 5);
+        lock();
+    }
+    function rootTab() {
+        if (mode !== "root") return;
+        root.view = (root.view + 1) % (ghosts.length + 1);
+        if (root.view) say("watching " + (ghosts[root.view - 1].mine ? "you, earlier" : ghosts[root.view - 1].by || "someone") + ". their last thirty seconds, from where they stood.", 5);
+        else say("the floor, from above.", 3);
+    }
+    function rootMap() {
+        var n = L.n, S = Math.min(W, H) * 0.86 / n, ox = (W - n * S) / 2, oy = (H - n * S) / 2 + 8, col = color();
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+        ctx.lineWidth = 1;
+        for (var z = 0; z < n; z++) for (var x = 0; x < n; x++) {
+            if (L.grid[z * n + x]) continue;
+            ctx.strokeStyle = col; ctx.globalAlpha = 0.28;
+            ctx.strokeRect(ox + x * S + 0.5, oy + z * S + 0.5, S - 1, S - 1);
+        }
+        var pulse = 0.5 + 0.5 * Math.sin(clock * 4);
+        ctx.globalAlpha = 0.4 + 0.6 * pulse; ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.strokeRect(ox + L.exit.x * S + 1, oy + L.exit.z * S + 1, S - 2, S - 2);
+        ctx.font = Math.max(8, S * 0.5) + "px " + MONO; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = col;
+        ctx.fillText("↓", ox + (L.exit.x + 0.5) * S, oy + (L.exit.z + 0.5) * S);
+        ctx.lineWidth = 1.5;
+        things.forEach(function (t) {
+            var px = ox + t.x * S, pz = oy + t.z * S;
+            ctx.strokeStyle = "#ff2a2a"; ctx.globalAlpha = 0.9; ctx.beginPath();
+            ctx.moveTo(px - 4, pz - 4); ctx.lineTo(px + 4, pz + 4); ctx.moveTo(px + 4, pz - 4); ctx.lineTo(px - 4, pz + 4); ctx.stroke();
+        });
+        ctx.font = "10px " + MONO;
+        ghosts.forEach(function (g, i) {
+            if (g.t < 0) return;
+            var px = ox + g.x * S, pz = oy + g.z * S, c = g.mine ? "#8fe7ff" : "#ffffff";
+            ctx.strokeStyle = c; ctx.globalAlpha = 0.35; ctx.beginPath();                    // the trail so far
+            var k = Math.min(g.pts.length - 1, Math.max(0, Math.floor(g.t * g.hz)));
+            for (var j = Math.max(0, k - 60); j <= k; j++) { var q = g.pts[j]; if (j === Math.max(0, k - 60)) ctx.moveTo(ox + q[0] * S, oy + q[1] * S); else ctx.lineTo(ox + q[0] * S, oy + q[1] * S); }
+            ctx.stroke();
+            ctx.globalAlpha = g.done ? 0.5 : 1; ctx.fillStyle = c;
+            if (g.done) { ctx.beginPath(); ctx.moveTo(px - 3, pz - 3); ctx.lineTo(px + 3, pz + 3); ctx.moveTo(px + 3, pz - 3); ctx.lineTo(px - 3, pz + 3); ctx.stroke(); }
+            else { ctx.beginPath(); ctx.arc(px, pz, 3, 0, Math.PI * 2); ctx.fill(); }
+            ctx.textAlign = "left"; ctx.fillText((i + 1) + " " + (g.mine ? "you" : g.by || "someone"), px + 6, pz);
+        });
+        var me = ox + root.cam.x * S, mz = oy + root.cam.z * S, yaw = root.cam.yaw;
+        ctx.strokeStyle = "#8fe7ff"; ctx.globalAlpha = 1; ctx.lineWidth = 1.5; ctx.beginPath();
+        ctx.moveTo(me + Math.sin(yaw) * 7, mz + Math.cos(yaw) * 7); ctx.lineTo(me + Math.sin(yaw + 2.5) * 5, mz + Math.cos(yaw + 2.5) * 5); ctx.lineTo(me + Math.sin(yaw - 2.5) * 5, mz + Math.cos(yaw - 2.5) * 5); ctx.closePath(); ctx.stroke();
+        ctx.font = "12px " + MONO; ctx.fillStyle = col; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.globalAlpha = 0.9;
+        var walking = ghosts.filter(function (g) { return g.t >= 0 && !g.done; }).length;
+        ctx.fillText("root@backrooms:~# floor " + L.level + " of seed " + saved.seed + " · " + ghosts.length + " recording" + (ghosts.length === 1 ? "" : "s") + ", " + walking + " walking · " + things.length + " thing" + (things.length === 1 ? "" : "s") + (root.left < Infinity ? " · " + Math.ceil(root.left) + "s" : ""), 14, 12);
+        ctx.textBaseline = "bottom";
+        ctx.fillText(ghosts.length ? "tab: watch one of them. `: back down." : "no recordings on this floor yet. the next one found here will be the first. `: back down.", 14, H - 14);
+        ctx.globalAlpha = 1;
     }
     function found() {
         mode = "found"; modeClock = 0;
@@ -573,6 +664,7 @@
         apparitions(horizon, bright);
         hud(col);
         if (near < 3 && !REDUCED && mode === "play") glitch((3 - near) / 3);
+        if (fuzz > 0 && !REDUCED) glitch(0.35);
         if (mode === "found") foundScreen();
         if (mode === "drop") dropScreen();
         ctx.globalAlpha = 1;
@@ -648,6 +740,15 @@
             var a = Math.min(1, fade(d) * 1.6) * bright;
             if (!REDUCED && d > 3 && Math.random() < 0.12) return;           // it flickers, far off
             var h = Math.min(heightAt(t.x, t.z) - 0.04, 0.95), rx = cam.rx, rz = cam.rz;
+            if (fuzz > 0) {                                                      // only noise, where it stood
+                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1;
+                for (var k = 0; k < 34; k++) {
+                    var u = (Math.random() - 0.5) * 0.34, v = Math.random() * h, w = 0.04 + Math.random() * 0.2;
+                    ctx.globalAlpha = a * (0.4 + Math.random() * 0.6);
+                    segment(t.x + rx * u, v, t.z + rz * u, t.x + rx * (u + w), v, t.z + rz * (u + w), horizon);
+                }
+                return;
+            }
             var j = REDUCED ? 0 : 0.004 * (1 + 3 / (d + 0.5));
             function P(u, v) { return [t.x + rx * u + (Math.random() - 0.5) * j, v, t.z + rz * u + (Math.random() - 0.5) * j]; }
             var wob = Math.sin(clock * 1.3 + t.wobble) * 0.02;
@@ -674,8 +775,18 @@
     // its last half minute with the legs it had; where it ends, a cross on
     // the floor and who it was.
     function apparitions(horizon, bright) {
-        ghosts.forEach(function (g) {
+        if (mode === "root" && root.view && root.cam) {                        // you, where you were standing
+            var d0 = Math.hypot(root.cam.x - cam.x, root.cam.z - cam.z);
+            if (d0 < fogRadius() && visible(root.cam.x, root.cam.z)) {
+                ctx.strokeStyle = "#8fe7ff"; ctx.globalAlpha = fade(d0) * bright; ctx.lineWidth = 1.2;
+                segment(root.cam.x, 0, root.cam.z, root.cam.x, 0.5, root.cam.z, horizon);
+                segment(root.cam.x - 0.12, 0.5, root.cam.z, root.cam.x + 0.12, 0.5, root.cam.z, horizon);
+                label("YOU", root.cam.x, 0.7, root.cam.z, horizon, "#8fe7ff", 0.05);
+            }
+        }
+        ghosts.forEach(function (g, gi) {
             if (g.t < 0) return;
+            if (mode === "root" && root.view === gi + 1) return;
             var d = Math.hypot(g.x - cam.x, g.z - cam.z);
             if (d > fogRadius() || !visible(g.x, g.z)) return;
             var a = fade(d) * bright * 0.75;
@@ -712,6 +823,17 @@
         ctx.textAlign = "right";
         var s = Math.floor(levelClock), m = Math.floor(s / 60);
         ctx.fillText((m < 10 ? "0" : "") + m + ":" + (s % 60 < 10 ? "0" : "") + s % 60, W - 14, 12);
+        if (mode === "play") {
+            ctx.textBaseline = "bottom"; ctx.globalAlpha = fuzz > 0 ? 0.5 + 0.5 * Math.random() : 0.85;
+            ctx.fillStyle = fuzz > 0 ? "#fff" : fuzzCool > 0 ? "#8d8d98" : col;
+            ctx.fillText(fuzz > 0 ? "STATIC " + fuzz.toFixed(1) : fuzzCool > 0 ? "static · " + Math.ceil(fuzzCool) + "s" : "static · " + (TOUCH ? "ready" : "F"), W - 14, H - 14);
+            ctx.globalAlpha = 0.85; ctx.fillStyle = col;
+        }
+        if (mode === "root" && root.view) {
+            var g = ghosts[root.view - 1], at = Math.max(0, Math.min(g.pts.length / g.hz, g.t));
+            ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillStyle = "#8fe7ff";
+            ctx.fillText("root@backrooms:~# watching " + (g.mine ? "you, earlier" : g.by || "someone") + " · " + at.toFixed(0) + "/" + (g.pts.length / g.hz).toFixed(0) + "s" + (g.done ? " · found here" : g.t < 0 ? " · starting" : "") + (root.left < Infinity ? " · " + Math.ceil(root.left) + "s left" : ""), 14, 30);
+        }
         if (msg.text && clock < msg.until) {
             var shown = Math.min(msg.text.length, Math.floor((clock - msg.at) * 32));
             ctx.textAlign = "left"; ctx.textBaseline = "bottom";
@@ -730,6 +852,7 @@
         lines.reverse().forEach(function (l, i) { ctx.fillText(l, x, bottom - i * 18); });
     }
     function glitch(k) {
+        if (!canvas.width || !canvas.height) return;                       // not laid out yet
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         var w = canvas.width, h = canvas.height, slices = Math.ceil(k * 6);
         for (var i = 0; i < slices; i++) {
@@ -778,6 +901,8 @@
             stalk(dt);
             record(dt);
             walk(dt);
+            if (fuzz > 0) fuzz -= dt;
+            if (fuzzCool > 0) fuzzCool -= dt;
             // The lights are old.
             if (!REDUCED) {
                 if (blackout > 0) blackout -= dt;
@@ -793,9 +918,19 @@
         } else if (mode === "drop" && modeClock > 2.2) {
             enter(L.level + 1);
             mode = "play";
+        } else if (mode === "root") {
+            walk(dt);
+            root.left -= dt;
+            if (root.left <= 0) exitRoot("root session expired. the token is in the dungeon, under /dev.");
+            else if (root.view) {
+                var g = ghosts[root.view - 1];
+                if (!g) root.view = 0; else { cam.x = g.x; cam.z = g.z; cam.yaw = g.yaw; cam.pitch = 0; cam.y = EYE; }
+            }
         }
         cam.fx = Math.sin(cam.yaw); cam.fz = Math.cos(cam.yaw); cam.rx = Math.cos(cam.yaw); cam.rz = -Math.sin(cam.yaw);
-        if (mode !== "title") { gather(); render(); }
+        if (mode === "root" && !root.view) rootMap();
+        else if (mode !== "title") { gather(); render(); }
+        if (staticButton) staticButton.hidden = !(TOUCH && mode === "play");
         var took = performance.now() - t0;
         slow = took > 18 ? Math.min(slow + 1, 30) : Math.max(slow - 1, 0);   // drop the glow when the frame is slow
     }
@@ -804,6 +939,10 @@
     addEventListener("keydown", function (e) {
         if (mode === "title" || mode === "pause") return;
         if (e.code === "Escape") return;
+        if (e.code === "KeyF" && mode === "play") { useStatic(); e.preventDefault(); return; }
+        if (e.code === "Backquote") { su(); e.preventDefault(); return; }
+        if (e.code === "Tab" && mode === "root") { rootTab(); e.preventDefault(); return; }
+        if (mode === "root") return;
         keys[e.code] = true;
         if (/^(Arrow|Key[WASDQE]|Shift)/.test(e.code)) e.preventDefault();
     });
@@ -821,7 +960,7 @@
     canvas.addEventListener("click", function () { if (mode === "play") lock(); });
     document.addEventListener("pointerlockchange", function () {
         locked = document.pointerLockElement === canvas;
-        if (!locked && mode === "play") pause("paused. click to go on.");
+        if (!locked && mode === "play" && modeClock > 0.5) pause("paused. click to go on.");
     });
     addEventListener("mousemove", function (e) {
         if (!locked || mode !== "play") return;
@@ -878,6 +1017,8 @@
         lock();
     }
     go.addEventListener("click", begin);
+    if (staticButton) staticButton.addEventListener("click", useStatic);
+    if (rootButton) rootButton.addEventListener("click", function () { if (mode === "play" || mode === "root") su(); else say("", 0); });
     resetButton.addEventListener("click", function () {
         saved.seed = freshSeed(); saved.level = 0; save();
         if (document.exitPointerLock) document.exitPointerLock();
@@ -917,7 +1058,7 @@
     });
     soundButton.setAttribute("aria-pressed", saved.sound ? "true" : "false");
     function title() {
-        var how = TOUCH ? "left thumb walks, right thumb looks." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses.";
+        var how = TOUCH ? "left thumb walks, right thumb looks. the static button makes it noise for four seconds, once a minute." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses. F is static: four seconds when it is only noise, once a minute. ` is root.";
         veilText.textContent = (saved.level ? "you fell to level " + saved.level + " last time. it is still there. " : "you noclipped out of rickseufert.com. ") + how + " find the way down. do not let it reach you.";
         go.textContent = saved.level ? "go back down" : "noclip";
         veil.hidden = false;
@@ -978,6 +1119,7 @@
                 whine.g.gain.setTargetAtTime(k * 0.012, ac.currentTime, 0.1);
             },
             step: function (run) { burst(0.09, run ? 0.25 : 0.16, PHONE ? 1200 : 320); },
+            fuzz: function () { burst(0.7, 0.45, 1500, "highpass"); burst(FUZZ, 0.08, 3000, "highpass"); },
             tick: function () { burst(0.04, 0.12, 4000, "bandpass"); },
             found: function () {
                 burst(1.2, 0.7, 1200);
@@ -1016,5 +1158,5 @@
     save();
     title();
     requestAnimationFrame(frame);
-    window.Backrooms = { generate: generate, field: field, pack: pack, unpack: unpack, state: function () { return { mode: mode, cam: cam, level: L, things: things, ghosts: ghosts, msg: msg, clock: clock, saved: saved }; }, render: function () { gather(); render(); } };
+    window.Backrooms = { generate: generate, field: field, pack: pack, unpack: unpack, state: function () { return { mode: mode, cam: cam, level: L, things: things, ghosts: ghosts, msg: msg, clock: clock, saved: saved, fuzz: fuzz, fuzzCool: fuzzCool, root: root }; }, useStatic: useStatic, su: su, rootTab: rootTab, render: function () { gather(); render(); } };
 })();

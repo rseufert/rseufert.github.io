@@ -110,3 +110,17 @@ body.filled { overflow: hidden; }
     cursor: pointer;
 }
 .backrooms-page .unfill[hidden] { display: none; }
+/* Static, on a phone: a button in the stage, since there is no F. */
+.backrooms-page .static {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    z-index: 2;
+    font: 13px var(--mono);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #fff;
+    padding: 12px 22px;
+    cursor: pointer;
+}
+.backrooms-page .static[hidden] { display: none; }
