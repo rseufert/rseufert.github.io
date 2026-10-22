@@ -725,8 +725,8 @@
         var fwd = 0, side = 0, turn = 0;
         if (keys.KeyW || keys.ArrowUp) fwd += 1;
         if (keys.KeyS || keys.ArrowDown) fwd -= 1;
-        if (keys.KeyA || keys.KeyQ) side -= 1;
-        if (keys.KeyD || keys.KeyE) side += 1;
+        if (keys.KeyA) side -= 1;                 // Q is the errands and E talks, so neither strafes here
+        if (keys.KeyD) side += 1;
         if (keys.ArrowLeft) turn -= 1;
         if (keys.ArrowRight) turn += 1;
         fwd += -stick.y; side += stick.x;
@@ -1317,7 +1317,7 @@
         if (e.code === "KeyC") { namesOn = !namesOn; say(namesOn ? "the constellations are named. stand still and they are anyway." : "the names are off.", 4); return; }
         if (e.code === "KeyQ") { showLog = !showLog; return; }
         keys[e.code] = true;
-        if (/^(Arrow|Key[WASDQE]|Shift)/.test(e.code)) e.preventDefault();
+        if (/^(Arrow|Key[WASD]|Shift)/.test(e.code)) e.preventDefault();
     });
     addEventListener("keyup", function (e) { keys[e.code] = false; });
     addEventListener("blur", function () { keys = {}; });
