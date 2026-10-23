@@ -70,9 +70,14 @@ fetches each Gutenberg link's plain-text file whole into `texts/<slug>.txt`
 (a later volume as `<slug>-2.txt`), writes `texts/index.json` (title,
 edition, Gutenberg number, shelf), and rewrites the shelf so the book's own
 link opens the reading room at `/temple/read/#slug` with the Gutenberg page
-kept beside it in the meta. Run it again and it fetches only what is
-missing; `--refetch` takes everything again. Thirty-seven files, about
-26 MB; the other hosts' books stay links.
+kept beside it in the meta. For the books that are not on Gutenberg, `SCANS` in the tool names a
+public-domain scan at the Internet Archive (the edition the shelf names,
+one item a volume), and the tool fetches the item's OCR text, cleans it a
+little (hyphens at line ends joined, double spaces closed, page numbers and
+running heads dropped) and marks it in the manifest as OCR, uncorrected,
+which the reading room says. Run it again and it fetches only what is
+missing; `--refetch` takes everything again. Fifty texts, about 28 MB;
+the five books with neither source stay links.
 
 ## The reading room
 
