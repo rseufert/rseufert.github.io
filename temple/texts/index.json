@@ -1,4 +1,12 @@
 {
+ "acts": {
+  "bytes": 210292,
+  "edition": "Syria, 3rd c. · tr. M. R. James, 1924 · Gnostic Society Library",
+  "host": "Gnostic Society Library",
+  "shelf": "acts",
+  "source": "http://gnosis.org/library/actthom.htm",
+  "title": "The Acts of Thomas"
+ },
  "apuleius": {
   "bytes": 459781,
   "edition": "Apuleius, c. 160 · tr. William Adlington, 1566 · Gutenberg #1666",
@@ -33,6 +41,14 @@
   "gutenberg": 37696,
   "shelf": "celsus",
   "title": "Arguments of Celsus, Porphyry and the Emperor Julian against the Christians"
+ },
+ "chaldean": {
+  "bytes": 69082,
+  "edition": "Julian the Theurgist, 2nd c. · ed. W. Wynn Westcott, 1895 · Esoteric Archives",
+  "host": "Esoteric Archives",
+  "shelf": "chaldean",
+  "source": "https://www.esotericarchives.com/oracle/oraclez.htm",
+  "title": "The Chaldaean Oracles of Zoroaster"
  },
  "chuang": {
   "bytes": 668084,
@@ -97,6 +113,14 @@
   },
   "shelf": "dionysius",
   "title": "The Works of Dionysius the Areopagite, 2"
+ },
+ "emerald": {
+  "bytes": 14892,
+  "edition": "Arabic, before 800 · several translations, Newton's among them · sacred-texts",
+  "host": "sacred-texts",
+  "shelf": "emerald",
+  "source": "https://sacred-texts.com/book/emerald-tablet-of-hermes/index",
+  "title": "The Emerald Tablet"
  },
  "enoch": {
   "archive": "bookofenoch0000unse",
@@ -168,6 +192,14 @@
   "gutenberg": 72815,
   "shelf": "iamblichus",
   "title": "On the Mysteries of the Egyptians, Chaldeans and Assyrians"
+ },
+ "irenaeus": {
+  "bytes": 1523741,
+  "edition": "Irenaeus of Lyons, c. 180 · tr. Roberts & Rambaut, 1885 · New Advent",
+  "host": "the Christian Classics Ethereal Library",
+  "shelf": "irenaeus",
+  "source": "https://www.ccel.org/ccel/schaff/anf01.txt",
+  "title": "Against Heresies"
  },
  "isis": {
   "bytes": 2202053,
@@ -284,6 +316,14 @@
   },
   "shelf": "moses",
   "title": "The Sixth and Seventh Books of Moses"
+ },
+ "origen": {
+  "bytes": 1532309,
+  "edition": "Origen, c. 248 · tr. F. Crombie, 1885 · New Advent",
+  "host": "the Christian Classics Ethereal Library",
+  "shelf": "origen",
+  "source": "https://www.ccel.org/ccel/schaff/anf04.txt",
+  "title": "Against Celsus"
  },
  "pearl": {
   "archive": "hymnoftherobe10meaduoft",
