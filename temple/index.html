@@ -1,0 +1,199 @@
+---
+layout: default
+css: /temple/temple.css
+title: Temple
+description: A temple of gnostic signs and a library of public-domain gnostic, hermetic, kabbalistic, magical and mystical texts. Sixteen signs round the Monad, each explained; fifty-odd books, each a link to a free copy older than copyright.
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page">
+<h1>Temple</h1>
+<p class="lede">On a far block of the <a href="/city/">city</a> there is a temple, and this is the inside of it. The
+floor is the Ophite diagram, the one gnostic chart that survives, and only because Origen described it in
+order to argue with it. Round the floor stand sixteen signs, with the Monad in the middle: Abraxas and the
+serpent that eats its tail, the thirty aeons and the seven heavens, the Tree and the Tetraktys, a Mandaean
+standard and John Dee's figure of everything. Point at one and it comes to the middle, with what it means.
+Through the back of the nave is the library: fifty-odd gnostic, hermetic, kabbalistic, magical and mystical
+texts, every one a link to a free copy, every one older than copyright, which is the only kind of old a
+library like this can afford.</p>
+
+<div class="stage" id="temple-room">
+  <canvas id="temple-stage" aria-label="the nave: sixteen gnostic signs in a slowly turning ring round the Monad; the chosen one drawn large in the middle"></canvas>
+  <button type="button" class="unfill" id="temple-unfill" hidden aria-label="leave fullscreen">&times;</button>
+</div>
+
+<div class="bar">
+  <p class="hint">point at a sign, or tap it &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> walk round &middot; <kbd>home</kbd> the monad &middot; <kbd>m</kbd> the drone &middot; <kbd>f</kbd> the whole screen &middot; the names below are buttons too</p>
+  <p class="buttons"><button type="button" id="temple-sound">drone</button> <button type="button" id="temple-full">fullscreen</button></p>
+</div>
+
+<div class="reading" aria-live="polite">
+  <h2 id="temple-name">The Monad</h2>
+  <div id="temple-text"></div>
+  <p class="shelf" id="temple-shelf"></p>
+</div>
+
+<h2>The signs</h2>
+<p>Each is drawn from its description, as line art, the way the city and the backrooms are drawn; none is
+traced from a gem or a manuscript, so what you see is what the sources say and no more. The explanations are
+short and, as far as the sources allow, true; where a thing is disputed, it says so, and where everyone says
+a thing that is not so, it says that too.</p>
+
+<dl class="signs" id="temple-signs">
+  <dt id="sign-monad" data-shelf="#lib-hermetica">The Monad</dt>
+  <dd><p>A circle with a point in it. The Pythagoreans' sign for the One, from which the numbers and then everything else proceed; the Hermetic books call the first thing Mind; the Valentinians called it Bythos, the Depth, and said nothing else about it, which was the point. Everything else in this room is a complication of this.</p></dd>
+
+  <dt id="sign-ouroboros" data-shelf="#lib-pistis">The Ouroboros</dt>
+  <dd><p>The serpent that eats its tail. It is drawn in the alchemical papyrus of Cleopatra, third-century Alexandria, round the words <em>hen to pan</em>, the all is one. The Ophites and the <em>Pistis Sophia</em> put it round the world as the outer darkness: the disc of the world sits inside the serpent's ring, and so do you. It is also the sign for a process that feeds on itself, which is how it came to be on the covers of chemistry books.</p></dd>
+
+  <dt id="sign-abraxas" data-shelf="#lib-king">Abraxas</dt>
+  <dd><p>A cock's head, a man's body in armour, two serpents for legs, a whip in one hand and a shield in the other. Cut into thousands of gemstones in the second and third centuries, and named for the ruler of the 365 heavens in Basilides' system: the Greek letters of ΑΒΡΑΣΑΞ add up to 365. Jung wrote seven sermons about him and signed them Basilides; Hesse put him in <em>Demian</em>. He is also where the word abracadabra does not come from, though everyone says so.</p></dd>
+
+  <dt id="sign-iao" data-shelf="#lib-irenaeus">ΙΑΩ</dt>
+  <dd><p>The three vowels on the gems beside Abraxas: the Greek spelling of the name of the God of the Jews, which some gnostics took as the name of one archon among seven. Irenaeus lists them: Ialdabaoth, Iao, Sabaoth, Adonaios, Eloaios, Horaios, Astaphaios. The seven vowels ΑΕΗΙΟΥΩ ring it, one for each planet, chanted in order as the password past each heaven, which is why the magical papyri are full of lines that look like someone leaning on the keyboard.</p></dd>
+
+  <dt id="sign-chnoubis" data-shelf="#lib-king">Chnoubis</dt>
+  <dd><p>A serpent with a lion's head, rayed with seven or twelve rays, over a sign of three S's struck through. On the gems it is against pains of the stomach. In the <em>Apocryphon of John</em> the same figure is Ialdabaoth, the Demiurge, lion-faced and serpentine, who made this world without asking anyone and believes there is no god above him. He is wrong, which is the whole of gnosticism in a sentence.</p></dd>
+
+  <dt id="sign-ophite" data-shelf="#lib-origen">The Ophite diagram</dt>
+  <dd><p>Celsus saw one around the year 178 and used it against the Christians; Origen answered him sixty years later with a better description of it; between them we have the only gnostic chart that survives, in words. Two circles in the middle, Father and Son, bound by a ring called Love; seven circles for the archons' heavens, each with its name and its password; and round everything the Leviathan, the world-serpent, the soul of all. It is the floor of this room. It is a map of what you have to climb out of.</p></dd>
+
+  <dt id="sign-pleroma" data-shelf="#lib-irenaeus">The Pleroma</dt>
+  <dd><p>Valentinus' Fullness: thirty aeons in fifteen pairs, male and female, emanating from the Depth and Silence in an Ogdoad of eight, a Decad of ten and a Dodecad of twelve. The last and youngest is Sophia, Wisdom, who wanted to know the Depth by herself, could not, and whose grief, falling out of the circle, became the stuff of this world. Irenaeus wrote the whole system down to mock it, and thereby saved it.</p></dd>
+
+  <dt id="sign-horos" data-shelf="#lib-fragments">Horos</dt>
+  <dd><p>The Limit, also called Stauros, the Cross: the boundary the Valentinians drew round the Pleroma to keep the Fullness in and the fall out. Sophia's intention is kept inside the ring; her passion is put outside it, where it becomes the Demiurge and the world we are in. The cross was a fence before it was anything else.</p></dd>
+
+  <dt id="sign-vesica" data-shelf="#lib-dionysius">The Vesica Piscis</dt>
+  <dd><p>Two equal circles, each drawn through the other's centre, and the almond where they overlap. The shape of a fish, a seed, a gate; the first thing you draw in Euclid, and the first thing the cathedral builders drew for a window. The mystics put the Christ in it because it is where two worlds share an area without being the same world.</p></dd>
+
+  <dt id="sign-tetraktys" data-shelf="#lib-golden">The Tetraktys</dt>
+  <dd><p>One, two, three, four, in a triangle: ten points. The Pythagoreans swore their oaths by it. It holds the point, the line, the plane and the solid, and the ratios of the octave, the fifth and the fourth, 2:1, 3:2, 4:3, so it is geometry and music at once, which was the claim. Mead's Hermes and the Kabbalists' Tree are both ways of counting to ten and meaning everything.</p></dd>
+
+  <dt id="sign-hexagram" data-shelf="#lib-emerald">As above, so below</dt>
+  <dd><p>Two triangles, one up, one down, interlaced. The hexagram; the Seal of Solomon on the grimoires; the alchemists' fire and water; and the sentence from the Emerald Tablet that the whole Hermetic tradition rests on: that which is below is like that which is above, for the working of the one thing. The sentence is the method. The figure is the sentence, drawn.</p></dd>
+
+  <dt id="sign-tree" data-shelf="#lib-yetzirah">The Tree</dt>
+  <dd><p>Ten sephiroth, the emanations of the Kabbalah, in three columns, joined by twenty-two paths, one for each Hebrew letter, as the <em>Sefer Yetzirah</em> counts them: thirty-two paths of wisdom in all. Kether at the top is the Crown; Malkuth at the bottom is this. It is the Pleroma's diagram, drawn by people who kept the books.</p></dd>
+
+  <dt id="sign-drabsha" data-shelf="#lib-legge">The Drabsha</dt>
+  <dd><p>A cross of two olive-wood staves, draped with a white cloth, with a myrtle wreath at the crossing: the standard of the Mandaeans of Iraq and Iran, the only gnostic religion still practised. It is not a crucifix. The cloth is the light, and the four arms are the four quarters of the world the light shines through. They baptise in running water on Sundays, hold John the Baptist for a prophet and Jesus for not one, and they are still here, which none of the rest of this room can say.</p></dd>
+
+  <dt id="sign-dee" data-shelf="#lib-dee">The Hieroglyphic Monad</dt>
+  <dd><p>John Dee's figure of 1564: a point in a circle for the Sun, a crescent above it for the Moon, a cross beneath for the four elements, and two arcs at the foot for Aries, fire. Dee claimed every sign of the planets and metals could be cut out of it and wrote the <em>Monas Hieroglyphica</em> to prove it in twenty-four theorems, which Elizabeth asked him to explain to her, and which nobody has entirely understood since, Dee included.</p></dd>
+
+  <dt id="sign-pearl" data-shelf="#lib-pearl">The pearl and the serpent</dt>
+  <dd><p>From the Hymn of the Pearl in the <em>Acts of Thomas</em>: a prince is sent from the East down into Egypt to fetch one pearl from the coils of a serpent, puts on the Egyptians' clothes, eats their food, forgets who he is, and sleeps; a letter from home, flying as an eagle, wakes him. The pearl is the soul, the serpent is the world, the letter is gnosis. It is the whole doctrine as a story a child could follow, which was the idea.</p></dd>
+
+  <dt id="sign-ogdoad" data-shelf="#lib-hermetica">The Ogdoad</dt>
+  <dd><p>Seven arcs for the seven planets' heavens, which the archons keep, and an eighth beyond them, the sphere of the fixed stars, which is the first place that is free. The Hermetic <em>Discourse on the Eighth and Ninth</em> teaches the climb to it; the Valentinians' Sophia waits there for the rest of us. Above the seventh, in every version of the story, the rules change.</p></dd>
+
+  <dt id="sign-tria" data-shelf="#lib-sendivogius">The tria prima</dt>
+  <dd><p>Sulphur, mercury and salt: Paracelsus' three principles, soul, spirit and body, in the signs the alchemists cut for them: a triangle on a cross, a circle crowned with a crescent on a cross, a circle with a bar through it. Mercury's sign is the one Dee cut his Monad from. Not elements, in their view, but what anything is made of in three different ways at once, and the reason a thing can burn, run and stay.</p></dd>
+</dl>
+
+<h2 id="library">The library</h2>
+<p>Every book on these shelves is in the public domain in the United States, and most of them everywhere: the
+translations are the Victorian and Edwardian ones, Mead's and Mathers' and Legge's and Budge's, made for
+the theosophists and the Golden Dawn and the Sacred Books of the East, and they are the reason the texts
+are free. Each link goes to a complete copy, at Project Gutenberg where it has one, otherwise at the
+Gnostic Society Library, the Esoteric Archives, New Advent, the Internet Archive, or the Internet Sacred
+Text Archive. Nothing is hosted here. The shelf notes are mine.</p>
+
+<p>What is not here: the Nag Hammadi codices, found in a jar in 1945, whose English translations are
+younger than the copyright term; the <a href="http://gnosis.org/naghamm/nhl.html">Gnostic Society Library</a>
+keeps them by arrangement. What the heresy-hunters quoted in order to refute is here, because they hated it
+carefully.</p>
+
+<section class="shelf">
+<h3>I. The gnostics</h3>
+<ol>
+  <li id="lib-pistis"><a href="http://gnosis.org/library/pistis-sophia/index.htm">Pistis Sophia</a> <span class="meta">Egypt, 3rd–4th c. · tr. G. R. S. Mead, 1921</span><br><span class="note">The longest gnostic text known before 1945: Jesus, eleven years after the resurrection, explaining the fall and repentance of Sophia, the thirteen aeons and the outer darkness, to the disciples, at length.</span></li>
+  <li id="lib-fragments"><a href="http://gnosis.org/library/grs-mead/fragments_faith_forgotten/index.htm">Fragments of a Faith Forgotten</a> <span class="meta">G. R. S. Mead, 1900</span><br><span class="note">The whole of gnosticism as it could be known in 1900, school by school, from the fathers' quotations and the Coptic codices; still the best door in, and the one with the fewest footnotes.</span></li>
+  <li id="lib-pearl"><a href="http://gnosis.org/library/hymnpearl.htm">The Hymn of the Pearl</a> <span class="meta">Syria, 3rd c. · tr. G. R. S. Mead, 1908, as the Hymn of the Robe of Glory</span><br><span class="note">The prince, the pearl, the serpent, the letter; a hundred and five lines, the one gnostic text everyone agrees is beautiful.</span></li>
+  <li id="lib-acts"><a href="http://gnosis.org/library/actthom.htm">The Acts of Thomas</a> <span class="meta">Syria, 3rd c. · tr. M. R. James, 1924</span><br><span class="note">Thomas sold as a slave to an Indian king, building him a palace in heaven with the money; the Hymn of the Pearl is in the middle of it, sung in prison.</span></li>
+  <li id="lib-crucifixion"><a href="https://www.gutenberg.org/ebooks/35735">The Gnostic Crucifixion</a> <span class="meta">from the Acts of John · G. R. S. Mead, 1907</span><br><span class="note">The Cross of Light: Jesus explaining to John, on the Mount of Olives, during the crucifixion, that what is happening on Calvary is not what it looks like.</span></li>
+  <li id="lib-light"><a href="https://www.gutenberg.org/ebooks/30799">The Gnôsis of the Light</a> <span class="meta">the Bruce Codex · tr. F. Lamplugh, 1918</span><br><span class="note">The untitled treatise from the Bruce papyrus: the ineffable One and the emanations, in a Coptic that was translating a Greek that was straining. Short, and the deepest water on the shelf.</span></li>
+  <li id="lib-logia"><a href="https://archive.org/details/logiaiesousaying00gren">Logia Iesou: Sayings of Our Lord</a> <span class="meta">Oxyrhynchus, 1897 · Grenfell &amp; Hunt</span><br><span class="note">One page of papyrus from a rubbish mound, with sayings nobody had read in sixteen centuries; forty-eight years later the Gospel of Thomas was found in Egypt and this turned out to be page one.</span></li>
+  <li id="lib-king"><a href="https://sacred-texts.com/book/the-gnostics-and-their-remains">The Gnostics and Their Remains</a> <span class="meta">C. W. King, 1887</span><br><span class="note">The gems: Abraxas, Chnoubis, ΙΑΩ, drawn plate after plate by a man who collected them, with theories about them that are wrong in ways that are interesting.</span></li>
+  <li id="lib-legge"><a href="https://www.gutenberg.org/ebooks/71384">Forerunners and Rivals of Christianity</a> <span class="meta">Francis Legge, 1915 · <a href="https://www.gutenberg.org/ebooks/71647">vol. 2</a></span><br><span class="note">Orphics, Essenes, Simon Magus, the Ophites, Valentinus, Marcion, Mithras, Mani and the Mandaeans, as the competition, by a man who read everything and liked none of it.</span></li>
+  <li id="lib-irenaeus"><a href="https://www.newadvent.org/fathers/0103.htm">Against Heresies</a> <span class="meta">Irenaeus of Lyons, c. 180 · tr. Roberts &amp; Rambaut, 1885</span><br><span class="note">Book I is the Valentinian system, the thirty aeons, Sophia and Horos, the seven archons by name, set down by its enemy with a care that preserved it; the other four books are the refutation, which nobody reads.</span></li>
+  <li id="lib-hippolytus"><a href="https://www.gutenberg.org/ebooks/65478">The Refutation of All Heresies</a> <span class="meta">Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · <a href="https://www.gutenberg.org/ebooks/67116">vol. 2</a></span><br><span class="note">Thirty-three heresies traced to the Greek philosophers so that none could claim to be new: the Naassenes, the Peratae, the Sethians, Justin's Baruch, Basilides, all quoted at length to be refuted briefly.</span></li>
+  <li id="lib-origen"><a href="https://www.newadvent.org/fathers/04166.htm">Against Celsus, Book VI</a> <span class="meta">Origen, c. 248 · tr. F. Crombie, 1885</span><br><span class="note">Chapters 24 to 38: the Ophite diagram, the circles, the seven archons as animals, and the passwords for each gate, quoted by Origen to show that Celsus had confused the Ophites with the Church. The floor of this room.</span></li>
+</ol>
+</section>
+
+<section class="shelf">
+<h3>II. The hermetica and the Platonists</h3>
+<ol>
+  <li id="lib-hermetica"><a href="http://gnosis.org/library/hermet.htm">The Corpus Hermeticum</a> <span class="meta">Egypt, 1st–3rd c. · tr. G. R. S. Mead, 1906</span><br><span class="note">The Poimandres, the Mind to Hermes, the Secret Sermon on the Mountain: the vision of the Shepherd of Men, the ascent through the seven spheres, the Ogdoad; what Ficino translated in 1463 and put the Renaissance up to.</span></li>
+  <li id="lib-thrice"><a href="https://sacred-texts.com/book/thrice-greatest-hermes-vol-1">Thrice-Greatest Hermes</a> <span class="meta">G. R. S. Mead, 1906, three volumes</span><br><span class="note">The whole of the Trismegistic literature with Mead's prolegomena, excerpts and commentary; the shelf's heaviest item, by weight and in every other way.</span></li>
+  <li id="lib-emerald"><a href="https://sacred-texts.com/book/emerald-tablet-of-hermes/index">The Emerald Tablet</a> <span class="meta">Arabic, before 800 · several translations, Newton's among them</span><br><span class="note">Thirteen sentences; as above, so below; the operation of the Sun. Newton translated it in his own hand, between the calculus and the Mint.</span></li>
+  <li id="lib-virgin"><a href="https://sacred-texts.com/book/the-virgin-of-the-world">The Virgin of the World</a> <span class="meta">Kore Kosmou, from Stobaeus · tr. Kingsford &amp; Maitland, 1885</span><br><span class="note">Isis to Horus on the making of souls and their complaint at being put in bodies; the Hermetic fragment that reads most like the gnostics, translated by two Victorian vegetarians.</span></li>
+  <li id="lib-kybalion"><a href="https://www.gutenberg.org/ebooks/14209">The Kybalion</a> <span class="meta">"Three Initiates", Chicago, 1908</span><br><span class="note">Seven Hermetic principles, none of them in the Hermetica, by a man from the New Thought movement writing as three; the most-read Hermetic book of the twentieth century, and the least Hermetic. On the shelf for honesty.</span></li>
+  <li id="lib-chaldean"><a href="https://www.esotericarchives.com/oracle/oraclez.htm">The Chaldaean Oracles of Zoroaster</a> <span class="meta">Julian the Theurgist, 2nd c. · ed. W. Wynn Westcott, 1895</span><br><span class="note">Fragments of a lost poem that the later Platonists treated as scripture; fire, the Father, the Hecate who is the World-Soul, and the warning not to stoop into the dark-gleaming world.</span></li>
+  <li id="lib-golden"><a href="https://www.gutenberg.org/ebooks/69174">The Golden Verses of Pythagoras</a> <span class="meta">tr. Fabre d'Olivet, 1813 · tr. N. L. Redfield, 1917</span><br><span class="note">Seventy-one lines of rules for a Pythagorean life, with a French commentary ten times their length on the Tetraktys and everything else.</span></li>
+  <li id="lib-iamblichus"><a href="https://www.gutenberg.org/ebooks/72815">On the Mysteries of the Egyptians, Chaldeans and Assyrians</a> <span class="meta">Iamblichus, c. 300 · tr. Thomas Taylor, 1821</span><br><span class="note">The defence of theurgy, ritual as philosophy, by the Platonist who thought Plotinus had left too much out; Taylor's English is a period piece and so is the argument.</span></li>
+  <li id="lib-plotinus"><a href="https://www.gutenberg.org/ebooks/42930">The Enneads</a> <span class="meta">Plotinus, c. 270 · tr. K. S. Guthrie, 1918, four volumes</span><br><span class="note">The One, the Mind, the Soul, and the tractate Against the Gnostics, Ennead II.9, in which the greatest Platonist tells them, courteously, that they have made the world worse than it is.</span></li>
+  <li id="lib-timaeus"><a href="https://www.gutenberg.org/ebooks/1572">Timaeus</a> <span class="meta">Plato, c. 360 BC · tr. Benjamin Jowett, 1871</span><br><span class="note">The craftsman who makes the world from a pattern, looking at it; the word Demiurge begins here, as a compliment, before the gnostics turned it round.</span></li>
+</ol>
+</section>
+
+<section class="shelf">
+<h3>III. The kabbalah, the grimoires and the alchemists</h3>
+<ol>
+  <li id="lib-yetzirah"><a href="https://sacred-texts.com/book/sepher-yetzirah-or-the-book-of-creation/sepher-yetzirah">Sefer Yetzirah</a> <span class="meta">the Book of Formation, 3rd–6th c. · tr. W. Wynn Westcott, 1887</span><br><span class="note">The ten numbers and the twenty-two letters as the thirty-two paths by which the world was engraved; six short chapters that the whole Tree is built on.</span></li>
+  <li id="lib-kabbalah-unveiled"><a href="https://sacred-texts.com/book/kabbala-denudata-the-kabbalah-unveiled">The Kabbalah Unveiled</a> <span class="meta">from the Zohar · tr. S. L. MacGregor Mathers, 1887</span><br><span class="note">The Book of Concealed Mystery and the Greater and Lesser Holy Assemblies, from Rosenroth's Latin, by the Golden Dawn's founder; the Ancient of Days described hair by hair.</span></li>
+  <li id="lib-ginsburg"><a href="https://www.gutenberg.org/ebooks/69243">The Kabbalah: its Doctrines, Development and Literature</a> <span class="meta">Christian D. Ginsburg, 1865</span><br><span class="note">The sober one: what the Kabbalah says and when it was written, by a scholar of the Hebrew Bible, before the occultists got hold of it.</span></li>
+  <li id="lib-agrippa"><a href="https://www.esotericarchives.com/agrippa/agrippa1.htm">Three Books of Occult Philosophy</a> <span class="meta">Cornelius Agrippa, 1533 · tr. "J. F.", 1651</span><br><span class="note">Natural, celestial and ceremonial magic, the whole Renaissance system in one place, the book every later grimoire copied from; with Joseph Peterson's notes, at the Esoteric Archives.</span></li>
+  <li id="lib-key"><a href="https://www.esotericarchives.com/solomon/ksol.htm">The Key of Solomon the King</a> <span class="meta">Clavicula Salomonis, 14th–15th c. · tr. Mathers, 1889</span><br><span class="note">The pentacles, the circle, the hours, the knife; the grimoire the others descend from, assembled by Mathers from seven manuscripts in the British Museum.</span></li>
+  <li id="lib-goetia"><a href="https://www.esotericarchives.com/solomon/lemegeton.htm">The Lesser Key of Solomon</a> <span class="meta">Lemegeton, 17th c. · ed. Mathers &amp; Crowley, 1904</span><br><span class="note">Seventy-two spirits with their seals, ranks and specialities, the Goetia, and the four other books nobody mentions; Crowley's preface explains that the spirits are portions of the human brain, which he then summons.</span></li>
+  <li id="lib-moses"><a href="https://www.esotericarchives.com/moses/67moses.htm">The Sixth and Seventh Books of Moses</a> <span class="meta">Germany, 1849 · New York, 1880</span><br><span class="note">The grimoire of the Pennsylvania Dutch and the Caribbean, seals and all, which claims to be Moses' and is Stuttgart's; the most-owned magic book in America for a century.</span></li>
+  <li id="lib-dee"><a href="https://www.esotericarchives.com/dee/monad.htm">Monas Hieroglyphica</a> <span class="meta">John Dee, Antwerp, 1564</span><br><span class="note">Twenty-four theorems on the figure, dedicated to Maximilian II, written in twelve days; the Latin and an English, side by side.</span></li>
+  <li id="lib-enoch"><a href="https://sacred-texts.com/book/the-book-of-enoch">The Book of Enoch</a> <span class="meta">Ethiopia, 3rd–1st c. BC · tr. R. H. Charles, 1917</span><br><span class="note">The Watchers who came down and taught metallurgy and cosmetics, the giants, the journeys through the heavens, the Son of Man; quoted in the Epistle of Jude and then lost to the West until 1773.</span></li>
+  <li id="lib-levi"><a href="https://www.gutenberg.org/ebooks/70033">The History of Magic</a> <span class="meta">Éliphas Lévi, 1860 · tr. A. E. Waite, 1913</span><br><span class="note">The French ex-seminarian who invented modern occultism, on everyone from Zoroaster to Cagliostro, with the Baphomet drawing that every metal band has since borrowed.</span></li>
+  <li id="lib-silberer"><a href="https://www.gutenberg.org/ebooks/27755">Hidden Symbolism of Alchemy and the Occult Arts</a> <span class="meta">Herbert Silberer, 1914 · tr. S. E. Jelliffe, 1917</span><br><span class="note">A Freudian reads a Rosicrucian parable and finds the unconscious in it, five years before Jung did the same thing and got the credit.</span></li>
+  <li id="lib-sendivogius"><a href="https://www.gutenberg.org/ebooks/61112">A New Light of Alchymie</a> <span class="meta">Michael Sendivogius, 1604, with Paracelsus on the tria prima · tr. John French, 1650</span><br><span class="note">Twelve treatises on the philosophers' stone and a dialogue between Mercury and an alchemist in which Mercury is funnier; bound with the Paracelsian treatise on sulphur, mercury and salt.</span></li>
+</ol>
+</section>
+
+<section class="shelf">
+<h3>IV. The mystics</h3>
+<ol>
+  <li id="lib-cloud"><a href="https://sacred-texts.com/book/the-cloud-of-unknowing">The Cloud of Unknowing</a> <span class="meta">England, late 14th c. · ed. Evelyn Underhill, 1922</span><br><span class="note">An anonymous priest teaching a young man to put everything he knows under a cloud of forgetting and beat on the cloud above with a short word; the English via negativa, in English.</span></li>
+  <li id="lib-dionysius"><a href="https://sacred-texts.com/book/the-works-of-dionysius-the-areopagite">The Works of Dionysius the Areopagite</a> <span class="meta">Syria, c. 500 · tr. John Parker, 1897</span><br><span class="note">The Divine Names, the Mystical Theology, the two Hierarchies: the nine orders of angels and the God who is known by unknowing, by a writer who said he was St Paul's convert and was not.</span></li>
+  <li id="lib-boehme"><a href="https://www.gutenberg.org/ebooks/33742">Dialogues on the Supersensual Life</a> <span class="meta">Jakob Böhme, 1622 · tr. William Law, 1764</span><br><span class="note">The Görlitz shoemaker who saw the whole of things in the light on a pewter dish, in his plainest form: a master and a scholar talking about where the soul goes when it stops talking.</span></li>
+  <li id="lib-julian"><a href="https://www.gutenberg.org/ebooks/52958">Revelations of Divine Love</a> <span class="meta">Julian of Norwich, 1373–c. 1393 · ed. Grace Warrack, 1901</span><br><span class="note">Sixteen showings to an anchoress in a cell in Norwich, the first book in English by a woman; a hazelnut in the palm of the hand, and all shall be well.</span></li>
+  <li id="lib-swedenborg"><a href="https://www.gutenberg.org/ebooks/17368">Heaven and Its Wonders and Hell</a> <span class="meta">Emanuel Swedenborg, 1758 · tr. J. C. Ager, 1900</span><br><span class="note">From things heard and seen: a Swedish mining engineer's report on the afterlife, in numbered paragraphs, with the geography, the languages and the marriages. Blake read it and argued with it for the rest of his life.</span></li>
+  <li id="lib-augustine"><a href="https://www.gutenberg.org/ebooks/3296">The Confessions</a> <span class="meta">Augustine of Hippo, c. 400 · tr. E. B. Pusey, 1838</span><br><span class="note">On the shelf for books III to V, the nine years he spent as a Manichaean hearer, the only inside account of a gnostic church by someone who left it and then ran the opposition.</span></li>
+  <li id="lib-kempis"><a href="https://www.gutenberg.org/ebooks/1653">The Imitation of Christ</a> <span class="meta">Thomas à Kempis, c. 1420 · tr. William Benham, 1874</span><br><span class="note">The other most-read Christian book: the inner life as a set of short sentences, by a monk who copied the Bible out four times by hand and had opinions about that.</span></li>
+  <li id="lib-james"><a href="https://www.gutenberg.org/ebooks/621">The Varieties of Religious Experience</a> <span class="meta">William James, 1902</span><br><span class="note">The Gifford Lectures: conversion, saintliness, mysticism, examined as experiences by a psychologist who took them seriously and believed almost none of them; the four marks of the mystical state are in lectures XVI and XVII.</span></li>
+  <li id="lib-underhill"><a href="https://www.gutenberg.org/ebooks/21774">Practical Mysticism</a> <span class="meta">Evelyn Underhill, 1914</span><br><span class="note">A little book for normal people, finished the week the war began, on how to do it: recollection, quiet, contemplation, in that order, no equipment.</span></li>
+  <li id="lib-rumi"><a href="https://www.gutenberg.org/ebooks/61724">The Mesnevi</a> <span class="meta">Jalāl al-Dīn Rūmī, 13th c. · tr. J. W. Redhouse, 1881, book I</span><br><span class="note">The reed cut from the reed-bed, complaining of separation: the first eighteen lines, and then the rest of book one, with the Acts of the Adepts in front of it. Whinfield's abridgement of all six books is on the sacred-texts shelf.</span></li>
+  <li id="lib-aurelius"><a href="https://www.gutenberg.org/ebooks/2680">Meditations</a> <span class="meta">Marcus Aurelius, c. 170 · tr. George Long, 1862</span><br><span class="note">Not a mystic and not a gnostic, an emperor on campaign writing notes to himself; shelved here because he and Celsus and the Ophites were alive at the same time, and he was the one in charge.</span></li>
+  <li id="lib-apuleius"><a href="https://www.gutenberg.org/ebooks/1666">The Golden Ass</a> <span class="meta">Apuleius, c. 160 · tr. William Adlington, 1566</span><br><span class="note">A man turned into a donkey; Cupid and Psyche in the middle; and in book XI, the only first-person account of an initiation into the mysteries, Isis', that antiquity left us.</span></li>
+</ol>
+</section>
+
+<section class="shelf">
+<h3>V. The east, Egypt, and the theosophists</h3>
+<ol>
+  <li id="lib-tao"><a href="https://www.gutenberg.org/ebooks/216">The Tao Teh King</a> <span class="meta">Laozi · tr. James Legge, 1891</span><br><span class="note">Eighty-one chapters on the way that cannot be spoken, spoken; the Victorian translation, which is wordier than the original by a factor of four and still shorter than this shelf note.</span></li>
+  <li id="lib-chuang"><a href="https://www.gutenberg.org/ebooks/59709">Chuang Tzŭ: Mystic, Moralist and Social Reformer</a> <span class="meta">Zhuangzi, 4th c. BC · tr. Herbert Giles, 1889</span><br><span class="note">The butterfly dream, the useless tree, the cook who never sharpens his knife; the funniest book on the shelf by a distance.</span></li>
+  <li id="lib-gita"><a href="https://www.gutenberg.org/ebooks/2388">The Song Celestial</a> <span class="meta">Bhagavad Gītā · tr. Edwin Arnold, 1885</span><br><span class="note">Krishna to Arjuna on the field, between the armies, in blank verse; Gandhi's first Gita was this one.</span></li>
+  <li id="lib-upanishads"><a href="https://sacred-texts.com/book/the-upanishads-part-1-sbe01">The Upanishads</a> <span class="meta">tr. F. Max Müller, 1879, Sacred Books of the East, vol. 1</span><br><span class="note">Chāndogya, Kena, Aitareya, Kauṣītaki, Vājasaneyi: tat tvam asi, thou art that, in the first volume of the fifty that Müller edited and the one he translated himself.</span></li>
+  <li id="lib-dhammapada"><a href="https://www.gutenberg.org/ebooks/2017">The Dhammapada</a> <span class="meta">Pali canon · tr. F. Max Müller, 1881</span><br><span class="note">Four hundred and twenty-three verses on the path, beginning with the mind as the forerunner of all things; the Buddhist text most likely to be on a mug.</span></li>
+  <li id="lib-dead"><a href="https://www.gutenberg.org/ebooks/7145">The Book of the Dead</a> <span class="meta">the Papyrus of Ani, c. 1250 BC · tr. E. A. Wallis Budge, 1895</span><br><span class="note">The spells for coming forth by day, the weighing of the heart, the negative confession; Budge's Egyptian is a century out of date and his English is why anyone cares.</span></li>
+  <li id="lib-secret"><a href="https://www.gutenberg.org/ebooks/54824">The Secret Doctrine</a> <span class="meta">H. P. Blavatsky, 1888, vol. 1 · <a href="https://www.gutenberg.org/ebooks/54488">2</a>, <a href="https://www.gutenberg.org/ebooks/56880">3</a>, <a href="https://www.gutenberg.org/ebooks/61626">4</a></span><br><span class="note">The Stanzas of Dzyan, from a book nobody else has seen, with fifteen hundred pages of commentary; the root of every root race, Atlantis and Lemuria, and the theosophy that paid for Mead's translations before he resigned from it.</span></li>
+  <li id="lib-isis"><a href="https://www.gutenberg.org/ebooks/68705">Isis Unveiled</a> <span class="meta">H. P. Blavatsky, 1877, vol. 1 · <a href="https://www.gutenberg.org/ebooks/75871">vol. 2</a></span><br><span class="note">A master-key to the mysteries of ancient and modern science and theology, written in New York in two years by a woman who said the masters dictated it; the volume on theology has the gnostics in it, approvingly, and the Church, less so.</span></li>
+  <li id="lib-celsus"><a href="https://www.gutenberg.org/ebooks/37696">Arguments of Celsus, Porphyry and the Emperor Julian against the Christians</a> <span class="meta">tr. Thomas Taylor, 1830</span><br><span class="note">The other side, reassembled from the refutations: Celsus' True Word of 178, which only survives because Origen quoted nine-tenths of it in order to answer it. Shelved last, as a reminder of how any of this survived.</span></li>
+</ol>
+</section>
+
+<p class="colophon">Drawn on a canvas, no library, in <a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/temple.js">one script</a>;
+the signs and the shelves are plain HTML and read the same without it. The explanations are short and
+mine; the sources are the shelf, and the shelf is where to disagree with them. The temple is a block in the
+<a href="/city/">city</a>, where the hierophant will ask whether you have been.</p>
+</div>
+<script src="/js/unmute.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/temple.js?v={{ site.time | date: '%s' }}"></script>

@@ -11,6 +11,7 @@ works, so a piece can be read and discussed on its own:
 | [`backrooms/`](backrooms/) | a wireframe under the site, levels grown from a seed, ghosts of whoever it found | [README](backrooms/README.md) |
 | [`intro/`](intro/) | a cracktro: plasma, stars, copper bars, a 3D logo, a scroller, a chiptune from the date | [README](intro/README.md) |
 | [`city/`](city/) | the site as a wireframe city laid out from the date; every part of it a door | [README](city/README.md) |
+| [`temple/`](temple/) | a nave of sixteen gnostic signs round the Monad, explained, and a library of public-domain esoteric texts | [README](temple/README.md) |
 | [`dashboard/`](dashboard/) | public data feeds, drawn with D3 | [README](dashboard/README.md) |
 
 `css/main.css` is the site's bones; a toy's stylesheet sits in its folder and
@@ -196,11 +197,20 @@ send you to the rest of the site and check, when you come back, that you
 went (`chat/chat.js` keeps footprints of the pages visited, in the browser
 only).
 
+`temple/` is a block of the city and a page of its own: sixteen gnostic signs
+(Abraxas, the ouroboros, ΙΑΩ, Chnoubis, the Ophite diagram, the Pleroma, Horos,
+the vesica, the Tetraktys, the hexagram, the Tree, the Mandaean drabsha, Dee's
+Monad, the pearl and the serpent, the Ogdoad, the tria prima) drawn as line art
+in a turning ring round the Monad, each explained from its sources when chosen,
+and behind them a library: fifty-odd gnostic, hermetic, kabbalistic, magical
+and mystical texts in their public-domain translations, each a link to a
+complete copy elsewhere. Nothing is hosted; the shelf notes are the site's.
+
 ## Licence
 
 The [MIT licence](LICENSE) applies to the code in this repository: the scripts,
 stylesheets, page templates, tools and workflows, including the toys (the
-Julia strip and page, rickbot, the arena, the backrooms, the intro, the city, the dashboard).
+Julia strip and page, rickbot, the arena, the backrooms, the intro, the city, the temple, the dashboard).
 
 It does not apply to the content. The blog posts, the resume, the photographs
 and other images, the films and the music references are copyright Rick

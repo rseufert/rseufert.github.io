@@ -1,0 +1,112 @@
+/* The temple: the stylesheet for temple/index.html. The site's bones are in css/main.css;
+   this page links this file after it (the layout reads `css:` from the front matter). */
+
+.temple-page .lede { color: var(--soft); }
+.temple-page .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    max-height: 72vh;
+    background: #020705;
+    overflow: hidden;
+}
+.temple-page .stage:fullscreen { width: 100vw; height: 100vh; aspect-ratio: auto; max-height: none; }
+.temple-page canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: manipulation;
+}
+.temple-page .stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.18) 2px 3px),
+        radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+.temple-page .bar button {
+    font: 13px var(--mono);
+    color: var(--ink);
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    padding: 6px 14px;
+    cursor: pointer;
+}
+.temple-page .bar button:hover, .temple-page .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.temple-page .bar { margin: 14px 0 20px; }
+.temple-page .hint { font: 13px var(--mono); color: var(--faint); margin: 0 0 10px; }
+.temple-page kbd { font: inherit; color: var(--soft); }
+.temple-page .buttons { margin: 0; }
+
+/* What the chosen sign means, beside the nave. */
+.temple-page .reading {
+    border: 1px dashed var(--rule);
+    padding: 14px 20px 6px;
+    margin: 0 0 30px;
+    min-height: 7em;
+}
+.temple-page .reading h2 { margin: 0 0 8px; font-size: 1.4em; font-family: var(--mono); font-weight: normal; }
+.temple-page .reading h2::before { content: "["; color: var(--faint); }
+.temple-page .reading h2::after { content: "]"; color: var(--faint); }
+.temple-page .reading p { font-size: 1.15em; line-height: 1.5em; margin: 0 0 10px; }
+.temple-page .reading .shelf { font: 13px var(--mono); color: var(--faint); margin: 4px 0 8px; }
+.temple-page .reading .shelf:empty { display: none; }
+
+/* The signs as a list: a name, then its paragraph; the names are buttons when the script is in. */
+.temple-page dl.signs { margin: 0 0 30px; }
+.temple-page dl.signs dt {
+    font: 1.05em var(--mono);
+    color: var(--accent);
+    margin: 18px 0 4px;
+    cursor: pointer;
+}
+.temple-page dl.signs dt::before { content: "["; color: var(--faint); }
+.temple-page dl.signs dt::after { content: "]"; color: var(--faint); }
+.temple-page dl.signs dt:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.temple-page dl.signs dd { margin: 0; }
+.temple-page dl.signs dd p { font-size: 1.15em; line-height: 1.5em; margin: 0; color: var(--soft); }
+
+/* The shelves: a numbered list a book, the link, then the edition in the faint ink and one line under it. */
+.temple-page .shelf h3 { font-family: var(--mono); font-weight: normal; font-size: 1.15em; margin: 28px 0 8px; }
+.temple-page .shelf ol { padding-left: 1.6em; margin: 0; }
+.temple-page .shelf li { font-size: 1.15em; line-height: 1.45em; margin: 0 0 12px; }
+.temple-page .shelf li:target { background: var(--code-bg); outline: 2px dashed var(--accent); outline-offset: 4px; }
+.temple-page .shelf li > a:first-child { font-weight: bold; }
+.temple-page .shelf .meta { font: 0.78em var(--mono); color: var(--faint); margin-left: 6px; }
+.temple-page .shelf .meta a { color: var(--faint); text-decoration: underline; }
+.temple-page .shelf .note { color: var(--soft); font-size: 0.95em; }
+.temple-page .colophon { margin-top: 36px; color: var(--soft); font-size: 1.15em; }
+
+@media (max-width: 700px) {
+    .temple-page .stage { aspect-ratio: 1 / 1; max-height: 80vh; }
+}
+
+/* Fullscreen without the Fullscreen API (iPhones): the stage pinned over the page. */
+.temple-page .stage.filled {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    aspect-ratio: auto;
+}
+body.filled { overflow: hidden; }
+.temple-page .unfill {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font: 22px/38px var(--mono);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #fff;
+    border-radius: 0;
+    cursor: pointer;
+}
+.temple-page .unfill[hidden] { display: none; }
