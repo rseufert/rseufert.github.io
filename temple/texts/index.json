@@ -114,6 +114,14 @@
   "shelf": "dionysius",
   "title": "The Works of Dionysius the Areopagite, 2"
  },
+ "emerald": {
+  "bytes": 14892,
+  "edition": "Arabic, before 800 · several translations, Newton's among them · sacred-texts",
+  "host": "sacred-texts",
+  "shelf": "emerald",
+  "source": "https://sacred-texts.com/book/emerald-tablet-of-hermes/index",
+  "title": "The Emerald Tablet"
+ },
  "enoch": {
   "archive": "bookofenoch0000unse",
   "bytes": 256718,
@@ -184,6 +192,14 @@
   "gutenberg": 72815,
   "shelf": "iamblichus",
   "title": "On the Mysteries of the Egyptians, Chaldeans and Assyrians"
+ },
+ "irenaeus": {
+  "bytes": 1523741,
+  "edition": "Irenaeus of Lyons, c. 180 · tr. Roberts & Rambaut, 1885 · New Advent",
+  "host": "the Christian Classics Ethereal Library",
+  "shelf": "irenaeus",
+  "source": "https://www.ccel.org/ccel/schaff/anf01.txt",
+  "title": "Against Heresies"
  },
  "isis": {
   "bytes": 2202053,

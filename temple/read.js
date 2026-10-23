@@ -3,8 +3,9 @@
    file kept whole (header, text, licence), takes the text between the
    START and END markers, and sets it as pages: a blank line is a paragraph,
    a wrapped paragraph is joined, a paragraph of short lines (verse, a
-   table of contents, a list) keeps its lines, and a short line in capitals
-   on its own is a heading. The manifest temple/texts/index.json has each
+   table of contents, a list, numbered verses) keeps its lines, a short
+   line in capitals on its own, or before a rule of underscores, or numbered
+   with a roman numeral, is a heading, and a rule is dropped. The manifest temple/texts/index.json has each
    text's title, edition and Gutenberg number. The room remembers how far
    you were in each text (localStorage temple-read) and goes back there. */
 (function () {
@@ -23,15 +24,22 @@
     function setPages(text) {
         var a = marks.START.exec(text), b = marks.END.exec(text);
         var inner = text.slice(a ? a.index + a[0].length : 0, b ? b.index : text.length).replace(/\r/g, "");
-        var paras = inner.split(/\n[ \t]*\n+/), out = [], n = 0;
+        var paras = inner.split(/\n[ \t]*\n+/).map(function (p) { return p.replace(/^\n+|\n+$/g, ""); }).filter(function (p) { return p.trim(); }), out = [], n = 0;
+        function isRule(p) { return /^[\s_\-=*]{6,}$/.test(p); }
         for (var i = 0; i < paras.length; i++) {
-            var p = paras[i].replace(/^\n+|\n+$/g, "");
-            if (!p.trim()) continue;
-            var lines = p.split("\n"), trimmed = lines.map(function (l) { return l.replace(/\s+$/, ""); });
+            var p = paras[i], hadRule = false;
+            // a line of underscores is a rule, not text; CCEL puts one right under a heading
+            var lines = p.split("\n").filter(function (l) { if (isRule(l)) { hadRule = true; return false; } return true; });
+            if (!lines.length) continue;
+            p = lines.join("\n");
+            var trimmed = lines.map(function (l) { return l.replace(/\s+$/, ""); });
             var longest = Math.max.apply(null, trimmed.map(function (l) { return l.length; }));
-            var caps = lines.length <= 2 && longest < 80 && longest >= 4 && /[A-Z]/.test(p) && p === p.toUpperCase() && !/^\s*[IVXLC]+\.?$/.test(p.trim()) || /^(CHAPTER|BOOK|PART|SECTION|LECTURE|TREATISE|STANZA|SERMON|DIALOGUE|ENNEAD|LETTER)\b/i.test(p.trim()) && lines.length <= 2 && longest < 80;
+            var caps = lines.length <= 2 && longest < 80 && longest >= 4 && /[A-Z]/.test(p) && p === p.toUpperCase() && !/^\s*[IVXLC]+\.?$/.test(p.trim()) || /^(CHAPTER|BOOK|PART|SECTION|LECTURE|TREATISE|STANZA|SERMON|DIALOGUE|ENNEAD|LETTER)\b/i.test(p.trim()) && (lines.length <= 2 && longest < 80 || lines.length <= 4 && p.length < 320 && /^[A-Z][a-z]+ [IVXLC\d]+\.?(--|\.|:)/.test(p.trim()));   // a chapter with its argument, wrapped
+            // a short line on its own before a rule (CCEL's way), or numbered with a roman numeral, is a heading too
+            if (!caps && lines.length === 1 && longest < 120 && !/^\s*\[\d+\]/.test(p) && (hadRule || isRule(paras[i + 1] || "") || /^[IVXLC]+\.\s+\S/.test(p.trim()))) caps = true;   // a footnote before a rule is not one
             var indented = trimmed.filter(function (l) { return /^\s{2,}/.test(l); }).length;
-            var verse = lines.length >= 2 && (longest < 60 || indented >= lines.length / 2) && trimmed.every(function (l) { return l.length < 78; });
+            var numbered = trimmed.filter(function (l) { return /^\s*\d+[a-z]?\s?\)/.test(l); }).length;
+            var verse = lines.length >= 2 && (longest < 60 || indented >= lines.length / 2 || numbered >= lines.length / 2) && (numbered >= lines.length / 2 || trimmed.every(function (l) { return l.length < 78; }));
             if (caps) out.push("<h2>" + esc(trimmed.join(" ").replace(/\s+/g, " ").trim()) + "</h2>");
             else if (verse) out.push("<p class=\"verse\">" + trimmed.map(function (l) { return esc(l.replace(/^\s+/, function (sp) { return " ".repeat(Math.min(12, sp.length)); })); }).join("<br>") + "</p>");
             else out.push("<p>" + esc(trimmed.map(function (l) { return l.trim(); }).join(" ")) + "</p>");

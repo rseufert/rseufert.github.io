@@ -59,6 +59,7 @@ HOSTS = [("gutenberg.org", "Gutenberg"), ("gnosis.org", "Gnostic Society Library
 # A file put there by hand whose text came from somewhere other than the shelf's own link.
 HAND = {
     "origen": "https://www.ccel.org/ccel/schaff/anf04.txt",
+    "irenaeus": "https://www.ccel.org/ccel/schaff/anf01.txt",
 }
 
 def get(url, timeout=90):

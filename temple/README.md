@@ -79,16 +79,18 @@ which the reading room says. A file put at `texts/<slug>.txt` by hand (from
 the book's own link, or from the address `HAND` gives for it, when the
 text came from elsewhere) is kept as it is and recorded with its source.
 Run it again and it fetches only what is missing; `--refetch` takes
-everything again. Fifty-three texts, about 28 MB; the two books with no
-source (Dee's Monad, which is mostly figures, and the Emerald Tablet) stay
-links, as does Irenaeus until someone types him.
+everything again. Fifty-five texts, about 30 MB; Dee's Monad, which is
+mostly figures, stays a link.
 
 ## The reading room
 
 `read.js` takes the text between the Gutenberg START and END markers and
 sets it as pages: a blank line is a paragraph, a wrapped paragraph is
-joined, a paragraph of short or indented lines (verse, a contents list)
-keeps its lines, and a short line in capitals on its own is a heading. The
+joined, a paragraph of short, indented or numbered lines (verse, a
+contents list, the Tablet's verses) keeps its lines, a rule of underscores
+is dropped, and a heading is a short line in capitals on its own, a
+chapter line with its argument, a line numbered with a roman numeral, or
+a short line before a rule, which is how the Ethereal Library marks them. The
 manifest gives the title, the edition and the source; the other volumes of
 the same book are linked at the top. How far you were in each text is kept
 in `localStorage` under `temple-read` and the room goes back there. J and K
