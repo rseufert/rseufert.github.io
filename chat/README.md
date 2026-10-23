@@ -56,3 +56,17 @@ demand and runs a match headlessly in the log; `/dev/reality` has a hatch,
 and `NOCLIP` links down to the backrooms; the bot's answers about the arena
 and the backrooms read their `localStorage` to say how you did. The tab
 wears a 🤖👋 and wiggles until it has been opened once (`rickbot-seen`).
+
+## The shelf
+
+Ask rickbot for a passage, or for a book on the temple's shelf by its
+title or its author ("what does kropotkin say"), and it fetches the
+library's manifest (`temple/texts/index.json`, once, on the first
+question), picks the book, fetches the local text, quotes a real paragraph
+of it (140 to 420 characters, not a footnote, not capitals, not the
+bookseller's catalogue at the back of a scan), and attributes it to the
+wrong author, with the link to the right book. A reply can be a promise:
+the queue keeps "rickbot is reading" up until it resolves; the shelf rule
+is the first in `ANSWERS` and declines (returns null) when nothing on the
+shelf is meant, so the other rules are tried; and the reveal never quotes
+a promise.
