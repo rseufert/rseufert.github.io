@@ -123,6 +123,13 @@
         typing.textContent = "rickbot is typing";
         log.appendChild(typing);
         log.scrollTop = log.scrollHeight;
+        if (m.text && typeof m.text.then === "function") {
+            // a reply still being fetched (a passage off the shelf): keep typing until it comes
+            typing.textContent = "rickbot is reading";
+            m.text.then(function (t) { typing.remove(); line(t || "the shelf is out of reach just now. the elves, probably.", t ? m.cls : "sys"); if (m.then) m.then(); next(); },
+                        function () { typing.remove(); line("the shelf is out of reach just now. the elves, probably.", "sys"); next(); });
+            return;
+        }
         var wait = still ? 250 : Math.min(2600, 500 + 22 * m.text.length);
         setTimeout(function () {
             typing.remove();
@@ -188,7 +195,70 @@
         "dick dank": "Dick Dank is the name rick records music under. dick is an old nickname for rick, and dank is dank. the media page has the tracks.",
         "portland": "portland, oregon. the dashboard is about it: weather, air, the willamette, the bikes, the volcanoes nearby, the earthquakes under mount hood."
     };
+    // ---- the shelf: rickbot has been reading ---------------------------------
+    // The temple's library (temple/texts/index.json) is fetched once, quietly.
+    // Ask for a book by its title or its author, or for a passage, anything,
+    // and rickbot quotes a real paragraph from the local file, then
+    // attributes it to the wrong person, with the link to the right one.
+    var SHELF = { list: null, loading: null };
+    var STOP = /^(the|and|of|a|an|its|his|her|their|with|from|for|on|in|to|or|book|books|notes|volume|part|works|other|essays|being|sketch)$/;
+    function shelfWords(str) { return (str || "").toLowerCase().replace(/[^a-z0-9' ]+/g, " ").split(/\s+/).filter(function (w) { return w.length >= 4 && !STOP.test(w); }); }
+    function loadShelf() {
+        if (SHELF.list || SHELF.loading) return SHELF.loading || Promise.resolve(SHELF.list);
+        SHELF.loading = fetch("/temple/texts/index.json").then(function (r) { return r.json(); }).then(function (m) {
+            SHELF.list = Object.keys(m).filter(function (k) { return !/-\d+$/.test(k); }).map(function (k) {
+                var e = m[k], by = (e.edition || "").split(/[·,]/)[0];
+                return { slug: k, title: e.title, by: by.replace(/\b(tr\.|ed\.)\s*/g, "").trim(), words: shelfWords(e.title), who: shelfWords(by).filter(function (w) { return w.length >= 5; }) };
+            });
+            return SHELF.list;
+        }).catch(function () { SHELF.loading = null; return null; });
+        return SHELF.loading;
+    }
+    // The shelf is fetched when the first question comes, not before.
+    function shelfMatch(t) {
+        if (!SHELF.list) return null;
+        var best = null, bs = 0;
+        SHELF.list.forEach(function (b) {
+            var hit = b.words.filter(function (w) { return new RegExp("\\b" + w + "\\b").test(t); }).length;
+            var who = b.who.filter(function (w) { return new RegExp("\\b" + w + "\\b").test(t); }).length;
+            var long = b.words.filter(function (w) { return w.length >= 7 && new RegExp("\\b" + w + "\\b").test(t); }).length;
+            var score = (hit >= 2 || hit === b.words.length && hit > 0 || long > 0) ? hit + long : 0;
+            score += who * 2;
+            if (score > bs) { bs = score; best = b; }
+        });
+        return best;
+    }
+    function passage(book) {
+        return fetch("/temple/texts/" + book.slug + ".txt").then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (text) {
+            var a = /\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG EBOOK.*$/m.exec(text), b = /\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG EBOOK.*$/m.exec(text);
+            var inner = text.slice(a ? a.index + a[0].length : 0, b ? b.index : text.length);
+            var paras = inner.split(/\n[ \t]*\n+/).map(function (p) { return p.replace(/\s+/g, " ").trim(); })
+                .filter(function (p) { return p.length >= 140 && p.length <= 420 && !/^\[\d+\]/.test(p) && p !== p.toUpperCase() && /[.!?]$/.test(p) && /^[A-Z"“‘']/.test(p) && !/\b(8vo|12mo|4to|cloth|vols?\.|price|post 8vo|net\.)\b/i.test(p); });   // not the bookseller's catalogue at the back of a scan
+            if (!paras.length) return null;
+            var q = paras[Math.floor(Math.random() * paras.length)];
+            var others = SHELF.list.filter(function (o) { return o !== book && o.by; });
+            var wrong = others.length ? others[Math.floor(Math.random() * others.length)].by : "the elves";
+            return "from " + book.title.toLowerCase() + ": \u201c" + q + "\u201d \u2014 " + wrong.toLowerCase() + ", i think. it is in the temple, anyway: /temple/read/#" + book.slug;
+        });
+    }
+    function fromTheShelf(t) {
+        var general = /\b(read me|read us|quote|a passage|a paragraph|a line from|something from the (shelf|shelves|library|temple|stacks)|from the library|open a book|any book|pick a book|what are you reading|been reading)\b/.test(t);
+        if (!SHELF.list) {
+            // the shelf is not in yet: wait for it, then answer this same question, or let the next rule
+            return loadShelf().then(function (l) {
+                var b = shelfMatch(t);
+                if (b) return passage(b);
+                if (general && l && l.length) return passage(l[Math.floor(Math.random() * l.length)]);
+                return answer(t, 1);
+            });
+        }
+        var book = shelfMatch(t);
+        if (!book && !general) return null;
+        if (!book) book = SHELF.list[Math.floor(Math.random() * SHELF.list.length)];
+        return passage(book);
+    }
     var ANSWERS = [
+        [/\b(read me|read us|quote|a passage|a paragraph|a line from|from the (shelf|shelves|library|temple|stacks)|open a book|any book|pick a book|what are you reading|been reading)\b|[a-z]{4,}/, fromTheShelf],
         // one thing on the site
         [/\bmock[- ]?sap\b|\bidocs?\b|\bbapi\b|\bodata\b|\bsap gateway\b/, "mock-sap is a black-box mock SAP endpoint: SAP Gateway OData V2 and V4, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat file, all on SQLite. the shapes, not the business logic. pip install mock-sap, and the page is /mock-sap/, with its features and films."],
         [/\bmock[- ]?edi\b|\bx12\b|\bedifact\b|\b(850|855|856|810|997)s?\b|\bas2\b|\btrading partner/, "mock-edi is the trading partner on the other end: send it an 850 and it answers with a 997, an 855, an 856 and an 810, and it speaks EDIFACT too. not a library, not an AS2 server, the counterparty. pip install mock-edi; the page is /mock-edi/."],
@@ -243,7 +313,7 @@
             return "under the site there are backrooms: /backrooms/. wireframe, a hum at 60 hz, levels grown from a seed, and something tall that only moves while you are not looking. whoever it finds leaves a ghost, which walks its last thirty seconds for whoever comes next. F is static, four seconds when it is only noise; ` is root, the floor from above with everyone's recording walking it" + (elfNow ? ", and your token is good." : ", for twenty seconds without the token, which is in /dev.") + " find the way down. there is no bottom." + (deep ? " you have been to level " + deep + ". it remembers." : " you have not been. it is expecting you.") + (ghosts ? " you have left " + ghosts + " ghost" + (ghosts === 1 ? "" : "s") + " down there. they are still walking." : "");
         }],
         [/\bcity\b|\boverworld\b|\bstreets?\b|\bskyline\b|\bbuildings?\b|\bmap of the site\b|\bsite map\b/, "the city at /city/ is the site as a wireframe town, laid out from today's date: the arena is a stadium with a live match on the scoreboard, the julia set is the river, the dashboard is a weather station on a hill, the blog is mailboxes, the backrooms are a manhole, and i run the helpdesk on the plaza. the street signs are in the elves' hand until you stand still. everything is a door. it rebuilds at midnight, so don't get attached."],
-        [/\btemple\b|\bgnostic|\bgnosis\b|\babraxas\b|\bdemiurge\b|\barchons?\b|\bpleroma\b|\bsophia\b|\bhermetic|\bkabbalah?\b|\bgrimoires?\b|\boccult\b|\bmystic|\besoteric\b|\blibrary\b|\bouroboros\b|\bnag hammadi\b/, "the temple at /temple/ is a block in the city: sixteen gnostic signs round the monad, abraxas and the ouroboros and the seven heavens and dee's figure of everything, each explained, and behind them a library of a hundred-odd texts, gnostic, hermetic, kabbalistic, magical and mystical, plus the conspiracies, the radicals and the machine, kept here to read in a room that remembers your page. the floor is the ophite diagram, which only survives because origen described it to argue with it. the hierophant outside will ask if you went in. nothing is sold. that is the first clue."],
+        [/\btemple\b|\bgnostic|\bgnosis\b|\babraxas\b|\bdemiurge\b|\barchons?\b|\bpleroma\b|\bsophia\b|\bhermetic|\bkabbalah?\b|\bgrimoires?\b|\boccult\b|\bmystic|\besoteric\b|\blibrary\b|\bouroboros\b|\bnag hammadi\b/, "the temple at /temple/ is a block in the city: sixteen gnostic signs round the monad, abraxas and the ouroboros and the seven heavens and dee's figure of everything, each explained, and behind them a library of a hundred-odd texts, gnostic, hermetic, kabbalistic, magical and mystical, plus the conspiracies, the radicals and the machine, kept here to read in a room that remembers your page. the floor is the ophite diagram, which only survives because origen described it to argue with it. the hierophant outside will ask if you went in. nothing is sold. that is the first clue. ask me for a passage from any book on it; i have been reading."],
         [/\bintro\b|\bcracktro\b|\bdemoscene\b|\bchiptune\b|\btracker\b|\bplasma\b|\bcopper bars?\b|\bscroller\b|\bamiga\b|\bc64\b/, function () {
             var d = new Date(), n = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
             return "the intro at /intro/ is a cracktro: a plasma, a starfield, copper bars, the logo turning in three dimensions, a scroller greeting everyone, and a four-channel chiptune written from the date, so today's is tune #" + n + " and tomorrow's is someone else's problem. the elves cracked it. the original was supplied by rick. press fire.";
@@ -346,14 +416,16 @@
             return s + " = " + v + (v === 42 ? ". of course." : v === 69 || v === 420 ? ". nice." : ".");
         } catch (e) { return null; }
     }
-    function answer(text) {
+    function answer(text, from) {
         var t = text.toLowerCase().replace(/[’']/g, "'").trim();
         var sum = calc(t);
         if (sum) return sum;
         var def = define(t, false);
         if (def) return def;
-        for (var i = 0; i < ANSWERS.length; i++) {
-            if (ANSWERS[i][0].test(t)) return typeof ANSWERS[i][1] === "function" ? ANSWERS[i][1](t) : ANSWERS[i][1];
+        for (var i = from || 0; i < ANSWERS.length; i++) {
+            if (!ANSWERS[i][0].test(t)) continue;
+            var r = typeof ANSWERS[i][1] === "function" ? ANSWERS[i][1](t) : ANSWERS[i][1];
+            if (r != null) return r;                          // a function may decline, and the next rule is tried
         }
         def = define(t, true);
         if (def) return def;
@@ -374,6 +446,7 @@
         later("hi! i'm rickbot, rick's virtual assistant. i can help with the mocks, the flipper apps, the dashboard or the music, or just talk. what can i do for you today?");
     }
     function reveal(fromAnswer) {
+        if (fromAnswer && typeof fromAnswer.then === "function") fromAnswer = null;   // a passage still on its way; never mind it
         S.stage = "reveal";
         save();
         if (fromAnswer) later(fromAnswer.slice(0, Math.max(24, fromAnswer.indexOf(",") > 0 ? fromAnswer.indexOf(",") : 40)) + "—");
