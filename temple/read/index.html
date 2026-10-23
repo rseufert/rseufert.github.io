@@ -1,0 +1,18 @@
+---
+layout: default
+css: /temple/temple.css
+title: Reading room
+description: The temple's reading room. The library's public-domain texts, kept here as plain Project Gutenberg files, set as pages; the room remembers where you were in each.
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read">
+<p class="crumbs"><a href="/temple/#library">&larr; the library</a> <span id="read-source"></span></p>
+<h1 id="read-title">Reading room</h1>
+<p class="lede" id="read-edition">The texts the library keeps here, set as pages. Pick one from <a href="/temple/#library">the shelves</a>.</p>
+<noscript><p>Without scripts the texts are plain files: <a href="/temple/texts/">/temple/texts/</a>, one <code>.txt</code> a book, the Project Gutenberg files whole.</p></noscript>
+<p class="hint" id="read-hint" hidden><kbd>j</kbd> <kbd>k</kbd> a screen down or up &middot; <kbd>t</kbd> the top &middot; the room remembers where you were</p>
+<article id="read-body" class="text"></article>
+<p class="colophon" id="read-foot"></p>
+</div>
+<script src="/temple/read.js?v={{ site.time | date: '%s' }}"></script>

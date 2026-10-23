@@ -110,3 +110,24 @@ body.filled { overflow: hidden; }
     cursor: pointer;
 }
 .temple-page .unfill[hidden] { display: none; }
+
+/* The reading room (temple/read/): a text set as pages, in the serif, the width of the site. */
+.temple-page.read .crumbs { font: 13px var(--mono); color: var(--faint); margin: 0 0 6px; }
+.temple-page.read .crumbs a { color: var(--faint); }
+.temple-page.read .crumbs a:hover { color: var(--accent); }
+.temple-page.read h1 { font-size: 2.2em; margin: 0 0 8px; }
+.temple-page.read .lede { font-size: 1.15em; }
+.temple-page.read .text { margin-top: 30px; }
+.temple-page.read .text p { font-size: 1.25em; line-height: 1.55em; margin: 0 0 1.1em; }
+.temple-page.read .text h2 {
+    font: 1.05em var(--mono);
+    font-weight: normal;
+    color: var(--soft);
+    letter-spacing: 0.08em;
+    margin: 2.2em 0 1em;
+    padding-top: 1em;
+    border-top: 1px dashed var(--rule);
+}
+.temple-page.read .text p.verse { white-space: normal; line-height: 1.5em; margin-left: 1.5em; }
+.temple-page.read .hint[hidden] { display: none; }
+.temple-page.read .colophon { margin-top: 48px; padding-top: 18px; border-top: 1px dashed var(--rule); }

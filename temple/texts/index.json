@@ -1,0 +1,298 @@
+{
+ "apuleius": {
+  "bytes": 459781,
+  "edition": "Apuleius, c. 160 · tr. William Adlington, 1566",
+  "gutenberg": 1666,
+  "heading": "The Golden Asse",
+  "shelf": "apuleius",
+  "title": "The Golden Ass"
+ },
+ "augustine": {
+  "bytes": 622448,
+  "edition": "Augustine of Hippo, c. 400 · tr. E. B. Pusey, 1838",
+  "gutenberg": 3296,
+  "heading": "The Confessions of St. Augustine",
+  "shelf": "augustine",
+  "title": "The Confessions"
+ },
+ "aurelius": {
+  "bytes": 418073,
+  "edition": "Marcus Aurelius, c. 170 · tr. George Long, 1862",
+  "gutenberg": 2680,
+  "heading": "Meditations",
+  "shelf": "aurelius",
+  "title": "Meditations"
+ },
+ "boehme": {
+  "bytes": 226862,
+  "edition": "Jakob Böhme, 1622 · tr. William Law, 1764",
+  "gutenberg": 33742,
+  "heading": "Dialogues on the Supersensual Life",
+  "shelf": "boehme",
+  "title": "Dialogues on the Supersensual Life"
+ },
+ "celsus": {
+  "bytes": 182041,
+  "edition": "tr. Thomas Taylor, 1830",
+  "gutenberg": 37696,
+  "heading": "Arguments of Celsus, Porphyry, and the Emperor Julian, Against the Christians",
+  "shelf": "celsus",
+  "title": "Arguments of Celsus, Porphyry and the Emperor Julian against the Christians"
+ },
+ "chuang": {
+  "bytes": 668084,
+  "edition": "Zhuangzi, 4th c. BC · tr. Herbert Giles, 1889",
+  "gutenberg": 59709,
+  "heading": "Chuang Tzu: Mystic, Moralist, and Social Reformer",
+  "shelf": "chuang",
+  "title": "Chuang Tzŭ: Mystic, Moralist and Social Reformer"
+ },
+ "crucifixion": {
+  "bytes": 88969,
+  "edition": "from the Acts of John · G. R. S. Mead, 1907",
+  "gutenberg": 35735,
+  "heading": "The Gnostic Crucifixion",
+  "shelf": "crucifixion",
+  "title": "The Gnostic Crucifixion"
+ },
+ "dead": {
+  "bytes": 89458,
+  "edition": "the Papyrus of Ani, c. 1250 BC · tr. E. A. Wallis Budge, 1895",
+  "gutenberg": 7145,
+  "heading": "The Book of the Dead",
+  "shelf": "dead",
+  "title": "The Book of the Dead"
+ },
+ "dhammapada": {
+  "bytes": 86543,
+  "edition": "Pali canon · tr. F. Max Müller, 1881",
+  "gutenberg": 2017,
+  "heading": "Dhammapada, a Collection of Verses; Being One of the Canonical Books of the Buddhists",
+  "shelf": "dhammapada",
+  "title": "The Dhammapada"
+ },
+ "ginsburg": {
+  "bytes": 359335,
+  "edition": "Christian D. Ginsburg, 1865",
+  "gutenberg": 69243,
+  "heading": "The Kabbalah: its doctrines, development, and literature",
+  "shelf": "ginsburg",
+  "title": "The Kabbalah: its Doctrines, Development and Literature"
+ },
+ "gita": {
+  "bytes": 143812,
+  "edition": "Bhagavad Gītā · tr. Edwin Arnold, 1885",
+  "gutenberg": 2388,
+  "heading": "The Song Celestial; Or, Bhagavad-Gîtâ (from the Mahâbhârata)",
+  "shelf": "gita",
+  "title": "The Song Celestial"
+ },
+ "golden": {
+  "bytes": 608341,
+  "edition": "tr. Fabre d'Olivet, 1813 · tr. N. L. Redfield, 1917",
+  "gutenberg": 69174,
+  "heading": "The golden verses of Pythagoras",
+  "shelf": "golden",
+  "title": "The Golden Verses of Pythagoras"
+ },
+ "hippolytus": {
+  "bytes": 508853,
+  "edition": "Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · vol. 2",
+  "gutenberg": 65478,
+  "heading": "Philosophumena; or, The refutation of all heresies, Volume I",
+  "shelf": "hippolytus",
+  "title": "The Refutation of All Heresies"
+ },
+ "hippolytus-2": {
+  "bytes": 518107,
+  "edition": "Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · vol. 2",
+  "gutenberg": 67116,
+  "heading": "Philosophumena; or, The refutation of all heresies, Volume II",
+  "shelf": "hippolytus",
+  "title": "The Refutation of All Heresies, 2"
+ },
+ "iamblichus": {
+  "bytes": 571276,
+  "edition": "Iamblichus, c. 300 · tr. Thomas Taylor, 1821",
+  "gutenberg": 72815,
+  "heading": "Iamblichus on the mysteries of the Egyptians, Chaldeans, and Assyrians",
+  "shelf": "iamblichus",
+  "title": "On the Mysteries of the Egyptians, Chaldeans and Assyrians"
+ },
+ "isis": {
+  "bytes": 2202053,
+  "edition": "H. P. Blavatsky, 1877, vol. 1 · vol. 2",
+  "gutenberg": 68705,
+  "heading": "Isis unveiled, Volume 1 (of 2), Science",
+  "shelf": "isis",
+  "title": "Isis Unveiled"
+ },
+ "isis-2": {
+  "bytes": 2310415,
+  "edition": "H. P. Blavatsky, 1877, vol. 1 · vol. 2",
+  "gutenberg": 75871,
+  "heading": "Isis unveiled, Volume 2 (of 2), Theology",
+  "shelf": "isis",
+  "title": "Isis Unveiled, 2"
+ },
+ "james": {
+  "bytes": 1151317,
+  "edition": "William James, 1902",
+  "gutenberg": 621,
+  "heading": "The Varieties of Religious Experience: A Study in Human Nature",
+  "shelf": "james",
+  "title": "The Varieties of Religious Experience"
+ },
+ "julian": {
+  "bytes": 466824,
+  "edition": "Julian of Norwich, 1373–c. 1393 · ed. Grace Warrack, 1901",
+  "gutenberg": 52958,
+  "heading": "Revelations of Divine Love",
+  "shelf": "julian",
+  "title": "Revelations of Divine Love"
+ },
+ "kempis": {
+  "bytes": 367685,
+  "edition": "Thomas à Kempis, c. 1420 · tr. William Benham, 1874",
+  "gutenberg": 1653,
+  "heading": "The Imitation of Christ",
+  "shelf": "kempis",
+  "title": "The Imitation of Christ"
+ },
+ "kybalion": {
+  "bytes": 220056,
+  "edition": "\"Three Initiates\", Chicago, 1908",
+  "gutenberg": 14209,
+  "heading": "The Kybalion",
+  "shelf": "kybalion",
+  "title": "The Kybalion"
+ },
+ "legge": {
+  "bytes": 643516,
+  "edition": "Francis Legge, 1915 · vol. 2",
+  "gutenberg": 71384,
+  "heading": "Forerunners and rivals of Christianity",
+  "shelf": "legge",
+  "title": "Forerunners and Rivals of Christianity"
+ },
+ "legge-2": {
+  "bytes": 1227852,
+  "edition": "Francis Legge, 1915 · vol. 2",
+  "gutenberg": 71647,
+  "heading": "Forerunners and rivals of Christianity",
+  "shelf": "legge",
+  "title": "Forerunners and Rivals of Christianity, 2"
+ },
+ "levi": {
+  "bytes": 1100654,
+  "edition": "Éliphas Lévi, 1860 · tr. A. E. Waite, 1913",
+  "gutenberg": 70033,
+  "heading": "The history of magic",
+  "shelf": "levi",
+  "title": "The History of Magic"
+ },
+ "light": {
+  "bytes": 141298,
+  "edition": "the Bruce Codex · tr. F. Lamplugh, 1918",
+  "gutenberg": 30799,
+  "heading": "The Gnôsis of the Light",
+  "shelf": "light",
+  "title": "The Gnôsis of the Light"
+ },
+ "plotinus": {
+  "bytes": 511009,
+  "edition": "Plotinus, c. 270 · tr. K. S. Guthrie, 1918, four volumes",
+  "gutenberg": 42930,
+  "heading": "Plotinos: Complete Works, v. 1",
+  "shelf": "plotinus",
+  "title": "The Enneads"
+ },
+ "rumi": {
+  "bytes": 807956,
+  "edition": "Jalāl al-Dīn Rūmī, 13th c. · tr. J. W. Redhouse, 1881, book I",
+  "gutenberg": 61724,
+  "heading": "The Mesnevi",
+  "shelf": "rumi",
+  "title": "The Mesnevi"
+ },
+ "secret": {
+  "bytes": 2001126,
+  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
+  "gutenberg": 54824,
+  "heading": "The Secret Doctrine, Vol. 1 of 4",
+  "shelf": "secret",
+  "title": "The Secret Doctrine"
+ },
+ "secret-2": {
+  "bytes": 2406753,
+  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
+  "gutenberg": 54488,
+  "heading": "The Secret Doctrine, Vol. 2 of 4",
+  "shelf": "secret",
+  "title": "The Secret Doctrine, 2"
+ },
+ "secret-3": {
+  "bytes": 1549211,
+  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
+  "gutenberg": 56880,
+  "heading": "The Secret Doctrine, Vol. 3 of 4",
+  "shelf": "secret",
+  "title": "The Secret Doctrine, 3"
+ },
+ "secret-4": {
+  "bytes": 1853147,
+  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
+  "gutenberg": 61626,
+  "heading": "The Secret Doctrine, Vol. 4 of 4",
+  "shelf": "secret",
+  "title": "The Secret Doctrine, 4"
+ },
+ "sendivogius": {
+  "bytes": 538178,
+  "edition": "Michael Sendivogius, 1604, with Paracelsus on the tria prima · tr. John French, 1650",
+  "gutenberg": 61112,
+  "heading": "A New Light of Alchymie",
+  "shelf": "sendivogius",
+  "title": "A New Light of Alchymie"
+ },
+ "silberer": {
+  "bytes": 702240,
+  "edition": "Herbert Silberer, 1914 · tr. S. E. Jelliffe, 1917",
+  "gutenberg": 27755,
+  "heading": "Hidden Symbolism of Alchemy and the Occult Arts",
+  "shelf": "silberer",
+  "title": "Hidden Symbolism of Alchemy and the Occult Arts"
+ },
+ "swedenborg": {
+  "bytes": 982363,
+  "edition": "Emanuel Swedenborg, 1758 · tr. J. C. Ager, 1900",
+  "gutenberg": 17368,
+  "heading": "Heaven and its Wonders and Hell",
+  "shelf": "swedenborg",
+  "title": "Heaven and Its Wonders and Hell"
+ },
+ "tao": {
+  "bytes": 78705,
+  "edition": "Laozi · tr. James Legge, 1891",
+  "gutenberg": 216,
+  "heading": "The Tao Teh King, or the Tao and its Characteristics",
+  "shelf": "tao",
+  "title": "The Tao Teh King"
+ },
+ "timaeus": {
+  "bytes": 468330,
+  "edition": "Plato, c. 360 BC · tr. Benjamin Jowett, 1871",
+  "gutenberg": 1572,
+  "heading": "Timaeus",
+  "shelf": "timaeus",
+  "title": "Timaeus"
+ },
+ "underhill": {
+  "bytes": 213356,
+  "edition": "Evelyn Underhill, 1914",
+  "gutenberg": 21774,
+  "heading": "Practical Mysticism: A Little Book for Normal People",
+  "shelf": "underhill",
+  "title": "Practical Mysticism"
+ }
+}

@@ -279,7 +279,8 @@
                 shelfOut.appendChild(document.createTextNode("on the shelf: ")); shelfOut.appendChild(link);
             }
         }
-        try { history.replaceState(null, "", "#" + sign.id); } catch (e) { /* fine */ }
+        // The address carries the sign, unless it points at a shelf (#lib-...), which is left alone.
+        try { var h0 = location.hash.replace(/^#/, ""); if (!h0 || SIGNS.some(function (x) { return x.id === h0; })) history.replaceState(null, "", "#" + sign.id); } catch (e) { /* fine */ }
         if (audio) audio.ping(i);
     }
     function at(px, py) {
