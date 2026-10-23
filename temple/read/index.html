@@ -11,7 +11,10 @@ nostrip: true
 <h1 id="read-title">Reading room</h1>
 <p class="lede" id="read-edition">The texts the library keeps here, set as pages. Pick one from <a href="/temple/#library">the shelves</a>.</p>
 <noscript><p>Without scripts the texts are plain files: <a href="/temple/texts/">/temple/texts/</a>, one <code>.txt</code> a book, the Project Gutenberg files whole.</p></noscript>
-<p class="hint" id="read-hint" hidden><kbd>j</kbd> <kbd>k</kbd> a screen down or up &middot; <kbd>t</kbd> the top &middot; the room remembers where you were</p>
+<div class="bar" id="read-bar" hidden>
+  <p class="hint"><kbd>j</kbd> <kbd>k</kbd> a screen down or up &middot; <kbd>t</kbd> the top &middot; <kbd>r</kbd> the librarian reads aloud from where you are &middot; the room remembers where you were</p>
+  <p class="buttons"><button type="button" id="read-aloud" hidden>read aloud</button></p>
+</div>
 <article id="read-body" class="text"></article>
 <p class="colophon" id="read-foot"></p>
 </div>

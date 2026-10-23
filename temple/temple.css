@@ -131,3 +131,18 @@ body.filled { overflow: hidden; }
 .temple-page.read .text p.verse { white-space: normal; line-height: 1.5em; margin-left: 1.5em; }
 .temple-page.read .hint[hidden] { display: none; }
 .temple-page.read .colophon { margin-top: 48px; padding-top: 18px; border-top: 1px dashed var(--rule); }
+
+/* The librarian reading aloud: the paragraph being read is marked. */
+.temple-page.read .text .aloud { outline: 1px dashed var(--accent); outline-offset: 8px; }
+.temple-page.read .bar { margin: 0 0 10px; }
+.temple-page.read .bar[hidden] { display: none; }
+.temple-page.read .bar button {
+    font: 13px var(--mono);
+    color: var(--ink);
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    padding: 6px 14px;
+    cursor: pointer;
+}
+.temple-page.read .bar button:hover, .temple-page.read .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.temple-page.read .bar button[hidden] { display: none; }
