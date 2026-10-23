@@ -11,7 +11,8 @@
 (function () {
     "use strict";
     var body = document.getElementById("read-body"), titleOut = document.getElementById("read-title"), editionOut = document.getElementById("read-edition");
-    var sourceOut = document.getElementById("read-source"), foot = document.getElementById("read-foot"), hint = document.getElementById("read-hint");
+    var sourceOut = document.getElementById("read-source"), foot = document.getElementById("read-foot"), hint = document.getElementById("read-bar");
+    var aloudBtn = document.getElementById("read-aloud");
     if (!body) return;
     var REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     function slugOf() {
@@ -105,7 +106,63 @@
         if (k === "j") window.scrollBy({ top: step, behavior: b });
         else if (k === "k") window.scrollBy({ top: -step, behavior: b });
         else if (k === "t") window.scrollTo({ top: 0, behavior: b });
+        else if (k === "r" || k === "R") aloud();
     });
+
+    // ---- the librarian reads aloud ----------------------------------------------------
+    // The browser's own voice, the flattest one it has, from the paragraph at the
+    // top of the screen onward, each paragraph marked as it is read and kept in
+    // view; R or the button starts it and stops it.
+    var synth = window.speechSynthesis, reading = null;
+    function voice() {
+        if (!synth) return null;
+        var vs = synth.getVoices().filter(function (v) { return /^en/i.test(v.lang); });
+        var pick = vs.filter(function (v) { return /daniel|alex|arthur|google uk english male|microsoft (george|ryan)/i.test(v.name); })[0] || vs.filter(function (v) { return /GB/i.test(v.lang); })[0] || vs[0];
+        return pick || null;
+    }
+    function mark(el) {
+        var old = body.querySelector(".aloud");
+        if (old) old.classList.remove("aloud");
+        if (!el) return;
+        el.classList.add("aloud");
+        var r = el.getBoundingClientRect();
+        if (r.top < 0 || r.bottom > innerHeight * 0.9) el.scrollIntoView({ block: "center", behavior: REDUCED ? "auto" : "smooth" });
+    }
+    function stopAloud() {
+        reading = null;
+        if (synth) synth.cancel();
+        mark(null);
+        if (aloudBtn) { aloudBtn.setAttribute("aria-pressed", "false"); aloudBtn.textContent = "read aloud"; }
+    }
+    function speakFrom(el) {
+        if (!el) { stopAloud(); return; }
+        var text = el.textContent.replace(/\s+/g, " ").trim();
+        if (!text) { speakFrom(el.nextElementSibling); return; }
+        var u = new SpeechSynthesisUtterance(text), v = voice();
+        if (v) u.voice = v;
+        u.rate = 0.92; u.pitch = 0.72; u.volume = 1;
+        reading = u;
+        mark(el);
+        u.onend = function () { if (reading === u) speakFrom(el.nextElementSibling); };
+        u.onerror = function () { if (reading === u) stopAloud(); };
+        synth.speak(u);
+    }
+    function aloud() {
+        if (!synth || !body.children.length) return;
+        if (reading) { stopAloud(); return; }
+        // the paragraph nearest the top third of the screen
+        var at = innerHeight * 0.3, best = body.children[0], bd = 1e9;
+        for (var i = 0; i < body.children.length; i++) { var d = Math.abs(body.children[i].getBoundingClientRect().top - at); if (d < bd) { bd = d; best = body.children[i]; } }
+        synth.cancel();
+        if (aloudBtn) { aloudBtn.setAttribute("aria-pressed", "true"); aloudBtn.textContent = "stop reading"; }
+        speakFrom(best);
+    }
+    if (aloudBtn) {
+        aloudBtn.hidden = !synth;
+        aloudBtn.addEventListener("click", aloud);
+    }
+    window.addEventListener("pagehide", stopAloud);
+    window.addEventListener("beforeunload", stopAloud);
     window.addEventListener("hashchange", function () { location.reload(); });
     load(slugOf());
 })();

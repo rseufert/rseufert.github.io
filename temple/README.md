@@ -100,8 +100,11 @@ a short line before a rule, which is how the Ethereal Library marks them. The
 manifest gives the title, the edition and the source; the other volumes of
 the same book are linked at the top. How far you were in each text is kept
 in `localStorage` under `temple-read` and the room goes back there. J and K
-are a screen down and up, T the top. Without scripts the files themselves
-are at `/temple/texts/`.
+are a screen down and up, T the top. R, or the button, has the browser's
+own voice read aloud from the paragraph at the top of the screen, the
+flattest English voice it has, each paragraph marked and kept in view as it
+is read; R again stops it. Without scripts the files themselves are at
+`/temple/texts/`.
 
 ## Poking
 
