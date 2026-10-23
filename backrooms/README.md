@@ -121,3 +121,12 @@ screen the left thumb walks and the right looks. Fullscreen on the stage.
 Progress (seed, level, deepest, times found, sound) is in `localStorage` under
 `backrooms`, and the ghosts under `backrooms-ghosts`; rickbot reads both. `window.Backrooms` exposes the generator and
 the state for poking at in the console.
+
+## The wall with the signs
+
+One note on level 0 of every seed is not words but signs, `?800?48480.(‡2‡?650-525‡?4`:
+a substitution in the key from Poe's Gold-Bug (5 a, 2 b, - d, 8 e, 1 f, 3 g, 4 h, 6 i,
+0 l, 9 m, * n, ‡ o, . p, ( r, ; s, ? t, ¶ u, ] v, † y), run together as Poe ran his,
+which reads TELL THE HELP ROBOT IALDABAOTH. The code clerk in the city asks for it,
+the manuals for breaking it are on the temple's eighth shelf beside the story, and
+saying the name to rickbot completes the errand.

@@ -290,6 +290,12 @@
         door(x + 5, z + 7.5, "mock-einvoice", "/mock-einvoice/");
         box(x + 20, z + 9, 6, 4, 8, { col: "#c9d2dc", label: "ACME TREASURY" });
         door(x + 23, z + 7.5, "acme-treasury", "/acme-treasury/");
+        npc(x + 27.5, z + 20.5, "the code clerk", "cap", "#c9d2dc", {
+            ask: "the code clerk: there is writing on a wall under the site. not letters. signs: ?800?48 and so on. the manual for breaking it is in the temple, on the last shelf, next to the story the signs come from, which has the key in it if you would rather cheat. read the wall, work out the words, do what they say. then come back.",
+            wait: "the code clerk: not yet. under the site, on the first level, on a wall. count the signs; the commonest one is an e. it always is.",
+            thanks: "the code clerk: you told the robot the name. it wrote it down. everything written down is a cipher to somebody; the bank runs on that. thank you. i can go back to the ledgers.",
+            after: "the code clerk: ‡ is o. you know that now. it is hard to stop knowing."
+        });
         npc(x + 3, z + 27.5, "the idoc", "doc", "#c9d2dc", { idle: [
             "the idoc: status 51. error. i have been status 51 since 1998. do you know what that is like. it is like being a letter nobody opens, except the letter is also a table.",
             "the idoc: they say i will be posted. they say that in the vault. the vault is cold and the saying is warm and that is all the posting i get.",
@@ -459,7 +465,8 @@
             "the librarian: shh. no, talk. nobody comes in. the books are files now, mostly, kept here, and the room remembers your page; every text in there is older than copyright or was given away, which are the only kinds we can afford.",
             "the librarian: the nag hammadi codices are not on the shelves. found in a jar in 1945, translated in 1977, in copyright until long after both of us. we have what the heresy-hunters quoted in order to refute it. it survived because they hated it carefully.",
             "the librarian: mead translated nearly everything in there, around 1900, for the theosophists, and then fell out with them. the theosophists are in there too, twice, under blavatsky.",
-            "the librarian: the diagram on the floor is drawn from a description of a description. celsus saw one. origen answered him. the drawing itself is gone. we have the argument about it, which is most of what survives of anything."
+            "the librarian: the diagram on the floor is drawn from a description of a description. celsus saw one. origen answered him. the drawing itself is gone. we have the argument about it, which is most of what survives of anything.",
+            "the librarian: press r in the reading room and i will read to you. it is not my voice. it is the browser's, the flattest one it has. i asked for that."
         ] });
         npc(cx + 12.5, cz - 10, "the hierophant", "big", c, {
             ask: "the hierophant: sixteen signs round the one, and a hundred-odd books behind them, and nobody has been in. go up the steps. the serpent over the door eats its tail. choose a sign, read what it says, open one of the books. then come back and tell me what the demiurge got wrong.",
@@ -531,7 +538,8 @@
         { id: "mocks", who: "the clerk", title: "see a mock", check: function () { return went(/^\/(mock-sap|mock-edi|mock-bank|mock-einvoice)\//); } },
         { id: "lie", who: "the intern", title: "catch the helpdesk lying", check: function () { var r = stored("rickbot"); return !!(r && r.room); } },
         { id: "turn", who: "the astronomer", title: "watch the sky turn", check: function () { return (Q.flags.lapsed || 0) >= 24; } },
-        { id: "sign", who: "the hierophant", title: "go into the temple", check: function () { return went(/^\/temple\/?/); } }
+        { id: "sign", who: "the hierophant", title: "go into the temple", check: function () { return went(/^\/temple\/?/); } },
+        { id: "cipher", who: "the code clerk", title: "read the wall", check: function () { var c = null; try { c = localStorage.getItem("cipher"); } catch (e) { c = null; } return !!c; } }
     ];
     function doneCount() { return QUESTS.filter(function (q) { return Q.done[q.id]; }).length; }
     function allDone() { return doneCount() === QUESTS.length; }
