@@ -454,13 +454,13 @@
         poly([[cx, 11.0, cz + 0.5], [cx, 12.2, cz + 0.5]], { col: c });
         door(cx, cz - 6.6, "the temple", "/temple/", "link", 2.8);
         npc(cx - 12.5, cz - 10, "the librarian", "cap", c, { idle: [
-            "the librarian: shh. no, talk. nobody comes in. the books are all links and the links are all free; every text in there is older than copyright, which is the only kind of old we can afford.",
+            "the librarian: shh. no, talk. nobody comes in. the books are files now, mostly, kept here, and the room remembers your page; every text in there is older than copyright or was given away, which are the only kinds we can afford.",
             "the librarian: the nag hammadi codices are not on the shelves. found in a jar in 1945, translated in 1977, in copyright until long after both of us. we have what the heresy-hunters quoted in order to refute it. it survived because they hated it carefully.",
             "the librarian: mead translated nearly everything in there, around 1900, for the theosophists, and then fell out with them. the theosophists are in there too, twice, under blavatsky.",
             "the librarian: the diagram on the floor is drawn from a description of a description. celsus saw one. origen answered him. the drawing itself is gone. we have the argument about it, which is most of what survives of anything."
         ] });
         npc(cx + 12.5, cz - 10, "the hierophant", "big", c, {
-            ask: "the hierophant: sixteen signs round the one, and fifty-odd books behind them, and nobody has been in. go up the steps. the serpent over the door eats its tail. choose a sign, read what it says, open one of the books. then come back and tell me what the demiurge got wrong.",
+            ask: "the hierophant: sixteen signs round the one, and a hundred-odd books behind them, and nobody has been in. go up the steps. the serpent over the door eats its tail. choose a sign, read what it says, open one of the books. then come back and tell me what the demiurge got wrong.",
             wait: "the hierophant: you have not been in. the door is under the pediment, up the steps. E, or the button.",
             thanks: "the hierophant: you went in. the demiurge's error was believing he was alone up there. it is a common one. the eighth sphere is above the seventh; it always is.",
             after: "the hierophant: the signs are still turning. they do not need you to. go in again anyway."

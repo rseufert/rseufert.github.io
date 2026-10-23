@@ -11,7 +11,9 @@ fetches a copy of each book it can:
     (the item's DjVuTXT file), cleaned a little (hyphens at line ends joined, page numbers
     and running heads dropped) and marked in the manifest as OCR, uncorrected;
   * a file already at temple/texts/<slug>.txt, put there by hand from the book's own link:
-    kept as it is, the link recorded as its source.
+    kept as it is, the link recorded as its source;
+  * a text in FREE below, not public domain but freely redistributable by its author's word:
+    fetched as plain text (HTML stripped, cut between two markers) and marked so.
 
 Each goes to temple/texts/<slug>.txt (a second or later volume as <slug>-2.txt and so on).
 The shelf is rewritten so the book's own link opens the reading room (/temple/read/#slug)
@@ -24,7 +26,7 @@ reader uses (title, edition, source, whether OCR). Books with neither source sta
 Idempotent: run it twice and the shelf is the same.
 """
 import json, os, re, sys, time, html
-import urllib.request
+import urllib.request, urllib.error
 from collections import Counter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,9 +55,21 @@ SCANS = {
     "dionysius": ["theworksofdionys00dionuoft", "worksofdionysius02pseu"],
     "upanishads": ["upanishads01ml"],
 }
+# Texts that are not public domain but freely redistributable by their authors' word (the shelf
+# note says so): fetched as plain text, HTML stripped, cut between two markers when given.
+FREE = {   # slug: (address, start marker, end marker, a title to put in front), the markers cutting the page's furniture off
+    "jargon": ("http://www.catb.org/jargon/oldversions/jarg447.txt", None, None, None),
+    "gnu": ("https://www.gnu.org/gnu/manifesto.html", "The GNU Manifesto (which appears below)", "Copyright Infringement Notification", "The GNU Manifesto\nRichard Stallman, 1985\n\n"),
+    "barlow": ("https://www.eff.org/cyberspace-independence", "Governments of the Industrial World", "Back to top", "A Declaration of the Independence of Cyberspace\nJohn Perry Barlow, Davos, February 8, 1996\n\n"),
+    "rfc1149": ("https://www.rfc-editor.org/rfc/rfc1149.txt", None, None, None),
+    "rfc1925": ("https://www.rfc-editor.org/rfc/rfc1925.txt", None, None, None),
+    "mentor": ("http://phrack.org/archives/issues/7/3.txt", "==Phrack Inc.==", None, None),
+    "nechayev": ("https://www.marxists.org/subject/anarchism/nechayev/catechism.htm", "1. The revolution", "Anarchism Archive", "Catechism of a Revolutionist\nSergey Nechayev, 1869\n\n"),
+}
 HOSTS = [("gutenberg.org", "Gutenberg"), ("gnosis.org", "Gnostic Society Library"), ("sacred-texts.com", "sacred-texts"),
          ("archive.org", "Internet Archive"), ("esotericarchives.com", "Esoteric Archives"), ("newadvent.org", "New Advent"),
-         ("ccel.org", "the Christian Classics Ethereal Library")]
+         ("ccel.org", "the Christian Classics Ethereal Library"), ("catb.org", "catb.org"), ("gnu.org", "gnu.org"), ("eff.org", "the EFF"),
+         ("rfc-editor.org", "the RFC Editor"), ("phrack.org", "Phrack"), ("marxists.org", "marxists.org")]
 # A file put there by hand whose text came from somewhere other than the shelf's own link.
 HAND = {
     "origen": "https://www.ccel.org/ccel/schaff/anf04.txt",
@@ -68,9 +82,25 @@ def get(url, timeout=90):
         return r.read()
 
 def fetch_gutenberg(n):
-    text = get("https://www.gutenberg.org/ebooks/%s.txt.utf-8" % n).decode("utf-8-sig", "replace").replace("\r\n", "\n")
-    if "Project Gutenberg" not in text[:2000]:
-        raise RuntimeError("not a Gutenberg text: #" + n)
+    # The plain-text file lives at one of a few addresses, by the book's age.
+    for url in ("https://www.gutenberg.org/ebooks/%s.txt.utf-8" % n, "https://www.gutenberg.org/cache/epub/%s/pg%s.txt" % (n, n),
+                "https://www.gutenberg.org/files/%s/%s-0.txt" % (n, n), "https://www.gutenberg.org/files/%s/%s.txt" % (n, n)):
+        try:
+            text = get(url).decode("utf-8-sig", "replace").replace("\r\n", "\n")
+        except urllib.error.HTTPError as e:
+            if e.code == 404: continue
+            raise
+        if "Project Gutenberg" in text[:2000]:
+            return text
+    # A newer book may have only the HTML; take that, tags off.
+    raw = get("https://www.gutenberg.org/cache/epub/%s/pg%s-images.html" % (n, n)).decode("utf-8", "replace")
+    raw = re.sub(r"(?is)<(script|style)\b.*?</\1>", "", raw)
+    raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
+    raw = re.sub(r"(?i)</(p|div|h[1-6]|li|tr|blockquote|pre|table)>", "\n\n", raw)
+    text = html.unescape(re.sub(r"<[^>]+>", "", raw)).replace("\r\n", "\n")
+    text = re.sub(r"[ \t]+\n", "\n", text); text = re.sub(r"\n{3,}", "\n\n", text).strip() + "\n"
+    if "Project Gutenberg" not in text[:3000]:
+        raise RuntimeError("no text for Gutenberg #" + n)
     return text
 
 def fetch_scan(ident):
@@ -81,6 +111,22 @@ def fetch_scan(ident):
     raw = get("https://archive.org/download/%s/%s" % (ident, urllib.request.quote(files[0]["name"]))).decode("utf-8", "replace")
     md = meta.get("metadata", {})
     return clean_ocr(raw), {"title": md.get("title"), "year": (md.get("year") or md.get("date") or "")[:4]}
+
+def fetch_free(url, start, end, title=None):
+    raw = get(url).decode("utf-8", "replace")
+    if "<html" in raw[:2000].lower() or "<!doctype" in raw[:200].lower():
+        raw = re.sub(r"(?s)<!--.*?-->", "", raw)
+        raw = re.sub(r"(?is)<(script|style|nav|header|footer)\b.*?</\1>", "", raw)
+        raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
+        raw = re.sub(r"(?i)</(p|div|h[1-6]|li|tr|blockquote|pre)>", "\n\n", raw)
+        raw = re.sub(r"<[^>]+>", "", raw)
+        raw = html.unescape(raw)
+    raw = raw.replace("\r\n", "\n")
+    if start and start in raw: raw = raw[raw.index(start):]
+    if end and end in raw: raw = raw[:raw.index(end)]
+    raw = re.sub(r"[ \t]+\n", "\n", raw)
+    raw = re.sub(r"\n{3,}", "\n\n", raw)
+    return (title or "") + raw.strip() + "\n"
 
 def clean_ocr(t):
     t = t.replace("\r\n", "\n").replace("\f", "\n\n")
@@ -125,6 +171,9 @@ def main():
         gut = GUT.findall(body)
         sources = [("gutenberg", n) for n in gut] if gut else [("archive", i) for i in SCANS.get(slug, [])]
         # A file put there by hand (temple/texts/<slug>.txt with no Gutenberg or scan source) is kept as it is.
+        if not sources and slug in FREE:
+            sources = [("free", FREE[slug][0])]
+            ext = FREE[slug][0]                                         # the source, whatever the shelf's link has become
         if not sources and os.path.exists(os.path.join(TEXTS, slug + ".txt")):
             sources = [("hand", HAND.get(slug, ext))]
         if not sources:
@@ -142,13 +191,21 @@ def main():
                 src = "https://archive.org/details/%s" % ref
             else:
                 entry["source"] = ref; entry["host"] = label(ref)
+                if kind == "free": entry["free"] = True
                 src = ref
             if kind == "hand":
                 pass
             elif refetch or not os.path.exists(path):
                 sys.stderr.write("fetching %s -> %s.txt\n" % (src, name))
-                if kind == "gutenberg": text = fetch_gutenberg(ref)
-                else: text, info = fetch_scan(ref); entry["scan"] = info
+                try:
+                    if kind == "gutenberg": text = fetch_gutenberg(ref)
+                    elif kind == "free": text = fetch_free(*FREE[slug])
+                    else: text, info = fetch_scan(ref); entry["scan"] = info
+                except Exception as e:
+                    # No text to be had: the book stays a link, and the run goes on.
+                    sys.stderr.write("  no text: %s\n" % e)
+                    time.sleep(1.2)
+                    continue
                 open(path, "w", encoding="utf-8").write(text)
                 time.sleep(1.2)
             elif kind == "archive":
@@ -162,10 +219,12 @@ def main():
                 if first.group(1) == ext:
                     new = new.replace('<a href="%s">' % ext, '<a href="%s">' % local, 1)
                 tag = ('Gutenberg #%s' % ref) if kind == "gutenberg" else label(ext)
-                if kind == "hand" and tag not in new:
-                    new = new.replace('</span><br>', ' · <a href="%s">%s</a></span><br>' % (ext, tag), 1)
+                shown = ('>%s</a>' % tag) in new                    # the source already named in the meta
+                if kind in ("hand", "free"):
+                    if not shown and ext.startswith("http"):
+                        new = new.replace('</span><br>', ' · <a href="%s">%s</a></span><br>' % (ext, tag), 1)
                     continue
-                if tag not in new:
+                if not shown:
                     new = new.replace('</span><br>', ' · <a href="%s">%s</a></span><br>' % (ext if kind == "gutenberg" or "archive.org" not in ext else src, tag), 1)
                 if kind == "archive" and "archive.org" not in ext and "Internet Archive" not in new:
                     new = new.replace('</span><br>', ' · scan at the <a href="%s">Internet Archive</a></span><br>' % src, 1)

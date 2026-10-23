@@ -28,12 +28,63 @@
   "shelf": "aurelius",
   "title": "Meditations"
  },
+ "babbage": {
+  "bytes": 885599,
+  "edition": "Charles Babbage, 1864 · Gutenberg #57532",
+  "gutenberg": 57532,
+  "shelf": "babbage",
+  "title": "Passages from the Life of a Philosopher"
+ },
+ "bakunin": {
+  "bytes": 208260,
+  "edition": "Mikhail Bakunin, 1882 · Gutenberg #36568",
+  "gutenberg": 36568,
+  "shelf": "bakunin",
+  "title": "God and the State"
+ },
+ "barlow": {
+  "bytes": 5112,
+  "edition": "John Perry Barlow, Davos, 1996 · the EFF",
+  "free": true,
+  "host": "the EFF",
+  "shelf": "barlow",
+  "source": "https://www.eff.org/cyberspace-independence",
+  "title": "A Declaration of the Independence of Cyberspace"
+ },
+ "bellamy": {
+  "bytes": 458916,
+  "edition": "Edward Bellamy, 1888 · Gutenberg #624",
+  "gutenberg": 624,
+  "shelf": "bellamy",
+  "title": "Looking Backward, 2000 to 1887"
+ },
+ "bierce": {
+  "bytes": 384521,
+  "edition": "Ambrose Bierce, 1911 · Gutenberg #972",
+  "gutenberg": 972,
+  "shelf": "bierce",
+  "title": "The Devil's Dictionary"
+ },
  "boehme": {
   "bytes": 226862,
   "edition": "Jakob Böhme, 1622 · tr. William Law, 1764 · Gutenberg #33742",
   "gutenberg": 33742,
   "shelf": "boehme",
   "title": "Dialogues on the Supersensual Life"
+ },
+ "bread": {
+  "bytes": 450958,
+  "edition": "Peter Kropotkin, 1892 · English, 1906 · Gutenberg #23428",
+  "gutenberg": 23428,
+  "shelf": "bread",
+  "title": "The Conquest of Bread"
+ },
+ "carroll": {
+  "bytes": 460355,
+  "edition": "Lewis Carroll, 1896 · Gutenberg #28696",
+  "gutenberg": 28696,
+  "shelf": "carroll",
+  "title": "Symbolic Logic"
  },
  "celsus": {
   "bytes": 182041,
@@ -76,6 +127,13 @@
   "shelf": "crucifixion",
   "title": "The Gnostic Crucifixion"
  },
+ "cthulhu": {
+  "bytes": 90766,
+  "edition": "H. P. Lovecraft, 1928 · Gutenberg #68283",
+  "gutenberg": 68283,
+  "shelf": "cthulhu",
+  "title": "The Call of Cthulhu"
+ },
  "dead": {
   "bytes": 89458,
   "edition": "the Papyrus of Ani, c. 1250 BC · tr. E. A. Wallis Budge, 1895 · Gutenberg #7145",
@@ -114,6 +172,20 @@
   "shelf": "dionysius",
   "title": "The Works of Dionysius the Areopagite, 2"
  },
+ "donnelly": {
+  "bytes": 857236,
+  "edition": "Ignatius Donnelly, 1882 · Gutenberg #4032",
+  "gutenberg": 4032,
+  "shelf": "donnelly",
+  "title": "Atlantis: The Antediluvian World"
+ },
+ "dreyfus": {
+  "bytes": 930457,
+  "edition": "Suelette Dreyfus, with Julian Assange, 1997 · Gutenberg #4686",
+  "gutenberg": 4686,
+  "shelf": "dreyfus",
+  "title": "Underground"
+ },
  "emerald": {
   "bytes": 14892,
   "edition": "Arabic, before 800 · several translations, Newton's among them · sacred-texts",
@@ -134,6 +206,34 @@
   "shelf": "enoch",
   "title": "The Book of Enoch"
  },
+ "erewhon": {
+  "bytes": 484361,
+  "edition": "Samuel Butler, 1872 · Gutenberg #1906",
+  "gutenberg": 1906,
+  "shelf": "erewhon",
+  "title": "Erewhon; or, Over the Range"
+ },
+ "etidorhpa": {
+  "bytes": 724933,
+  "edition": "John Uri Lloyd, 1895 · Gutenberg #37775",
+  "gutenberg": 37775,
+  "shelf": "etidorhpa",
+  "title": "Etidorhpa; or, The End of Earth"
+ },
+ "flatland": {
+  "bytes": 223228,
+  "edition": "Edwin A. Abbott, 1884 · Gutenberg #201",
+  "gutenberg": 201,
+  "shelf": "flatland",
+  "title": "Flatland: A Romance of Many Dimensions"
+ },
+ "fort": {
+  "bytes": 668852,
+  "edition": "Charles Fort, 1919 · Gutenberg #22472",
+  "gutenberg": 22472,
+  "shelf": "fort",
+  "title": "The Book of the Damned"
+ },
  "fragments": {
   "archive": "fragmentsoffaith00meaduoft",
   "bytes": 1054460,
@@ -145,6 +245,13 @@
   },
   "shelf": "fragments",
   "title": "Fragments of a Faith Forgotten"
+ },
+ "gaines": {
+  "bytes": 804306,
+  "edition": "Helen Fouché Gaines, 1939 · Gutenberg #75074",
+  "gutenberg": 75074,
+  "shelf": "gaines",
+  "title": "Elementary Cryptanalysis"
  },
  "ginsburg": {
   "bytes": 359335,
@@ -159,6 +266,15 @@
   "gutenberg": 2388,
   "shelf": "gita",
   "title": "The Song Celestial"
+ },
+ "gnu": {
+  "bytes": 28973,
+  "edition": "Richard Stallman, 1985 · gnu.org",
+  "free": true,
+  "host": "gnu.org",
+  "shelf": "gnu",
+  "source": "https://www.gnu.org/gnu/manifesto.html",
+  "title": "The GNU Manifesto"
  },
  "goetia": {
   "archive": "ac_goetia",
@@ -179,12 +295,26 @@
   "shelf": "golden",
   "title": "The Golden Verses of Pythagoras"
  },
+ "goldman": {
+  "bytes": 424435,
+  "edition": "Emma Goldman, 1910 · Gutenberg #2162",
+  "gutenberg": 2162,
+  "shelf": "goldman",
+  "title": "Anarchism and Other Essays"
+ },
  "hippolytus": {
   "bytes": 508853,
   "edition": "Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · vol. 2 · Gutenberg #65478",
   "gutenberg": 65478,
   "shelf": "hippolytus",
   "title": "The Refutation of All Heresies"
+ },
+ "hitt": {
+  "bytes": 215454,
+  "edition": "Parker Hitt, 1916 · Gutenberg #48871",
+  "gutenberg": 48871,
+  "shelf": "hitt",
+  "title": "Manual for the Solution of Military Ciphers"
  },
  "iamblichus": {
   "bytes": 571276,
@@ -214,6 +344,15 @@
   "gutenberg": 621,
   "shelf": "james",
   "title": "The Varieties of Religious Experience"
+ },
+ "jargon": {
+  "bytes": 1645624,
+  "edition": "1975 onward · version 4.4.7, 2003, ed. Eric S. Raymond · catb.org",
+  "free": true,
+  "host": "catb.org",
+  "shelf": "jargon",
+  "source": "http://www.catb.org/jargon/oldversions/jarg447.txt",
+  "title": "The Jargon File"
  },
  "julian": {
   "bytes": 466824,
@@ -305,6 +444,36 @@
   "shelf": "logia",
   "title": "Logia Iesou: Sayings of Our Lord"
  },
+ "lovelace": {
+  "bytes": 197632,
+  "edition": "L. F. Menabrea, 1842 · tr. and annotated by Ada Lovelace, 1843 · Gutenberg #75107",
+  "gutenberg": 75107,
+  "shelf": "lovelace",
+  "title": "Sketch of the Analytical Engine, with Notes by the Translator"
+ },
+ "manifesto": {
+  "bytes": 92520,
+  "edition": "Marx and Engels, 1848 · tr. Samuel Moore, 1888 · Gutenberg #61",
+  "gutenberg": 61,
+  "shelf": "manifesto",
+  "title": "The Communist Manifesto"
+ },
+ "mentor": {
+  "bytes": 3787,
+  "edition": "The Mentor, Phrack 7, 1986 · Phrack",
+  "free": true,
+  "host": "Phrack",
+  "shelf": "mentor",
+  "source": "http://phrack.org/archives/issues/7/3.txt",
+  "title": "The Conscience of a Hacker"
+ },
+ "morris": {
+  "bytes": 442465,
+  "edition": "William Morris, 1890 · Gutenberg #3261",
+  "gutenberg": 3261,
+  "shelf": "morris",
+  "title": "News from Nowhere"
+ },
  "moses": {
   "archive": "sixthandseventh00schegoog",
   "bytes": 398972,
@@ -317,6 +486,22 @@
   "shelf": "moses",
   "title": "The Sixth and Seventh Books of Moses"
  },
+ "mutual": {
+  "bytes": 587429,
+  "edition": "Peter Kropotkin, 1902 · Gutenberg #4341",
+  "gutenberg": 4341,
+  "shelf": "mutual",
+  "title": "Mutual Aid: A Factor of Evolution"
+ },
+ "nechayev": {
+  "bytes": 11445,
+  "edition": "Sergey Nechayev, 1869 · marxists.org",
+  "free": true,
+  "host": "marxists.org",
+  "shelf": "nechayev",
+  "source": "https://www.marxists.org/subject/anarchism/nechayev/catechism.htm",
+  "title": "Catechism of a Revolutionist"
+ },
  "origen": {
   "bytes": 1532309,
   "edition": "Origen, c. 248 · tr. F. Crombie, 1885 · New Advent",
@@ -324,6 +509,13 @@
   "shelf": "origen",
   "source": "https://www.ccel.org/ccel/schaff/anf04.txt",
   "title": "Against Celsus"
+ },
+ "paine": {
+  "bytes": 145882,
+  "edition": "Thomas Paine, 1776 · The Age of Reason, 1794 · Gutenberg #147",
+  "gutenberg": 147,
+  "shelf": "paine",
+  "title": "Common Sense"
  },
  "pearl": {
   "archive": "hymnoftherobe10meaduoft",
@@ -356,12 +548,65 @@
   "shelf": "plotinus",
   "title": "The Enneads"
  },
+ "poe": {
+  "bytes": 596520,
+  "edition": "Edgar Allan Poe, 1843 · the Raven edition · Gutenberg #2147",
+  "gutenberg": 2147,
+  "shelf": "poe",
+  "title": "The Gold-Bug, and the rest of volume one"
+ },
+ "prince": {
+  "bytes": 302840,
+  "edition": "Niccolò Machiavelli, 1532 · tr. W. K. Marriott, 1908 · Gutenberg #1232",
+  "gutenberg": 1232,
+  "shelf": "prince",
+  "title": "The Prince"
+ },
+ "proudhon": {
+  "bytes": 933599,
+  "edition": "Pierre-Joseph Proudhon, 1840 · tr. Benjamin Tucker, 1876 · Gutenberg #360",
+  "gutenberg": 360,
+  "shelf": "proudhon",
+  "title": "What Is Property?"
+ },
+ "rfc1149": {
+  "bytes": 3176,
+  "edition": "D. Waitzman, 1 April 1990 · the RFC Editor",
+  "free": true,
+  "host": "the RFC Editor",
+  "shelf": "rfc1149",
+  "source": "https://www.rfc-editor.org/rfc/rfc1149.txt",
+  "title": "RFC 1149: IP over Avian Carriers"
+ },
+ "rfc1925": {
+  "bytes": 4243,
+  "edition": "R. Callon, 1 April 1996 · the RFC Editor",
+  "free": true,
+  "host": "the RFC Editor",
+  "shelf": "rfc1925",
+  "source": "https://www.rfc-editor.org/rfc/rfc1925.txt",
+  "title": "RFC 1925: The Twelve Networking Truths"
+ },
+ "robison": {
+  "bytes": 728847,
+  "edition": "John Robison, 1797 · Gutenberg #47605",
+  "gutenberg": 47605,
+  "shelf": "robison",
+  "title": "Proofs of a Conspiracy"
+ },
  "rumi": {
   "bytes": 807956,
   "edition": "Jalāl al-Dīn Rūmī, 13th c. · tr. J. W. Redhouse, 1881, book I · Gutenberg #61724",
   "gutenberg": 61724,
   "shelf": "rumi",
   "title": "The Mesnevi"
+ },
+ "rur": {
+  "bytes": 150368,
+  "edition": "Karel Čapek, 1920 · tr. Paul Selver, 1923 · Gutenberg #59112",
+  "gutenberg": 59112,
+  "shelf": "rur",
+  "title": "R.U.R. (Rossum's Universal Robots)"
  },
  "secret": {
   "bytes": 2001126,
@@ -384,6 +629,41 @@
   "shelf": "silberer",
   "title": "Hidden Symbolism of Alchemy and the Occult Arts"
  },
+ "smoky": {
+  "bytes": 124898,
+  "edition": "Willis George Emerson, 1908 · Gutenberg #3007",
+  "gutenberg": 3007,
+  "shelf": "smoky",
+  "title": "The Smoky God"
+ },
+ "spooner": {
+  "bytes": 132627,
+  "edition": "Lysander Spooner, 1870 · Gutenberg #36145",
+  "gutenberg": 36145,
+  "shelf": "spooner",
+  "title": "No Treason: The Constitution of No Authority"
+ },
+ "sterling": {
+  "bytes": 663894,
+  "edition": "Bruce Sterling, 1992 · Gutenberg #101",
+  "gutenberg": 101,
+  "shelf": "sterling",
+  "title": "The Hacker Crackdown"
+ },
+ "stirner": {
+  "bytes": 871650,
+  "edition": "Max Stirner, 1844 · tr. Steven Byington, 1907 · Gutenberg #34580",
+  "gutenberg": 34580,
+  "shelf": "stirner",
+  "title": "The Ego and His Own"
+ },
+ "suntzu": {
+  "bytes": 334964,
+  "edition": "Sun Tzu, c. 500 BC · tr. Lionel Giles, 1910 · Gutenberg #132",
+  "gutenberg": 132,
+  "shelf": "suntzu",
+  "title": "The Art of War"
+ },
  "swedenborg": {
   "bytes": 982363,
   "edition": "Emanuel Swedenborg, 1758 · tr. J. C. Ager, 1900 · Gutenberg #17368",
@@ -391,12 +671,26 @@
   "shelf": "swedenborg",
   "title": "Heaven and Its Wonders and Hell"
  },
+ "symzonia": {
+  "bytes": 278911,
+  "edition": "\"Captain Adam Seaborn\", 1820 · Gutenberg #54485",
+  "gutenberg": 54485,
+  "shelf": "symzonia",
+  "title": "Symzonia: Voyage of Discovery"
+ },
  "tao": {
   "bytes": 78705,
   "edition": "Laozi · tr. James Legge, 1891 · Gutenberg #216",
   "gutenberg": 216,
   "shelf": "tao",
   "title": "The Tao Teh King"
+ },
+ "thoreau": {
+  "bytes": 71040,
+  "edition": "Henry David Thoreau, 1849 · Gutenberg #71",
+  "gutenberg": 71,
+  "shelf": "thoreau",
+  "title": "On the Duty of Civil Disobedience"
  },
  "thrice": {
   "archive": "thricegreatesthe01hermuoft",
@@ -441,6 +735,20 @@
   "shelf": "timaeus",
   "title": "Timaeus"
  },
+ "trial": {
+  "bytes": 469745,
+  "edition": "Franz Kafka, 1925 · tr. David Wyllie · Gutenberg #7849",
+  "gutenberg": 7849,
+  "shelf": "trial",
+  "title": "The Trial"
+ },
+ "twain": {
+  "bytes": 222448,
+  "edition": "Mark Twain, 1916 · Gutenberg #50109",
+  "gutenberg": 50109,
+  "shelf": "twain",
+  "title": "The Mysterious Stranger"
+ },
  "underhill": {
   "bytes": 213356,
   "edition": "Evelyn Underhill, 1914 · Gutenberg #21774",
@@ -471,6 +779,20 @@
   },
   "shelf": "virgin",
   "title": "The Virgin of the World"
+ },
+ "we": {
+  "bytes": 380176,
+  "edition": "Yevgeny Zamyatin, 1921 · tr. Gregory Zilboorg, 1924 · Gutenberg #61963",
+  "gutenberg": 61963,
+  "shelf": "we",
+  "title": "We"
+ },
+ "webster": {
+  "bytes": 1087449,
+  "edition": "Nesta H. Webster, 1924 · Gutenberg #19104",
+  "gutenberg": 19104,
+  "shelf": "webster",
+  "title": "Secret Societies and Subversive Movements"
  },
  "yetzirah": {
   "archive": "sepheryetzirahb00rittgoog",
