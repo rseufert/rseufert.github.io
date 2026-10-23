@@ -78,7 +78,7 @@ last and the seasons have their own constellations; the pole drifts over
 
 ## The people
 
-Eleven figures (a person in nine lines with a cap, a rake or a telescope, a
+Twelve figures (a person in nine lines with a cap, a rake or a telescope, a
 cat, a ghost, an elf), each a door of kind `npc` that talks instead of
 entering, each with an errand that sends you elsewhere on the site, all
 optional. `QUESTS` holds each with a `check()` that reads what the rest of
@@ -90,7 +90,9 @@ the hack happened), and the city's own flags (Baby found, the clock run
 24 hours). Progress is in `city-quests`. Talking offers, then waits, then
 thanks and runs `then` (the heron fetches the live USGS reading; the
 astronomer turns the names on; the hierophant at the temple only wants you
-to have been in). Q is the log. All eleven done: the sign and
+to have been in; the code clerk wants the cipher on the backrooms' wall
+read and the name in it said to rickbot, which sets `cipher`). Q is the
+log. All twelve done: the sign and
 the HUD read POP. 2 and a magenta star labelled YOU appears 4.5° from the
 pole, so it never sets.
 

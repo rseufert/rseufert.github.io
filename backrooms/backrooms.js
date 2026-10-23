@@ -95,6 +95,10 @@
         "the menu has one door too many", "there is no bottom. that is the joke", "josh allen can see you",
         "the elves are cold", "kulture kudasai", "you have been here before"
     ];
+    // One note is always on a wall of level 0, in Poe's signs from The Gold-Bug
+    // (5 is a, 8 is e, ? is t, the key is in the story, the story is in the
+    // temple): TELL THE HELP ROBOT IALDABAOTH, run together as Poe ran his.
+    var CIPHER = "?800?48480.(\u20212\u2021?650-525\u2021?4";
     var ARRIVALS = [
         "level 0. you noclipped out of rickseufert.com. the hum is 60 hz. find the way down.",
         "level 1. the ceiling is lower. so is the hum.",
@@ -183,6 +187,7 @@
             used[c] = 1;
             notes.push({ x: x, z: z, face: faces[Math.floor(rand() * faces.length)], text: pool.splice(Math.floor(rand() * pool.length), 1)[0], seen: false });
         }
+        if (level === 0 && notes.length) notes[notes.length - 1].text = CIPHER;      // the wall with the signs, every seed
         return { n: n, grid: grid, height: height, start: start, exit: exit, dist: dist, reach: reach, notes: notes, level: level, rand: rand };
     }
     // Breadth-first distances over open cells, -1 where you cannot get.

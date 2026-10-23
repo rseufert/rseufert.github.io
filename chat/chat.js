@@ -1017,6 +1017,12 @@
     };
 
     // ---- the line ---------------------------------------------------------
+    // The name off the wall under the site (backrooms, level 0, in Poe's signs):
+    // say it in any stage and the code clerk's errand in the city is done.
+    function archon() {
+        try { localStorage.setItem("cipher", String(new Date().getFullYear() * 10000 + (new Date().getMonth() + 1) * 100 + new Date().getDate())); } catch (e) { /* a visit's worth */ }
+        return "ialdabaoth. you read the wall, then. ?800 is tell; 8 is e, it always is. the name is written in the file nobody reads, which is where names like that go. the code clerk in the city will want to hear it from you. [rickbot: notice: the lion-faced one has been notified. he says he is not surprised.]";
+    }
     form.addEventListener("submit", function (ev) {
         ev.preventDefault();
         var text = input.value.trim();
@@ -1024,6 +1030,7 @@
         if (!text || busy) return;
         you(text);
         var t = text.toLowerCase();
+        if (/\b(ialdabaoth|yaldabaoth|jaldabaoth)\b/.test(t) && S.stage !== "reveal" && S.stage !== "ending") return later(archon());
         if (S.stage === "dungeon" && t !== "reset") S.flags.resetting = 0;
         if (S.stage === "bot") {
             if (/xyzzy|plugh|wake up|\belves\b|\belf\b|simulation|the matrix|dungeon|\bescape\b|\bhacked\b|\bglitch/.test(t)) return reveal(null);
