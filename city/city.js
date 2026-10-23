@@ -162,7 +162,9 @@
             after: "the ghost: still walking. we both are."
         });
         // Lamp posts along the river and at the plaza.
-        spawn = { x: origin(plaza.i, plaza.j).x + BLOCK / 2 - 2, z: origin(plaza.i, plaza.j).z - STREET - 6, yaw: 0.15 };
+        // You start in the street south of the plaza, by the town sign, on open ground: the
+        // spot is nudged to the nearest clear one in case the day's shuffle put something there.
+        spawn = freeSpot(origin(plaza.i, plaza.j).x + BLOCK / 2 - 2, origin(plaza.i, plaza.j).z - STREET / 2); spawn.yaw = 0.15;
     }
     function filler(x, z, b) {
         var n = 1 + Math.floor(rand() * 3), used = [];
@@ -753,6 +755,15 @@
     var W = 0, H = 0, DPR = 1, f = 0;
     var match = null, matchClock = 0, A = window.Arena, R = window.ArenaRobots;
 
+    // The nearest point to (x, z) that is not inside anything, searched in rings a metre apart.
+    function freeSpot(x, z) {
+        if (!blocked(x, z)) return { x: x, z: z };
+        for (var r = 1; r < 40; r++) for (var k = 0; k < r * 8; k++) {
+            var a = k / (r * 8) * Math.PI * 2, px = x + Math.cos(a) * r, pz = z + Math.sin(a) * r;
+            if (!blocked(px, pz)) return { x: px, z: pz };
+        }
+        return { x: x, z: z };
+    }
     function blocked(x, z) {
         if (Math.abs(x) > SIZE / 2 - 1 || Math.abs(z) > SIZE / 2 - 1) return true;
         for (var i = 0; i < boxes.length; i++) {
