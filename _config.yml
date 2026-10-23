@@ -24,4 +24,4 @@ permalink: /blog/:year/:month/:day/:title
 url: https://rickseufert.com
 # Repo tooling, not site content. Setting exclude replaces Jekyll's default
 # list (Gemfile, node_modules, vendor...), none of which this repo has.
-exclude: [README.md, tools, LICENSE, arena/README.md, arena/arena_test.js, arena/arena_lab.js, arena/lab, backrooms/README.md, chat/README.md, dashboard/README.md, julia/README.md, intro/README.md, city/README.md]
+exclude: [README.md, tools, LICENSE, arena/README.md, arena/arena_test.js, arena/arena_lab.js, arena/lab, backrooms/README.md, chat/README.md, dashboard/README.md, julia/README.md, intro/README.md, city/README.md, temple/README.md]

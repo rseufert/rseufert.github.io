@@ -106,7 +106,7 @@
         // The river runs along one east-west street, not the plaza's.
         var row = pick([1, 2, 5, 6]);
         river = { z0: origin(0, row).z - STREET, z1: origin(0, row).z, row: row };
-        var builders = [theArena, theMocks, theDashboard, theFlipper, theBlog, theVenue, theShop, theCinema];
+        var builders = [theArena, theMocks, theDashboard, theFlipper, theBlog, theVenue, theShop, theCinema, theTemple];
         builders.forEach(function (fn, n) { var b = blocks[n], o = origin(b.i, b.j); fn(o.x, o.z, b); });
         blocks.slice(builders.length).forEach(function (b) { var o = origin(b.i, b.j); filler(o.x, o.z, b); });
         // Baby, asleep in a doorway on a far block.
@@ -421,6 +421,51 @@
             after: "the projectionist: tomorrow's will be different. come back."
         });
     }
+    function theTemple(x, z) {
+        // Three steps, a cella with the Monad over its door and ΙΑΩ on the
+        // lintel, a colonnade of sixteen, a pediment with the serpent that
+        // eats its tail, and a dome of rings; inside is /temple/, the signs
+        // and the library. The steps are not solid, so the door on them can
+        // be reached; the cella is.
+        var cx = x + BLOCK / 2, cz = z + BLOCK / 2, c = "#7cf5c8", k, a;
+        box(cx - 11, cz - 9, 22, 18, 0.5, { col: c, lit: false, solid: false });
+        box(cx - 10, cz - 8, 20, 16, 0.5, { y0: 0.5, col: c, lit: false, solid: false });
+        box(cx - 9, cz - 7, 18, 14, 0.5, { y0: 1.0, col: c, lit: false, solid: false });
+        box(cx - 6, cz - 4, 12, 9, 7, { y0: 1.5, col: c, lit: false, label: "THE TEMPLE" });
+        for (k = 0; k < 6; k++) { poly([[cx - 7.5 + k * 3, 1.5, cz - 5.8], [cx - 7.5 + k * 3, 8.5, cz - 5.8]], { col: c }); poly([[cx - 7.5 + k * 3, 1.5, cz + 5.8], [cx - 7.5 + k * 3, 8.5, cz + 5.8]], { col: c }); }
+        for (k = 1; k < 4; k++) { poly([[cx - 7.5, 1.5, cz - 5.8 + k * 2.9], [cx - 7.5, 8.5, cz - 5.8 + k * 2.9]], { col: c }); poly([[cx + 7.5, 1.5, cz - 5.8 + k * 2.9], [cx + 7.5, 8.5, cz - 5.8 + k * 2.9]], { col: c }); }
+        poly([[cx - 7.5, 8.5, cz - 5.8], [cx + 7.5, 8.5, cz - 5.8], [cx + 7.5, 8.5, cz + 5.8], [cx - 7.5, 8.5, cz + 5.8]], { closed: true, col: c });   // the architrave
+        poly([[cx - 8.2, 8.5, cz - 5.85], [cx, 11.2, cz - 5.85], [cx + 8.2, 8.5, cz - 5.85]], { closed: true, col: c });                          // the pediment
+        // the ouroboros in the pediment: a ring with a gap, and a head biting the tail
+        var ring = [];
+        for (k = 0; k < 22; k++) { a = 0.3 + k / 22 * (Math.PI * 2 - 0.6); ring.push([cx + Math.cos(a) * 0.9, 9.4 + Math.sin(a) * 0.9, cz - 5.9]); }
+        poly(ring, { col: c });
+        poly([[cx + Math.cos(0.3) * 0.9, 9.4 + Math.sin(0.3) * 0.9, cz - 5.9], [cx + 1.25, 9.4 + 0.1, cz - 5.9], [cx + 0.75, 9.4 + 0.55, cz - 5.9]], { closed: true, col: c });
+        // the Monad over the door, and the name on the lintel
+        var mon = []; for (k = 0; k < 16; k++) { a = k / 16 * Math.PI * 2; mon.push([cx + Math.cos(a) * 0.7, 6.3 + Math.sin(a) * 0.7, cz - 4.05]); }
+        poly(mon, { closed: true, col: c }); poly([[cx - 0.08, 6.3, cz - 4.05], [cx + 0.08, 6.3, cz - 4.05]], { col: c, width: 2 });
+        label("ΙΑΩ", cx, 4.8, cz - 4.05, 0.55, c);
+        label("SIGNS · SHELVES · NOTHING SOLD", cx, 3.3, cz - 4.05, 0.26, c);
+        // the dome: rings that close up to a point
+        [[5.4, 8.6], [4.4, 9.7], [3.0, 10.5], [1.4, 11.0]].forEach(function (rr) {
+            var pts = []; for (k = 0; k < 20; k++) { a = k / 20 * Math.PI * 2; pts.push([cx + Math.cos(a) * rr[0], rr[1], cz + 0.5 + Math.sin(a) * rr[0]]); }
+            poly(pts, { closed: true, col: c });
+        });
+        poly([[cx, 11.0, cz + 0.5], [cx, 12.2, cz + 0.5]], { col: c });
+        door(cx, cz - 6.6, "the temple", "/temple/", "link", 2.8);
+        npc(cx - 12.5, cz - 10, "the librarian", "cap", c, { idle: [
+            "the librarian: shh. no, talk. nobody comes in. the books are all links and the links are all free; every text in there is older than copyright, which is the only kind of old we can afford.",
+            "the librarian: the nag hammadi codices are not on the shelves. found in a jar in 1945, translated in 1977, in copyright until long after both of us. we have what the heresy-hunters quoted in order to refute it. it survived because they hated it carefully.",
+            "the librarian: mead translated nearly everything in there, around 1900, for the theosophists, and then fell out with them. the theosophists are in there too, twice, under blavatsky.",
+            "the librarian: the diagram on the floor is drawn from a description of a description. celsus saw one. origen answered him. the drawing itself is gone. we have the argument about it, which is most of what survives of anything."
+        ] });
+        npc(cx + 12.5, cz - 10, "the hierophant", "big", c, {
+            ask: "the hierophant: sixteen signs round the one, and fifty-odd books behind them, and nobody has been in. go up the steps. the serpent over the door eats its tail. choose a sign, read what it says, open one of the books. then come back and tell me what the demiurge got wrong.",
+            wait: "the hierophant: you have not been in. the door is under the pediment, up the steps. E, or the button.",
+            thanks: "the hierophant: you went in. the demiurge's error was believing he was alone up there. it is a common one. the eighth sphere is above the seventh; it always is.",
+            after: "the hierophant: the signs are still turning. they do not need you to. go in again anyway."
+        });
+    }
     function theRiver() {
         // Seven lines of water across the whole city, drawn afresh each frame
         // (they move), bridges where the streets cross, a gauge on one, a heron.
@@ -483,7 +528,8 @@
         { id: "cat", who: "nugget", title: "find baby", check: function () { return !!Q.flags.baby; } },
         { id: "mocks", who: "the clerk", title: "see a mock", check: function () { return went(/^\/(mock-sap|mock-edi|mock-bank|mock-einvoice)\//); } },
         { id: "lie", who: "the intern", title: "catch the helpdesk lying", check: function () { var r = stored("rickbot"); return !!(r && r.room); } },
-        { id: "turn", who: "the astronomer", title: "watch the sky turn", check: function () { return (Q.flags.lapsed || 0) >= 24; } }
+        { id: "turn", who: "the astronomer", title: "watch the sky turn", check: function () { return (Q.flags.lapsed || 0) >= 24; } },
+        { id: "sign", who: "the hierophant", title: "go into the temple", check: function () { return went(/^\/temple\/?/); } }
     ];
     function doneCount() { return QUESTS.filter(function (q) { return Q.done[q.id]; }).length; }
     function allDone() { return doneCount() === QUESTS.length; }

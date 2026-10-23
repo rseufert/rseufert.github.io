@@ -21,8 +21,10 @@ door), the dashboard (a hill of contour rings that lifts you, a station, a
 mast with a blinking light and an anemometer), the Flipper nest (with a
 Flipper the size of a car parked outside), the blog (a mailbox a post, from
 `site.posts`), the loft (a marquee for Dick Dank, speaker stacks), kulture
-kudasai (a skeleton in the window), and the intro (a cinema with tonight's
-tune on the marquee). The rest are offices of seeded sizes, some named from
+kudasai (a skeleton in the window), the intro (a cinema with tonight's
+tune on the marquee), and the temple (three steps, a colonnade, a pediment
+with the ouroboros, the Monad over the door, a dome of rings; the door is
+`/temple/`). The rest are offices of seeded sizes, some named from
 the site's lore, with windows lit at random after dark. The river runs
 along one east-west street, with a bridge at every crossing, the USGS gauge
 on one of them, and a heron that lifts a foot now and then. A manhole in a
@@ -76,7 +78,7 @@ last and the seasons have their own constellations; the pole drifts over
 
 ## The people
 
-Ten figures (a person in nine lines with a cap, a rake or a telescope, a
+Eleven figures (a person in nine lines with a cap, a rake or a telescope, a
 cat, a ghost, an elf), each a door of kind `npc` that talks instead of
 entering, each with an errand that sends you elsewhere on the site, all
 optional. `QUESTS` holds each with a `check()` that reads what the rest of
@@ -87,17 +89,18 @@ now writes today's seed when the tune starts), `rickbot` (a room means
 the hack happened), and the city's own flags (Baby found, the clock run
 24 hours). Progress is in `city-quests`. Talking offers, then waits, then
 thanks and runs `then` (the heron fetches the live USGS reading; the
-astronomer turns the names on). Q is the log. All ten done: the sign and
+astronomer turns the names on; the hierophant at the temple only wants you
+to have been in). Q is the log. All eleven done: the sign and
 the HUD read POP. 2 and a magenta star labelled YOU appears 4.5° from the
 pole, so it never sets.
 
 ## The talkers and the fauna
 
-Fourteen more figures have no errand, only `idle` lines said in turn: the
+Fifteen more figures have no errand, only `idle` lines said in turn: the
 IDoc and the 997 (a `doc` figure, a sheet with lines), RAMMER (a `tank`),
 the dolphin (on a trolley), the tide, Josh Allen (`big`), the mayor, a
 tourist, the mime (in the Julia's colours), a machine elf, the usher, the
-roadie, the sysadmin, and the cron job, which has a `when(hour, sunAlt)`
+roadie, the sysadmin, the librarian at the temple, and the cron job, which has a `when(hour, sunAlt)`
 and is only there from 04:00 to 04:36; the time-lapse brings it round.
 Hidden things carry a `hidden` flag that the gatherer, the labels and the
 doors respect.
