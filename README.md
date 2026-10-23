@@ -202,8 +202,9 @@ only).
 the vesica, the Tetraktys, the hexagram, the Tree, the Mandaean drabsha, Dee's
 Monad, the pearl and the serpent, the Ogdoad, the tria prima) drawn as line art
 in a turning ring round the Monad, each explained from its sources when chosen,
-and behind them a library: fifty-odd gnostic, hermetic, kabbalistic, magical
-and mystical texts in their public-domain translations. Fifty of them
+and behind them a library: a hundred-odd texts, gnostic, hermetic,
+kabbalistic, magical and mystical, then the conspiracies, the radicals and
+the machine, in public-domain translations or given away. Nearly all of them
 are kept in `temple/texts/`, the Project Gutenberg files whole and, for the
 rest, the OCR text of a public-domain scan at the Internet Archive
 (`tools/shelf.py` fetches both and points the shelf at them), and read in

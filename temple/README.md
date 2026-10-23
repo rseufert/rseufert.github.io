@@ -52,9 +52,11 @@ there is no Fullscreen API.
 
 ## The library
 
-Five shelves, fifty-five books, as plain HTML: the gnostics; the hermetica
-and the Platonists; the kabbalah, the grimoires and the alchemists; the
-mystics; the east, Egypt and the theosophists. Each is a link to a complete
+Eight shelves, a hundred-odd books, as plain HTML: the gnostics; the
+hermetica and the Platonists; the kabbalah, the grimoires and the
+alchemists; the mystics; the east, Egypt and the theosophists; and then the
+conspiracies, the hollow earth and the damned; the radicals and the
+dystopias; and the machine, from Lovelace's notes to the Jargon File. Each is a link to a complete
 copy elsewhere, Project Gutenberg where it has one, otherwise the Gnostic
 Society Library, the Esoteric Archives, New Advent, the Internet Archive or
 the Internet Sacred Text Archive, with the edition in the faint ink and one
@@ -75,7 +77,11 @@ public-domain scan at the Internet Archive (the edition the shelf names,
 one item a volume), and the tool fetches the item's OCR text, cleans it a
 little (hyphens at line ends joined, double spaces closed, page numbers and
 running heads dropped) and marks it in the manifest as OCR, uncorrected,
-which the reading room says. A file put at `texts/<slug>.txt` by hand (from
+which the reading room says. `FREE` names the texts that are not public domain but
+free to copy by their authors' word (the Jargon File, the GNU Manifesto,
+Barlow, two RFCs, the Mentor, Nechayev's transcription), fetched as text
+with the HTML stripped and marked so in the manifest and the reading room.
+A file put at `texts/<slug>.txt` by hand (from
 the book's own link, or from the address `HAND` gives for it, when the
 text came from elsewhere) is kept as it is and recorded with its source.
 Run it again and it fetches only what is missing; `--refetch` takes
