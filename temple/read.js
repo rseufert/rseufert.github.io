@@ -65,7 +65,8 @@
             editionOut.textContent = m.edition || "";
             var vols = Object.keys(manifest).filter(function (k) { return manifest[k].shelf === m.shelf && k !== slug; }).sort();
             var scan = m.archive ? "· a scan at the Internet Archive, <a href=\"https://archive.org/details/" + m.archive + "\">" + esc(m.archive) + "</a>" + (m.scan && m.scan.year ? ", " + esc(m.scan.year) : "") + "; the OCR, uncorrected · " : "";
-            sourceOut.innerHTML = (m.gutenberg ? "· Project Gutenberg <a href=\"https://www.gutenberg.org/ebooks/" + m.gutenberg + "\">#" + m.gutenberg + "</a> · " : scan || "· ") +
+            var hand = m.source ? "· the text at <a href=\"" + esc(m.source) + "\">" + esc(m.host || "its source") + "</a> · " : "";
+            sourceOut.innerHTML = (m.gutenberg ? "· Project Gutenberg <a href=\"https://www.gutenberg.org/ebooks/" + m.gutenberg + "\">#" + m.gutenberg + "</a> · " : scan || hand || "· ") +
                 "<a href=\"/temple/texts/" + slug + ".txt\">the file</a>" +
                 (m.shelf ? " · <a href=\"/temple/#lib-" + m.shelf + "\">its shelf</a>" : "") +
                 (vols.length ? " · " + vols.map(function (k) { return "<a href=\"/temple/read/#" + k + "\">" + esc(manifest[k].title) + "</a>"; }).join(", ") : "");
@@ -75,6 +76,7 @@
             if (hint) hint.hidden = false;
             foot.innerHTML = n + " paragraphs. " + (m.ocr
                 ? "This is the OCR text of a public-domain scan at the Internet Archive, read by a machine and not corrected by anyone, so a letter is wrong here and there and the Greek is mostly lost; the scan itself, with the pages, is <a href=\"https://archive.org/details/" + esc(m.archive) + "\">there</a>, and the text file is <a href=\"/temple/texts/" + slug + ".txt\">here</a>."
+                : m.source ? "This is a public-domain translation, the text taken from <a href=\"" + esc(m.source) + "\">" + esc(m.host || "its source") + "</a> and kept here as a plain file, <a href=\"/temple/texts/" + slug + ".txt\">this one</a>."
                 : "This is a Project Gutenberg eBook, in the public domain in the United States; the file it was set from, with the licence, is <a href=\"/temple/texts/" + slug + ".txt\">here</a>, whole.") +
                 " The shelf is <a href=\"/temple/#library\">the library</a>.";
             var at = remember(slug);

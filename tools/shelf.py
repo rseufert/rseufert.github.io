@@ -9,7 +9,9 @@ fetches a copy of each book it can:
     as the licence asks;
   * a book in SCANS below: the OCR text of a public-domain scan at the Internet Archive
     (the item's DjVuTXT file), cleaned a little (hyphens at line ends joined, page numbers
-    and running heads dropped) and marked in the manifest as OCR, uncorrected.
+    and running heads dropped) and marked in the manifest as OCR, uncorrected;
+  * a file already at temple/texts/<slug>.txt, put there by hand from the book's own link:
+    kept as it is, the link recorded as its source.
 
 Each goes to temple/texts/<slug>.txt (a second or later volume as <slug>-2.txt and so on).
 The shelf is rewritten so the book's own link opens the reading room (/temple/read/#slug)
@@ -52,7 +54,12 @@ SCANS = {
     "upanishads": ["upanishads01ml"],
 }
 HOSTS = [("gutenberg.org", "Gutenberg"), ("gnosis.org", "Gnostic Society Library"), ("sacred-texts.com", "sacred-texts"),
-         ("archive.org", "Internet Archive"), ("esotericarchives.com", "Esoteric Archives"), ("newadvent.org", "New Advent")]
+         ("archive.org", "Internet Archive"), ("esotericarchives.com", "Esoteric Archives"), ("newadvent.org", "New Advent"),
+         ("ccel.org", "the Christian Classics Ethereal Library")]
+# A file put there by hand whose text came from somewhere other than the shelf's own link.
+HAND = {
+    "origen": "https://www.ccel.org/ccel/schaff/anf04.txt",
+}
 
 def get(url, timeout=90):
     req = urllib.request.Request(url, headers=UA)
@@ -116,6 +123,9 @@ def main():
         edition = html.unescape(re.sub(r"<[^>]+>", "", meta.group(1))).strip() if meta else ""
         gut = GUT.findall(body)
         sources = [("gutenberg", n) for n in gut] if gut else [("archive", i) for i in SCANS.get(slug, [])]
+        # A file put there by hand (temple/texts/<slug>.txt with no Gutenberg or scan source) is kept as it is.
+        if not sources and os.path.exists(os.path.join(TEXTS, slug + ".txt")):
+            sources = [("hand", HAND.get(slug, ext))]
         if not sources:
             continue
         new = body
@@ -126,10 +136,15 @@ def main():
             if kind == "gutenberg":
                 entry["gutenberg"] = int(ref)
                 src = "https://www.gutenberg.org/ebooks/%s" % ref
-            else:
+            elif kind == "archive":
                 entry["archive"] = ref; entry["ocr"] = True
                 src = "https://archive.org/details/%s" % ref
-            if refetch or not os.path.exists(path):
+            else:
+                entry["source"] = ref; entry["host"] = label(ref)
+                src = ref
+            if kind == "hand":
+                pass
+            elif refetch or not os.path.exists(path):
                 sys.stderr.write("fetching %s -> %s.txt\n" % (src, name))
                 if kind == "gutenberg": text = fetch_gutenberg(ref)
                 else: text, info = fetch_scan(ref); entry["scan"] = info
@@ -146,6 +161,9 @@ def main():
                 if first.group(1) == ext:
                     new = new.replace('<a href="%s">' % ext, '<a href="%s">' % local, 1)
                 tag = ('Gutenberg #%s' % ref) if kind == "gutenberg" else label(ext)
+                if kind == "hand" and tag not in new:
+                    new = new.replace('</span><br>', ' · <a href="%s">%s</a></span><br>' % (ext, tag), 1)
+                    continue
                 if tag not in new:
                     new = new.replace('</span><br>', ' · <a href="%s">%s</a></span><br>' % (ext if kind == "gutenberg" or "archive.org" not in ext else src, tag), 1)
                 if kind == "archive" and "archive.org" not in ext and "Internet Archive" not in new:

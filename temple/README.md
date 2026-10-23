@@ -75,9 +75,13 @@ public-domain scan at the Internet Archive (the edition the shelf names,
 one item a volume), and the tool fetches the item's OCR text, cleans it a
 little (hyphens at line ends joined, double spaces closed, page numbers and
 running heads dropped) and marks it in the manifest as OCR, uncorrected,
-which the reading room says. Run it again and it fetches only what is
-missing; `--refetch` takes everything again. Fifty texts, about 28 MB;
-the five books with neither source stay links.
+which the reading room says. A file put at `texts/<slug>.txt` by hand (from
+the book's own link, or from the address `HAND` gives for it, when the
+text came from elsewhere) is kept as it is and recorded with its source.
+Run it again and it fetches only what is missing; `--refetch` takes
+everything again. Fifty-three texts, about 28 MB; the two books with no
+source (Dee's Monad, which is mostly figures, and the Emerald Tablet) stay
+links, as does Irenaeus until someone types him.
 
 ## The reading room
 
