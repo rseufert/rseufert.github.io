@@ -1,298 +1,447 @@
 {
  "apuleius": {
   "bytes": 459781,
-  "edition": "Apuleius, c. 160 · tr. William Adlington, 1566",
+  "edition": "Apuleius, c. 160 · tr. William Adlington, 1566 · Gutenberg #1666",
   "gutenberg": 1666,
-  "heading": "The Golden Asse",
   "shelf": "apuleius",
   "title": "The Golden Ass"
  },
  "augustine": {
   "bytes": 622448,
-  "edition": "Augustine of Hippo, c. 400 · tr. E. B. Pusey, 1838",
+  "edition": "Augustine of Hippo, c. 400 · tr. E. B. Pusey, 1838 · Gutenberg #3296",
   "gutenberg": 3296,
-  "heading": "The Confessions of St. Augustine",
   "shelf": "augustine",
   "title": "The Confessions"
  },
  "aurelius": {
   "bytes": 418073,
-  "edition": "Marcus Aurelius, c. 170 · tr. George Long, 1862",
+  "edition": "Marcus Aurelius, c. 170 · tr. George Long, 1862 · Gutenberg #2680",
   "gutenberg": 2680,
-  "heading": "Meditations",
   "shelf": "aurelius",
   "title": "Meditations"
  },
  "boehme": {
   "bytes": 226862,
-  "edition": "Jakob Böhme, 1622 · tr. William Law, 1764",
+  "edition": "Jakob Böhme, 1622 · tr. William Law, 1764 · Gutenberg #33742",
   "gutenberg": 33742,
-  "heading": "Dialogues on the Supersensual Life",
   "shelf": "boehme",
   "title": "Dialogues on the Supersensual Life"
  },
  "celsus": {
   "bytes": 182041,
-  "edition": "tr. Thomas Taylor, 1830",
+  "edition": "tr. Thomas Taylor, 1830 · Gutenberg #37696",
   "gutenberg": 37696,
-  "heading": "Arguments of Celsus, Porphyry, and the Emperor Julian, Against the Christians",
   "shelf": "celsus",
   "title": "Arguments of Celsus, Porphyry and the Emperor Julian against the Christians"
  },
  "chuang": {
   "bytes": 668084,
-  "edition": "Zhuangzi, 4th c. BC · tr. Herbert Giles, 1889",
+  "edition": "Zhuangzi, 4th c. BC · tr. Herbert Giles, 1889 · Gutenberg #59709",
   "gutenberg": 59709,
-  "heading": "Chuang Tzu: Mystic, Moralist, and Social Reformer",
   "shelf": "chuang",
   "title": "Chuang Tzŭ: Mystic, Moralist and Social Reformer"
  },
+ "cloud": {
+  "archive": "bookofcontemplat00unde",
+  "bytes": 247743,
+  "edition": "England, late 14th c. · ed. Evelyn Underhill, 1922 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "A book of contemplation the which is called the Cloud of unknowing, in the which a soul is oned with God",
+   "year": "1922"
+  },
+  "shelf": "cloud",
+  "title": "The Cloud of Unknowing"
+ },
  "crucifixion": {
   "bytes": 88969,
-  "edition": "from the Acts of John · G. R. S. Mead, 1907",
+  "edition": "from the Acts of John · G. R. S. Mead, 1907 · Gutenberg #35735",
   "gutenberg": 35735,
-  "heading": "The Gnostic Crucifixion",
   "shelf": "crucifixion",
   "title": "The Gnostic Crucifixion"
  },
  "dead": {
   "bytes": 89458,
-  "edition": "the Papyrus of Ani, c. 1250 BC · tr. E. A. Wallis Budge, 1895",
+  "edition": "the Papyrus of Ani, c. 1250 BC · tr. E. A. Wallis Budge, 1895 · Gutenberg #7145",
   "gutenberg": 7145,
-  "heading": "The Book of the Dead",
   "shelf": "dead",
   "title": "The Book of the Dead"
  },
  "dhammapada": {
   "bytes": 86543,
-  "edition": "Pali canon · tr. F. Max Müller, 1881",
+  "edition": "Pali canon · tr. F. Max Müller, 1881 · Gutenberg #2017",
   "gutenberg": 2017,
-  "heading": "Dhammapada, a Collection of Verses; Being One of the Canonical Books of the Buddhists",
   "shelf": "dhammapada",
   "title": "The Dhammapada"
  },
+ "dionysius": {
+  "archive": "theworksofdionys00dionuoft",
+  "bytes": 579945,
+  "edition": "Syria, c. 500 · tr. John Parker, 1897 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The works of Dionysius the Areopagite",
+   "year": "1897"
+  },
+  "shelf": "dionysius",
+  "title": "The Works of Dionysius the Areopagite"
+ },
+ "dionysius-2": {
+  "archive": "worksofdionysius02pseu",
+  "bytes": 268135,
+  "edition": "Syria, c. 500 · tr. John Parker, 1897 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The works of Dionysius the Areopagite",
+   "year": "1899"
+  },
+  "shelf": "dionysius",
+  "title": "The Works of Dionysius the Areopagite, 2"
+ },
+ "enoch": {
+  "archive": "bookofenoch0000unse",
+  "bytes": 256718,
+  "edition": "Ethiopia, 3rd–1st c. BC · tr. R. H. Charles, 1917 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The book of Enoch",
+   "year": "1917"
+  },
+  "shelf": "enoch",
+  "title": "The Book of Enoch"
+ },
+ "fragments": {
+  "archive": "fragmentsoffaith00meaduoft",
+  "bytes": 1054460,
+  "edition": "G. R. S. Mead, 1900 · Gnostic Society Library · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Fragments of a faith forgotten, some short sketches among the Gnostics mainly of the first two centuries - a contribution to the study of Christian origins based on the most recently recovered materials",
+   "year": "1906"
+  },
+  "shelf": "fragments",
+  "title": "Fragments of a Faith Forgotten"
+ },
  "ginsburg": {
   "bytes": 359335,
-  "edition": "Christian D. Ginsburg, 1865",
+  "edition": "Christian D. Ginsburg, 1865 · Gutenberg #69243",
   "gutenberg": 69243,
-  "heading": "The Kabbalah: its doctrines, development, and literature",
   "shelf": "ginsburg",
   "title": "The Kabbalah: its Doctrines, Development and Literature"
  },
  "gita": {
   "bytes": 143812,
-  "edition": "Bhagavad Gītā · tr. Edwin Arnold, 1885",
+  "edition": "Bhagavad Gītā · tr. Edwin Arnold, 1885 · Gutenberg #2388",
   "gutenberg": 2388,
-  "heading": "The Song Celestial; Or, Bhagavad-Gîtâ (from the Mahâbhârata)",
   "shelf": "gita",
   "title": "The Song Celestial"
  },
+ "goetia": {
+  "archive": "ac_goetia",
+  "bytes": 178944,
+  "edition": "Lemegeton, 17th c. · ed. Mathers & Crowley, 1904 · Esoteric Archives · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The Book of the Goetia of Solomon the King",
+   "year": "1904"
+  },
+  "shelf": "goetia",
+  "title": "The Lesser Key of Solomon"
+ },
  "golden": {
   "bytes": 608341,
-  "edition": "tr. Fabre d'Olivet, 1813 · tr. N. L. Redfield, 1917",
+  "edition": "tr. Fabre d'Olivet, 1813 · tr. N. L. Redfield, 1917 · Gutenberg #69174",
   "gutenberg": 69174,
-  "heading": "The golden verses of Pythagoras",
   "shelf": "golden",
   "title": "The Golden Verses of Pythagoras"
  },
  "hippolytus": {
   "bytes": 508853,
-  "edition": "Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · vol. 2",
+  "edition": "Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · vol. 2 · Gutenberg #65478",
   "gutenberg": 65478,
-  "heading": "Philosophumena; or, The refutation of all heresies, Volume I",
   "shelf": "hippolytus",
   "title": "The Refutation of All Heresies"
  },
- "hippolytus-2": {
-  "bytes": 518107,
-  "edition": "Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · vol. 2",
-  "gutenberg": 67116,
-  "heading": "Philosophumena; or, The refutation of all heresies, Volume II",
-  "shelf": "hippolytus",
-  "title": "The Refutation of All Heresies, 2"
- },
  "iamblichus": {
   "bytes": 571276,
-  "edition": "Iamblichus, c. 300 · tr. Thomas Taylor, 1821",
+  "edition": "Iamblichus, c. 300 · tr. Thomas Taylor, 1821 · Gutenberg #72815",
   "gutenberg": 72815,
-  "heading": "Iamblichus on the mysteries of the Egyptians, Chaldeans, and Assyrians",
   "shelf": "iamblichus",
   "title": "On the Mysteries of the Egyptians, Chaldeans and Assyrians"
  },
  "isis": {
   "bytes": 2202053,
-  "edition": "H. P. Blavatsky, 1877, vol. 1 · vol. 2",
+  "edition": "H. P. Blavatsky, 1877, vol. 1 · vol. 2 · Gutenberg #68705",
   "gutenberg": 68705,
-  "heading": "Isis unveiled, Volume 1 (of 2), Science",
   "shelf": "isis",
   "title": "Isis Unveiled"
  },
- "isis-2": {
-  "bytes": 2310415,
-  "edition": "H. P. Blavatsky, 1877, vol. 1 · vol. 2",
-  "gutenberg": 75871,
-  "heading": "Isis unveiled, Volume 2 (of 2), Theology",
-  "shelf": "isis",
-  "title": "Isis Unveiled, 2"
- },
  "james": {
   "bytes": 1151317,
-  "edition": "William James, 1902",
+  "edition": "William James, 1902 · Gutenberg #621",
   "gutenberg": 621,
-  "heading": "The Varieties of Religious Experience: A Study in Human Nature",
   "shelf": "james",
   "title": "The Varieties of Religious Experience"
  },
  "julian": {
   "bytes": 466824,
-  "edition": "Julian of Norwich, 1373–c. 1393 · ed. Grace Warrack, 1901",
+  "edition": "Julian of Norwich, 1373–c. 1393 · ed. Grace Warrack, 1901 · Gutenberg #52958",
   "gutenberg": 52958,
-  "heading": "Revelations of Divine Love",
   "shelf": "julian",
   "title": "Revelations of Divine Love"
  },
+ "kabbalah-unveiled": {
+  "archive": "b24884443",
+  "bytes": 691314,
+  "edition": "from the Zohar · tr. S. L. MacGregor Mathers, 1887 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Kabbalah unveiled, containing the following books of the Zohar : 1. The book of concealed mystery. 2. The greater holy assembly. 3. The lesser holy assembly",
+   "year": "1887"
+  },
+  "shelf": "kabbalah-unveiled",
+  "title": "The Kabbalah Unveiled"
+ },
  "kempis": {
   "bytes": 367685,
-  "edition": "Thomas à Kempis, c. 1420 · tr. William Benham, 1874",
+  "edition": "Thomas à Kempis, c. 1420 · tr. William Benham, 1874 · Gutenberg #1653",
   "gutenberg": 1653,
-  "heading": "The Imitation of Christ",
   "shelf": "kempis",
   "title": "The Imitation of Christ"
  },
+ "key": {
+  "archive": "b24884431",
+  "bytes": 274003,
+  "edition": "Clavicula Salomonis, 14th–15th c. · tr. Mathers, 1889 · Esoteric Archives · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The Key of Solomon the king (Clavicula Salomonis)",
+   "year": "1889"
+  },
+  "shelf": "key",
+  "title": "The Key of Solomon the King"
+ },
+ "king": {
+  "archive": "gnosticsandtheir00kinguoft",
+  "bytes": 1065840,
+  "edition": "C. W. King, 1887 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The Gnostics and their remains : ancient and mediaeval",
+   "year": "1887"
+  },
+  "shelf": "king",
+  "title": "The Gnostics and Their Remains"
+ },
  "kybalion": {
   "bytes": 220056,
-  "edition": "\"Three Initiates\", Chicago, 1908",
+  "edition": "\"Three Initiates\", Chicago, 1908 · Gutenberg #14209",
   "gutenberg": 14209,
-  "heading": "The Kybalion",
   "shelf": "kybalion",
   "title": "The Kybalion"
  },
  "legge": {
   "bytes": 643516,
-  "edition": "Francis Legge, 1915 · vol. 2",
+  "edition": "Francis Legge, 1915 · vol. 2 · Gutenberg #71384",
   "gutenberg": 71384,
-  "heading": "Forerunners and rivals of Christianity",
   "shelf": "legge",
   "title": "Forerunners and Rivals of Christianity"
  },
- "legge-2": {
-  "bytes": 1227852,
-  "edition": "Francis Legge, 1915 · vol. 2",
-  "gutenberg": 71647,
-  "heading": "Forerunners and rivals of Christianity",
-  "shelf": "legge",
-  "title": "Forerunners and Rivals of Christianity, 2"
- },
  "levi": {
   "bytes": 1100654,
-  "edition": "Éliphas Lévi, 1860 · tr. A. E. Waite, 1913",
+  "edition": "Éliphas Lévi, 1860 · tr. A. E. Waite, 1913 · Gutenberg #70033",
   "gutenberg": 70033,
-  "heading": "The history of magic",
   "shelf": "levi",
   "title": "The History of Magic"
  },
  "light": {
   "bytes": 141298,
-  "edition": "the Bruce Codex · tr. F. Lamplugh, 1918",
+  "edition": "the Bruce Codex · tr. F. Lamplugh, 1918 · Gutenberg #30799",
   "gutenberg": 30799,
-  "heading": "The Gnôsis of the Light",
   "shelf": "light",
   "title": "The Gnôsis of the Light"
  },
+ "logia": {
+  "archive": "logiaiesousaying00gren",
+  "bytes": 30876,
+  "edition": "Oxyrhynchus, 1897 · Grenfell & Hunt · Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Logia Iesou = Sayings of Our Lord from an early Greek papyrus",
+   "year": "1897"
+  },
+  "shelf": "logia",
+  "title": "Logia Iesou: Sayings of Our Lord"
+ },
+ "moses": {
+  "archive": "sixthandseventh00schegoog",
+  "bytes": 398972,
+  "edition": "Germany, 1849 · New York, 1880 · Esoteric Archives · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The sixth and seventh books of Moses, or, Moses' magical spirit-art : known as the wonderful arts of the old wise Hebrews, taken from the Mosaic books of the Cabala and the Talmud, for the good of mankind ",
+   "year": "1880"
+  },
+  "shelf": "moses",
+  "title": "The Sixth and Seventh Books of Moses"
+ },
+ "pearl": {
+  "archive": "hymnoftherobe10meaduoft",
+  "bytes": 75795,
+  "edition": "Syria, 3rd c. · tr. G. R. S. Mead, 1908, as the Hymn of the Robe of Glory · Gnostic Society Library · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Echoes from the Gnosis",
+   "year": "1906"
+  },
+  "shelf": "pearl",
+  "title": "The Hymn of the Pearl"
+ },
+ "pistis": {
+  "archive": "pistissophiagnos1921mead",
+  "bytes": 643429,
+  "edition": "Egypt, 3rd–4th c. · tr. G. R. S. Mead, 1921 · Gnostic Society Library · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Pistis Sophia : a Gnostic miscellany : being for the most part extracts from the books of the Saviour, to which are added excerpts from a cognate literature ; englished (with an introduction and annotated bibliography)",
+   "year": "1921"
+  },
+  "shelf": "pistis",
+  "title": "Pistis Sophia"
+ },
  "plotinus": {
   "bytes": 511009,
-  "edition": "Plotinus, c. 270 · tr. K. S. Guthrie, 1918, four volumes",
+  "edition": "Plotinus, c. 270 · tr. K. S. Guthrie, 1918, four volumes · Gutenberg #42930",
   "gutenberg": 42930,
-  "heading": "Plotinos: Complete Works, v. 1",
   "shelf": "plotinus",
   "title": "The Enneads"
  },
  "rumi": {
   "bytes": 807956,
-  "edition": "Jalāl al-Dīn Rūmī, 13th c. · tr. J. W. Redhouse, 1881, book I",
+  "edition": "Jalāl al-Dīn Rūmī, 13th c. · tr. J. W. Redhouse, 1881, book I · Gutenberg #61724",
   "gutenberg": 61724,
-  "heading": "The Mesnevi",
   "shelf": "rumi",
   "title": "The Mesnevi"
  },
  "secret": {
   "bytes": 2001126,
-  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
+  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4 · Gutenberg #54824",
   "gutenberg": 54824,
-  "heading": "The Secret Doctrine, Vol. 1 of 4",
   "shelf": "secret",
   "title": "The Secret Doctrine"
  },
- "secret-2": {
-  "bytes": 2406753,
-  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
-  "gutenberg": 54488,
-  "heading": "The Secret Doctrine, Vol. 2 of 4",
-  "shelf": "secret",
-  "title": "The Secret Doctrine, 2"
- },
- "secret-3": {
-  "bytes": 1549211,
-  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
-  "gutenberg": 56880,
-  "heading": "The Secret Doctrine, Vol. 3 of 4",
-  "shelf": "secret",
-  "title": "The Secret Doctrine, 3"
- },
- "secret-4": {
-  "bytes": 1853147,
-  "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4",
-  "gutenberg": 61626,
-  "heading": "The Secret Doctrine, Vol. 4 of 4",
-  "shelf": "secret",
-  "title": "The Secret Doctrine, 4"
- },
  "sendivogius": {
   "bytes": 538178,
-  "edition": "Michael Sendivogius, 1604, with Paracelsus on the tria prima · tr. John French, 1650",
+  "edition": "Michael Sendivogius, 1604, with Paracelsus on the tria prima · tr. John French, 1650 · Gutenberg #61112",
   "gutenberg": 61112,
-  "heading": "A New Light of Alchymie",
   "shelf": "sendivogius",
   "title": "A New Light of Alchymie"
  },
  "silberer": {
   "bytes": 702240,
-  "edition": "Herbert Silberer, 1914 · tr. S. E. Jelliffe, 1917",
+  "edition": "Herbert Silberer, 1914 · tr. S. E. Jelliffe, 1917 · Gutenberg #27755",
   "gutenberg": 27755,
-  "heading": "Hidden Symbolism of Alchemy and the Occult Arts",
   "shelf": "silberer",
   "title": "Hidden Symbolism of Alchemy and the Occult Arts"
  },
  "swedenborg": {
   "bytes": 982363,
-  "edition": "Emanuel Swedenborg, 1758 · tr. J. C. Ager, 1900",
+  "edition": "Emanuel Swedenborg, 1758 · tr. J. C. Ager, 1900 · Gutenberg #17368",
   "gutenberg": 17368,
-  "heading": "Heaven and its Wonders and Hell",
   "shelf": "swedenborg",
   "title": "Heaven and Its Wonders and Hell"
  },
  "tao": {
   "bytes": 78705,
-  "edition": "Laozi · tr. James Legge, 1891",
+  "edition": "Laozi · tr. James Legge, 1891 · Gutenberg #216",
   "gutenberg": 216,
-  "heading": "The Tao Teh King, or the Tao and its Characteristics",
   "shelf": "tao",
   "title": "The Tao Teh King"
  },
+ "thrice": {
+  "archive": "thricegreatesthe01hermuoft",
+  "bytes": 856566,
+  "edition": "G. R. S. Mead, 1906, three volumes · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Thrice-greatest Hermes; studies in Hellenistic theosophy and gnosis, being a translation of the extant sermons and fragments of the Trismegistic literature, with prolegomena, commentaries, and notes",
+   "year": "1906"
+  },
+  "shelf": "thrice",
+  "title": "Thrice-Greatest Hermes"
+ },
+ "thrice-2": {
+  "archive": "thricegreatesthe02hermuoft",
+  "bytes": 562157,
+  "edition": "G. R. S. Mead, 1906, three volumes · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Thrice-greatest Hermes; studies in Hellenistic theosophy and gnosis, being a translation of the extant sermons and fragments of the Trismegistic literature, with prolegomena, commentaries, and notes",
+   "year": "1906"
+  },
+  "shelf": "thrice",
+  "title": "Thrice-Greatest Hermes, 2"
+ },
+ "thrice-3": {
+  "archive": "thricegreatesthe03hermuoft",
+  "bytes": 616748,
+  "edition": "G. R. S. Mead, 1906, three volumes · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Thrice-greatest Hermes; studies in Hellenistic theosophy and gnosis, being a translation of the extant sermons and fragments of the Trismegistic literature, with prolegomena, commentaries, and notes",
+   "year": "1906"
+  },
+  "shelf": "thrice",
+  "title": "Thrice-Greatest Hermes, 3"
+ },
  "timaeus": {
   "bytes": 468330,
-  "edition": "Plato, c. 360 BC · tr. Benjamin Jowett, 1871",
+  "edition": "Plato, c. 360 BC · tr. Benjamin Jowett, 1871 · Gutenberg #1572",
   "gutenberg": 1572,
-  "heading": "Timaeus",
   "shelf": "timaeus",
   "title": "Timaeus"
  },
  "underhill": {
   "bytes": 213356,
-  "edition": "Evelyn Underhill, 1914",
+  "edition": "Evelyn Underhill, 1914 · Gutenberg #21774",
   "gutenberg": 21774,
-  "heading": "Practical Mysticism: A Little Book for Normal People",
   "shelf": "underhill",
   "title": "Practical Mysticism"
+ },
+ "upanishads": {
+  "archive": "upanishads01ml",
+  "bytes": 768554,
+  "edition": "tr. F. Max Müller, 1879, Sacred Books of the East, vol. 1 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "The Upanishads",
+   "year": "1879"
+  },
+  "shelf": "upanishads",
+  "title": "The Upanishads"
+ },
+ "virgin": {
+  "archive": "1885-kingsford-maitland-virgin-of-the-world",
+  "bytes": 295153,
+  "edition": "Kore Kosmou, from Stobaeus · tr. Kingsford & Maitland, 1885 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "1885 Kingsford Maitland Virgin Of The World",
+   "year": ""
+  },
+  "shelf": "virgin",
+  "title": "The Virgin of the World"
+ },
+ "yetzirah": {
+  "archive": "sepheryetzirahb00rittgoog",
+  "bytes": 65142,
+  "edition": "the Book of Formation, 3rd–6th c. · tr. W. Wynn Westcott, 1887 · sacred-texts · scan at the Internet Archive",
+  "ocr": true,
+  "scan": {
+   "title": "Sepher Yetzirah: The Bok of Formation, and the Thirty Two Paths of Wisdom ...",
+   "year": "1893"
+  },
+  "shelf": "yetzirah",
+  "title": "Sefer Yetzirah"
  }
 }
