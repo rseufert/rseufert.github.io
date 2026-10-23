@@ -1,0 +1,83 @@
+---
+layout: default
+css: /paper/paper.css
+title: The Daily Seed
+description: The site's newspaper, rebuilt at midnight from the date. The arena's result, tonight's tune, the river as weather, a horoscope cast from where the planets really are, the classifieds, a letter to the editor, the obituaries from the backrooms, a quotation off the temple's shelf, and the day's cryptogram.
+image: /paper/share.jpg
+nostrip: true
+---
+<div class="paper-page">
+<header class="masthead">
+  <p class="ears"><span id="paper-ear-left">PRICE: NO COOKIES</span><span id="paper-ear-right">REBUILT AT MIDNIGHT</span></p>
+  <h1 id="paper-title" aria-label="The Daily Seed">THE DAILY SEED</h1>
+  <p class="dateline"><span id="paper-date">today</span> &middot; <span id="paper-vol">vol. –, no. –</span> &middot; portland, or &middot; est. 2016 &middot; plain html</p>
+</header>
+
+<noscript><p class="lede">The paper is set by a script from today's date; without one there is only this masthead, which is still true.</p></noscript>
+
+<section class="front">
+  <article class="lead">
+    <h2 id="paper-lead-head">—</h2>
+    <p class="byline" id="paper-lead-by"></p>
+    <div id="paper-lead-body"></div>
+  </article>
+  <aside class="briefs">
+    <h3>In brief</h3>
+    <ul id="paper-briefs"></ul>
+    <h3>Census</h3>
+    <p id="paper-census" class="small"></p>
+  </aside>
+</section>
+
+<section class="columns">
+  <article>
+    <h3>Sport</h3>
+    <h4 id="paper-sport-head">The arena</h4>
+    <div id="paper-sport"><p class="small">the match is being played.</p></div>
+  </article>
+  <article>
+    <h3>Weather</h3>
+    <div id="paper-weather"><p class="small">reading the gauge.</p></div>
+    <h3>The sky</h3>
+    <div id="paper-sky"></div>
+  </article>
+  <article>
+    <h3>Arts</h3>
+    <div id="paper-arts"></div>
+    <h3>Quotation of the day</h3>
+    <div id="paper-quote"><p class="small">the librarian is choosing.</p></div>
+  </article>
+</section>
+
+<section class="horoscope">
+  <h3>Horoscope <span class="small" id="paper-planets"></span></h3>
+  <p class="small">Cast from where the planets are, not from the paper's imagination; the advice is the paper's. Pick yours and it is remembered.</p>
+  <p class="signs" id="paper-signs"></p>
+  <div id="paper-horoscope"></div>
+</section>
+
+<section class="columns">
+  <article>
+    <h3>Letters to the editor</h3>
+    <div id="paper-letters"></div>
+  </article>
+  <article>
+    <h3>Classifieds</h3>
+    <div id="paper-classifieds"></div>
+  </article>
+  <article>
+    <h3>Obituaries</h3>
+    <div id="paper-obits"><p class="small">consulting the record.</p></div>
+    <h3>The puzzle</h3>
+    <div id="paper-puzzle"></div>
+  </article>
+</section>
+
+<footer class="colophon">
+  <p class="small">The Daily Seed is set each midnight from the date, the way the <a href="/city/">city</a> is laid out and the <a href="/intro/">tune</a> is written: the same number, so the same paper all day and a different one tomorrow. The match is played in the <a href="/arena/">arena</a>'s own engine when the page opens, from the day's seed, so the result is the same for everyone. The river is the <a href="/dashboard/">dashboard</a>'s USGS gauge, live. The sky is the <a href="/city/">city</a>'s, and the planets are placed from their orbital elements to about a degree, which is enough to know a sign. The ghosts are the <a href="/backrooms/">backrooms</a>' record. The quotation is a real paragraph from the <a href="/temple/#library">temple's library</a>. The puzzle has a new key every day; yesterday's answer is at the bottom of it. Letters may be edited for length, and are. <a href="https://github.com/rseufert/rseufert.github.io/blob/master/paper/paper.js">One script</a>.</p>
+</footer>
+</div>
+<script src="/arena/arena-engine.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/arena/arena-robots.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/city/sky.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/paper/paper.js?v={{ site.time | date: '%s' }}"></script>

@@ -186,6 +186,10 @@
         box(cx - 1.5, cz + 7, 3, 3, 3, { col: "#00e5ff", label: "HELPDESK" });
         label("RICKBOT IS IN", cx, 2.2, cz + 7 - 0.05, 0.3, "#00e5ff");
         door(cx, cz + 6, "the helpdesk", "chat", "chat", 2.2);
+        // The newsstand by the south gate: today's paper, set from the seed.
+        box(cx - 7.5, cz - 12.5, 3, 2, 2.2, { col: "#ffe9a0", label: "NEWS" });
+        label("THE DAILY SEED · NO. " + Math.floor((Date.now() - new Date(2016, 7, 30)) / 864e5), cx - 6, 1.5, cz - 12.55, 0.24, "#ffe9a0");
+        door(cx - 6, cz - 13.5, "the paper", "/paper/", "link", 2.2);
         npc(cx + 11, cz - 11, "josh allen", "big", "#ffffff", { idle: [
             "josh allen: i am not in that photo.",
             "josh allen: the alt text says i am. i don't argue with alt text. i don't agree with it either.",

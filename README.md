@@ -12,6 +12,7 @@ works, so a piece can be read and discussed on its own:
 | [`intro/`](intro/) | a cracktro: plasma, stars, copper bars, a 3D logo, a scroller, a chiptune from the date | [README](intro/README.md) |
 | [`city/`](city/) | the site as a wireframe city laid out from the date; every part of it a door | [README](city/README.md) |
 | [`temple/`](temple/) | a nave of sixteen gnostic signs round the Monad, explained, and a library of public-domain esoteric texts | [README](temple/README.md) |
+| [`paper/`](paper/) | the Daily Seed: the site's newspaper, set each midnight from the date | [README](paper/README.md) |
 | [`dashboard/`](dashboard/) | public data feeds, drawn with D3 | [README](dashboard/README.md) |
 
 `css/main.css` is the site's bones; a toy's stylesheet sits in its folder and
@@ -212,11 +213,21 @@ rest, the OCR text of a public-domain scan at the Internet Archive
 link out. The shelf notes
 are the site's.
 
+`paper/` is the Daily Seed, the site's newspaper, set each midnight from the
+date (the same seed as the city and the tune): a lead story and briefs from
+the city's lore, the arena's result from a match played in the arena's engine
+at the day's seed, the river from the dashboard's gauge, the sky from
+`city/sky.js` with the planets added from their orbital elements, a horoscope
+cast from them, letters and classifieds from the city's people, the
+backrooms' ghosts as obituaries, a paragraph off the temple's shelf, and a
+substitution cipher with a new key every day. The newsstand is on the city's
+plaza.
+
 ## Licence
 
 The [MIT licence](LICENSE) applies to the code in this repository: the scripts,
 stylesheets, page templates, tools and workflows, including the toys (the
-Julia strip and page, rickbot, the arena, the backrooms, the intro, the city, the temple, the dashboard).
+Julia strip and page, rickbot, the arena, the backrooms, the intro, the city, the temple, the paper, the dashboard).
 
 It does not apply to the content. The blog posts, the resume, the photographs
 and other images, the films and the music references are copyright Rick
