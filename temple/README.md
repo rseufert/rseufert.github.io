@@ -9,6 +9,8 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `index.html` | the page: the signs with their explanations as a `<dl>`, and the library as five shelves of links |
 | `temple.css` | the stylesheet; the layout links it after the site's bones |
 | `temple.png`, `share.jpg` | the home tile and the share image, captured from the canvas |
+| `texts/` | the library's Project Gutenberg texts, kept here whole (header, text, licence), one `.txt` a book, and `index.json`, the manifest |
+| `read/index.html`, `read.js` | the reading room: a text set as pages, with the place remembered |
 
 ## The nave
 
@@ -62,6 +64,27 @@ Legge, Budge, Taylor, Müller, the Ante-Nicene Fathers); the Nag Hammadi
 codices are not on the shelf because their English translations are not,
 and the page says so. Nothing is hosted here. Every link was checked when
 the shelf was built.
+
+The Gutenberg books are also kept here: `tools/shelf.py` reads the shelf,
+fetches each Gutenberg link's plain-text file whole into `texts/<slug>.txt`
+(a later volume as `<slug>-2.txt`), writes `texts/index.json` (title,
+edition, Gutenberg number, shelf), and rewrites the shelf so the book's own
+link opens the reading room at `/temple/read/#slug` with the Gutenberg page
+kept beside it in the meta. Run it again and it fetches only what is
+missing; `--refetch` takes everything again. Thirty-seven files, about
+26 MB; the other hosts' books stay links.
+
+## The reading room
+
+`read.js` takes the text between the Gutenberg START and END markers and
+sets it as pages: a blank line is a paragraph, a wrapped paragraph is
+joined, a paragraph of short or indented lines (verse, a contents list)
+keeps its lines, and a short line in capitals on its own is a heading. The
+manifest gives the title, the edition and the source; the other volumes of
+the same book are linked at the top. How far you were in each text is kept
+in `localStorage` under `temple-read` and the room goes back there. J and K
+are a screen down and up, T the top. Without scripts the files themselves
+are at `/temple/texts/`.
 
 ## Poking
 

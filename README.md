@@ -203,8 +203,11 @@ the vesica, the Tetraktys, the hexagram, the Tree, the Mandaean drabsha, Dee's
 Monad, the pearl and the serpent, the Ogdoad, the tria prima) drawn as line art
 in a turning ring round the Monad, each explained from its sources when chosen,
 and behind them a library: fifty-odd gnostic, hermetic, kabbalistic, magical
-and mystical texts in their public-domain translations, each a link to a
-complete copy elsewhere. Nothing is hosted; the shelf notes are the site's.
+and mystical texts in their public-domain translations. The Project
+Gutenberg ones are kept in `temple/texts/` whole (`tools/shelf.py` fetches
+them and points the shelf at them) and read in `temple/read/`, which sets a
+text as pages and remembers your place; the rest link out. The shelf notes
+are the site's.
 
 ## Licence
 
