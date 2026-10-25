@@ -20,13 +20,19 @@ thirty seconds, walking the same halls for whoever comes next. Find the way down
     <p class="banner">BACKROOMS</p>
     <p id="backrooms-veil-text">you noclipped out of rickseufert.com.</p>
     <p><button type="button" id="backrooms-go">noclip</button></p>
+    <div class="settings" id="backrooms-settings" hidden>
+      <p class="settings-head">settings</p>
+      <label><span>look</span> <input type="range" id="backrooms-look" min="25" max="300" step="5" value="100"> <output>100%</output></label>
+      <label><span>walk</span> <input type="range" id="backrooms-walk" min="25" max="300" step="5" value="100"> <output>100%</output></label>
+    </div>
   </div>
   <button type="button" class="unfill" id="backrooms-unfill" hidden aria-label="leave fullscreen">&times;</button>
   <button type="button" class="static" id="backrooms-static" hidden>static</button>
+  <button type="button" class="pause" id="backrooms-pause" hidden>pause</button>
 </div>
 
 <div class="bar">
-  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>f</kbd> is static &middot; <kbd>`</kbd> is root &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks and right thumb looks</p>
+  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>f</kbd> is static &middot; <kbd>`</kbd> is root &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks, right thumb looks, and the corner button pauses</p>
   <p class="buttons"><button type="button" id="backrooms-sound">sound</button> <button type="button" id="backrooms-full">fullscreen</button> <button type="button" id="backrooms-root">root</button> <button type="button" id="backrooms-reset">start over</button> <a class="button" id="backrooms-ghost" href="https://github.com/rseufert/rseufert.github.io/issues/new" target="_blank" rel="noopener" hidden>leave your ghost</a> <output id="backrooms-depth" class="depth"></output></p>
 </div>
 
