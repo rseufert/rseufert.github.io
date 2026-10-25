@@ -30,6 +30,7 @@
     var ghostLink = document.getElementById("backrooms-ghost");
     var depthOut = document.getElementById("backrooms-depth");
     var staticButton = document.getElementById("backrooms-static");
+    var pauseButton = document.getElementById("backrooms-pause");
     var rootButton = document.getElementById("backrooms-root");
 
     var KEY = "backrooms";
@@ -936,6 +937,8 @@
         if (mode === "root" && !root.view) rootMap();
         else if (mode !== "title") { gather(); render(); }
         if (staticButton) staticButton.hidden = !(TOUCH && mode === "play");
+        // A pause button where there is no esc to press, or no lock to let go of.
+        if (pauseButton) pauseButton.hidden = !(mode === "play" && (TOUCH || !lockable));
         var took = performance.now() - t0;
         slow = took > 18 ? Math.min(slow + 1, 30) : Math.max(slow - 1, 0);   // drop the glow when the frame is slow
     }
@@ -943,7 +946,7 @@
     // ---- input -------------------------------------------------------------
     addEventListener("keydown", function (e) {
         if (mode === "title" || mode === "pause") return;
-        if (e.code === "Escape") return;
+        if (e.code === "Escape") { if (mode === "play" && !locked) pause("paused. click to go on."); return; }
         if (e.code === "KeyF" && mode === "play") { useStatic(); e.preventDefault(); return; }
         if (e.code === "Backquote") { su(); e.preventDefault(); return; }
         if (e.code === "Tab" && mode === "root") { rootTab(); e.preventDefault(); return; }
@@ -1007,7 +1010,7 @@
 
     // ---- the veil: title, pause --------------------------------------------
     function pause(text) {
-        mode = "pause"; keys = {}; stick.x = stick.y = 0;
+        mode = "pause"; keys = {}; stick.x = stick.y = 0; touches = {};
         veilText.textContent = text;
         go.textContent = "go on";
         veil.hidden = false;
@@ -1023,6 +1026,7 @@
     }
     go.addEventListener("click", begin);
     if (staticButton) staticButton.addEventListener("click", useStatic);
+    if (pauseButton) pauseButton.addEventListener("click", function () { if (mode === "play") pause(TOUCH ? "paused. tap to go on." : "paused. click to go on."); });
     if (rootButton) rootButton.addEventListener("click", function () { if (mode === "play" || mode === "root") su(); else say("", 0); });
     resetButton.addEventListener("click", function () {
         saved.seed = freshSeed(); saved.level = 0; save();
@@ -1063,7 +1067,7 @@
     });
     soundButton.setAttribute("aria-pressed", saved.sound ? "true" : "false");
     function title() {
-        var how = TOUCH ? "left thumb walks, right thumb looks. the static button makes it noise for four seconds, once a minute." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses. F is static: four seconds when it is only noise, once a minute. ` is root.";
+        var how = TOUCH ? "left thumb walks, right thumb looks. the static button makes it noise for four seconds, once a minute. the top left corner pauses." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses. F is static: four seconds when it is only noise, once a minute. ` is root.";
         veilText.textContent = (saved.level ? "you fell to level " + saved.level + " last time. it is still there. " : "you noclipped out of rickseufert.com. ") + how + " find the way down. do not let it reach you.";
         go.textContent = saved.level ? "go back down" : "noclip";
         veil.hidden = false;

@@ -117,7 +117,8 @@ switch and its locks.
 
 WASD or arrows walk, the mouse looks under pointer lock (click the stage;
 drag to look where the lock is refused), shift runs, esc pauses; on a touch
-screen the left thumb walks and the right looks. Fullscreen on the stage.
+screen the left thumb walks, the right looks, and a button in the top left
+corner pauses (it also shows where the lock is refused). Fullscreen on the stage.
 Progress (seed, level, deepest, times found, sound) is in `localStorage` under
 `backrooms`, and the ghosts under `backrooms-ghosts`; rickbot reads both. `window.Backrooms` exposes the generator and
 the state for poking at in the console.
