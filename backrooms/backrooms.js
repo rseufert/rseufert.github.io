@@ -31,6 +31,8 @@
     var depthOut = document.getElementById("backrooms-depth");
     var staticButton = document.getElementById("backrooms-static");
     var pauseButton = document.getElementById("backrooms-pause");
+    var settings = document.getElementById("backrooms-settings");
+    var lookRange = document.getElementById("backrooms-look"), walkRange = document.getElementById("backrooms-walk");
     var rootButton = document.getElementById("backrooms-root");
 
     var KEY = "backrooms";
@@ -59,6 +61,9 @@
         var m = /seed=(\d+)/.exec(location.hash), l = /level=(\d+)/.exec(location.hash);
         if (m) s.seed = +m[1];
         if (l) s.level = Math.min(+l[1], 60);
+        // Sensitivity, as a multiple of the stock feel: look (mouse or thumb) and the walk stick.
+        if (typeof s.look !== "number") s.look = 1;
+        if (typeof s.walk !== "number") s.walk = 1;
         return s;
     }
     function save() {
@@ -972,8 +977,8 @@
     });
     addEventListener("mousemove", function (e) {
         if (!locked || mode !== "play") return;
-        cam.yaw += e.movementX * 0.0022;
-        cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - e.movementY * 0.0022));
+        cam.yaw += e.movementX * 0.0022 * saved.look;
+        cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - e.movementY * 0.0022 * saved.look));
     });
     // Touch: the left thumb walks, the right thumb looks.
     var touches = {};
@@ -989,11 +994,12 @@
         var t = touches[e.pointerId];
         if (!t) return;
         if (t.side === "walk") {
-            stick.x = Math.max(-1, Math.min(1, (e.clientX - t.x) / 50));
-            stick.y = Math.max(-1, Math.min(1, (e.clientY - t.y) / 50));
+            var reach = 50 / saved.walk;             // pixels of thumb travel to full tilt
+            stick.x = Math.max(-1, Math.min(1, (e.clientX - t.x) / reach));
+            stick.y = Math.max(-1, Math.min(1, (e.clientY - t.y) / reach));
         } else {
-            cam.yaw += (e.clientX - t.x) * 0.006;
-            cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - (e.clientY - t.y) * 0.004));
+            cam.yaw += (e.clientX - t.x) * 0.006 * saved.look;
+            cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - (e.clientY - t.y) * 0.004 * saved.look));
             t.x = e.clientX; t.y = e.clientY;
         }
         e.preventDefault();
@@ -1013,6 +1019,7 @@
         mode = "pause"; keys = {}; stick.x = stick.y = 0; touches = {};
         veilText.textContent = text;
         go.textContent = "go on";
+        if (settings) settings.hidden = false;
         veil.hidden = false;
         if (audio) audio.quiet(true);
     }
@@ -1066,10 +1073,23 @@
         if (saved.sound && audio && mode === "play") { audio.quiet(false); audio.level(L.level); }
     });
     soundButton.setAttribute("aria-pressed", saved.sound ? "true" : "false");
+    // Settings, on the pause veil: how far the view turns for the mouse or the
+    // right thumb, and how far the left thumb travels to walk flat out.
+    function knob(range, key) {
+        if (!range) return;
+        var out = range.parentNode.querySelector("output");
+        function show() { out.textContent = Math.round(saved[key] * 100) + "%"; }
+        range.value = Math.round(saved[key] * 100); show();
+        range.addEventListener("input", function () { saved[key] = range.value / 100; show(); save(); });
+    }
+    knob(lookRange, "look");
+    knob(walkRange, "walk");
+    if (walkRange && !TOUCH) walkRange.parentNode.hidden = true;
     function title() {
         var how = TOUCH ? "left thumb walks, right thumb looks. the static button makes it noise for four seconds, once a minute. the top left corner pauses." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses. F is static: four seconds when it is only noise, once a minute. ` is root.";
         veilText.textContent = (saved.level ? "you fell to level " + saved.level + " last time. it is still there. " : "you noclipped out of rickseufert.com. ") + how + " find the way down. do not let it reach you.";
         go.textContent = saved.level ? "go back down" : "noclip";
+        if (settings) settings.hidden = true;
         veil.hidden = false;
         if (audio) audio.quiet(true);
     }
