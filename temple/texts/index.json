@@ -445,6 +445,15 @@
   "shelf": "key",
   "title": "The Key of Solomon the King"
  },
+ "keys": {
+  "bytes": 22149,
+  "edition": "Dee and Kelley, 1584 · Casaubon, 1659 · as the Equinox printed them, 1912 · Casaubon at the Internet Archive",
+  "host": "Internet Archive",
+  "robust": "whole",
+  "shelf": "keys",
+  "source": "https://archive.org/details/aleister-crowley-liber-chanokh",
+  "title": "The Forty-Eight Keys, or Calls"
+ },
  "king": {
   "archive": "gnosticsandtheir00kinguoft",
   "bytes": 1065840,

@@ -11,9 +11,29 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `temple.png`, `share.jpg` | the home tile and the share image, captured from the canvas |
 | `texts/` | the library's Project Gutenberg texts, kept here whole (header, text, licence), one `.txt` a book, and `index.json`, the manifest |
 | `read/index.html`, `read.js` | the reading room: a text set as pages, with the place remembered |
+| `enochian/index.html`, `enochian.js` | the angelic alphabet: Dee's twenty-one letters redrawn from his hand, a keyboard for them, right to left |
 | `talisman/index.html`, `talisman.js` | the talisman press: Agrippa's seven planetary squares with the sigils of their intelligences and spirits traced, and a name traced by his Latin numeration |
 | `sigil/index.html`, `sigil.js` | the sigil press: a wish reduced and bound into one sign after Spare, charged by holding, burned when charged, nothing kept |
 | `monas/index.html`, `monas.js` | Dee's Monas Hieroglyphica: the figure constructed from its measure, and the twenty-four theorems in plain words with their figures |
+
+## The angelic alphabet
+
+`enochian/` draws the twenty-one letters of 1583 as stroke skeletons
+(`LETTERS`, in Dee's order with their names and Latin values, sketched from
+the alphabet page of Sloane 3188 as the Esoteric Archives reproduce it, not
+from any printed font). Type and the canvas writes the text in them, right
+to left as Dee's tables are written (a button turns it round), k written
+with Veh, y and j with Gon, v and w with Van, as Dee did; the table of the
+letters is a row of small canvases that name themselves and type
+themselves. "Save as an image" is the canvas as a PNG; nothing is stored.
+The nineteen Keys are a hand-made text on the shelf, `texts/keys.txt`:
+Casaubon's English of 1659 and the Equinox's spelled-out angelic of 1912,
+taken from the Internet Archive's copy of Liber Chanokh with the ritual
+matter and the modern notes cut, and registered through `HAND` in
+`tools/shelf.py`. The Great Table is not here yet; Dee's book of the
+angels' names (Tabula bonorum angelorum, at the Esoteric Archives) gives
+every letter of it by name, and rebuilding the grid from them is the next
+piece.
 
 ## The talisman press
 
