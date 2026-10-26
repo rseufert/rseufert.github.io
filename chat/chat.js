@@ -291,6 +291,7 @@
     }
     var ANSWERS = [
         [/\b(gematria|number|count|value) (of|for) [a-z"\u201c]/, gematria],
+        [/\b(augur(y|ies|s)?|auspices|omens?|portents?)\b/, "the heron reads the dashboard's feeds as omens in the paper, the way the augurs read birds: the river, the week's earthquakes, the planetary k index, the fireballs that fell. the verdict is their sum and it changes when the world does: /paper/#augury. the heron cannot read, which has never stopped an augur."],
         [/\b(whose|which|what) (planetary )?(hour|day) is (it|this)\b|\bplanetary (hours?|day)\b|\bhour of (the )?(sun|moon|mars|mercury|jupiter|venus|saturn)\b|\bchaldean\b|\bthe hours\b/, theHour],
         [/\b(read me|read us|quote|a passage|a paragraph|a line from|from the (shelf|shelves|library|temple|stacks)|open a book|any book|pick a book|what are you reading|been reading)\b|[a-z]{4,}/, fromTheShelf],
         // one thing on the site

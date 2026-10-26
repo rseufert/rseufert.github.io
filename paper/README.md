@@ -47,7 +47,13 @@ it, or a line about being empty and which planet is nearest, and a piece of
 the paper's advice. The reader's sign is a row of buttons and is remembered
 (`paper-sign`).
 
-**Geomancy** is the day's shield chart: four mothers cast from the seed
+**Augury** is the heron reading the dashboard's live feeds as omens: the
+river's stage over a day (rising, falling, steady, or running upstream on the
+tide), the week's quakes in the Cascades, the planetary K index, and the
+week's fireballs from the nightly `sky.json`; each a favourable, unfavourable
+or neutral sign in the augur's words, the verdict their sum, written to
+`localStorage` as `augury` for the heron in the city to repeat. Live, not
+seeded. **Geomancy** is the day's shield chart: four mothers cast from the seed
 (`rng(777)`), the daughters read across them, nieces, witnesses and the judge
 by adding pairs (like lines two points, unlike one), the sixteen figures with
 their Latin names, planets and meanings in `FIG`, and a reading by the old

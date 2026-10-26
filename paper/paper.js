@@ -131,6 +131,61 @@
     }).catch(function () { html("paper-weather", "<p class=\"small\">The gauge is out of reach just now. The river is still there; the heron confirms.</p>"); });
 
     var GEO = null;
+    // ---- augury: the heron reads the dashboard ---------------------------------------------
+    // The old art, on the live feeds the dashboard reads: the water (the gauge),
+    // the earth (the week's quakes in the Cascades), the heavens (the planetary
+    // K index) and the fire that falls (the week's fireballs, from the nightly
+    // sky data). Each is a sign, favourable, unfavourable or neither, in the
+    // augur's words; the verdict is their sum. It changes when the world does,
+    // not at midnight, and the heron in the city repeats it (localStorage augury).
+    (function () {
+        var now7 = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+        function J(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
+        var water = J("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=14211720&parameterCd=00060,00065&period=P1D").then(function (j) {
+            var s = j.value.timeSeries, stage = null, flow = null;
+            s.forEach(function (ts) { var v = ts.values[0].value; if (!v.length) return; var first = +v[0].value, last = +v[v.length - 1].value; if (/00065/.test(ts.variable.variableCode[0].value)) stage = { first: first, last: last }; else flow = last; });
+            if (!stage) return null;
+            var d = stage.last - stage.first;
+            if (flow !== null && flow < 0) return { sign: 0, text: "The water: the Willamette is running upstream on the flood tide, at " + stage.last.toFixed(1) + " feet, which the augurs would have entered as a prodigy and the gauge enters as a Tuesday. Do nothing that cannot be undone before the tide turns." };
+            if (d > 0.3) return { sign: 1, text: "The water: the river has risen " + d.toFixed(1) + " feet in a day, to " + stage.last.toFixed(1) + ". Increase, and haste: favourable to setting out, unfavourable to building." };
+            if (d < -0.3) return { sign: -1, text: "The water: the river has fallen " + (-d).toFixed(1) + " feet in a day, to " + stage.last.toFixed(1) + ". A drawing back: hold what you have, and lend nothing." };
+            return { sign: 1, text: "The water: the river keeps its level at " + stage.last.toFixed(1) + " feet. Continuance, the plainest of good signs; favourable to anything already begun." };
+        }).catch(function () { return null; });
+        var earth = J("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minmagnitude=1.5&minlatitude=42.6&maxlatitude=49.0&minlongitude=-122.5&maxlongitude=-120.8&starttime=" + now7).then(function (j) {
+            var f = j.features || [], big = null; f.forEach(function (q) { if (!big || q.properties.mag > big.properties.mag) big = q; });
+            if (!f.length) return { sign: 1, text: "The earth: the Cascades have not moved this week, above magnitude one and a half. The most favourable of signs, since it is no sign." };
+            if (big.properties.mag >= 3) return { sign: -1, text: "The earth: the mountains shook " + f.length + " time" + (f.length === 1 ? "" : "s") + " this week, the worst a magnitude " + big.properties.mag.toFixed(1) + " " + (big.properties.place || "").replace(/^\d+\s*km\s+\w+\s+of\s+/, "near ") + ". A sign ex diris, from the dreadful things; the augurs adjourned the assembly for less. Postpone." };
+            return { sign: 0, text: "The earth: " + f.length + " small tremor" + (f.length === 1 ? "" : "s") + " in the Cascades this week, none above magnitude " + big.properties.mag.toFixed(1) + ". Nothing; the mountains clearing their throats." };
+        }).catch(function () { return null; });
+        var sky = J("https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json").then(function (rows) {
+            var seen = rows.filter(function (r) { return r.observed !== "predicted" && !isNaN(+r.kp); }), last = seen[seen.length - 1], kp = last ? +last.kp : NaN;
+            var peak = 0; rows.forEach(function (r) { if (r.observed === "predicted" && +r.kp > peak) peak = +r.kp; });
+            if (isNaN(kp)) return null;
+            if (kp >= 5) return { sign: -1, text: "The heavens: a geomagnetic storm, Kp " + kp.toFixed(1) + "; the sky is lit from the north. A sign from the right, and a loud one: unfavourable to anything that runs on wires." };
+            if (kp >= 3) return { sign: 0, text: "The heavens: unsettled, Kp " + kp.toFixed(1) + (peak >= 5 ? ", with a storm forecast" : "") + ". A sign from the left, which the Romans counted lucky and the Greeks did not; take it as you are." };
+            return { sign: 1, text: "The heavens: quiet, Kp " + kp.toFixed(1) + "; the aurora sleeps. Favourable, and nothing to watch, which the augurs liked least and the rest of us like best." };
+        }).catch(function () { return null; });
+        var fire = J("https://raw.githubusercontent.com/rseufert/rseufert.github.io/sky-data/sky.json").catch(function () { return J("/data/sky.json"); }).then(function (s) {
+            var f = s.fireballs, F = {}; f.fields.forEach(function (k, i) { F[k] = i; });
+            var week = f.data.filter(function (r) { return r[F.date] >= now7; }), big = null;
+            week.forEach(function (r) { if (!big || +r[F["impact-e"]] > +big[F["impact-e"]]) big = r; });
+            if (!week.length) return { sign: 0, text: "The fire: nothing fell from the sky this week that the satellites saw. Neither good nor bad; the augurs took a quiet sky as consent." };
+            var kt = +big[F["impact-e"]], where = big[F.lat] ? big[F.lat] + "°" + big[F["lat-dir"]] + ", " + big[F.lon] + "°" + big[F["lon-dir"]] : "no one knows where";
+            if (kt >= 1) return { sign: -1, text: "The fire: " + week.length + " fireball" + (week.length === 1 ? "" : "s") + " this week, the largest of " + kt + " kilotons at " + where + ". Too much falling: a sign to be expiated, which is to say, look up more." };
+            return { sign: 1, text: "The fire: " + week.length + " fireball" + (week.length === 1 ? "" : "s") + " this week, the largest of " + kt + " kilotons at " + where + ". A falling star is favourable if it falls on your left, and they all fell a long way off, which is the next best thing." };
+        }).catch(function () { return null; });
+        Promise.all([water, earth, sky, fire]).then(function (signs) {
+            var got = signs.filter(Boolean), sum = got.reduce(function (s, x) { return s + x.sign; }, 0);
+            if (!got.length) { html("paper-augury", "<p class=\"small\">The signs are out of reach just now. The heron is watching anyway.</p>"); return; }
+            var verdict = sum >= 2 ? "favourable" : sum <= -2 ? "unfavourable" : sum > 0 ? "favourable, on balance" : sum < 0 ? "unfavourable, on balance" : "mixed";
+            var line = "the signs are " + verdict + " today: " + got.map(function (x) { return x.text.split(":")[0].toLowerCase() + " " + (x.sign > 0 ? "good" : x.sign < 0 ? "bad" : "neither"); }).join(", ") + ".";
+            html("paper-augury", "<p class=\"small\">The heron reads the dashboard's feeds the way the augurs read the birds: the water, the earth, the heavens and the fire that falls, each a sign, and the verdict their sum. Live, so it changes when the world does, not at midnight.</p>" +
+                got.map(function (x) { return "<p>" + esc(x.text).replace(/^([^:]+):/, "<b>$1:</b>") + "</p>"; }).join("") +
+                "<p><b>The auspices are " + verdict + ".</b> " + (got.length < 4 ? "One of the four feeds did not answer, which the augurs would also have read as a sign. " : "") + "The heron says so; the heron also cannot read. Cicero says the same of the whole art, in a book on the shelf next door.</p>");
+            try { localStorage.setItem("augury", JSON.stringify({ date: new Date().toISOString().slice(0, 10), verdict: verdict, line: line })); } catch (e) { /* a visit's worth */ }
+        });
+    })();
+
     // ---- geomancy: the day's shield chart, from the seed -------------------------------
     // Sixteen figures of four lines, each line one point or two. Four mothers
     // are cast; the daughters are the mothers read across; nieces, witnesses
