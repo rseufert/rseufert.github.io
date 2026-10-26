@@ -150,6 +150,17 @@ the wind, the water and the hum are let through brighter and the steps
 higher, for a phone's speaker, and the master is louder; `js/unmute.js`
 does what an iPhone needs before Web Audio is heard.
 
+## Controls
+
+WASD or arrows walk, the mouse looks under pointer lock, shift runs, E
+enters or talks, esc pauses; on a touch screen the left thumb walks, the
+right looks, a button appears at a door, and a button in the top left corner
+pauses (it also shows where the lock is refused). The pause veil has
+settings: `look`, how far the view turns per mouse or thumb movement; `walk`,
+how far the left thumb travels to walk flat out; invert look; left-handed,
+which swaps the thumbs. They are kept in `localStorage` under `controls`,
+shared with the backrooms.
+
 ## Poking
 
 `window.City` exposes `state()`, `step(ms)` for hand-stepped frames,

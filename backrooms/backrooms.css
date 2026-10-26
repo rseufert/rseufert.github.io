@@ -69,14 +69,18 @@
 .backrooms-page .veil button { color: #ffb000; background: #000; border-color: #ffb000; padding: 8px 22px; letter-spacing: 0.1em; }
 .backrooms-page .veil button:hover { background: #ffb000; color: #000; }
 /* Settings, on the pause veil. */
-.backrooms-page .veil .settings { width: 100%; max-width: 340px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 176, 0, 0.35); text-align: left; font-size: 12px; }
+.backrooms-page .veil .settings { width: 100%; max-width: 340px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ffb00059; text-align: left; font-size: 12px; }
 .backrooms-page .veil .settings[hidden] { display: none; }
 .backrooms-page .veil .settings-head { margin: 0 0 6px; color: #ffb000; letter-spacing: 0.2em; text-transform: uppercase; font-size: 11px; }
 .backrooms-page .veil .settings label { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
 .backrooms-page .veil .settings label[hidden] { display: none; }
 .backrooms-page .veil .settings span { width: 5ch; flex: none; }
 .backrooms-page .veil .settings input[type="range"] { flex: 1; min-width: 0; accent-color: #ffb000; margin: 0; }
+.backrooms-page .veil .settings input[type="checkbox"] { accent-color: #ffb000; margin: 0; }
 .backrooms-page .veil .settings output { width: 4ch; flex: none; text-align: right; color: #ffb000; }
+.backrooms-page .veil .settings .toggles { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 8px 0 4px; font: 12px/1.6 var(--mono); }
+.backrooms-page .veil .settings .toggles label { display: inline-flex; margin: 0; gap: 6px; }
+.backrooms-page .veil .settings .settings-note { margin: 4px 0 0; color: #7d7d88; font: 11px/1.6 var(--mono); }
 .backrooms-page .bar button:hover, .backrooms-page .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .backrooms-page .bar a.button { display: inline-block; text-decoration: none; color: #8fe7ff; border-color: #8fe7ff; }
 .backrooms-page .bar a.button:hover { background: #8fe7ff; color: #000; }
@@ -133,6 +137,7 @@ body.filled { overflow: hidden; }
     cursor: pointer;
 }
 .backrooms-page .static[hidden] { display: none; }
+.backrooms-page .stage.lefty .static { right: auto; left: 14px; }
 /* Pause, in the stage: for phones, and for desktops that refuse the pointer lock. */
 .backrooms-page .pause {
     position: absolute;

@@ -24,13 +24,21 @@ site.</p>
     <p class="banner">RICKSEUFERT.COM</p>
     <p id="city-veil-text">the site, as a city.</p>
     <p><button type="button" id="city-go">walk</button></p>
+    <div class="settings" id="city-settings" hidden>
+      <p class="settings-head">settings</p>
+      <label><span>look</span> <input type="range" id="city-look" min="25" max="300" step="5" value="100"> <output>100%</output></label>
+      <label><span>walk</span> <input type="range" id="city-walk" min="25" max="300" step="5" value="100"> <output>100%</output></label>
+      <p class="toggles"><label><input type="checkbox" id="city-invert"> invert look</label> <label><input type="checkbox" id="city-lefty"> left-handed</label></p>
+      <p class="settings-note">kept in this browser, for the city and the backrooms both.</p>
+    </div>
   </div>
   <button type="button" class="enter" id="city-enter" hidden>enter</button>
+  <button type="button" class="pause" id="city-pause" hidden>pause</button>
   <button type="button" class="unfill" id="city-unfill" hidden aria-label="leave fullscreen">&times;</button>
 </div>
 
 <div class="bar">
-  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>e</kbd> enters a door or talks to someone &middot; <kbd>t</kbd> runs the clock &middot; <kbd>c</kbd> names the stars &middot; <kbd>q</kbd> the errands &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks, right thumb looks, and a button appears at a door</p>
+  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>e</kbd> enters a door or talks to someone &middot; <kbd>t</kbd> runs the clock &middot; <kbd>c</kbd> names the stars &middot; <kbd>q</kbd> the errands &middot; <kbd>esc</kbd> pauses, and the settings are there &middot; on a phone, left thumb walks, right thumb looks, a button appears at a door, and the corner button pauses</p>
   <p class="buttons"><button type="button" id="city-sound">sound</button> <button type="button" id="city-full">fullscreen</button> <output id="city-where" class="where"></output></p>
 </div>
 

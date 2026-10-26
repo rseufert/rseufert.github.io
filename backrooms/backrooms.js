@@ -33,6 +33,7 @@
     var pauseButton = document.getElementById("backrooms-pause");
     var settings = document.getElementById("backrooms-settings");
     var lookRange = document.getElementById("backrooms-look"), walkRange = document.getElementById("backrooms-walk");
+    var invertBox = document.getElementById("backrooms-invert"), leftyBox = document.getElementById("backrooms-lefty");
     var rootButton = document.getElementById("backrooms-root");
 
     var KEY = "backrooms";
@@ -61,11 +62,19 @@
         var m = /seed=(\d+)/.exec(location.hash), l = /level=(\d+)/.exec(location.hash);
         if (m) s.seed = +m[1];
         if (l) s.level = Math.min(+l[1], 60);
-        // Sensitivity, as a multiple of the stock feel: look (mouse or thumb) and the walk stick.
-        if (typeof s.look !== "number") s.look = 1;
-        if (typeof s.walk !== "number") s.walk = 1;
         return s;
     }
+    // Controls, shared with the city through localStorage "controls": how far the view
+    // turns per mouse or thumb movement (look), how far the left thumb travels to
+    // walk flat out (walk), both as multiples of the stock feel; invert look;
+    // left-handed, which swaps the thumbs.
+    var controls = (function () {
+        var c = null;
+        try { c = JSON.parse(localStorage.getItem("controls")); } catch (e) { c = null; }
+        c = c || {};
+        return { look: typeof c.look === "number" ? c.look : typeof saved.look === "number" ? saved.look : 1, walk: typeof c.walk === "number" ? c.walk : typeof saved.walk === "number" ? saved.walk : 1, invert: !!c.invert, lefty: !!c.lefty };
+    })();
+    function saveControls() { try { localStorage.setItem("controls", JSON.stringify(controls)); } catch (e) { /* a visit's worth */ } }
     function save() {
         try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* a visit's worth */ }
         if (depthOut) {
@@ -977,8 +986,8 @@
     });
     addEventListener("mousemove", function (e) {
         if (!locked || mode !== "play") return;
-        cam.yaw += e.movementX * 0.0022 * saved.look;
-        cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - e.movementY * 0.0022 * saved.look));
+        cam.yaw += e.movementX * 0.0022 * controls.look;
+        cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - e.movementY * 0.0022 * controls.look * (controls.invert ? -1 : 1)));
     });
     // Touch: the left thumb walks, the right thumb looks.
     var touches = {};
@@ -986,7 +995,8 @@
         if (mode !== "play" || locked) return;
         if (e.pointerType !== "touch" && e.button !== 0) return;
         var r = canvas.getBoundingClientRect();
-        touches[e.pointerId] = { x: e.clientX, y: e.clientY, side: e.pointerType === "touch" && e.clientX - r.left < r.width / 2 ? "walk" : "look" };
+        var leftHalf = e.clientX - r.left < r.width / 2;
+        touches[e.pointerId] = { x: e.clientX, y: e.clientY, side: e.pointerType === "touch" && leftHalf !== controls.lefty ? "walk" : "look" };
         canvas.setPointerCapture(e.pointerId);
         e.preventDefault();
     });
@@ -994,12 +1004,12 @@
         var t = touches[e.pointerId];
         if (!t) return;
         if (t.side === "walk") {
-            var reach = 50 / saved.walk;             // pixels of thumb travel to full tilt
+            var reach = 50 / controls.walk;          // pixels of thumb travel to full tilt
             stick.x = Math.max(-1, Math.min(1, (e.clientX - t.x) / reach));
             stick.y = Math.max(-1, Math.min(1, (e.clientY - t.y) / reach));
         } else {
-            cam.yaw += (e.clientX - t.x) * 0.006 * saved.look;
-            cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - (e.clientY - t.y) * 0.004 * saved.look));
+            cam.yaw += (e.clientX - t.x) * 0.006 * controls.look;
+            cam.pitch = Math.max(-0.5, Math.min(0.5, cam.pitch - (e.clientY - t.y) * 0.004 * controls.look * (controls.invert ? -1 : 1)));
             t.x = e.clientX; t.y = e.clientY;
         }
         e.preventDefault();
@@ -1073,20 +1083,25 @@
         if (saved.sound && audio && mode === "play") { audio.quiet(false); audio.level(L.level); }
     });
     soundButton.setAttribute("aria-pressed", saved.sound ? "true" : "false");
-    // Settings, on the pause veil: how far the view turns for the mouse or the
-    // right thumb, and how far the left thumb travels to walk flat out.
+    // Settings, on the pause veil.
     function knob(range, key) {
         if (!range) return;
         var out = range.parentNode.querySelector("output");
-        function show() { out.textContent = Math.round(saved[key] * 100) + "%"; }
-        range.value = Math.round(saved[key] * 100); show();
-        range.addEventListener("input", function () { saved[key] = range.value / 100; show(); save(); });
+        function show() { out.textContent = Math.round(controls[key] * 100) + "%"; }
+        range.value = Math.round(controls[key] * 100); show();
+        range.addEventListener("input", function () { controls[key] = range.value / 100; show(); saveControls(); });
     }
-    knob(lookRange, "look");
-    knob(walkRange, "walk");
-    if (walkRange && !TOUCH) walkRange.parentNode.hidden = true;
+    function toggle(box, key) {
+        if (!box) return;
+        box.checked = !!controls[key];
+        box.addEventListener("change", function () { controls[key] = box.checked; saveControls(); stage.classList.toggle("lefty", controls.lefty); });
+    }
+    knob(lookRange, "look"); knob(walkRange, "walk");
+    toggle(invertBox, "invert"); toggle(leftyBox, "lefty");
+    stage.classList.toggle("lefty", controls.lefty);
+    if (!TOUCH) { if (walkRange) walkRange.parentNode.hidden = true; if (leftyBox) leftyBox.parentNode.hidden = true; }
     function title() {
-        var how = TOUCH ? "left thumb walks, right thumb looks. the static button makes it noise for four seconds, once a minute. the top left corner pauses." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses. F is static: four seconds when it is only noise, once a minute. ` is root.";
+        var how = TOUCH ? "left thumb walks, right thumb looks. the static button makes it noise for four seconds, once a minute. the top left corner pauses, and the settings are there." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses and has the settings. F is static: four seconds when it is only noise, once a minute. ` is root.";
         veilText.textContent = (saved.level ? "you fell to level " + saved.level + " last time. it is still there. " : "you noclipped out of rickseufert.com. ") + how + " find the way down. do not let it reach you.";
         go.textContent = saved.level ? "go back down" : "noclip";
         if (settings) settings.hidden = true;

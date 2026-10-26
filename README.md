@@ -193,7 +193,7 @@ the helpdesk. Street signs are in the elves' script until you stand still.
 The layout is shuffled from the date. The sky is the real one over Portland
 at the real time (`city/sky.js`: ~170 stars in 25 constellations, the Sun
 and the Moon, placed from the sidereal time), with a time-lapse to watch
-the Dipper go round Polaris, and ten people with optional errands that
+the Dipper go round Polaris, and twelve people with optional errands that
 send you to the rest of the site and check, when you come back, that you
 went (`chat/chat.js` keeps footprints of the pages visited, in the browser
 only).
