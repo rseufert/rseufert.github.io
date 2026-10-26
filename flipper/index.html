@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Flipper Zero apps
-description: "Six apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; NW Crawl, a roguelike set in NW Portland; Yulia's Cats, a virtual pet; Tricorder, a handheld signal scanner; and Jiggler, a mouse jiggler that pauses while you work."
+description: "Eight apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; NW Crawl, a roguelike set in NW Portland; Yulia's Cats, a virtual pet; Tricorder, a handheld signal scanner; Jiggler, a mouse jiggler that pauses while you work; Spectre, a ghost hunting kit; and Grimoire, a pendulum, a sigil, a talisman and a wand."
 image: /flipper/hanzi_cards.png
 ---
 <section class="projects flipper">
@@ -153,5 +153,55 @@ git clone https://github.com/rseufert/jiggler &amp;&amp; cd jiggler
 ufbt launch     # Flipper on USB, qFlipper closed
 pip install hidapi &amp;&amp; python3 helper/jiggler_helper.py     # optional</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/jiggler">GitHub</a> · <a href="https://lab.flipper.net/apps/jiggler">Flipper Apps</a> · <a href="https://github.com/rseufert/jiggler#controls">Controls</a> · <a href="https://github.com/rseufert/jiggler#the-desktop-helper">The desktop helper</a> · <a href="https://github.com/rseufert/jiggler/releases/tag/v0.1">Release 0.1</a></p>
+	</div><!-- /.project -->
+	<div class="project" id="spectre">
+		<h3><a href="https://github.com/rseufert/spectre">Spectre</a> <span class="tag">toy</span></h3>
+		<figure class="shot pair">
+			<img src="/flipper/spectre_boot.png" width="512" height="256" loading="lazy" alt="Spectre's start-up screen on the Flipper's orange screen: a small pixel ghost, &quot;S P E C T R E&quot; beneath it, &quot;opening the veil&quot; and a progress bar half full.">
+			<img src="/flipper/spectre.png" width="512" height="256" loading="lazy" alt="The SENSE tab: tabs for SENSE, BOX, VOICE and RADAR across the top with SENSE highlighted, &quot;FAINT&quot; and &quot;peak 47&quot; at the left, &quot;22.5C&quot; at the right, and a half-circle gauge with a needle pointing at 22.">
+			<figcaption>the veil opening at start-up, and the needle on SENSE</figcaption>
+		</figure>
+		<figure class="shot pair">
+			<img src="/flipper/spectre_box.png" width="512" height="256" loading="lazy" alt="The BOX tab: &quot;433 MHz&quot; and &quot;SIGNAL&quot; under the tabs, &quot;405.333&quot; in large digits, the word &quot;FOREST&quot; beneath it, and a ribbon of small bars along the bottom.">
+			<img src="/flipper/spectre_radar.png" width="512" height="256" loading="lazy" alt="The RADAR tab: a round scope with rings and a sweep line on the right, a blip near its top, and on the left a filled box reading &quot;NO&quot;.">
+			<figcaption>the spirit box catching a word, and the radar answering a question</figcaption>
+		</figure>
+		<p>A ghost hunting kit. Four tabs share one &ldquo;spirit energy&rdquo; level, fed by the real sensors where the hardware has them and by the hardware random number generator for the rest. It is a toy, and says so.</p>
+		<ul class="features">
+			<li><strong>SENSE.</strong> A needle from QUIET to CONTACT with Geiger crackle that quickens as it climbs. A nearby NFC or 125&nbsp;kHz reader field pushes it hard, and a drop in the battery temperature since you started reads as a cold spot.</li>
+			<li><strong>BOX.</strong> A spirit box: it sweeps a Sub-GHz band in 64 steps, draws the noise floor and plays the channel hopping as static. When a frequency carries a signal it does not usually have, it locks on, the tone wavers, and a word comes through. It only listens.</li>
+			<li><strong>VOICE.</strong> Words arrive on their own when the energy surges, spelled out letter by letter with a garbled syllable each. OK asks a question and waits for the answer. The last three words stay as a transcript.</li>
+			<li><strong>RADAR.</strong> A sweeping scope with echoes that drift, the nearest one's range and bearing, a ping as the beam crosses each, and a yes or no on OK.</li>
+			<li><strong>Every surge</strong> flashes the screen, buzzes, and the LED breathes in the tab's colour, brighter the more excited the kit gets. Hold OK to mute.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/spectre &amp;&amp; cd spectre
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/spectre">GitHub</a> · <a href="https://github.com/rseufert/spectre#controls">Controls</a> · <a href="https://github.com/rseufert/spectre#what-it-transmits">What it transmits</a> · <a href="https://github.com/rseufert/spectre/releases/tag/v0.1">Release 0.1</a></p>
+	</div><!-- /.project -->
+	<div class="project" id="grimoire">
+		<h3><a href="https://github.com/rseufert/grimoire">Grimoire</a> <span class="tag">temple</span></h3>
+		<figure class="shot pair">
+			<img src="/flipper/grimoire_pendulum.png" width="512" height="256" loading="lazy" alt="Grimoire's PENDULUM page on the Flipper's orange screen: a bar across the top reads &quot;PENDULUM&quot; between arrows, a filled box at the left reads &quot;YES&quot; with &quot;to and fro&quot; under it, a round board on the right has Y and N at its edges and a bob on a thread with a dotted trail, and the bottom line reads &quot;MOON night 6 to 00:55&quot;.">
+			<img src="/flipper/grimoire.png" width="512" height="256" loading="lazy" alt="The SIGIL page: the letters &quot;W S H&quot; at the top left, &quot;hold OK: charge&quot; below, and on the right a sigil of crossed strokes and a diamond over a bar.">
+			<figcaption>the pendulum settling on yes, and a wish bound into a sigil</figcaption>
+		</figure>
+		<figure class="shot pair">
+			<img src="/flipper/grimoire_talisman.png" width="512" height="256" loading="lazy" alt="The TALISMAN page: &quot;JUPITER&quot;, &quot;4x4 rows 34&quot;, &quot;all 136 tin&quot; and &quot;Rick 102&quot; on the left, and a four-by-four grid on the right with a thick line traced across its cells, a small ring at its start and a bar at its end.">
+			<img src="/flipper/grimoire_wand.png" width="512" height="256" loading="lazy" alt="The WAND page: &quot;blessing cast&quot; and &quot;an answer? 5s&quot; on the left, a wand with a star at its tip on the right and three arcs rippling out from the star, and &quot;JUPITER day 3 to 10:17&quot; along the bottom.">
+			<figcaption>a name traced on the square of Jupiter, and a blessing cast</figcaption>
+		</figure>
+		<p>The temple's spells, off the browser and onto the device: a pendulum, a sigil, a talisman and a wand, with the planetary hour on every page. Built from <a href="https://github.com/rseufert/rseufert.github.io/issues/147">issue 147</a>.</p>
+		<ul class="features">
+			<li><strong>Pendulum.</strong> Hold a question in mind and press OK. The bob wanders, then settles: to and fro is yes, side to side is no, round and round means ask again. The answer comes from the hardware random source.</li>
+			<li><strong>Sigil.</strong> Type a wish; the vowels and the repeats are struck and what is left is bound into one sign after Spare. It is the <a href="/temple/sigil/">sigil press</a>'s engine ported step for step, checked against it to four decimals, so a wish gives the same sigil here as there. Hold OK four seconds to charge it; it burns, and nothing is kept.</li>
+			<li><strong>Talisman.</strong> Agrippa's square of the hour's planet, from the <a href="/temple/talisman/">talisman press</a>'s data, with its intelligence traced solid, its spirit dotted, and a typed name in a thick line by his Latin numeration.</li>
+			<li><strong>Wand.</strong> A short Sub-GHz blessing carrying the planetary hour, cast on OK. A second Flipper on the same page hears it, shows whose hour it was cast in, and answers. It transmits only then, and only where the region allows.</li>
+			<li><strong>Hours.</strong> The planetary clock, computed on the device from the Flipper's clock and Portland's sunrise with the same rule as the <a href="/dashboard/">site's</a>, in every footer and as a table of today's day and night.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/grimoire &amp;&amp; cd grimoire
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/grimoire">GitHub</a> · <a href="https://github.com/rseufert/grimoire#controls">Controls</a> · <a href="https://github.com/rseufert/grimoire#the-wands-frame">The wand's frame</a> · <a href="https://github.com/rseufert/grimoire#what-it-transmits">What it transmits</a> · <a href="https://github.com/rseufert/grimoire/releases/tag/v0.1">Release 0.1</a></p>
 	</div><!-- /.project -->
 </section><!-- /.flipper -->
