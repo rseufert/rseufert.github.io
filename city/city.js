@@ -364,7 +364,7 @@
         npc(cx - 8, cz - 7, "the dolphin", "dolphin", "#ffffff", { idle: [
             "the dolphin: i found your thoughts. they are mostly about lunch.",
             "the dolphin: 433.92 megahertz. that was your garage. i did not open it. i could have.",
-            "the dolphin: six apps and one buzzer. people say it sounds exactly as good as a piezo. it does.",
+            "the dolphin: eight apps and one buzzer. people say it sounds exactly as good as a piezo. it does.",
             "the dolphin: they wheel me out here for the tourists. the river is right there. nobody asks."
         ] });
         npc(cx + 6, cz - 7, "nugget", "cat", "#ff8c1a", {
