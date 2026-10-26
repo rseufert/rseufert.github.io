@@ -132,6 +132,22 @@ body.filled { overflow: hidden; }
 .temple-page.read .hint[hidden] { display: none; }
 .temple-page.read .colophon { margin-top: 48px; padding-top: 18px; border-top: 1px dashed var(--rule); }
 
+/* The Monas page (temple/monas/): the construction on a stage, then the theorems, a figure beside each. */
+.temple-page.monas .stage { aspect-ratio: 4 / 3; max-height: 78vh; margin-top: 8px; cursor: pointer; }
+.temple-page.monas .hint { margin: 10px 0 24px; }
+.temple-page.monas .theorems { margin-top: 30px; }
+.temple-page.monas .theorem { display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: start; margin: 0 0 28px; }
+.temple-page.monas .theorem:target { background: var(--code-bg); outline: 2px dashed var(--accent); outline-offset: 8px; }
+.temple-page.monas .theorem canvas { display: block; width: 120px; height: 120px; background: #020705; }
+.temple-page.monas .theorem h2 { margin: 0 0 6px; font: normal 1.05em var(--mono); }
+.temple-page.monas .theorem h2::before { content: "["; color: var(--faint); }
+.temple-page.monas .theorem h2::after { content: "]"; color: var(--faint); }
+.temple-page.monas .theorem p { font-size: 1.15em; line-height: 1.5em; margin: 0 0 8px; }
+@media (max-width: 700px) {
+    .temple-page.monas .theorem { grid-template-columns: 84px 1fr; gap: 14px; }
+    .temple-page.monas .theorem canvas { width: 84px; height: 84px; }
+}
+
 /* The librarian reading aloud: the paragraph being read is marked. */
 .temple-page.read .text .aloud { outline: 1px dashed var(--accent); outline-offset: 8px; }
 .temple-page.read .bar { margin: 0 0 10px; }

@@ -11,6 +11,24 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `temple.png`, `share.jpg` | the home tile and the share image, captured from the canvas |
 | `texts/` | the library's Project Gutenberg texts, kept here whole (header, text, licence), one `.txt` a book, and `index.json`, the manifest |
 | `read/index.html`, `read.js` | the reading room: a text set as pages, with the place remembered |
+| `monas/index.html`, `monas.js` | Dee's Monas Hieroglyphica: the figure constructed from its measure, and the twenty-four theorems in plain words with their figures |
+
+## The Monas
+
+`monas/` is the one book on the shelves that is drawn rather than kept.
+Dee's Latin of 1564 is public domain; the English translations in print
+(Hamilton-Jones 1947, Josten 1964, Burns and Turner 2021) are not, so the
+page quotes none of them. It gives, in the site's own words, a short account
+of each of the twenty-four theorems, with the marginal figures of the 1564
+printing redrawn in the temple's line (`FIG` in `monas.js`, one function a
+theorem), and on the big canvas the construction of Theorem XXIII drawn in
+Dee's order from the one measure AB: the cross of one, three, two and two
+measures, the Sun's circle of radius two on I, the Moon's half-circle on K,
+the Ram's two half-circles on M and N, the ornaments last, then the letters.
+The orientation (the crescent cupping the top of the Sun's circle with the
+horns up; the Ram as two arches joined under the foot of the cross) is
+checked against the Wellcome copy's scans on Wikimedia Commons. A tap draws
+it again; `window.Monas` exposes the points and the drawing.
 
 ## The nave
 
