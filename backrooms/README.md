@@ -79,6 +79,17 @@ the `sky-data` branch, which the page fetches with `data/ghosts.json` on
 master as the fallback. Closing the issue lays the ghost to rest. Nothing in
 an issue is evaluated; a line that is not a ghost is left out.
 
+## Chalk
+
+C (or the button on a phone) draws a circle of chalk, radius `CHALK_R`
+(1.3 cells), on the floor round where you stand, for `CHALK_TIME` (20)
+seconds; `CHALK` (3) pieces a level, fresh each level. In `stalk`, a thing
+whose next step would take it inside a circle it is not already in stops
+where it is and picks its path again next frame, so it paces the edge. The
+circle is drawn with `poly` on the floor, white, fading over its last four
+seconds, and counted in the HUD under the level. The grimoires' rule as a
+cooldown: it works if you draw it before it reaches you and stay inside.
+
 ## Static and root
 
 F (or the button on a phone) is static: for `FUZZ` (4) seconds the

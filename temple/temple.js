@@ -206,6 +206,7 @@
 
     // ---- the room ------------------------------------------------------------
     var W = 0, H = 0, DPR = 1, clock = 0, lastFrame = 0, selected = 0, hover = -1, turn = 0;
+    var lastDt = 0.016;
     function resize() {
         DPR = Math.min(2, window.devicePixelRatio || 1);
         var r = canvas.getBoundingClientRect();
@@ -255,12 +256,13 @@
         ctx.font = Math.max(11, Math.round(g.s * 0.34)) + "px " + MONO; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
         ctx.fillText(SIGNS[selected] ? SIGNS[selected].name.toLowerCase() : "", g.cx, g.cy + g.big * 1.35);
         ctx.globalAlpha = 1;
+        drawTraces(g, lastDt);
     }
     function frame(now, manual) {
         if (!manual) requestAnimationFrame(frame);
         var dt = Math.min(0.05, Math.max(0, (now - lastFrame) / 1000 || 0));
-        lastFrame = now; clock += dt;
-        if (!REDUCED) turn += dt * 0.035;
+        lastFrame = now; clock += dt; lastDt = dt;
+        if (!REDUCED && !keptAll) turn += dt * 0.035;
         if (!manual && document.hidden) return;
         render();
     }
@@ -293,9 +295,10 @@
         return bd < Math.PI / RING ? best : -1;
     }
     function pos(ev) { var r = canvas.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; }
-    canvas.addEventListener("pointermove", function (ev) { if (TOUCH) return; var p = pos(ev); hover = at(p[0], p[1]); canvas.style.cursor = hover >= 0 ? "pointer" : "default"; });
+    canvas.addEventListener("pointermove", function (ev) { if (TOUCH || trace) return; var p = pos(ev); hover = at(p[0], p[1]); canvas.style.cursor = hover >= 0 ? "pointer" : "default"; });
     canvas.addEventListener("pointerleave", function () { hover = -1; });
     canvas.addEventListener("click", function (ev) {
+        if (trace) return;
         var p = pos(ev), i = at(p[0], p[1]);
         if (i >= 0) select(i);
         else if (TOUCH) select((selected + 1) % SIGNS.length);
@@ -308,6 +311,7 @@
         else if (k === "Home" || k === "0") select(0);
         else if (k === "f" || k === "F") fullscreen();
         else if (k === "m" || k === "M") toggleSound();
+        else if (k === "t" || k === "T") toggleTrace();
         else if (k === "Escape" && stage && stage.classList.contains("filled")) fill(false);
     });
     // The list under the canvas: a sign's name is a button for it too.
@@ -320,6 +324,124 @@
             for (var i = 0; i < SIGNS.length; i++) if ("sign-" + SIGNS[i].id === dt.id) { select(i); if (stage) stage.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "center" }); }
         });
     })();
+
+
+    // ---- tracing: the pentagram at the quarters ---------------------------------
+    // Press t (or the button) and the nave takes a drawn line instead of a tap.
+    // Draw a pentagram, one line, five points, back to the start, and the
+    // page reads it: which point it began at and which way it went, which is
+    // the whole difference between invoking and banishing in the old ritual
+    // (toward the element's point calls it, away from it sends it off), and
+    // which quarter of the nave it was drawn in. The banishing pentagram of
+    // each quarter's element, east air, south fire, west water, north earth,
+    // keeps that quarter; all four and the ring stands still and the hum
+    // drops a fifth, for a minute. The reading is a $1-style matcher with the
+    // rotation left in, since here the rotation is the point.
+    var trace = false, stroking = false, stroke = [], strokes = [], kept = {}, keptAll = 0;
+    var traceBtn = document.getElementById("temple-trace"), traceSay = document.getElementById("temple-trace-say");
+    var POINT = ["spirit", "water", "fire", "earth", "air"];                       // top, then clockwise
+    function pent(s, d) {                                                        // the ideal stroke: start s, direction d
+        var pts = [], order = [0, 2, 4, 6, 8, 10].map(function (k) { return ((s + k * d) % 5 + 5) % 5; });
+        for (var i = 0; i < 5; i++) {
+            var a0 = -Math.PI / 2 + order[i] * Math.PI * 2 / 5, a1 = -Math.PI / 2 + order[i + 1] * Math.PI * 2 / 5;
+            for (var k = 0; k < 16; k++) { var u = k / 16; pts.push([Math.cos(a0) * (1 - u) + Math.cos(a1) * u, Math.sin(a0) * (1 - u) + Math.sin(a1) * u]); }
+        }
+        pts.push([Math.cos(-Math.PI / 2 + order[5] * Math.PI * 2 / 5), Math.sin(-Math.PI / 2 + order[5] * Math.PI * 2 / 5)]);
+        return norm(pts);
+    }
+    function pathLen(p) { var L = 0; for (var i = 1; i < p.length; i++) L += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); return L; }
+    function norm(pts) {
+        // resample to 64 points, scale to a unit box, move the centroid to the origin; no rotation
+        var N = 64, I = pathLen(pts) / (N - 1), D = 0, out = [pts[0].slice()], src = pts.map(function (p) { return p.slice(); });
+        for (var i = 1; i < src.length; i++) {
+            var d = Math.hypot(src[i][0] - src[i - 1][0], src[i][1] - src[i - 1][1]);
+            if (D + d >= I && d > 0) { var q = [src[i - 1][0] + (I - D) / d * (src[i][0] - src[i - 1][0]), src[i - 1][1] + (I - D) / d * (src[i][1] - src[i - 1][1])]; out.push(q); src.splice(i, 0, q); D = 0; }
+            else D += d;
+        }
+        while (out.length < N) out.push(out[out.length - 1].slice());
+        var minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+        out.forEach(function (p) { minx = Math.min(minx, p[0]); miny = Math.min(miny, p[1]); maxx = Math.max(maxx, p[0]); maxy = Math.max(maxy, p[1]); });
+        var sz = Math.max(maxx - minx, maxy - miny) || 1, cx = 0, cy = 0;
+        out = out.map(function (p) { return [(p[0] - minx) / sz, (p[1] - miny) / sz]; });
+        out.forEach(function (p) { cx += p[0] / N; cy += p[1] / N; });
+        return out.map(function (p) { return [p[0] - cx, p[1] - cy]; });
+    }
+    var TEMPLATES = [];
+    for (var ts = 0; ts < 5; ts++) for (var td = -1; td <= 1; td += 2) TEMPLATES.push({ s: ts, d: td, pts: pent(ts, td) });
+    function read(raw) {
+        if (raw.length < 12 || pathLen(raw) < 60) return null;
+        var p = norm(raw), best = null;
+        TEMPLATES.forEach(function (t) {
+            var d = 0; for (var i = 0; i < p.length; i++) d += Math.hypot(p[i][0] - t.pts[i][0], p[i][1] - t.pts[i][1]);
+            d /= p.length; var score = 1 - d / 0.5;
+            if (!best || score > best.score) best = { s: t.s, d: t.d, score: score };
+        });
+        return best && best.score > 0.62 ? best : null;
+    }
+    function nameOf(s, d) {
+        var from = POINT[s], to = POINT[((s + 2 * d) % 5 + 5) % 5];
+        if (from === "spirit") return { kind: "invoking", el: to, text: "the invoking pentagram of " + to };
+        if (to === "spirit") return { kind: "banishing", el: from, text: "the banishing pentagram of " + from };
+        if ((from === "air" && to === "water") || (from === "water" && to === "air")) return { kind: "banishing", el: from, also: to, text: "the banishing pentagram of " + from, note: " it is also the invoking pentagram of " + to + "; the old order drew the two the same way." };
+        if (from === "fire" && to === "air") return { kind: "invoking", el: "spirit", text: "the invoking pentagram of spirit, active" };
+        if (from === "air" && to === "fire") return { kind: "banishing", el: "spirit", text: "the banishing pentagram of spirit, active" };
+        if (from === "earth" && to === "water") return { kind: "invoking", el: "spirit", text: "the invoking pentagram of spirit, passive" };
+        return { kind: "banishing", el: "spirit", text: "the banishing pentagram of spirit, passive" };
+    }
+    var QUARTER = { east: "air", south: "fire", west: "water", north: "earth" };
+    function quarterOf(raw) {
+        var g = geometry(), cx = 0, cy = 0; raw.forEach(function (p) { cx += p[0] / raw.length; cy += p[1] / raw.length; });
+        var a = Math.atan2(cy - g.cy, cx - g.cx);
+        return Math.abs(a) <= Math.PI / 4 ? "east" : a > Math.PI / 4 && a < 3 * Math.PI / 4 ? "south" : a <= -Math.PI / 4 && a > -3 * Math.PI / 4 ? "north" : "west";
+    }
+    function sayTrace(t) { if (traceSay) traceSay.textContent = t; }
+    function finish() {
+        stroking = false;
+        if (stroke.length < 2) { stroke = []; return; }
+        var r = read(stroke), q = quarterOf(stroke), col = INK;
+        if (!r) { sayTrace("not a pentagram. five points, one line, back to where you began."); col = DIM; }
+        else {
+            var n = nameOf(r.s, r.d), want = QUARTER[q];
+            if (n.kind === "banishing" && (n.el === want || n.also === want)) {
+                kept[q] = n.text; var all = Object.keys(QUARTER).every(function (k) { return kept[k]; });
+                sayTrace(n.text + ", drawn in the " + q + ", where " + want + " is wanted: the quarter is kept." + (n.note || "") + (all ? " all four are kept. the ring stands still and the hum drops a fifth, for a minute." : ""));
+                if (all && !keptAll) { keptAll = clock; if (audio) audio.drop(true); if (REDUCED) { /* the ring already stands */ } }
+            } else if (n.kind === "banishing") sayTrace(n.text + ", drawn in the " + q + ", where " + want + " is wanted: the wrong element for the quarter." + (n.note || "") + " " + want + " goes " + (want === "air" ? "from the air point, upper left, to the water point, upper right" : want === "fire" ? "from the fire point, lower right, up to the top" : want === "water" ? "from the water point, upper right, to the air point, upper left" : "from the earth point, lower left, up to the top") + ".");
+            else sayTrace(n.text + ", drawn in the " + q + ": the other way round, which calls rather than sends away. begin at the element's point and draw away from it.");
+            if (audio) audio.ping(r.s + 1);
+        }
+        strokes.push({ pts: stroke, col: col, age: 0 });
+        stroke = [];
+    }
+    function toggleTrace(on) {
+        trace = on == null ? !trace : on;
+        if (traceBtn) traceBtn.setAttribute("aria-pressed", trace ? "true" : "false");
+        canvas.style.touchAction = trace ? "none" : "";
+        canvas.style.cursor = trace ? "crosshair" : "";
+        if (trace) sayTrace("draw a pentagram in a quarter of the nave: east is the right side, south the bottom, west the left, north the top. one line, five points, back to the start."); else sayTrace("");
+        hover = -1;
+    }
+    if (traceBtn) traceBtn.addEventListener("click", function () { toggleTrace(); });
+    canvas.addEventListener("pointerdown", function (ev) { if (!trace) return; stroking = true; stroke = [pos(ev)]; try { canvas.setPointerCapture(ev.pointerId); } catch (e) { /* a fake pointer */ } ev.preventDefault(); });
+    canvas.addEventListener("pointermove", function (ev) { if (!trace || !stroking) return; var p = pos(ev); var l = stroke[stroke.length - 1]; if (Math.hypot(p[0] - l[0], p[1] - l[1]) > 2) stroke.push(p); ev.preventDefault(); });
+    canvas.addEventListener("pointerup", function () { if (trace && stroking) finish(); });
+    canvas.addEventListener("pointercancel", function () { if (trace && stroking) finish(); });
+    function drawTraces(g, dt) {
+        // the quarters kept, as small pentagrams at the edges; the strokes, fading
+        Object.keys(QUARTER).forEach(function (q) {
+            if (!kept[q]) return;
+            var x = q === "east" ? W - g.s * 1.2 : q === "west" ? g.s * 1.2 : W / 2, y = q === "north" ? g.s * 1.1 : q === "south" ? H - g.s * 1.1 : H / 2;
+            ctx.save(); ctx.translate(x, y); ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.7; ctx.shadowColor = INK; ctx.shadowBlur = 8;
+            ctx.beginPath(); for (var k = 0; k <= 5; k++) { var a = -Math.PI / 2 + ((k * 2) % 5) * Math.PI * 2 / 5; if (k) ctx.lineTo(Math.cos(a) * g.s * 0.5, Math.sin(a) * g.s * 0.5); else ctx.moveTo(Math.cos(a) * g.s * 0.5, Math.sin(a) * g.s * 0.5); } ctx.stroke();
+            ctx.restore();
+        });
+        ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+        if (stroke.length > 1) { ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.shadowColor = INK; ctx.shadowBlur = 10; ctx.beginPath(); stroke.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.stroke(); }
+        strokes.forEach(function (s) { s.age += dt; ctx.globalAlpha = Math.max(0, 1 - s.age / 2.5); ctx.strokeStyle = s.col; ctx.lineWidth = 2; ctx.shadowColor = s.col; ctx.shadowBlur = 8; ctx.beginPath(); s.pts.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.stroke(); });
+        strokes = strokes.filter(function (s) { return s.age < 2.5; });
+        ctx.restore();
+        if (keptAll && clock - keptAll > 60) { keptAll = 0; kept = {}; if (audio) audio.drop(false); sayTrace("the minute is up. the ring turns, the hum comes back, the quarters are open again."); }
+    }
 
     // ---- fullscreen, with the iPhone fallback ----------------------------------------
     function fill(on) {
@@ -360,13 +482,15 @@
         // The root follows the planetary hour: one note a planet, up the scale
         // in the Chaldean order, Saturn lowest, the Moon a semitone under the octave.
         var NOTE = { Saturn: 0, Jupiter: 2, Mars: 4, Sun: 5, Venus: 7, Mercury: 9, Moon: 11 };
+        var dropped = false, planetNow = "Saturn";
         function tune(planet, at) {
-            var root = base * Math.pow(2, (NOTE[planet] || 0) / 12);
+            planetNow = planet || planetNow;
+            var root = base * Math.pow(2, (NOTE[planetNow] || 0) / 12) * (dropped ? Math.pow(2, -7 / 12) : 1);
             oscs.forEach(function (x) { x.o.frequency.setTargetAtTime(root * x.m, ac.currentTime, at || 2); });
         }
         if (window.Hours) { var h0 = window.Hours.now(); if (h0) tune(h0.planet, 0.01); }
         return {
-            ac: ac, master: master, tune: tune,
+            ac: ac, master: master, tune: tune, drop: function (on) { dropped = !!on; tune(null, 3); },
             on: function () { if (ac.state === "suspended") ac.resume(); master.gain.setTargetAtTime(TOUCH ? 0.5 : 0.3, ac.currentTime, 1.5); },
             off: function () { master.gain.setTargetAtTime(0, ac.currentTime, 0.4); },
             ping: function (i) {

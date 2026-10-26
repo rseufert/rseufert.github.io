@@ -30,6 +30,7 @@
     var ghostLink = document.getElementById("backrooms-ghost");
     var depthOut = document.getElementById("backrooms-depth");
     var staticButton = document.getElementById("backrooms-static");
+    var chalkButton = document.getElementById("backrooms-chalk");
     var pauseButton = document.getElementById("backrooms-pause");
     var settings = document.getElementById("backrooms-settings");
     var lookRange = document.getElementById("backrooms-look"), walkRange = document.getElementById("backrooms-walk");
@@ -251,6 +252,7 @@
         var count = Math.min(1 + Math.floor(level / 2), 5);
         for (var i = 0; i < count; i++) spawn(10 + i * 3, 18 + i * 3);
         sawExit = false; sawThing = false; sawGhost = false; levelClock = 0; fieldAt = -1;
+        chalk = CHALK; circles = [];
         rec = []; recClock = 0;
         saved.level = level;
         if (level > saved.best) saved.best = level;
@@ -299,6 +301,19 @@
     // it stood, and you can walk through it; then it is most of a minute
     // before the trick works again. It does not know what happened either.
     var FUZZ = 4, COOL = 45, fuzz = 0, fuzzCool = 0;
+    // Chalk: C. A circle on the floor round where you stand, which it will not
+    // cross, for CHALK_TIME seconds; CHALK pieces a level. The grimoires' rule,
+    // as a cooldown: draw it before it reaches you, and stay inside.
+    var CHALK = 3, CHALK_TIME = 20, CHALK_R = 1.3, chalk = CHALK, circles = [];
+    function useChalk() {
+        if (mode !== "play") return;
+        if (chalk <= 0) { say("no chalk left on this level.", 3); return; }
+        circles.push({ x: cam.x, z: cam.z, r: CHALK_R, left: CHALK_TIME });
+        chalk--;
+        say("a circle, in chalk. it will not cross it. twenty seconds; stay inside.", 4);
+        if (audio) audio.chalk();
+    }
+    function inCircle(x, z) { for (var i = 0; i < circles.length; i++) if (Math.hypot(x - circles[i].x, z - circles[i].z) < circles[i].r) return true; return false; }
     function useStatic() {
         if (mode !== "play") return;
         if (fuzz > 0) return;
@@ -343,7 +358,11 @@
                 t.tx = bx + 0.5; t.tz = bz + 0.5;
             }
             var mx = t.tx - t.x, mz = t.tz - t.z, m = Math.hypot(mx, mz);
-            if (m > 0) { var step = Math.min(m, speed * dt); t.x += mx / m * step; t.z += mz / m * step; }
+            if (m > 0) {
+                var step = Math.min(m, speed * dt), nx = t.x + mx / m * step, nz = t.z + mz / m * step;
+                if (inCircle(nx, nz) && !inCircle(t.x, t.z)) { t.tx = t.x; t.tz = t.z; return; }   // it stands at the chalk
+                t.x = nx; t.z = nz;
+            }
         });
     }
     // Root: `. A session above the floor: every recording of it walking at
@@ -754,6 +773,14 @@
     // The figures: tall, thin, stooped under the ceiling, drawn as a few
     // lines facing you, with static where a face would be.
     function figures(horizon, bright) {
+        // the chalk, on the floor, fading as it wears off
+        circles.forEach(function (c) {
+            var ring = [], n = 36;
+            for (var k = 0; k < n; k++) { var a = k / n * Math.PI * 2; ring.push([c.x + Math.cos(a) * c.r, 0.02, c.z + Math.sin(a) * c.r]); }
+            ctx.save(); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.globalAlpha = Math.min(1, c.left / 4) * 0.9; ctx.shadowColor = "#ffffff"; ctx.shadowBlur = glow ? 6 : 0;
+            poly(ring, horizon, true);
+            ctx.restore();
+        });
         things.forEach(function (t) {
             var d = Math.hypot(t.x - cam.x, t.z - cam.z);
             if (d > fogRadius() || !visible(t.x, t.z)) return;
@@ -840,6 +867,7 @@
         ctx.globalAlpha = 0.85;
         ctx.textAlign = "left";
         ctx.fillText("LEVEL " + L.level, 14, 12);
+        if (mode === "play") { ctx.globalAlpha = chalk ? 0.85 : 0.4; ctx.fillText("chalk \u00b7 " + chalk + (TOUCH || !chalk ? "" : " \u00b7 C"), 14, 28); ctx.globalAlpha = 0.85; }
         ctx.textAlign = "right";
         var s = Math.floor(levelClock), m = Math.floor(s / 60);
         ctx.fillText((m < 10 ? "0" : "") + m + ":" + (s % 60 < 10 ? "0" : "") + s % 60, W - 14, 12);
@@ -922,6 +950,7 @@
             record(dt);
             walk(dt);
             if (fuzz > 0) fuzz -= dt;
+            if (circles.length) { circles.forEach(function (c) { c.left -= dt; }); circles = circles.filter(function (c) { return c.left > 0; }); }
             if (fuzzCool > 0) fuzzCool -= dt;
             // The lights are old.
             if (!REDUCED) {
@@ -951,6 +980,7 @@
         if (mode === "root" && !root.view) rootMap();
         else if (mode !== "title") { gather(); render(); }
         if (staticButton) staticButton.hidden = !(TOUCH && mode === "play");
+        if (chalkButton) chalkButton.hidden = !(TOUCH && mode === "play");
         // A pause button where there is no esc to press, or no lock to let go of.
         if (pauseButton) pauseButton.hidden = !(mode === "play" && (TOUCH || !lockable));
         var took = performance.now() - t0;
@@ -962,6 +992,7 @@
         if (mode === "title" || mode === "pause") return;
         if (e.code === "Escape") { if (mode === "play" && !locked) pause("paused. click to go on."); return; }
         if (e.code === "KeyF" && mode === "play") { useStatic(); e.preventDefault(); return; }
+        if (e.code === "KeyC" && mode === "play") { useChalk(); e.preventDefault(); return; }
         if (e.code === "Backquote") { su(); e.preventDefault(); return; }
         if (e.code === "Tab" && mode === "root") { rootTab(); e.preventDefault(); return; }
         if (mode === "root") return;
@@ -1043,6 +1074,7 @@
     }
     go.addEventListener("click", begin);
     if (staticButton) staticButton.addEventListener("click", useStatic);
+    if (chalkButton) chalkButton.addEventListener("click", useChalk);
     if (pauseButton) pauseButton.addEventListener("click", function () { if (mode === "play") pause(TOUCH ? "paused. tap to go on." : "paused. click to go on."); });
     if (rootButton) rootButton.addEventListener("click", function () { if (mode === "play" || mode === "root") su(); else say("", 0); });
     resetButton.addEventListener("click", function () {
@@ -1164,6 +1196,7 @@
             },
             step: function (run) { burst(0.09, run ? 0.25 : 0.16, PHONE ? 1200 : 320); },
             fuzz: function () { burst(0.7, 0.45, 1500, "highpass"); burst(FUZZ, 0.08, 3000, "highpass"); },
+            chalk: function () { burst(0.35, 0.25, 2600, "bandpass"); },
             tick: function () { burst(0.04, 0.12, 4000, "bandpass"); },
             found: function () {
                 burst(1.2, 0.7, 1200);

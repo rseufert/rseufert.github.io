@@ -40,6 +40,8 @@
 .temple-page .buttons { margin: 0; }
 .temple-page .hour { font: 13px var(--mono); color: var(--faint); margin-left: 10px; }
 .temple-page .hour:empty { display: none; }
+.temple-page .trace-say { color: var(--soft); margin: -8px 0 16px; }
+.temple-page .trace-say:empty { display: none; }
 
 /* What the chosen sign means, beside the nave. */
 .temple-page .reading {

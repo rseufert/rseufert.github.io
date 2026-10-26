@@ -30,11 +30,12 @@ thirty seconds, walking the same halls for whoever comes next. Find the way down
   </div>
   <button type="button" class="unfill" id="backrooms-unfill" hidden aria-label="leave fullscreen">&times;</button>
   <button type="button" class="static" id="backrooms-static" hidden>static</button>
+  <button type="button" class="chalk" id="backrooms-chalk" hidden>chalk</button>
   <button type="button" class="pause" id="backrooms-pause" hidden>pause</button>
 </div>
 
 <div class="bar">
-  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>f</kbd> is static &middot; <kbd>`</kbd> is root &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks, right thumb looks, and the corner button pauses</p>
+  <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>f</kbd> is static &middot; <kbd>c</kbd> is chalk &middot; <kbd>`</kbd> is root &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks, right thumb looks, and the corner button pauses</p>
   <p class="buttons"><button type="button" id="backrooms-sound">sound</button> <button type="button" id="backrooms-full">fullscreen</button> <button type="button" id="backrooms-root">root</button> <button type="button" id="backrooms-reset">start over</button> <a class="button" id="backrooms-ghost" href="https://github.com/rseufert/rseufert.github.io/issues/new" target="_blank" rel="noopener" hidden>leave your ghost</a> <output id="backrooms-depth" class="depth"></output></p>
 </div>
 
@@ -55,7 +56,10 @@ reads the open ones into the backrooms for everyone
 (<a href="https://github.com/rseufert/rseufert.github.io/blob/master/tools/ghosts.py">tools/ghosts.py</a>),
 and closing the issue lays it to rest. They cannot see you. It cannot see them.</p>
 
-<p>Two more things, for when it stands in the one corridor you need. <kbd>f</kbd> is <em>static</em>: for four
+<p>Three more things, for when it stands in the one corridor you need. <kbd>c</kbd> is <em>chalk</em>: a circle on
+the floor round where you stand, which it will not cross, for twenty seconds, three pieces a level; the
+grimoires' rule, as a cooldown, and it only works if you draw it before it reaches you and stay inside.
+<kbd>f</kbd> is <em>static</em>: for four
 seconds every one of them is noise, standing where it stood, and you can walk straight through; then it is
 most of a minute before the trick works again, and it does not know what happened either. <kbd>`</kbd> is
 <em>root</em>: a session above the floor, the whole level from overhead with every recording of it walking at

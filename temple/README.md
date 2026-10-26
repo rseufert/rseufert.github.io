@@ -105,6 +105,23 @@ touch screen the root is an octave up and the filter open, for a phone's speaker
 iPhone needs. F is the whole screen, with the pinned-stage fallback where
 there is no Fullscreen API.
 
+## Tracing
+
+T (or the trace button) turns the nave from taps to a drawn line. Draw a
+pentagram, one line, five points, back to the start, and the page reads it
+with a $1-style matcher (`norm`: resample to 64 points, scale to a unit box,
+centre; no rotation step, since here the rotation is the point) against the
+ten ideal strokes (`pent(s, d)`: five starting points, two directions). Which
+point it began at and which way it went is the whole difference in the old
+pentagram ritual: toward an element's point invokes it, away banishes it;
+top is spirit, then clockwise water, fire, earth, air. The quarter is the
+stroke's centroid relative to the centre: right east, bottom south, left
+west, top north. The banishing pentagram of the quarter's element (east air,
+south fire, west water, north earth) keeps the quarter, drawn small at that
+edge; the banishing pentagram of air is also the invoking pentagram of
+water and the page says so. All four kept and the ring stands still and
+the drone drops a fifth (`audio.drop`) for a minute. Nothing is stored.
+
 ## The library
 
 Eight shelves, a hundred-odd books, as plain HTML: the gnostics; the

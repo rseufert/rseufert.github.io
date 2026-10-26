@@ -137,6 +137,9 @@ body.filled { overflow: hidden; }
     cursor: pointer;
 }
 .backrooms-page .static[hidden] { display: none; }
+.backrooms-page .chalk { position: absolute; right: 14px; bottom: 64px; z-index: 2; font: 13px var(--mono); color: #fff; background: rgba(0, 0, 0, 0.7); border: 1px solid #fff; padding: 12px 22px; cursor: pointer; }
+.backrooms-page .chalk[hidden] { display: none; }
+.backrooms-page .stage.lefty .chalk { right: auto; left: 14px; }
 .backrooms-page .stage.lefty .static { right: auto; left: 14px; }
 /* Pause, in the stage: for phones, and for desktops that refuse the pointer lock. */
 .backrooms-page .pause {
