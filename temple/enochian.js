@@ -7,14 +7,6 @@
    letter in the table for its name. Nothing stored or sent. One script. */
 (function () {
     "use strict";
-    var canvas = document.getElementById("enochian-stage");
-    if (!canvas) return;
-    var ctx = canvas.getContext("2d"), stage = canvas.parentNode;
-    var input = document.getElementById("enochian-text"), tableOut = document.getElementById("enochian-table"), nameOut = document.getElementById("enochian-name");
-    var dirBtn = document.getElementById("enochian-dir"), saveLink = document.getElementById("enochian-save");
-    var MONO = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
-    var INK = "#7cf5c8", DIM = "#2a5a4a", FAINT = "#163a2e", PAPER = "#020705", DPR = Math.min(2, window.devicePixelRatio || 1);
-
     // The letters in Dee's order, each a few strokes in a box from -1 to 1, y down.
     function arcPts(cx, cy, r, a0, a1) { var p = [], n = 10; for (var i = 0; i <= n; i++) { var a = (a0 + (a1 - a0) * i / n) * Math.PI / 180; p.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } return p; }
     var LETTERS = [
@@ -40,6 +32,15 @@
         { name: "Fam", latin: "S", s: [[[-0.7, -0.9], [0.7, -0.9], [0.0, 0.9]], [[0.7, -0.9], [0.9, -0.5]]] },
         { name: "Gisg", latin: "T", s: [[[-0.9, 0.0], [-0.5, -0.5], [-0.1, 0.0], [0.3, 0.5], [0.9, 0.0]], [[0.9, 0.0], [0.9, 0.5]]] }
     ];
+    window.EnochianLetters = LETTERS;
+    var canvas = document.getElementById("enochian-stage");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d"), stage = canvas.parentNode;
+    var input = document.getElementById("enochian-text"), tableOut = document.getElementById("enochian-table"), nameOut = document.getElementById("enochian-name");
+    var dirBtn = document.getElementById("enochian-dir"), saveLink = document.getElementById("enochian-save");
+    var MONO = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
+    var INK = "#7cf5c8", DIM = "#2a5a4a", FAINT = "#163a2e", PAPER = "#020705", DPR = Math.min(2, window.devicePixelRatio || 1);
+
     // Latin to the letter: Dee's values, with the usual doublings; letters without one are skipped.
     var BY = {};
     LETTERS.forEach(function (l, i) { BY[l.latin] = i; });

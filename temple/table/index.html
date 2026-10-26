@@ -1,0 +1,64 @@
+---
+layout: default
+css: /temple/temple.css
+title: The Great Table
+description: "The Great Table of the Watchtowers, the four tablets of twelve by thirteen letters Dee and Kelley received in 1584, rebuilt cell by cell from the angel names Dee drew out of them and checked so every name reads back; walk it with the arrow keys and each cell says whose letter it is."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read table">
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>John Dee and Edward Kelley &middot; Cracow, 1584; reformed 1587</span></p>
+<h1>The Great Table</h1>
+<p class="lede">Four tablets of twelve letters by thirteen, one for each quarter of the world, with a black cross between
+them: the table the angels gave Dee and Kelley at Cracow in June 1584, a square at a time, and sent back
+reformed three years later. Out of it Dee drew the names of everything that governs the elements: a King in
+the centre of each tablet, six Seniors along the arms of its great cross, and in each of its four angles a
+Calvary cross with two names on it, four kerubic letters above the arm and sixteen servient angels below.
+He wrote the names down in a book. The letters here are rebuilt from that book, every one, and checked so
+that every name reads back, which is the only way to copy the table without copying anyone's drawing of it.
+Walk it with the arrow keys, or tap a cell, and the page says whose letter it is.</p>
+
+<p class="views" id="table-views"></p>
+<p class="views"><button type="button" id="table-glyphs" aria-pressed="false">in Dee's letters</button></p>
+<div class="stage" id="table-room">
+  <canvas id="table-stage" aria-label="the Great Table of the Watchtowers, four tablets of letters round a black cross"></canvas>
+</div>
+<p class="cell" id="table-cell">loading the table.</p>
+
+<p>How it is read. The middle row of each tablet, left to right, is three Names of God of three, four and
+five letters (ORO IBAH AOZPI for the East); the two centre columns and that row make the great cross, and
+round its centre, read in a whorl, is the King (BATAIVAH); the six Seniors are read outward from the
+centre along the arms, seven letters each. The cross divides the tablet into four angles of five letters by
+six, one for each element within the quarter. In each angle a smaller cross, the Calvary cross, carries a
+six-letter name down its upright and a five-letter name across its arm; the four letters above the arm,
+left of the upright and right of it, are the kerubic angels, which Dee turned round to make four names
+and headed with a letter from the black cross; the sixteen letters below the arm, four rows of four, are
+the servient angels, four to a row, each of which he also wrote with the upright's letter in its middle.
+The black cross between the tablets carries the Tablet of Union, EXARP, HCOMA, NANTA, BITOM, a line for
+each element. The quarters here are Dee's own: East, South, West, North, in the order his book gives them.
+The later orders kept his East and West as Air and Water but set his South tablet (MOR DIAL HCTGA) in the
+north and called it Earth, and his North tablet (OIP TEAA PDOCE) in the south and called it Fire; the page
+names each tablet by Dee's quarter and gives that later element beside it, since the element is how most
+people have met them.</p>
+
+<p>How it was rebuilt. Dee's <em>Tabula bonorum angelorum invocationes</em>, the book of the good angels'
+names in Sloane 3191, lists for each tablet the King and the Seniors, and for each angle the two names of
+the Calvary cross, the kerubic name and the four servients, with alternate spellings that include the
+cross's letter. Lay the Names of God and the Seniors along the great cross, the Calvary names down and
+across each angle, the kerubs on the row above the arm and the servients on the four rows below, and
+every cell of the twelve by thirteen is filled exactly once, with no two names disagreeing about any
+letter; the eight letters round each centre then spell the King, which is the check. Two readings Dee
+himself marked as doubtful are taken as he wrote them first: OBGOTA and AABCO on the Water tablet's first
+angle, and its servient TOCA. The arrangement is the reformed table of 1587, which is the one the later
+orders used; the 1584 table differs in a few letters.</p>
+
+<p class="colophon">John Dee, <em>Tabula bonorum angelorum invocationes</em>, Sloane MS 3191, 1587, transcribed at the
+<a href="https://www.esotericarchives.com/dee/invocat.htm">Esoteric Archives</a>; the sessions in which the table came
+are in Casaubon's <em>A True &amp; Faithful Relation</em>, 1659, on the
+<a href="https://archive.org/details/truefaithfulrela00deej">Internet Archive</a>. Public domain. The grid is
+<a href="/temple/table.json">a small JSON file</a>, rebuilt from the names as described; the letters, when the button is
+pressed, are <a href="/temple/enochian/">the alphabet's</a>. The page is this site's own. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/table.js">script</a>.</p>
+</div>
+<script src="/temple/enochian.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/table.js?v={{ site.time | date: '%s' }}"></script>

@@ -1,0 +1,347 @@
+{
+ "source": "John Dee, Tabula bonorum angelorum invocationes (Sloane MS 3191), as reformed by Raphael 20 April 1587; the names as the Esoteric Archives transcribe them; the grid rebuilt from the names by rickseufert.com. Quarters are Dee's; elements are the later orders' attribution of the same tablets.",
+ "union": [
+  "EXARP",
+  "HCOMA",
+  "NANTA",
+  "BITOM"
+ ],
+ "tablets": [
+  {
+   "quarter": "East",
+   "element": "Air",
+   "latin": "ORIENS",
+   "king": "BATAIVA",
+   "god": [
+    "ORO",
+    "IBAH",
+    "AOZPI"
+   ],
+   "seniors": [
+    "Habioro",
+    "Aaoxaif",
+    "Htmorda",
+    "Ahaozpi",
+    "Hipotga",
+    "Autotar"
+   ],
+   "grid": [
+    "RZILAFAVTLPA",
+    "ARDZAIDPALAM",
+    "CZONSAROYAUB",
+    "TOITTXOPACOC",
+    "SIGASOMRBZNH",
+    "FMONDATDIARI",
+    "OROIBAHAOZPI",
+    "CNABRUIXGAZD",
+    "OIIITTPALOAI",
+    "ABAMOOOACVCA",
+    "NAOCOTTNPRAT",
+    "OCANMAGOTROI",
+    "SHIALRAPMZOX"
+   ],
+   "angles": [
+    {
+     "six": "IDOIGO",
+     "five": "ARDZA",
+     "kerub": "Rzla",
+     "servients": [
+      "Czns",
+      "Tott",
+      "Sias",
+      "Fmnd"
+     ],
+     "union": "E"
+    },
+    {
+     "six": "LLACZA",
+     "five": "PALAM",
+     "kerub": "Vtpa",
+     "servients": [
+      "Oyub",
+      "Paoc",
+      "Rbnh",
+      "Diri"
+     ],
+     "union": "E"
+    },
+    {
+     "six": "AIAOAI",
+     "five": "OIIIT",
+     "kerub": "Cnbr",
+     "servients": [
+      "Abmo",
+      "Naco",
+      "Ocnm",
+      "Shal"
+     ],
+     "union": "H"
+    },
+    {
+     "six": "AOVRRZ",
+     "five": "ALOAI",
+     "kerub": "Xgzd",
+     "servients": [
+      "Acca",
+      "Npat",
+      "Otoi",
+      "Pmox"
+     ],
+     "union": "H"
+    }
+   ]
+  },
+  {
+   "quarter": "South",
+   "element": "Earth",
+   "latin": "MERIDIES",
+   "king": "ICZHHCA",
+   "god": [
+    "MOR",
+    "DIAL",
+    "HCTGA"
+   ],
+   "seniors": [
+    "Laidrom",
+    "Aczinor",
+    "Lzinopo",
+    "Alhctga",
+    "Lhiansa",
+    "Acmlicu"
+   ],
+   "grid": [
+    "BOAZAROPHARA",
+    "VNNAXOPSONDN",
+    "AIGRANOOMAGG",
+    "ORPMNINGBEAL",
+    "RSONIZIRLEMU",
+    "IZINRCZIAMHL",
+    "MORDIALHCTGA",
+    "ROCANCHIASOM",
+    "ARBIZMILLPIZ",
+    "OPANALAMSMAL",
+    "DOLOPINIANBA",
+    "RXPAOCSIZIXP",
+    "AXTIRUASTRIM"
+   ],
+   "angles": [
+    {
+     "six": "ANGPOI",
+     "five": "VNNAX",
+     "kerub": "Boza",
+     "servients": [
+      "Aira",
+      "Ormn",
+      "Rsni",
+      "Iznr"
+     ],
+     "union": "E"
+    },
+    {
+     "six": "ANAEEM",
+     "five": "SONDN",
+     "kerub": "Phra",
+     "servients": [
+      "Omgg",
+      "Gbal",
+      "Rlmu",
+      "Iahl"
+     ],
+     "union": "E"
+    },
+    {
+     "six": "CBALPT",
+     "five": "ARBIZ",
+     "kerub": "Roan",
+     "servients": [
+      "Opna",
+      "Doop",
+      "Rxao",
+      "Axir"
+     ],
+     "union": "H"
+    },
+    {
+     "six": "SPMNIR",
+     "five": "LLPIZ",
+     "kerub": "Iaom",
+     "servients": [
+      "Msal",
+      "Iaba",
+      "Izxp",
+      "Stim"
+     ],
+     "union": "H"
+    }
+   ]
+  },
+  {
+   "quarter": "West",
+   "element": "Water",
+   "latin": "OCCIDENS",
+   "king": "RAAGIOS",
+   "god": [
+    "MPH",
+    "ARSL",
+    "GAIOL"
+   ],
+   "seniors": [
+    "Lsrahpm",
+    "Saiinou",
+    "Laoaxrp",
+    "Slgaiol",
+    "Ligdisa",
+    "Soaixnt"
+   ],
+   "grid": [
+    "TAOADUPTDNIM",
+    "AABCOOROMEBB",
+    "TOGCANXMALGM",
+    "NHODDIALEAOC",
+    "PATAXIOVSPSN",
+    "SAAIXAARUROI",
+    "MPHARSLGAIOL",
+    "MAMGLOINLIRX",
+    "OLAADAGATAPA",
+    "PALCOIDXPACN",
+    "NDAZNXIVAASA",
+    "IIDPONSDASPI",
+    "XRINHTARNDIL"
+   ],
+   "angles": [
+    {
+     "six": "OBGOTA",
+     "five": "AABCO",
+     "kerub": "Taad",
+     "servients": [
+      "Toca",
+      "Nhdd",
+      "Paax",
+      "Saix"
+     ],
+     "union": "A"
+    },
+    {
+     "six": "NELAPR",
+     "five": "OMEBB",
+     "kerub": "Tdim",
+     "servients": [
+      "Magm",
+      "Leoc",
+      "Vssn",
+      "Ruoi"
+     ],
+     "union": "A"
+    },
+    {
+     "six": "MALADI",
+     "five": "OLAAD",
+     "kerub": "Magl",
+     "servients": [
+      "Paco",
+      "Ndzn",
+      "Iipo",
+      "Xrnh"
+     ],
+     "union": "P"
+    },
+    {
+     "six": "IAAASD",
+     "five": "ATAPA",
+     "kerub": "Nlrx",
+     "servients": [
+      "Xpcn",
+      "Vasa",
+      "Dapi",
+      "Rnil"
+     ],
+     "union": "P"
+    }
+   ]
+  },
+  {
+   "quarter": "North",
+   "element": "Fire",
+   "latin": "SEPTENT",
+   "king": "EDLPRNA",
+   "god": [
+    "OIP",
+    "TEAA",
+    "PDOCE"
+   ],
+   "seniors": [
+    "AAetpio",
+    "Adoeoet",
+    "Alndood",
+    "Aapdoce",
+    "Arinnap",
+    "Anodoin"
+   ],
+   "grid": [
+    "DONPATDANVAA",
+    "OLOAGEOOBAVA",
+    "OPAMNOOGMDNM",
+    "APLSTEDECAOP",
+    "SCMIOONAMLOX",
+    "VARSGDLBRIAP",
+    "OIPTEAAPDOCE",
+    "PSVACNRZIRZA",
+    "SIODAOINRZFM",
+    "DALTTDNADIRE",
+    "DIXOMONSIOSP",
+    "OODPZIAPANLI",
+    "RGOANNPACRAR"
+   ],
+   "angles": [
+    {
+     "six": "NOALMR",
+     "five": "OLOAG",
+     "kerub": "Dopa",
+     "servients": [
+      "Opmn",
+      "Apst",
+      "Scio",
+      "Vasg"
+     ],
+     "union": "A"
+    },
+    {
+     "six": "VADALI",
+     "five": "OBAVA",
+     "kerub": "Anaa",
+     "servients": [
+      "Gmnm",
+      "Ecop",
+      "Amox",
+      "Brap"
+     ],
+     "union": "A"
+    },
+    {
+     "six": "VOLXDO",
+     "five": "SIODA",
+     "kerub": "Psac",
+     "servients": [
+      "Datt",
+      "Diom",
+      "Oopz",
+      "Rgan"
+     ],
+     "union": "P"
+    },
+    {
+     "six": "RZIONR",
+     "five": "NRZFM",
+     "kerub": "Ziza",
+     "servients": [
+      "Adre",
+      "Sisp",
+      "Pali",
+      "Acar"
+     ],
+     "union": "P"
+    }
+   ]
+  }
+ ]
+}

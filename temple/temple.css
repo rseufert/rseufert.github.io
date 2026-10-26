@@ -198,6 +198,15 @@ body.filled { overflow: hidden; }
 .temple-page.enochian .alphabet button:hover { border-color: var(--accent); color: var(--accent); }
 .temple-page.enochian .alphabet canvas { display: block; }
 
+/* The Great Table (temple/table/): a wide stage, the tablet buttons, the reading under it. */
+.temple-page.table .views { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.temple-page.table .views button { font: 13px var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 6px 12px; cursor: pointer; }
+.temple-page.table .views button:hover, .temple-page.table .views button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.temple-page.table .stage { aspect-ratio: 25 / 27; max-height: 86vh; margin-top: 8px; cursor: crosshair; touch-action: manipulation; }
+.temple-page.table .stage.one { aspect-ratio: 12 / 13; }
+.temple-page.table .cell { font: 13px/1.6 var(--mono); color: var(--soft); min-height: 4.8em; margin: 10px 0 20px; }
+.temple-page.table .cell b { color: var(--ink); font-weight: normal; }
+
 /* The librarian reading aloud: the paragraph being read is marked. */
 .temple-page.read .text .aloud { outline: 1px dashed var(--accent); outline-offset: 8px; }
 .temple-page.read .bar { margin: 0 0 10px; }

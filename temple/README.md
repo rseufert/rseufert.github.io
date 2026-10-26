@@ -11,6 +11,7 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `temple.png`, `share.jpg` | the home tile and the share image, captured from the canvas |
 | `texts/` | the library's Project Gutenberg texts, kept here whole (header, text, licence), one `.txt` a book, and `index.json`, the manifest |
 | `read/index.html`, `read.js` | the reading room: a text set as pages, with the place remembered |
+| `table/index.html`, `table.js`, `table.json` | the Great Table of the Watchtowers, rebuilt cell by cell from Dee's book of the angels' names, walkable, with each cell naming whose it is |
 | `enochian/index.html`, `enochian.js` | the angelic alphabet: Dee's twenty-one letters redrawn from his hand, a keyboard for them, right to left |
 | `talisman/index.html`, `talisman.js` | the talisman press: Agrippa's seven planetary squares with the sigils of their intelligences and spirits traced, and a name traced by his Latin numeration |
 | `sigil/index.html`, `sigil.js` | the sigil press: a wish reduced and bound into one sign after Spare, charged by holding, burned when charged, nothing kept |
@@ -30,10 +31,28 @@ The nineteen Keys are a hand-made text on the shelf, `texts/keys.txt`:
 Casaubon's English of 1659 and the Equinox's spelled-out angelic of 1912,
 taken from the Internet Archive's copy of Liber Chanokh with the ritual
 matter and the modern notes cut, and registered through `HAND` in
-`tools/shelf.py`. The Great Table is not here yet; Dee's book of the
-angels' names (Tabula bonorum angelorum, at the Esoteric Archives) gives
-every letter of it by name, and rebuilding the grid from them is the next
-piece.
+`tools/shelf.py`. The Great Table is `table/`, below.
+
+## The Great Table
+
+`table/` draws the four Watchtowers of 1584/1587 round the black cross and
+lets you walk them with the arrow keys or tap a cell; `table.json` holds
+the grids, rebuilt by a script in the session from Dee's *Tabula bonorum
+angelorum invocationes* (Sloane 3191, as the Esoteric Archives transcribe
+it): the three Names of God along the middle row, read off the two
+horizontal Seniors; the four vertical Seniors up and down the two centre
+columns; in each of the four angles the six-letter Calvary name down the
+third column, the five-letter name across the second row, the kerubic
+letters on the first row either side of the upright, and the sixteen
+servients on rows three to six. Every cell is filled exactly once with no
+two names disagreeing, and the eight cells round each centre spell the
+King, which is the check; the alternate spellings Dee gives with the
+cross's letter inserted agree too, bar his own V/U and one West reading he
+marked doubtful (OBGOTA/AABCO, TOCA), taken as first written. Quarters
+are Dee's; the element beside each is the later orders' attribution (they
+swapped his South and North). `whose(t, r, c)` names every name a cell
+belongs to; "in Dee's letters" draws the cells with the alphabet's strokes
+(`window.EnochianLetters`, exported by `enochian.js`).
 
 ## The talisman press
 
