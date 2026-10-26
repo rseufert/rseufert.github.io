@@ -130,6 +130,64 @@
             (stage && stage.v > 18 ? "That is high. The heron is standing on something." : stage && stage.v < 4 ? "That is low, by the gauge; the dolphin is managing." : "Normal, by the river's standards. Nothing is normal.") + "</p><p class=\"small\">USGS 14211720, live, which is more than the rest of this page can say.</p>");
     }).catch(function () { html("paper-weather", "<p class=\"small\">The gauge is out of reach just now. The river is still there; the heron confirms.</p>"); });
 
+    var GEO = null;
+    // ---- geomancy: the day's shield chart, from the seed -------------------------------
+    // Sixteen figures of four lines, each line one point or two. Four mothers
+    // are cast; the daughters are the mothers read across; nieces, witnesses
+    // and the judge are made by adding pairs (like lines give two points,
+    // unlike give one), so the judge is always an even figure. Read by the
+    // old rules, Agrippa's and Heydon's: the judge for the matter, the
+    // witnesses for the road to it, the first mother for the asker.
+    (function () {
+        var FIG = {
+            "1111": ["Via", "the road", "Moon", "change, a journey, things passing; good for travel and for anything that must move, bad for anything that should stay"],
+            "2222": ["Populus", "the people", "Moon", "a crowd; good or bad by its company, since it only reflects what stands next to it"],
+            "2211": ["Fortuna Major", "the greater fortune", "Sun", "success from within, slow and lasting; the best of the figures, especially at the end"],
+            "1122": ["Fortuna Minor", "the lesser fortune", "Sun", "success from outside and quickly, which does not keep; good for haste"],
+            "2121": ["Acquisitio", "gain", "Jupiter", "something comes in; good for nearly everything, bad for being rid of what you want rid of"],
+            "1212": ["Amissio", "loss", "Venus", "something goes out; bad for money, good for love and for shedding"],
+            "1222": ["Laetitia", "joy", "Jupiter", "a head lifted, the tower, good news; good, and quick"],
+            "2221": ["Tristitia", "sorrow", "Saturn", "a head bowed, the stake driven down; bad, except for building and for anything that should stay put"],
+            "1121": ["Puer", "the boy", "Mars", "the sword; rash and hot, good in war and in love and nowhere else"],
+            "1211": ["Puella", "the girl", "Venus", "pleasant and inconstant; good for love and company, light for anything that needs holding"],
+            "2212": ["Albus", "the white", "Mercury", "peace, wisdom, a quiet profit; good, but weak for anything that needs force"],
+            "2122": ["Rubeus", "the red", "Mars", "passion, a fever, a vice; bad in nearly everything, and the old geomancers tore up a chart that began with it"],
+            "2112": ["Conjunctio", "the joining", "Mercury", "a meeting, a recovery, the crossroads; good for finding and for bringing together"],
+            "1221": ["Carcer", "the prison", "Saturn", "binding and delay, a closed ring; bad for freedom, good for keeping and for keeping out"],
+            "2111": ["Caput Draconis", "the dragon's head", "the north node", "a beginning, a door opening; good, the more so in good company"],
+            "1112": ["Cauda Draconis", "the dragon's tail", "the south node", "an ending, a door closing; bad, except for leaving"]
+        };
+        var GOOD = { "2211": 2, "1122": 1, "2121": 2, "1222": 2, "2212": 1, "2112": 1, "2111": 1, "1211": 1, "1111": 0, "2222": 0, "1212": -1, "2221": -1, "1121": -1, "1221": -1, "1112": -1, "2122": -2 };
+        var r = rng(777);
+        function cast() { var s = ""; for (var i = 0; i < 4; i++) s += r() < 0.5 ? "1" : "2"; return s; }
+        function add(a, b) { var s = ""; for (var i = 0; i < 4; i++) s += a[i] === b[i] ? "2" : "1"; return s; }
+        var M = [cast(), cast(), cast(), cast()];
+        var D = [0, 1, 2, 3].map(function (i) { return M[0][i] + M[1][i] + M[2][i] + M[3][i]; });
+        var N = [add(M[0], M[1]), add(M[2], M[3]), add(D[0], D[1]), add(D[2], D[3])];
+        var RW = add(N[0], N[1]), LW = add(N[2], N[3]), J = add(RW, LW), REC = add(J, M[0]);
+        function fig(k, label) {
+            var f = FIG[k], rows = k.split("").map(function (c) { return "<i>" + (c === "1" ? "●" : "● ●") + "</i>"; }).join("");
+            return "<div class=\"geo\" title=\"" + esc(f[0] + ", " + f[1]) + "\">" + rows + "<b>" + esc(label) + "</b><small>" + esc(f[0]) + "</small></div>";
+        }
+        var shield = "<div class=\"shield\">" +
+            [D[3], D[2], D[1], D[0], M[3], M[2], M[1], M[0]].map(function (k, i) { return fig(k, i < 4 ? "D" + (4 - i) : "M" + (8 - i)); }).join("") +
+            [N[3], N[2], N[1], N[0]].map(function (k, i) { return fig(k, "N" + (4 - i)); }).join("") +
+            fig(LW, "left witness") + fig(RW, "right witness") + fig(J, "judge") + "</div>";
+        function name(k) { return FIG[k][0]; }
+        var j = GOOD[J], w = GOOD[RW] + GOOD[LW], verdict;
+        if (j > 0 && w >= 0) verdict = "the matter goes well, and by a fair road";
+        else if (j > 0) verdict = "the matter ends well, but the road to it is hard and the witnesses disagree";
+        else if (j < 0 && w <= 0) verdict = "the matter goes badly, and the road is no better";
+        else if (j < 0) verdict = "the matter ends badly, for all that it begins well";
+        else verdict = "the matter neither goes nor stays: " + (w > 0 ? "a middling end by a good road" : w < 0 ? "a middling end by a poor road" : "the whole chart is in two minds");
+        var first = M[0] === "2122" ? " The first mother is Rubeus, on which the old geomancers tore the chart up and cast again, or went home; the paper is not allowed to, so read it with that in mind." : " The first mother, which stands for the one asking, is " + name(M[0]) + ", " + FIG[M[0]][1] + ": " + FIG[M[0]][3] + ".";
+        html("paper-geomancy", "<p class=\"small\">The question is the one the paper always asks, how the day will go. Four mothers were cast at midnight from the seed; the rest follows by rule. Right to left, as the geomancers read: mothers, daughters; nieces; witnesses; the judge.</p>" + shield +
+            "<p>The judge is <b>" + esc(name(J)) + "</b>, " + esc(FIG[J][1]) + ", of " + esc(FIG[J][2]) + ": " + esc(FIG[J][3]) + ". The right witness is " + esc(name(RW)) + " and the left " + esc(name(LW)) + ", so " + verdict + "." + first +
+            " The reconciler, for what the asker makes of it, is " + esc(name(REC)) + ".</p>" +
+            "<p class=\"small\">Mothers " + M.map(name).join(", ") + " &middot; daughters " + D.map(name).join(", ") + " &middot; nieces " + N.map(name).join(", ") + ". The rules are Agrippa's <em>Fourth Book</em> and Heydon's <em>Theomagia</em>; the paper's reading is its own. The same chart for everyone until midnight.</p>");
+        GEO = { mothers: M, daughters: D, nieces: N, witnesses: [RW, LW], judge: J, reconciler: REC, figures: FIG };
+    })();
+
     // ---- the hours: the planetary day, from sunrise to sunrise ------------------------
     (function () {
         var H = window.Hours, d = H && H.day(now), h = H && H.now(now);
@@ -348,5 +406,5 @@
         }
     })();
 
-    window.Paper = { seed: seed, planets: planets, puzzle: puzzle };
+    window.Paper = { seed: seed, planets: planets, puzzle: puzzle, geomancy: GEO };
 })();
