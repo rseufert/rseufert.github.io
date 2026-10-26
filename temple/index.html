@@ -24,8 +24,8 @@ whoever wrote it, which are the only kinds a library like this can afford.</p>
 </div>
 
 <div class="bar">
-  <p class="hint">point at a sign, or tap it &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> walk round &middot; <kbd>home</kbd> the monad &middot; <kbd>m</kbd> the drone &middot; <kbd>f</kbd> the whole screen &middot; the names below are buttons too</p>
-  <p class="buttons"><button type="button" id="temple-sound">drone</button> <button type="button" id="temple-full">fullscreen</button></p>
+  <p class="hint">point at a sign, or tap it &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> walk round &middot; <kbd>home</kbd> the monad &middot; <kbd>m</kbd> the drone, tuned to the hour's planet &middot; <kbd>f</kbd> the whole screen &middot; the names below are buttons too</p>
+  <p class="buttons"><button type="button" id="temple-sound">drone</button> <button type="button" id="temple-full">fullscreen</button> <output id="temple-hour" class="hour" title="the planetary hour: twelve unequal hours from sunrise to sunset, twelve from sunset to sunrise, each a planet's in the Chaldean order"></output></p>
 </div>
 
 <div class="reading" aria-live="polite">
@@ -265,4 +265,5 @@ mine; the sources are the shelf, and the shelf is where to disagree with them. T
 <a href="/city/">city</a>, where the hierophant will ask whether you have been.</p>
 </div>
 <script src="/js/unmute.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/js/hours.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/temple/temple.js?v={{ site.time | date: '%s' }}"></script>

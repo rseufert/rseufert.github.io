@@ -257,7 +257,25 @@
         if (!book) book = SHELF.list[Math.floor(Math.random() * SHELF.list.length)];
         return passage(book);
     }
+    // The planetary hour (js/hours.js, fetched the first time it is asked).
+    function theHour(t) {
+        function ord(n) { return n + (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th"); }
+        function tell() {
+            var H = window.Hours, h = H && H.now();
+            if (!h) return "no hour to speak of; the sun is not rising or setting here today, which is not a portland problem.";
+            var planet = h.planet.toLowerCase(), ruler = h.ruler.toLowerCase();
+            if (/\bday\b/.test(t) && !/\bhour/.test(t)) return "it is the " + ruler + "'s day, since the " + ruler + " had its first hour at sunrise. the hours go round from there in the chaldean order: saturn, jupiter, mars, the sun, venus, mercury, the moon.";
+            return "the hour of " + planet + " " + h.sign + ", the " + ord(h.n) + " hour of the " + ruler + "'s day, until " + H.hm(h.end) + "; then " + H.after(h.planet).toLowerCase() + ". the hours are unequal: twelve from sunrise to sunset and twelve from sunset to sunrise, whatever the clock says. the paper prints the table, and the temple's drone is tuned to it.";
+        }
+        if (window.Hours) return tell();
+        return new Promise(function (res) {
+            var s = document.createElement("script"); s.src = "/js/hours.js";
+            s.onload = function () { res(tell()); }; s.onerror = function () { res("the hours are not in. the paper has them."); };
+            document.head.appendChild(s);
+        });
+    }
     var ANSWERS = [
+        [/\b(whose|which|what) (planetary )?(hour|day) is (it|this)\b|\bplanetary (hours?|day)\b|\bhour of (the )?(sun|moon|mars|mercury|jupiter|venus|saturn)\b|\bchaldean\b|\bthe hours\b/, theHour],
         [/\b(read me|read us|quote|a passage|a paragraph|a line from|from the (shelf|shelves|library|temple|stacks)|open a book|any book|pick a book|what are you reading|been reading)\b|[a-z]{4,}/, fromTheShelf],
         // one thing on the site
         [/\bmock[- ]?sap\b|\bidocs?\b|\bbapi\b|\bodata\b|\bsap gateway\b/, "mock-sap is a black-box mock SAP endpoint: SAP Gateway OData V2 and V4, BAPI/RFC calls over JSON and SOAP, and IDocs in XML and flat file, all on SQLite. the shapes, not the business logic. pip install mock-sap, and the page is /mock-sap/, with its features and films."],

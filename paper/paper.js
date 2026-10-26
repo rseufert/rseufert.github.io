@@ -130,6 +130,20 @@
             (stage && stage.v > 18 ? "That is high. The heron is standing on something." : stage && stage.v < 4 ? "That is low, by the gauge; the dolphin is managing." : "Normal, by the river's standards. Nothing is normal.") + "</p><p class=\"small\">USGS 14211720, live, which is more than the rest of this page can say.</p>");
     }).catch(function () { html("paper-weather", "<p class=\"small\">The gauge is out of reach just now. The river is still there; the heron confirms.</p>"); });
 
+    // ---- the hours: the planetary day, from sunrise to sunrise ------------------------
+    (function () {
+        var H = window.Hours, d = H && H.day(now), h = H && H.now(now);
+        if (!d) return;
+        function rows(from, to) {
+            var out = "";
+            for (var i = from; i < to; i++) { var x = d.hours[i]; out += "<tr" + (h && x.n === h.n ? " class=\"now\"" : "") + "><td class=\"n\">" + x.n + "</td><td class=\"sign\">" + x.sign + "</td><td>" + esc(x.planet) + "</td><td>" + H.hm(x.start) + "</td></tr>"; }
+            return out;
+        }
+        html("paper-hours", "<p class=\"small\">The " + esc(d.ruler) + "'s day, by the old reckoning: twelve hours from sunrise at " + H.hm(d.sunrise) + " to sunset at " + H.hm(d.sunset) + ", twelve from sunset to sunrise at " + H.hm(d.nextSunrise) + ", each a planet's in the Chaldean order." + (h ? " It is the hour of " + esc(h.planet) + " until " + H.hm(h.end) + "." : "") + "</p>" +
+            "<div class=\"hours-cols\"><table class=\"hours\"><tbody>" + rows(0, 12) + "</tbody></table><table class=\"hours\"><tbody>" + rows(12, 24) + "</tbody></table></div>" +
+            "<p class=\"small\">The temple's drone is tuned to the hour; rickbot knows it if asked.</p>");
+    })();
+
     var SKY = window.CitySky, sunUp = null, sunDown = null;
     (function () {
         if (!SKY) return;

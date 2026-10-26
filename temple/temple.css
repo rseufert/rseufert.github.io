@@ -38,6 +38,8 @@
 .temple-page .hint { font: 13px var(--mono); color: var(--faint); margin: 0 0 10px; }
 .temple-page kbd { font: inherit; color: var(--soft); }
 .temple-page .buttons { margin: 0; }
+.temple-page .hour { font: 13px var(--mono); color: var(--faint); margin-left: 10px; }
+.temple-page .hour:empty { display: none; }
 
 /* What the chosen sign means, beside the nave. */
 .temple-page .reading {

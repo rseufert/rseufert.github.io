@@ -71,6 +71,13 @@
 }
 .paper-page .ad b { display: block; font-size: 1.15em; letter-spacing: 0.08em; }
 .paper-page .ad .small { display: block; margin-top: 4px; }
+.paper-page .hours-cols { display: flex; gap: 12px; }
+.paper-page .hours-cols table { flex: 1; }
+.paper-page table.hours { width: 100%; border-collapse: collapse; font: 0.82em/1.5 var(--mono); margin: 0 0 8px; }
+.paper-page table.hours td { padding: 1px 6px 1px 0; vertical-align: top; white-space: nowrap; }
+.paper-page table.hours td.n { color: var(--soft); text-align: right; }
+.paper-page table.hours tr.now td { color: var(--accent); font-weight: bold; }
+.paper-page table.hours td.sign { width: 1.4em; }
 .paper-page .cls { font-size: 0.95em; line-height: 1.4em; margin: 0 0 8px; }
 .paper-page .cls b { font-family: var(--mono); font-weight: normal; font-size: 0.9em; letter-spacing: 0.06em; }
 .paper-page .cipher { font: 1.05em/1.7 var(--mono); letter-spacing: 0.12em; word-break: break-all; border: 1px dashed var(--rule); padding: 8px 10px; margin: 0 0 8px; }
