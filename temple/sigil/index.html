@@ -1,0 +1,55 @@
+---
+layout: default
+css: /temple/temple.css
+title: The sigil press
+description: "A sigil press after Austin Osman Spare: write a wish, the press strikes the vowels and the repeats and binds what is left into one sign; hold it to charge it, and when it is charged it burns. Nothing is kept."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read sigil">
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>after Austin Osman Spare &middot; 1913</span></p>
+<h1>The sigil press</h1>
+<p class="lede">Write a wish. The press strikes out the vowels and every letter that repeats, and binds what is left
+into one sign that no longer reads as letters, which is the method Spare set out in 1913 and the whole of
+chaos magic in a paragraph. Then hold the sign to charge it. When the charge is full it burns, and the press
+forgets it, which is the point: nothing is stored, nothing is sent, and a reload finds the press empty.</p>
+
+<form class="press" id="sigil-form" autocomplete="off">
+  <label for="sigil-wish" class="visually-hidden">the wish</label>
+  <input id="sigil-wish" type="text" maxlength="120" placeholder="the wish, in the present tense, as if it were already so" autocapitalize="off" spellcheck="false">
+  <button type="submit" id="sigil-make">press</button>
+</form>
+<p class="letters" id="sigil-letters" aria-live="polite"></p>
+
+<div class="stage" id="sigil-room">
+  <canvas id="sigil-stage" aria-label="the sigil, drawn as line art; hold it to charge it"></canvas>
+</div>
+<p class="hint" id="sigil-hint">write a wish and press it.</p>
+<p class="buttons"><button type="button" id="sigil-sound" aria-pressed="false">sound</button></p>
+
+<p>The method, as Spare gave it. Write the desire as a sentence, in the present, as a thing already true.
+Strike out the vowels, then every letter that has already appeared; what is left is drawn together into
+one figure, letters laid over letters until the eye no longer picks them apart, so the wish can no longer be
+read and the mind cannot keep worrying at it. Charge the figure: fix on it until nothing else is in the mind,
+at a moment of exhaustion or ecstasy or simple blankness. Then destroy it, and forget the wish entirely, so
+that the desire can go about its business below the level at which you would argue with it. Spare's claim
+was that the forgetting is the active part, and most of the difficulty.</p>
+
+<p>The press does the mechanical half. The letters are reduced the way Spare reduced them, and the figure is
+composed from their strokes by a rule seeded from the wish itself, each letter turned to one of the eight
+directions and set a little off the centre so the lines cross and share, with a ring round a long wish and a
+bar under a short one; so the same wish always gives the same sigil and a different wish a different one. The
+charging is yours: hold the sign, with a thumb or the mouse or the space bar, and the press counts a few
+seconds of your attention and shows it as a ring filling round the sign. At the top it goes white and burns
+to ash, and the press clears itself, the wish with it. It keeps nothing: no cookie, no storage, no request to
+anywhere. The sound, if you want it, is a tone that rises with the charge and a snap when it goes.</p>
+
+<p class="colophon">Austin Osman Spare, <em>The Book of Pleasure (Self-Love): The Psychology of Ecstasy</em>, London, 1913, public
+domain; the sigil method is in the chapter on sigils, and a scan is on the
+<a href="https://archive.org/search?query=spare+%22book+of+pleasure%22">Internet Archive</a>. The press is this
+site's own, drawn in the temple's line like <a href="/temple/#signs">the signs</a> and
+<a href="/temple/monas/">the Monas</a>. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/sigil.js">script</a>.</p>
+</div>
+<script src="/js/unmute.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/sigil.js?v={{ site.time | date: '%s' }}"></script>

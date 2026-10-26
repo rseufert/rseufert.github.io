@@ -11,7 +11,25 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `temple.png`, `share.jpg` | the home tile and the share image, captured from the canvas |
 | `texts/` | the library's Project Gutenberg texts, kept here whole (header, text, licence), one `.txt` a book, and `index.json`, the manifest |
 | `read/index.html`, `read.js` | the reading room: a text set as pages, with the place remembered |
+| `sigil/index.html`, `sigil.js` | the sigil press: a wish reduced and bound into one sign after Spare, charged by holding, burned when charged, nothing kept |
 | `monas/index.html`, `monas.js` | Dee's Monas Hieroglyphica: the figure constructed from its measure, and the twenty-four theorems in plain words with their figures |
+
+## The sigil press
+
+`sigil/` is Spare's method by machine. `reduce` strikes the vowels and the
+repeats (a wish of nothing but vowels keeps them); `compose` draws each
+remaining letter from a stroke skeleton (`GLYPH`, 26 letters as polylines
+in a box from -1 to 1), turns it to one of the eight directions, scales,
+sometimes flips and offsets it by a PRNG seeded from a hash of the wish, so
+a wish always gives the same sigil, and binds the set with a ring (four
+letters or more) or a bar. Holding the canvas (pointer capture, or the
+space bar) fills a charge in four seconds, drawn as a ring; at full charge
+the strokes go white and scatter as ash, then the press clears the wish,
+the letters and the canvas. Nothing touches localStorage or the network;
+the only state is in the closure. Sound is a sine and a triangle a fifth
+up, rising two octaves with the charge, and a burst of noise at the burn,
+behind a button that is off by default. `window.Sigil` exposes `reduce`,
+`compose`, `make` and the state.
 
 ## The Monas
 
