@@ -2,6 +2,15 @@
    this page links this file after it (the layout reads `css:` from the front matter). */
 
 .temple-page .lede { color: var(--soft); }
+/* The temple's own menu, on every room of it: the nave, the library, the reading room, the presses. */
+.temple-page .temple-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; font: 13px/1.6 var(--mono); color: var(--faint); margin: 0 0 14px; padding: 0 0 10px; border-bottom: 1px dashed var(--rule); }
+.temple-page .temple-nav a { color: var(--soft); text-decoration: none; }
+.temple-page .temple-nav a::before { content: "["; color: var(--faint); }
+.temple-page .temple-nav a::after { content: "]"; color: var(--faint); }
+.temple-page .temple-nav a:hover { color: var(--accent); }
+.temple-page .temple-nav a[aria-current] { color: var(--accent); }
+.temple-page .temple-nav .group { color: var(--faint); margin-left: 6px; }
+.temple-page .temple-nav .group::after { content: ":"; }
 .temple-page .stage {
     position: relative;
     width: 100%;

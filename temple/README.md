@@ -144,6 +144,14 @@ touch screen the root is an octave up and the filter open, for a phone's speaker
 iPhone needs. F is the whole screen, with the pinned-stage fallback where
 there is no Fullscreen API.
 
+## The menu
+
+Every room of the temple carries the same line at the top, from
+`_includes/temple-nav.html`: the nave, the library, the reading room, and
+the presses (sigil, talisman, alphabet, the Great Table, the Monas), the
+current one marked with `aria-current`. Pages include it with
+`{% include temple-nav.html active="sigil" %}`.
+
 ## Tracing
 
 T (or the trace button) turns the nave from taps to a drawn line. Draw a
