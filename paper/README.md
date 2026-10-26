@@ -53,7 +53,11 @@ fallback), the three newest, and a count of the reader's own unsent ones.
 library's non-OCR texts, correctly attributed. **The puzzle** is a
 monoalphabetic substitution of a sentence from the site, the key shuffled
 by the seed with no letter mapping to itself, word breaks kept, and
-yesterday's answer under it.
+yesterday's answer under it. An answer box checks a guess against the
+plaintext (letters only, case ignored); a solve of today's puzzle is kept
+in `localStorage` as `paper-solved` = the local date, which the newsagent in
+the city reads for the "solve the day's puzzle" errand. A `#seed=` paper
+says so when solved, but is not counted.
 
 ## Poking
 

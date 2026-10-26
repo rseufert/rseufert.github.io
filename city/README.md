@@ -78,7 +78,7 @@ last and the seasons have their own constellations; the pole drifts over
 
 ## The people
 
-Twelve figures (a person in nine lines with a cap, a rake or a telescope, a
+Thirteen figures (a person in nine lines with a cap, a rake or a telescope, a
 cat, a ghost, an elf), each a door of kind `npc` that talks instead of
 entering, each with an errand that sends you elsewhere on the site, all
 optional. `QUESTS` holds each with a `check()` that reads what the rest of
