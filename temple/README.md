@@ -63,8 +63,11 @@ starred eighth), and the tria prima.
 Sound is a drone behind a toggle kept in `localStorage` under
 `temple-sound`: four oscillators on a root, a fifth, an octave and a twelfth
 through a lowpass, each with its own slow tremolo, and a short sine ping in
-a mode when a sign is chosen. On a touch screen the root is an octave up
-and the filter open, for a phone's speaker; `js/unmute.js` does what an
+a mode when a sign is chosen. The root follows the planetary hour
+(`js/hours.js`): one note a planet up the scale in the Chaldean order,
+Saturn on the root, the Moon a semitone under the octave, retuned over two
+seconds when the hour turns; the bar names the hour and when it ends. On a
+touch screen the root is an octave up and the filter open, for a phone's speaker; `js/unmute.js` does what an
 iPhone needs. F is the whole screen, with the pinned-stage fallback where
 there is no Fullscreen API.
 

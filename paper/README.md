@@ -29,7 +29,10 @@ seconds, the order of the fallen from the engine's log, one line of colour.
 The same six, the same seed, the same result for everyone that day.
 
 **Weather** is the USGS gauge on the Willamette at Portland (14211720), the
-stage and the flow and the time, live, as the dashboard reads it. **The sky**
+stage and the flow and the time, live, as the dashboard reads it. **The hours** are the planetary hours (`js/hours.js`): the day from
+sunrise to sunrise cut into twelve day-hours and twelve night-hours, each a
+planet's in the Chaldean order starting from the day's ruler, in two
+columns with the current one marked. **The sky**
 is `CitySky`: sunrise and sunset by scanning the Sun's altitude through the
 day, the Moon's phase, and the Big Dipper read as a clock hand round
 Polaris, from Dubhe's hour angle, going backwards and losing four minutes a

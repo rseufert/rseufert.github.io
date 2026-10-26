@@ -16,6 +16,7 @@
     var stage = document.getElementById("temple-room");
     var nameOut = document.getElementById("temple-name"), textOut = document.getElementById("temple-text"), shelfOut = document.getElementById("temple-shelf");
     var soundBtn = document.getElementById("temple-sound"), fullBtn = document.getElementById("temple-full"), unfillBtn = document.getElementById("temple-unfill");
+    var hourOut = document.getElementById("temple-hour");
     var SERIF = 'Georgia, "Times New Roman", serif';
     var MONO = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
     var REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -348,15 +349,24 @@
         if (window.Unmute) window.Unmute(ac);
         var master = ac.createGain(); master.gain.value = 0; master.connect(ac.destination);
         var lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = TOUCH ? 1400 : 700; lp.connect(master);
-        var base = TOUCH ? 220 : 110;
+        var base = TOUCH ? 220 : 110, oscs = [];
         [1, 1.5, 2.0, 3.0].forEach(function (m, i) {
             var o = ac.createOscillator(), g = ac.createGain();
             o.type = i === 0 ? "triangle" : "sine"; o.frequency.value = base * m; o.detune.value = (i % 2 ? 4 : -3);
             g.gain.value = [0.5, 0.22, 0.12, 0.05][i]; o.connect(g); g.connect(lp); o.start();
             var lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 0.05 + i * 0.03; lg.gain.value = g.gain.value * 0.4; lfo.connect(lg); lg.connect(g.gain); lfo.start();
+            oscs.push({ o: o, m: m });
         });
+        // The root follows the planetary hour: one note a planet, up the scale
+        // in the Chaldean order, Saturn lowest, the Moon a semitone under the octave.
+        var NOTE = { Saturn: 0, Jupiter: 2, Mars: 4, Sun: 5, Venus: 7, Mercury: 9, Moon: 11 };
+        function tune(planet, at) {
+            var root = base * Math.pow(2, (NOTE[planet] || 0) / 12);
+            oscs.forEach(function (x) { x.o.frequency.setTargetAtTime(root * x.m, ac.currentTime, at || 2); });
+        }
+        if (window.Hours) { var h0 = window.Hours.now(); if (h0) tune(h0.planet, 0.01); }
         return {
-            ac: ac, master: master,
+            ac: ac, master: master, tune: tune,
             on: function () { if (ac.state === "suspended") ac.resume(); master.gain.setTargetAtTime(TOUCH ? 0.5 : 0.3, ac.currentTime, 1.5); },
             off: function () { master.gain.setTargetAtTime(0, ac.currentTime, 0.4); },
             ping: function (i) {
@@ -379,6 +389,17 @@
         soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
         soundBtn.addEventListener("click", toggleSound);
     }
+    // The planetary hour, in the bar, and the drone retuned when it turns.
+    var lastHour = "";
+    function tellHour() {
+        if (!window.Hours) return;
+        var h = window.Hours.now();
+        if (!h) { if (hourOut) hourOut.textContent = ""; return; }
+        if (hourOut) hourOut.textContent = "the hour of " + h.planet + " " + h.sign + " \u00b7 until " + window.Hours.hm(h.end);
+        if (h.planet !== lastHour) { lastHour = h.planet; if (audio) audio.tune(h.planet); }
+    }
+    tellHour();
+    setInterval(tellHour, 20000);
     // The drone waits for a touch, as browsers insist; the first tap anywhere starts it if it is on.
     function firstTouch() { if (soundOn && !audio) { audio = makeAudio(); if (audio) audio.on(); } document.removeEventListener("pointerdown", firstTouch); }
     document.addEventListener("pointerdown", firstTouch);

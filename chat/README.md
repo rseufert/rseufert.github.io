@@ -57,6 +57,14 @@ and `NOCLIP` links down to the backrooms; the bot's answers about the arena
 and the backrooms read their `localStorage` to say how you did. The tab
 wears a 🤖👋 and wiggles until it has been opened once (`rickbot-seen`).
 
+## The hour
+
+"Whose hour is it" (or "which planetary hour", "hour of mars", "whose day
+is it") gets the planetary hour from `js/hours.js`, fetched on the first
+asking and answered through the promise queue: the planet, which hour of
+whose day, when it ends and what follows. The same module tunes the
+temple's drone and prints the paper's table.
+
 ## The shelf
 
 Ask rickbot for a passage, or for a book on the temple's shelf by its
