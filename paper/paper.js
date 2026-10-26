@@ -314,7 +314,24 @@
     }
     (function () {
         var y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1), t = puzzle(seed), yest = puzzle(ymd(y));
-        html("paper-puzzle", "<p class=\"small\">A simple substitution, a fresh key every midnight; word breaks kept, which is more than Poe allowed. The manuals are on the temple's last shelf.</p><p class=\"cipher\">" + esc(t.cipher) + "</p><p class=\"small\">Yesterday's answer: " + esc(yest.plain) + ".</p>");
+        html("paper-puzzle", "<p class=\"small\">A simple substitution, a fresh key every midnight; word breaks kept, which is more than Poe allowed. The manuals are on the temple's last shelf. Type the answer under it; the newsagent in the city keeps count.</p><p class=\"cipher\">" + esc(t.cipher) + "</p><p class=\"solve\"><input id=\"paper-answer\" type=\"text\" autocomplete=\"off\" autocapitalize=\"characters\" spellcheck=\"false\" aria-label=\"your answer\" placeholder=\"your answer\"> <button type=\"button\" id=\"paper-check\">check</button> <span class=\"verdict\" id=\"paper-verdict\" aria-live=\"polite\"></span></p><p class=\"small\">Yesterday's answer: " + esc(yest.plain) + ".</p>");
+        // The answer box. A solve of today's puzzle is kept in this browser as
+        // paper-solved = the local date, which the newsagent in the city checks.
+        var d = new Date(), stamp = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2), todays = seed === ymd(now);
+        var box = $("paper-answer"), btn = $("paper-check"), verdict = $("paper-verdict");
+        function norm(s) { return String(s).toUpperCase().replace(/[^A-Z]/g, ""); }
+        function solved() { try { return localStorage.getItem("paper-solved") === stamp; } catch (e) { return false; } }
+        function won(text) { verdict.textContent = text; box.value = t.plain; box.disabled = true; btn.disabled = true; }
+        function check() {
+            if (norm(box.value) !== norm(t.plain)) { verdict.textContent = box.value.trim() ? "not it." : ""; return; }
+            if (!todays) { won("that is it, but it is not today's paper; the newsagent only counts today's."); return; }
+            try { localStorage.setItem("paper-solved", stamp); } catch (e) { /* a visit's worth */ }
+            won("that is it. the newsagent in the city keeps count.");
+        }
+        if (box && btn && verdict) {
+            if (todays && solved()) won("solved, earlier today.");
+            else { btn.addEventListener("click", check); box.addEventListener("keydown", function (e) { if (e.key === "Enter") check(); }); }
+        }
     })();
 
     window.Paper = { seed: seed, planets: planets, puzzle: puzzle };
