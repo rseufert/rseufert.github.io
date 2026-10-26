@@ -11,8 +11,24 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `temple.png`, `share.jpg` | the home tile and the share image, captured from the canvas |
 | `texts/` | the library's Project Gutenberg texts, kept here whole (header, text, licence), one `.txt` a book, and `index.json`, the manifest |
 | `read/index.html`, `read.js` | the reading room: a text set as pages, with the place remembered |
+| `talisman/index.html`, `talisman.js` | the talisman press: Agrippa's seven planetary squares with the sigils of their intelligences and spirits traced, and a name traced by his Latin numeration |
 | `sigil/index.html`, `sigil.js` | the sigil press: a wish reduced and bound into one sign after Spare, charged by holding, burned when charged, nothing kept |
 | `monas/index.html`, `monas.js` | Dee's Monas Hieroglyphica: the figure constructed from its measure, and the twenty-four theorems in plain words with their figures |
+
+## The talisman press
+
+`talisman/` draws Agrippa's seven kameas (`KAMEA`, as he printed them in
+*De occulta philosophia* II.22, checked for their sums by a test) and traces
+on them, the old way, the names of each planet's intelligence (solid) and
+spirit (dashed): the Hebrew letter values of each name (`NAMES`; the
+intelligence sums to a row, the spirit to the whole square) are read as
+cells and joined in order, a ring at the start and a bar at the end, a number
+too big for the square read with its last figure dropped until it fits. A
+name typed in is traced the same way in amber by Agrippa's Latin numeration
+(`LATIN`, II.20). The Moon's intelligence of intelligences, five words long,
+is not traced. The planet shown first is the planetary hour's (`js/hours.js`),
+and "save as an image" is the canvas as a PNG. Nothing is stored or sent.
+`window.Talisman` exposes the squares, the names and the drawing.
 
 ## The sigil press
 

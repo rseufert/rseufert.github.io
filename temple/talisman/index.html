@@ -1,0 +1,56 @@
+---
+layout: default
+css: /temple/temple.css
+title: The talisman press
+description: "Agrippa's seven planetary squares, drawn, with the sigils of their intelligences and spirits traced on them the old way, and your own name traced by his Latin numeration; the square shown first is the planetary hour's."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read talisman">
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>after Agrippa &middot; 1533</span></p>
+<h1>The talisman press</h1>
+<p class="lede">Agrippa's seven squares of the planets, from Saturn's three by three to the Moon's nine by nine, every
+row, column and diagonal summing alike, as he printed them in the <em>Three Books of Occult Philosophy</em>.
+On each the old sigils were made by numbering a name's letters and joining the cells in order; the press
+traces the planet's intelligence and spirit that way, and a name of yours by Agrippa's Latin numeration.
+The square it shows first is the planetary hour's. Save it; a lock screen is as good as a ring.</p>
+
+<p class="planets" id="talisman-planets"></p>
+<p class="controls">
+  <button type="button" id="talisman-int">intelligence</button>
+  <button type="button" id="talisman-spirit">spirit</button>
+  <button type="button" id="talisman-trace">a name</button>
+  <input id="talisman-name" type="text" maxlength="40" placeholder="a name to trace" autocapitalize="off" spellcheck="false" autocomplete="off">
+</p>
+
+<div class="stage" id="talisman-room">
+  <canvas id="talisman-stage" aria-label="the planet's magic square with its sigils traced"></canvas>
+</div>
+<p class="hint" id="talisman-caption"></p>
+<p class="buttons"><a class="button" id="talisman-save" href="#" download="talisman.png">save as an image</a></p>
+
+<p>What a kamea is. A square of the first so many numbers in which every row, every column and both diagonals
+add to the same sum, one square for each planet in the old order, the side one greater each time: Saturn
+three, Jupiter four, Mars five, the Sun six, Venus seven, Mercury eight, the Moon nine. They are older than
+Agrippa (the Sun's is in Arabic manuscripts centuries before him, and Saturn's is the Chinese <em>lo shu</em>),
+but his are the ones the West copied, Dürer's included. Agrippa gives, with each, the numbers of the planet, its
+metal, and the names of its intelligence and its spirit, whose Hebrew letters add up to the square: the
+intelligence to a row, the spirit to the whole, which is why Sorath, the spirit of the Sun, counts to 666.</p>
+
+<p>How a sigil is traced. Each letter of the name has a number; find each number's cell and join them in order,
+a ring where the line starts and a bar where it ends; a number too large for the square is read with its last
+figure dropped until it fits, so 200 on Saturn's square is 20 is 2. The curves Agrippa's engraver put in are
+left out here; the straight lines are the same cells. The intelligence is drawn solid and the spirit dashed.
+A name of yours is traced by Agrippa's own Latin table, in which A is 1, K is 10, T is 100 and Z is 500, and
+is drawn in the other ink. The press keeps no names: nothing is stored or sent, and the image is made in your
+browser when you save it.</p>
+
+<p class="colophon">Heinrich Cornelius Agrippa, <em>De occulta philosophia libri tres</em>, Cologne, 1533, Book II chapters 20 and 22;
+the English of J. F., 1651, is on the shelf as <a href="/temple/#lib-agrippa">Three Books of Occult Philosophy</a>,
+at the Esoteric Archives. Public domain. The squares are checked for their sums when the page loads; the
+intelligences' numbers are Agrippa's. The press is this site's own, in the temple's line like
+<a href="/temple/sigil/">the sigil press</a> and <a href="/temple/monas/">the Monas</a>. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/talisman.js">script</a>.</p>
+</div>
+<script src="/js/hours.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/talisman.js?v={{ site.time | date: '%s' }}"></script>

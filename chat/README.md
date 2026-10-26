@@ -57,6 +57,13 @@ and `NOCLIP` links down to the backrooms; the bot's answers about the arena
 and the backrooms read their `localStorage` to say how you did. The tab
 wears a 🤖👋 and wiggles until it has been opened once (`rickbot-seen`).
 
+## Gematria
+
+"The number of X" or "gematria of X" counts the word by Agrippa's Latin
+table (A 1 … K 10 … T 100 … Z 500, with J, U and W as he counted the
+consonant I and V), shows the working, and points at the talisman press,
+which traces the same number on a planet's square.
+
 ## The hour
 
 "Whose hour is it" (or "which planetary hour", "hour of mars", "whose day

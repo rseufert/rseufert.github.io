@@ -279,7 +279,18 @@
             document.head.appendChild(s);
         });
     }
+    // Gematria, by Agrippa's Latin table (the talisman press traces it).
+    var LATIN = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8, I: 9, K: 10, L: 20, M: 30, N: 40, O: 50, P: 60, Q: 70, R: 80, S: 90, T: 100, V: 200, X: 300, Y: 400, Z: 500, J: 600, U: 200, W: 700 };
+    function gematria(t) {
+        var m = /\b(?:gematria|number|count|value)\s+(?:of|for)\s+(?:the\s+(?:word|name)\s+)?["\u201c]?([a-z][a-z' -]{0,40}?)["\u201d]?\s*\??$/.exec(t);
+        if (!m) return null;
+        var word = m[1].trim(), letters = word.toUpperCase().replace(/[^A-Z]/g, "").split("");
+        if (!letters.length) return null;
+        var sum = 0, parts = letters.map(function (c) { var v = LATIN[c] || 0; sum += v; return c.toLowerCase() + " " + v; });
+        return word + " counts to " + sum + " by agrippa's latin table (" + parts.join(", ") + "). the talisman press will trace it on a planet's square: /temple/talisman/. the code clerk says everything written down is a number to somebody.";
+    }
     var ANSWERS = [
+        [/\b(gematria|number|count|value) (of|for) [a-z"\u201c]/, gematria],
         [/\b(whose|which|what) (planetary )?(hour|day) is (it|this)\b|\bplanetary (hours?|day)\b|\bhour of (the )?(sun|moon|mars|mercury|jupiter|venus|saturn)\b|\bchaldean\b|\bthe hours\b/, theHour],
         [/\b(read me|read us|quote|a passage|a paragraph|a line from|from the (shelf|shelves|library|temple|stacks)|open a book|any book|pick a book|what are you reading|been reading)\b|[a-z]{4,}/, fromTheShelf],
         // one thing on the site
