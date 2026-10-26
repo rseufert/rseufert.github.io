@@ -73,7 +73,9 @@ library's manifest (`temple/texts/index.json`, once, on the first
 question), picks the book, fetches the local text, quotes a real paragraph
 of it (140 to 420 characters, not a footnote, not capitals, not the
 bookseller's catalogue at the back of a scan), and attributes it to the
-wrong author, with the link to the right book. A reply can be a promise:
+wrong author, with the link to the right book. Asked for any book, it
+takes one of the shelf's "where to start" picks (`pick` in the manifest)
+two times in three. A reply can be a promise:
 the queue keeps "rickbot is reading" up until it resolves; the shelf rule
 is the first in `ANSWERS` and declines (returns null) when nothing on the
 shelf is meant, so the other rules are tried; and the reveal never quotes

@@ -78,6 +78,15 @@
 .temple-page .shelf .meta { font: 0.78em var(--mono); color: var(--faint); margin-left: 6px; }
 .temple-page .shelf .meta a { color: var(--faint); text-decoration: underline; }
 .temple-page .shelf .note { color: var(--soft); font-size: 0.95em; }
+/* The marks: what each entry is (kept whole, OCR, made here, a link out) and the places to start. */
+.temple-page .mark { color: var(--faint); font-size: 0.72em; margin-right: 7px; vertical-align: 2px; }
+.temple-page .pick { color: var(--accent); font-size: 0.85em; margin-right: 7px; }
+.temple-page .legend { font: 13px/1.6 var(--mono); color: var(--faint); margin: 0 0 18px; }
+.temple-page .legend .mark, .temple-page .legend .pick { margin-right: 3px; }
+.temple-page ol.start { padding-left: 1.6em; margin: 0 0 28px; }
+.temple-page ol.start li { font-size: 1.15em; line-height: 1.45em; margin: 0 0 8px; }
+.temple-page ol.start li > a { font-weight: bold; }
+.temple-page ol.start .why { color: var(--soft); font-size: 0.95em; }
 .temple-page .colophon { margin-top: 36px; color: var(--soft); font-size: 1.15em; }
 
 @media (max-width: 700px) {

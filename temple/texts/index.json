@@ -3,6 +3,7 @@
   "bytes": 210292,
   "edition": "Syria, 3rd c. · tr. M. R. James, 1924 · Gnostic Society Library",
   "host": "Gnostic Society Library",
+  "robust": "whole",
   "shelf": "acts",
   "source": "http://gnosis.org/library/actthom.htm",
   "title": "The Acts of Thomas"
@@ -11,6 +12,7 @@
   "bytes": 459781,
   "edition": "Apuleius, c. 160 · tr. William Adlington, 1566 · Gutenberg #1666",
   "gutenberg": 1666,
+  "robust": "whole",
   "shelf": "apuleius",
   "title": "The Golden Ass"
  },
@@ -18,6 +20,7 @@
   "bytes": 622448,
   "edition": "Augustine of Hippo, c. 400 · tr. E. B. Pusey, 1838 · Gutenberg #3296",
   "gutenberg": 3296,
+  "robust": "whole",
   "shelf": "augustine",
   "title": "The Confessions"
  },
@@ -25,6 +28,7 @@
   "bytes": 418073,
   "edition": "Marcus Aurelius, c. 170 · tr. George Long, 1862 · Gutenberg #2680",
   "gutenberg": 2680,
+  "robust": "whole",
   "shelf": "aurelius",
   "title": "Meditations"
  },
@@ -32,6 +36,7 @@
   "bytes": 885599,
   "edition": "Charles Babbage, 1864 · Gutenberg #57532",
   "gutenberg": 57532,
+  "robust": "whole",
   "shelf": "babbage",
   "title": "Passages from the Life of a Philosopher"
  },
@@ -39,6 +44,7 @@
   "bytes": 208260,
   "edition": "Mikhail Bakunin, 1882 · Gutenberg #36568",
   "gutenberg": 36568,
+  "robust": "whole",
   "shelf": "bakunin",
   "title": "God and the State"
  },
@@ -47,6 +53,8 @@
   "edition": "John Perry Barlow, Davos, 1996 · the EFF",
   "free": true,
   "host": "the EFF",
+  "pick": true,
+  "robust": "whole",
   "shelf": "barlow",
   "source": "https://www.eff.org/cyberspace-independence",
   "title": "A Declaration of the Independence of Cyberspace"
@@ -55,6 +63,7 @@
   "bytes": 458916,
   "edition": "Edward Bellamy, 1888 · Gutenberg #624",
   "gutenberg": 624,
+  "robust": "whole",
   "shelf": "bellamy",
   "title": "Looking Backward, 2000 to 1887"
  },
@@ -62,6 +71,7 @@
   "bytes": 384521,
   "edition": "Ambrose Bierce, 1911 · Gutenberg #972",
   "gutenberg": 972,
+  "robust": "whole",
   "shelf": "bierce",
   "title": "The Devil's Dictionary"
  },
@@ -69,6 +79,7 @@
   "bytes": 226862,
   "edition": "Jakob Böhme, 1622 · tr. William Law, 1764 · Gutenberg #33742",
   "gutenberg": 33742,
+  "robust": "whole",
   "shelf": "boehme",
   "title": "Dialogues on the Supersensual Life"
  },
@@ -76,6 +87,7 @@
   "bytes": 450958,
   "edition": "Peter Kropotkin, 1892 · English, 1906 · Gutenberg #23428",
   "gutenberg": 23428,
+  "robust": "whole",
   "shelf": "bread",
   "title": "The Conquest of Bread"
  },
@@ -83,6 +95,7 @@
   "bytes": 460355,
   "edition": "Lewis Carroll, 1896 · Gutenberg #28696",
   "gutenberg": 28696,
+  "robust": "whole",
   "shelf": "carroll",
   "title": "Symbolic Logic"
  },
@@ -90,6 +103,7 @@
   "bytes": 182041,
   "edition": "tr. Thomas Taylor, 1830 · Gutenberg #37696",
   "gutenberg": 37696,
+  "robust": "whole",
   "shelf": "celsus",
   "title": "Arguments of Celsus, Porphyry and the Emperor Julian against the Christians"
  },
@@ -97,6 +111,7 @@
   "bytes": 69082,
   "edition": "Julian the Theurgist, 2nd c. · ed. W. Wynn Westcott, 1895 · Esoteric Archives",
   "host": "Esoteric Archives",
+  "robust": "whole",
   "shelf": "chaldean",
   "source": "https://www.esotericarchives.com/oracle/oraclez.htm",
   "title": "The Chaldaean Oracles of Zoroaster"
@@ -105,6 +120,7 @@
   "bytes": 668084,
   "edition": "Zhuangzi, 4th c. BC · tr. Herbert Giles, 1889 · Gutenberg #59709",
   "gutenberg": 59709,
+  "robust": "whole",
   "shelf": "chuang",
   "title": "Chuang Tzŭ: Mystic, Moralist and Social Reformer"
  },
@@ -113,6 +129,7 @@
   "bytes": 247743,
   "edition": "England, late 14th c. · ed. Evelyn Underhill, 1922 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "A book of contemplation the which is called the Cloud of unknowing, in the which a soul is oned with God",
    "year": "1922"
@@ -124,6 +141,7 @@
   "bytes": 88969,
   "edition": "from the Acts of John · G. R. S. Mead, 1907 · Gutenberg #35735",
   "gutenberg": 35735,
+  "robust": "whole",
   "shelf": "crucifixion",
   "title": "The Gnostic Crucifixion"
  },
@@ -131,6 +149,7 @@
   "bytes": 90766,
   "edition": "H. P. Lovecraft, 1928 · Gutenberg #68283",
   "gutenberg": 68283,
+  "robust": "whole",
   "shelf": "cthulhu",
   "title": "The Call of Cthulhu"
  },
@@ -138,6 +157,7 @@
   "bytes": 89458,
   "edition": "the Papyrus of Ani, c. 1250 BC · tr. E. A. Wallis Budge, 1895 · Gutenberg #7145",
   "gutenberg": 7145,
+  "robust": "whole",
   "shelf": "dead",
   "title": "The Book of the Dead"
  },
@@ -145,6 +165,7 @@
   "bytes": 86543,
   "edition": "Pali canon · tr. F. Max Müller, 1881 · Gutenberg #2017",
   "gutenberg": 2017,
+  "robust": "whole",
   "shelf": "dhammapada",
   "title": "The Dhammapada"
  },
@@ -153,6 +174,7 @@
   "bytes": 579945,
   "edition": "Syria, c. 500 · tr. John Parker, 1897 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The works of Dionysius the Areopagite",
    "year": "1897"
@@ -165,6 +187,7 @@
   "bytes": 268135,
   "edition": "Syria, c. 500 · tr. John Parker, 1897 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The works of Dionysius the Areopagite",
    "year": "1899"
@@ -176,6 +199,7 @@
   "bytes": 857236,
   "edition": "Ignatius Donnelly, 1882 · Gutenberg #4032",
   "gutenberg": 4032,
+  "robust": "whole",
   "shelf": "donnelly",
   "title": "Atlantis: The Antediluvian World"
  },
@@ -183,6 +207,7 @@
   "bytes": 930457,
   "edition": "Suelette Dreyfus, with Julian Assange, 1997 · Gutenberg #4686",
   "gutenberg": 4686,
+  "robust": "whole",
   "shelf": "dreyfus",
   "title": "Underground"
  },
@@ -190,6 +215,8 @@
   "bytes": 14892,
   "edition": "Arabic, before 800 · several translations, Newton's among them · sacred-texts",
   "host": "sacred-texts",
+  "pick": true,
+  "robust": "whole",
   "shelf": "emerald",
   "source": "https://sacred-texts.com/book/emerald-tablet-of-hermes/index",
   "title": "The Emerald Tablet"
@@ -199,6 +226,7 @@
   "bytes": 256718,
   "edition": "Ethiopia, 3rd–1st c. BC · tr. R. H. Charles, 1917 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The book of Enoch",
    "year": "1917"
@@ -210,6 +238,7 @@
   "bytes": 484361,
   "edition": "Samuel Butler, 1872 · Gutenberg #1906",
   "gutenberg": 1906,
+  "robust": "whole",
   "shelf": "erewhon",
   "title": "Erewhon; or, Over the Range"
  },
@@ -217,6 +246,7 @@
   "bytes": 724933,
   "edition": "John Uri Lloyd, 1895 · Gutenberg #37775",
   "gutenberg": 37775,
+  "robust": "whole",
   "shelf": "etidorhpa",
   "title": "Etidorhpa; or, The End of Earth"
  },
@@ -224,6 +254,7 @@
   "bytes": 223228,
   "edition": "Edwin A. Abbott, 1884 · Gutenberg #201",
   "gutenberg": 201,
+  "robust": "whole",
   "shelf": "flatland",
   "title": "Flatland: A Romance of Many Dimensions"
  },
@@ -231,6 +262,8 @@
   "bytes": 668852,
   "edition": "Charles Fort, 1919 · Gutenberg #22472",
   "gutenberg": 22472,
+  "pick": true,
+  "robust": "whole",
   "shelf": "fort",
   "title": "The Book of the Damned"
  },
@@ -239,6 +272,7 @@
   "bytes": 1054460,
   "edition": "G. R. S. Mead, 1900 · Gnostic Society Library · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "Fragments of a faith forgotten, some short sketches among the Gnostics mainly of the first two centuries - a contribution to the study of Christian origins based on the most recently recovered materials",
    "year": "1906"
@@ -250,6 +284,7 @@
   "bytes": 804306,
   "edition": "Helen Fouché Gaines, 1939 · Gutenberg #75074",
   "gutenberg": 75074,
+  "robust": "whole",
   "shelf": "gaines",
   "title": "Elementary Cryptanalysis"
  },
@@ -257,6 +292,7 @@
   "bytes": 359335,
   "edition": "Christian D. Ginsburg, 1865 · Gutenberg #69243",
   "gutenberg": 69243,
+  "robust": "whole",
   "shelf": "ginsburg",
   "title": "The Kabbalah: its Doctrines, Development and Literature"
  },
@@ -264,6 +300,7 @@
   "bytes": 143812,
   "edition": "Bhagavad Gītā · tr. Edwin Arnold, 1885 · Gutenberg #2388",
   "gutenberg": 2388,
+  "robust": "whole",
   "shelf": "gita",
   "title": "The Song Celestial"
  },
@@ -272,6 +309,7 @@
   "edition": "Richard Stallman, 1985 · gnu.org",
   "free": true,
   "host": "gnu.org",
+  "robust": "whole",
   "shelf": "gnu",
   "source": "https://www.gnu.org/gnu/manifesto.html",
   "title": "The GNU Manifesto"
@@ -281,6 +319,7 @@
   "bytes": 178944,
   "edition": "Lemegeton, 17th c. · ed. Mathers & Crowley, 1904 · Esoteric Archives · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The Book of the Goetia of Solomon the King",
    "year": "1904"
@@ -292,6 +331,7 @@
   "bytes": 608341,
   "edition": "tr. Fabre d'Olivet, 1813 · tr. N. L. Redfield, 1917 · Gutenberg #69174",
   "gutenberg": 69174,
+  "robust": "whole",
   "shelf": "golden",
   "title": "The Golden Verses of Pythagoras"
  },
@@ -299,6 +339,7 @@
   "bytes": 424435,
   "edition": "Emma Goldman, 1910 · Gutenberg #2162",
   "gutenberg": 2162,
+  "robust": "whole",
   "shelf": "goldman",
   "title": "Anarchism and Other Essays"
  },
@@ -306,6 +347,7 @@
   "bytes": 508853,
   "edition": "Hippolytus of Rome, c. 225 · tr. F. Legge, 1921 · vol. 2 · Gutenberg #65478",
   "gutenberg": 65478,
+  "robust": "whole",
   "shelf": "hippolytus",
   "title": "The Refutation of All Heresies"
  },
@@ -313,6 +355,7 @@
   "bytes": 215454,
   "edition": "Parker Hitt, 1916 · Gutenberg #48871",
   "gutenberg": 48871,
+  "robust": "whole",
   "shelf": "hitt",
   "title": "Manual for the Solution of Military Ciphers"
  },
@@ -320,6 +363,7 @@
   "bytes": 571276,
   "edition": "Iamblichus, c. 300 · tr. Thomas Taylor, 1821 · Gutenberg #72815",
   "gutenberg": 72815,
+  "robust": "whole",
   "shelf": "iamblichus",
   "title": "On the Mysteries of the Egyptians, Chaldeans and Assyrians"
  },
@@ -327,6 +371,7 @@
   "bytes": 1523741,
   "edition": "Irenaeus of Lyons, c. 180 · tr. Roberts & Rambaut, 1885 · New Advent",
   "host": "the Christian Classics Ethereal Library",
+  "robust": "whole",
   "shelf": "irenaeus",
   "source": "https://www.ccel.org/ccel/schaff/anf01.txt",
   "title": "Against Heresies"
@@ -335,6 +380,7 @@
   "bytes": 2202053,
   "edition": "H. P. Blavatsky, 1877, vol. 1 · vol. 2 · Gutenberg #68705",
   "gutenberg": 68705,
+  "robust": "whole",
   "shelf": "isis",
   "title": "Isis Unveiled"
  },
@@ -342,6 +388,7 @@
   "bytes": 1151317,
   "edition": "William James, 1902 · Gutenberg #621",
   "gutenberg": 621,
+  "robust": "whole",
   "shelf": "james",
   "title": "The Varieties of Religious Experience"
  },
@@ -350,6 +397,8 @@
   "edition": "1975 onward · version 4.4.7, 2003, ed. Eric S. Raymond · catb.org",
   "free": true,
   "host": "catb.org",
+  "pick": true,
+  "robust": "whole",
   "shelf": "jargon",
   "source": "http://www.catb.org/jargon/oldversions/jarg447.txt",
   "title": "The Jargon File"
@@ -358,6 +407,7 @@
   "bytes": 466824,
   "edition": "Julian of Norwich, 1373–c. 1393 · ed. Grace Warrack, 1901 · Gutenberg #52958",
   "gutenberg": 52958,
+  "robust": "whole",
   "shelf": "julian",
   "title": "Revelations of Divine Love"
  },
@@ -366,6 +416,7 @@
   "bytes": 691314,
   "edition": "from the Zohar · tr. S. L. MacGregor Mathers, 1887 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "Kabbalah unveiled, containing the following books of the Zohar : 1. The book of concealed mystery. 2. The greater holy assembly. 3. The lesser holy assembly",
    "year": "1887"
@@ -377,6 +428,7 @@
   "bytes": 367685,
   "edition": "Thomas à Kempis, c. 1420 · tr. William Benham, 1874 · Gutenberg #1653",
   "gutenberg": 1653,
+  "robust": "whole",
   "shelf": "kempis",
   "title": "The Imitation of Christ"
  },
@@ -385,6 +437,7 @@
   "bytes": 274003,
   "edition": "Clavicula Salomonis, 14th–15th c. · tr. Mathers, 1889 · Esoteric Archives · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The Key of Solomon the king (Clavicula Salomonis)",
    "year": "1889"
@@ -397,6 +450,7 @@
   "bytes": 1065840,
   "edition": "C. W. King, 1887 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The Gnostics and their remains : ancient and mediaeval",
    "year": "1887"
@@ -408,6 +462,7 @@
   "bytes": 220056,
   "edition": "\"Three Initiates\", Chicago, 1908 · Gutenberg #14209",
   "gutenberg": 14209,
+  "robust": "whole",
   "shelf": "kybalion",
   "title": "The Kybalion"
  },
@@ -415,6 +470,7 @@
   "bytes": 643516,
   "edition": "Francis Legge, 1915 · vol. 2 · Gutenberg #71384",
   "gutenberg": 71384,
+  "robust": "whole",
   "shelf": "legge",
   "title": "Forerunners and Rivals of Christianity"
  },
@@ -422,6 +478,7 @@
   "bytes": 1100654,
   "edition": "Éliphas Lévi, 1860 · tr. A. E. Waite, 1913 · Gutenberg #70033",
   "gutenberg": 70033,
+  "robust": "whole",
   "shelf": "levi",
   "title": "The History of Magic"
  },
@@ -429,6 +486,7 @@
   "bytes": 141298,
   "edition": "the Bruce Codex · tr. F. Lamplugh, 1918 · Gutenberg #30799",
   "gutenberg": 30799,
+  "robust": "whole",
   "shelf": "light",
   "title": "The Gnôsis of the Light"
  },
@@ -437,6 +495,7 @@
   "bytes": 30876,
   "edition": "Oxyrhynchus, 1897 · Grenfell & Hunt · Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "Logia Iesou = Sayings of Our Lord from an early Greek papyrus",
    "year": "1897"
@@ -448,6 +507,7 @@
   "bytes": 197632,
   "edition": "L. F. Menabrea, 1842 · tr. and annotated by Ada Lovelace, 1843 · Gutenberg #75107",
   "gutenberg": 75107,
+  "robust": "whole",
   "shelf": "lovelace",
   "title": "Sketch of the Analytical Engine, with Notes by the Translator"
  },
@@ -455,6 +515,8 @@
   "bytes": 92520,
   "edition": "Marx and Engels, 1848 · tr. Samuel Moore, 1888 · Gutenberg #61",
   "gutenberg": 61,
+  "pick": true,
+  "robust": "whole",
   "shelf": "manifesto",
   "title": "The Communist Manifesto"
  },
@@ -463,6 +525,8 @@
   "edition": "The Mentor, Phrack 7, 1986 · Phrack",
   "free": true,
   "host": "Phrack",
+  "pick": true,
+  "robust": "whole",
   "shelf": "mentor",
   "source": "http://phrack.org/archives/issues/7/3.txt",
   "title": "The Conscience of a Hacker"
@@ -471,6 +535,7 @@
   "bytes": 442465,
   "edition": "William Morris, 1890 · Gutenberg #3261",
   "gutenberg": 3261,
+  "robust": "whole",
   "shelf": "morris",
   "title": "News from Nowhere"
  },
@@ -479,6 +544,7 @@
   "bytes": 398972,
   "edition": "Germany, 1849 · New York, 1880 · Esoteric Archives · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The sixth and seventh books of Moses, or, Moses' magical spirit-art : known as the wonderful arts of the old wise Hebrews, taken from the Mosaic books of the Cabala and the Talmud, for the good of mankind ",
    "year": "1880"
@@ -490,6 +556,7 @@
   "bytes": 587429,
   "edition": "Peter Kropotkin, 1902 · Gutenberg #4341",
   "gutenberg": 4341,
+  "robust": "whole",
   "shelf": "mutual",
   "title": "Mutual Aid: A Factor of Evolution"
  },
@@ -498,6 +565,7 @@
   "edition": "Sergey Nechayev, 1869 · marxists.org",
   "free": true,
   "host": "marxists.org",
+  "robust": "whole",
   "shelf": "nechayev",
   "source": "https://www.marxists.org/subject/anarchism/nechayev/catechism.htm",
   "title": "Catechism of a Revolutionist"
@@ -506,6 +574,7 @@
   "bytes": 1532309,
   "edition": "Origen, c. 248 · tr. F. Crombie, 1885 · New Advent",
   "host": "the Christian Classics Ethereal Library",
+  "robust": "whole",
   "shelf": "origen",
   "source": "https://www.ccel.org/ccel/schaff/anf04.txt",
   "title": "Against Celsus"
@@ -514,6 +583,7 @@
   "bytes": 145882,
   "edition": "Thomas Paine, 1776 · The Age of Reason, 1794 · Gutenberg #147",
   "gutenberg": 147,
+  "robust": "whole",
   "shelf": "paine",
   "title": "Common Sense"
  },
@@ -522,6 +592,8 @@
   "bytes": 75795,
   "edition": "Syria, 3rd c. · tr. G. R. S. Mead, 1908, as the Hymn of the Robe of Glory · Gnostic Society Library · scan at the Internet Archive",
   "ocr": true,
+  "pick": true,
+  "robust": "ocr",
   "scan": {
    "title": "Echoes from the Gnosis",
    "year": "1906"
@@ -534,6 +606,8 @@
   "bytes": 643429,
   "edition": "Egypt, 3rd–4th c. · tr. G. R. S. Mead, 1921 · Gnostic Society Library · scan at the Internet Archive",
   "ocr": true,
+  "pick": true,
+  "robust": "ocr",
   "scan": {
    "title": "Pistis Sophia : a Gnostic miscellany : being for the most part extracts from the books of the Saviour, to which are added excerpts from a cognate literature ; englished (with an introduction and annotated bibliography)",
    "year": "1921"
@@ -545,6 +619,7 @@
   "bytes": 511009,
   "edition": "Plotinus, c. 270 · tr. K. S. Guthrie, 1918, four volumes · Gutenberg #42930",
   "gutenberg": 42930,
+  "robust": "whole",
   "shelf": "plotinus",
   "title": "The Enneads"
  },
@@ -552,6 +627,8 @@
   "bytes": 596520,
   "edition": "Edgar Allan Poe, 1843 · the Raven edition · Gutenberg #2147",
   "gutenberg": 2147,
+  "pick": true,
+  "robust": "whole",
   "shelf": "poe",
   "title": "The Gold-Bug, and the rest of volume one"
  },
@@ -559,6 +636,7 @@
   "bytes": 302840,
   "edition": "Niccolò Machiavelli, 1532 · tr. W. K. Marriott, 1908 · Gutenberg #1232",
   "gutenberg": 1232,
+  "robust": "whole",
   "shelf": "prince",
   "title": "The Prince"
  },
@@ -566,6 +644,7 @@
   "bytes": 933599,
   "edition": "Pierre-Joseph Proudhon, 1840 · tr. Benjamin Tucker, 1876 · Gutenberg #360",
   "gutenberg": 360,
+  "robust": "whole",
   "shelf": "proudhon",
   "title": "What Is Property?"
  },
@@ -574,6 +653,7 @@
   "edition": "D. Waitzman, 1 April 1990 · the RFC Editor",
   "free": true,
   "host": "the RFC Editor",
+  "robust": "whole",
   "shelf": "rfc1149",
   "source": "https://www.rfc-editor.org/rfc/rfc1149.txt",
   "title": "RFC 1149: IP over Avian Carriers"
@@ -583,6 +663,7 @@
   "edition": "R. Callon, 1 April 1996 · the RFC Editor",
   "free": true,
   "host": "the RFC Editor",
+  "robust": "whole",
   "shelf": "rfc1925",
   "source": "https://www.rfc-editor.org/rfc/rfc1925.txt",
   "title": "RFC 1925: The Twelve Networking Truths"
@@ -591,6 +672,7 @@
   "bytes": 728847,
   "edition": "John Robison, 1797 · Gutenberg #47605",
   "gutenberg": 47605,
+  "robust": "whole",
   "shelf": "robison",
   "title": "Proofs of a Conspiracy"
  },
@@ -598,6 +680,7 @@
   "bytes": 807956,
   "edition": "Jalāl al-Dīn Rūmī, 13th c. · tr. J. W. Redhouse, 1881, book I · Gutenberg #61724",
   "gutenberg": 61724,
+  "robust": "whole",
   "shelf": "rumi",
   "title": "The Mesnevi"
  },
@@ -605,6 +688,7 @@
   "bytes": 150368,
   "edition": "Karel Čapek, 1920 · tr. Paul Selver, 1923 · Gutenberg #59112",
   "gutenberg": 59112,
+  "robust": "whole",
   "shelf": "rur",
   "title": "R.U.R. (Rossum's Universal Robots)"
  },
@@ -612,6 +696,7 @@
   "bytes": 2001126,
   "edition": "H. P. Blavatsky, 1888, vol. 1 · 2, 3, 4 · Gutenberg #54824",
   "gutenberg": 54824,
+  "robust": "whole",
   "shelf": "secret",
   "title": "The Secret Doctrine"
  },
@@ -619,6 +704,7 @@
   "bytes": 538178,
   "edition": "Michael Sendivogius, 1604, with Paracelsus on the tria prima · tr. John French, 1650 · Gutenberg #61112",
   "gutenberg": 61112,
+  "robust": "whole",
   "shelf": "sendivogius",
   "title": "A New Light of Alchymie"
  },
@@ -626,6 +712,7 @@
   "bytes": 702240,
   "edition": "Herbert Silberer, 1914 · tr. S. E. Jelliffe, 1917 · Gutenberg #27755",
   "gutenberg": 27755,
+  "robust": "whole",
   "shelf": "silberer",
   "title": "Hidden Symbolism of Alchemy and the Occult Arts"
  },
@@ -633,6 +720,7 @@
   "bytes": 124898,
   "edition": "Willis George Emerson, 1908 · Gutenberg #3007",
   "gutenberg": 3007,
+  "robust": "whole",
   "shelf": "smoky",
   "title": "The Smoky God"
  },
@@ -640,6 +728,7 @@
   "bytes": 132627,
   "edition": "Lysander Spooner, 1870 · Gutenberg #36145",
   "gutenberg": 36145,
+  "robust": "whole",
   "shelf": "spooner",
   "title": "No Treason: The Constitution of No Authority"
  },
@@ -647,6 +736,7 @@
   "bytes": 663894,
   "edition": "Bruce Sterling, 1992 · Gutenberg #101",
   "gutenberg": 101,
+  "robust": "whole",
   "shelf": "sterling",
   "title": "The Hacker Crackdown"
  },
@@ -654,6 +744,7 @@
   "bytes": 871650,
   "edition": "Max Stirner, 1844 · tr. Steven Byington, 1907 · Gutenberg #34580",
   "gutenberg": 34580,
+  "robust": "whole",
   "shelf": "stirner",
   "title": "The Ego and His Own"
  },
@@ -661,6 +752,7 @@
   "bytes": 334964,
   "edition": "Sun Tzu, c. 500 BC · tr. Lionel Giles, 1910 · Gutenberg #132",
   "gutenberg": 132,
+  "robust": "whole",
   "shelf": "suntzu",
   "title": "The Art of War"
  },
@@ -668,6 +760,7 @@
   "bytes": 982363,
   "edition": "Emanuel Swedenborg, 1758 · tr. J. C. Ager, 1900 · Gutenberg #17368",
   "gutenberg": 17368,
+  "robust": "whole",
   "shelf": "swedenborg",
   "title": "Heaven and Its Wonders and Hell"
  },
@@ -675,6 +768,7 @@
   "bytes": 278911,
   "edition": "\"Captain Adam Seaborn\", 1820 · Gutenberg #54485",
   "gutenberg": 54485,
+  "robust": "whole",
   "shelf": "symzonia",
   "title": "Symzonia: Voyage of Discovery"
  },
@@ -682,6 +776,8 @@
   "bytes": 78705,
   "edition": "Laozi · tr. James Legge, 1891 · Gutenberg #216",
   "gutenberg": 216,
+  "pick": true,
+  "robust": "whole",
   "shelf": "tao",
   "title": "The Tao Teh King"
  },
@@ -689,6 +785,7 @@
   "bytes": 71040,
   "edition": "Henry David Thoreau, 1849 · Gutenberg #71",
   "gutenberg": 71,
+  "robust": "whole",
   "shelf": "thoreau",
   "title": "On the Duty of Civil Disobedience"
  },
@@ -697,6 +794,8 @@
   "bytes": 856566,
   "edition": "G. R. S. Mead, 1906, three volumes · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "pick": true,
+  "robust": "ocr",
   "scan": {
    "title": "Thrice-greatest Hermes; studies in Hellenistic theosophy and gnosis, being a translation of the extant sermons and fragments of the Trismegistic literature, with prolegomena, commentaries, and notes",
    "year": "1906"
@@ -709,6 +808,8 @@
   "bytes": 562157,
   "edition": "G. R. S. Mead, 1906, three volumes · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "pick": true,
+  "robust": "ocr",
   "scan": {
    "title": "Thrice-greatest Hermes; studies in Hellenistic theosophy and gnosis, being a translation of the extant sermons and fragments of the Trismegistic literature, with prolegomena, commentaries, and notes",
    "year": "1906"
@@ -721,6 +822,8 @@
   "bytes": 616748,
   "edition": "G. R. S. Mead, 1906, three volumes · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "pick": true,
+  "robust": "ocr",
   "scan": {
    "title": "Thrice-greatest Hermes; studies in Hellenistic theosophy and gnosis, being a translation of the extant sermons and fragments of the Trismegistic literature, with prolegomena, commentaries, and notes",
    "year": "1906"
@@ -732,6 +835,7 @@
   "bytes": 468330,
   "edition": "Plato, c. 360 BC · tr. Benjamin Jowett, 1871 · Gutenberg #1572",
   "gutenberg": 1572,
+  "robust": "whole",
   "shelf": "timaeus",
   "title": "Timaeus"
  },
@@ -739,6 +843,7 @@
   "bytes": 469745,
   "edition": "Franz Kafka, 1925 · tr. David Wyllie · Gutenberg #7849",
   "gutenberg": 7849,
+  "robust": "whole",
   "shelf": "trial",
   "title": "The Trial"
  },
@@ -746,6 +851,7 @@
   "bytes": 222448,
   "edition": "Mark Twain, 1916 · Gutenberg #50109",
   "gutenberg": 50109,
+  "robust": "whole",
   "shelf": "twain",
   "title": "The Mysterious Stranger"
  },
@@ -753,6 +859,7 @@
   "bytes": 213356,
   "edition": "Evelyn Underhill, 1914 · Gutenberg #21774",
   "gutenberg": 21774,
+  "robust": "whole",
   "shelf": "underhill",
   "title": "Practical Mysticism"
  },
@@ -761,6 +868,7 @@
   "bytes": 768554,
   "edition": "tr. F. Max Müller, 1879, Sacred Books of the East, vol. 1 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "The Upanishads",
    "year": "1879"
@@ -773,6 +881,7 @@
   "bytes": 295153,
   "edition": "Kore Kosmou, from Stobaeus · tr. Kingsford & Maitland, 1885 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "1885 Kingsford Maitland Virgin Of The World",
    "year": ""
@@ -784,6 +893,7 @@
   "bytes": 380176,
   "edition": "Yevgeny Zamyatin, 1921 · tr. Gregory Zilboorg, 1924 · Gutenberg #61963",
   "gutenberg": 61963,
+  "robust": "whole",
   "shelf": "we",
   "title": "We"
  },
@@ -791,6 +901,7 @@
   "bytes": 1087449,
   "edition": "Nesta H. Webster, 1924 · Gutenberg #19104",
   "gutenberg": 19104,
+  "robust": "whole",
   "shelf": "webster",
   "title": "Secret Societies and Subversive Movements"
  },
@@ -799,6 +910,7 @@
   "bytes": 65142,
   "edition": "the Book of Formation, 3rd–6th c. · tr. W. Wynn Westcott, 1887 · sacred-texts · scan at the Internet Archive",
   "ocr": true,
+  "robust": "ocr",
   "scan": {
    "title": "Sepher Yetzirah: The Bok of Formation, and the Thirty Two Paths of Wisdom ...",
    "year": "1893"

@@ -208,7 +208,7 @@
         SHELF.loading = fetch("/temple/texts/index.json").then(function (r) { return r.json(); }).then(function (m) {
             SHELF.list = Object.keys(m).filter(function (k) { return !/-\d+$/.test(k); }).map(function (k) {
                 var e = m[k], by = (e.edition || "").split(/[·,]/)[0];
-                return { slug: k, title: e.title, by: by.replace(/\b(tr\.|ed\.)\s*/g, "").trim(), words: shelfWords(e.title), who: shelfWords(by).filter(function (w) { return w.length >= 5; }) };
+                return { slug: k, title: e.title, pick: !!e.pick, by: by.replace(/\b(tr\.|ed\.)\s*/g, "").trim(), words: shelfWords(e.title), who: shelfWords(by).filter(function (w) { return w.length >= 5; }) };
             });
             return SHELF.list;
         }).catch(function () { SHELF.loading = null; return null; });
@@ -241,6 +241,11 @@
             return "from " + book.title.toLowerCase() + ": \u201c" + q + "\u201d \u2014 " + wrong.toLowerCase() + ", i think. it is in the temple, anyway: /temple/read/#" + book.slug;
         });
     }
+    // Any book: two times in three one of the shelf's places to start, otherwise anything.
+    function anyBook(list) {
+        var picks = list.filter(function (b) { return b.pick; }), pool = picks.length && Math.random() < 0.67 ? picks : list;
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
     function fromTheShelf(t) {
         var general = /\b(read me|read us|quote|a passage|a paragraph|a line from|something from the (shelf|shelves|library|temple|stacks)|from the library|open a book|any book|pick a book|what are you reading|been reading)\b/.test(t);
         if (!SHELF.list) {
@@ -248,13 +253,13 @@
             return loadShelf().then(function (l) {
                 var b = shelfMatch(t);
                 if (b) return passage(b);
-                if (general && l && l.length) return passage(l[Math.floor(Math.random() * l.length)]);
+                if (general && l && l.length) return passage(anyBook(l));
                 return answer(t, 1);
             });
         }
         var book = shelfMatch(t);
         if (!book && !general) return null;
-        if (!book) book = SHELF.list[Math.floor(Math.random() * SHELF.list.length)];
+        if (!book) book = anyBook(SHELF.list);
         return passage(book);
     }
     // The planetary hour (js/hours.js, fetched the first time it is asked).

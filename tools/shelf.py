@@ -151,15 +151,43 @@ def label(url):
         if host in url: return name
     return "the source"
 
+# The marks: what each entry is, from the manifest (kept whole, a scan's
+# OCR, made here, a link out), and the places to start, from the page's own
+# "where to start" list. Written before each entry's link, replacing any
+# already there, so the pass is idempotent; the manifest learns them too.
+ROBUST = {
+    "whole": ("\u25cf", "kept here whole, as plain text"),
+    "ocr": ("\u25d0", "kept here as a scan's OCR, uncorrected"),
+    "drawn": ("\u25c6", "made here rather than kept"),
+    "link": ("\u25cb", "a link out; not kept here"),
+}
+START = re.compile(r'<ol class="start"[^>]*>(.*?)</ol>', re.S)
+LI = re.compile(r'<li id="lib-([a-z0-9-]+)"(?: class="[^"]*")?>\s*(?:<span class="(?:mark|pick)"[^>]*>[^<]*</span>\s*)*(?=<a href="([^"]+)")')
+def marks(page, manifest):
+    m = START.search(page)
+    picks = set(re.findall(r'href="#lib-([a-z0-9-]+)"', m.group(1))) if m else set()
+    def one(mm):
+        slug, href = mm.group(1), mm.group(2)
+        kind = ("ocr" if manifest[slug].get("ocr") else "whole") if slug in manifest else ("drawn" if href.startswith("/temple/") else "link")
+        glyph, what = ROBUST[kind]
+        pre = '<span class="mark" data-robust="%s" title="%s">%s</span>' % (kind, what, glyph)
+        if slug in picks: pre += '<span class="pick" title="a place to start">\u2606</span>'
+        return '<li id="lib-%s"%s>%s ' % (slug, ' class="pick"' if slug in picks else '', pre)
+    for name, entry in manifest.items():
+        entry["robust"] = "ocr" if entry.get("ocr") else "whole"
+        if entry.get("shelf") in picks: entry["pick"] = True
+        else: entry.pop("pick", None)
+    return LI.sub(one, page)
+
 def main():
     refetch = "--refetch" in sys.argv
     os.makedirs(TEXTS, exist_ok=True)
     page = open(PAGE, encoding="utf-8").read()
     manifest = {}
     out = page
-    for m in re.finditer(r'<li id="lib-([a-z0-9-]+)">(.*?)</li>', page, re.S):
+    for m in re.finditer(r'<li id="lib-([a-z0-9-]+)"[^>]*>(.*?)</li>', page, re.S):
         slug, body = m.group(1), m.group(2)
-        first = re.match(r'<a href="([^"]+)">(.*?)</a>', body, re.S)
+        first = re.search(r'<a href="([^"]+)">(.*?)</a>', body, re.S)
         title = html.unescape(re.sub(r"<[^>]+>", "", first.group(2))).strip()
         # The book's source: its own link, or, once that opens the reading room, the first link out.
         ext = first.group(1)
@@ -231,6 +259,7 @@ def main():
             elif kind == "gutenberg":
                 new = new.replace('<a href="%s">' % src, '<a href="%s" data-gutenberg="%s">' % (local, ref), 1)
         out = out.replace(body, new, 1)
+    out = marks(out, manifest)
     if out != page:
         open(PAGE, "w", encoding="utf-8").write(out)
     json.dump(manifest, open(os.path.join(TEXTS, "index.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False, sort_keys=True)

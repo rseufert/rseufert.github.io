@@ -75,7 +75,7 @@
             var vols = Object.keys(manifest).filter(function (k) { return manifest[k].shelf === m.shelf && k !== slug; }).sort();
             var scan = m.archive ? "· a scan at the Internet Archive, <a href=\"https://archive.org/details/" + m.archive + "\">" + esc(m.archive) + "</a>" + (m.scan && m.scan.year ? ", " + esc(m.scan.year) : "") + "; the OCR, uncorrected · " : "";
             var hand = m.source ? "· the text at <a href=\"" + esc(m.source) + "\">" + esc(m.host || "its source") + "</a> · " : "";
-            sourceOut.innerHTML = (m.gutenberg ? "· Project Gutenberg <a href=\"https://www.gutenberg.org/ebooks/" + m.gutenberg + "\">#" + m.gutenberg + "</a> · " : scan || hand || "· ") +
+            sourceOut.innerHTML = (m.pick ? "<span class=\"pick\" title=\"a place to start\">\u2606</span> " : "") + (m.gutenberg ? "· Project Gutenberg <a href=\"https://www.gutenberg.org/ebooks/" + m.gutenberg + "\">#" + m.gutenberg + "</a> · " : scan || hand || "· ") +
                 "<a href=\"/temple/texts/" + slug + ".txt\">the file</a>" +
                 (m.shelf ? " · <a href=\"/temple/#lib-" + m.shelf + "\">its shelf</a>" : "") +
                 (vols.length ? " · " + vols.map(function (k) { return "<a href=\"/temple/read/#" + k + "\">" + esc(manifest[k].title) + "</a>"; }).join(", ") : "");
