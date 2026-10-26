@@ -47,7 +47,13 @@ it, or a line about being empty and which planet is nearest, and a piece of
 the paper's advice. The reader's sign is a row of buttons and is remembered
 (`paper-sign`).
 
-**Letters** are two of nine from the city's people; **classifieds** are two
+**Geomancy** is the day's shield chart: four mothers cast from the seed
+(`rng(777)`), the daughters read across them, nieces, witnesses and the judge
+by adding pairs (like lines two points, unlike one), the sixteen figures with
+their Latin names, planets and meanings in `FIG`, and a reading by the old
+rules: the judge for the matter, the witnesses for the road, the first
+mother for the asker, Rubeus first noted as the figure the geomancers tore
+up. `window.Paper.geomancy` has the chart. **Letters** are two of nine from the city's people; **classifieds** are two
 house advertisements and four of the people's notices, and one real product
 from the shop if its public list answers. **Obituaries** are the backrooms'
 ghosts (`ghosts.json` on the `sky-data` branch, the copy on master as the

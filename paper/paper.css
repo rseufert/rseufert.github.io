@@ -61,6 +61,20 @@
 .paper-page .horoscope .cast p { font-size: 0.95em; margin: 0 0 6px; }
 .paper-page .horoscope .cast p.yours { border-left: 3px solid var(--accent); padding-left: 10px; }
 .paper-page .horoscope b { font-weight: bold; }
+/* Geomancy: the shield chart as a grid of figures, mothers and daughters across the top. */
+.paper-page .geomancy { border-bottom: 1px solid var(--ink); padding-bottom: 10px; margin-bottom: 18px; }
+.paper-page .geomancy p { font-size: 0.95em; margin: 0 0 8px; }
+.paper-page .geomancy b { font-weight: bold; }
+.paper-page .shield { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px 4px; margin: 8px 0 12px; }
+.paper-page .shield .geo:nth-child(n+9):nth-child(-n+12) { grid-column: span 2; }
+.paper-page .shield .geo:nth-child(13), .paper-page .shield .geo:nth-child(14) { grid-column: span 4; }
+.paper-page .shield .geo:nth-child(15) { grid-column: span 8; }
+.paper-page .geo { text-align: center; font: 0.78em/1.25 var(--mono); color: var(--ink); border: 1px dashed var(--rule); padding: 6px 2px 4px; }
+.paper-page .geo i { display: block; font-style: normal; letter-spacing: 0; }
+.paper-page .geo b { display: block; margin-top: 4px; font-weight: normal; color: var(--soft); font-size: 0.85em; }
+.paper-page .geo small { display: none; color: var(--soft); font-size: 0.8em; }
+.paper-page .shield .geo:nth-child(n+13) { font-size: 0.9em; }
+@media (min-width: 700px) { .paper-page .geo small { display: block; } }
 
 .paper-page .ad {
     border: 1px solid var(--ink);
