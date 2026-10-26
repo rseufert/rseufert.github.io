@@ -194,6 +194,12 @@
         box(cx - 7.5, cz - 12.5, 3, 2, 2.2, { col: "#ffe9a0", label: "NEWS" });
         label("THE DAILY SEED · NO. " + Math.floor((Date.now() - new Date(2016, 7, 30)) / 864e5), cx - 6, 1.5, cz - 12.55, 0.24, "#ffe9a0");
         door(cx - 6, cz - 13.5, "the paper", "/paper/", "link", 2.2);
+        npc(cx - 10, cz - 14, "the newsagent", "cap", "#ffe9a0", {
+            ask: "the newsagent: there is a puzzle at the back of the paper. a substitution, a fresh key every midnight, and nobody ever sends in the answer. the manuals are in the temple if you want to do it properly; the commonest letter is still an e. solve today's and come back before it changes.",
+            wait: "the newsagent: not today's, not yet. the box under the cipher takes your answer and knows. the spaces are real, which is a kindness poe never did anyone.",
+            thanks: "the newsagent: you got it. first one today, as far as i know, and i would know. i would print your name but the letters page is full and the names in it are made up anyway. tomorrow there is another.",
+            after: "the newsagent: tomorrow's key is tomorrow's problem."
+        });
         npc(cx + 11, cz - 11, "josh allen", "big", "#ffffff", { idle: [
             "josh allen: i am not in that photo.",
             "josh allen: the alt text says i am. i don't argue with alt text. i don't agree with it either.",
@@ -547,7 +553,8 @@
         { id: "lie", who: "the intern", title: "catch the helpdesk lying", check: function () { var r = stored("rickbot"); return !!(r && r.room); } },
         { id: "turn", who: "the astronomer", title: "watch the sky turn", check: function () { return (Q.flags.lapsed || 0) >= 24; } },
         { id: "sign", who: "the hierophant", title: "go into the temple", check: function () { return went(/^\/temple\/?/); } },
-        { id: "cipher", who: "the code clerk", title: "read the wall", check: function () { var c = null; try { c = localStorage.getItem("cipher"); } catch (e) { c = null; } return !!c; } }
+        { id: "cipher", who: "the code clerk", title: "read the wall", check: function () { var c = null; try { c = localStorage.getItem("cipher"); } catch (e) { c = null; } return !!c; } },
+        { id: "puzzle", who: "the newsagent", title: "solve the day's puzzle", check: function () { var d = new Date(), stamp = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2), v = null; try { v = localStorage.getItem("paper-solved"); } catch (e) { v = null; } return v === stamp; } }
     ];
     function doneCount() { return QUESTS.filter(function (q) { return Q.done[q.id]; }).length; }
     function allDone() { return doneCount() === QUESTS.length; }

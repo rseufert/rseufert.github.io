@@ -74,6 +74,13 @@
 .paper-page .cls { font-size: 0.95em; line-height: 1.4em; margin: 0 0 8px; }
 .paper-page .cls b { font-family: var(--mono); font-weight: normal; font-size: 0.9em; letter-spacing: 0.06em; }
 .paper-page .cipher { font: 1.05em/1.7 var(--mono); letter-spacing: 0.12em; word-break: break-all; border: 1px dashed var(--rule); padding: 8px 10px; margin: 0 0 8px; }
+.paper-page .solve { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 8px; }
+.paper-page .solve input { flex: 1; min-width: 12ch; font: 0.95em var(--mono); letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 8px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; }
+.paper-page .solve button { font: 0.82em var(--mono); padding: 6px 12px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; cursor: pointer; }
+.paper-page .solve button:hover { color: var(--accent); border-color: var(--accent); }
+.paper-page .solve button:disabled, .paper-page .solve input:disabled { opacity: 0.6; cursor: default; }
+.paper-page .solve .verdict { flex-basis: 100%; font: 0.82em/1.5 var(--mono); color: var(--soft); }
+.paper-page .solve .verdict:empty { display: none; }
 .paper-page .obit b { font-weight: bold; }
 .paper-page blockquote { margin: 0 0 8px; padding-left: 12px; border-left: 3px solid var(--rule); font-style: italic; }
 .paper-page blockquote p { font-size: 1em; }
