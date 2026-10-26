@@ -171,6 +171,16 @@ body.filled { overflow: hidden; }
 .temple-page.sigil .hint { margin: 10px 0 10px; }
 .temple-page.sigil .buttons { margin: 0 0 24px; }
 
+/* The talisman press (temple/talisman/): planet buttons, toggles, a square stage. */
+.temple-page.talisman .planets, .temple-page.talisman .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 8px; }
+.temple-page.talisman .planets button, .temple-page.talisman .controls button, .temple-page.talisman .buttons .button { font: 13px var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 6px 12px; cursor: pointer; text-decoration: none; display: inline-block; }
+.temple-page.talisman .planets button:hover, .temple-page.talisman .controls button:hover, .temple-page.talisman .buttons .button:hover, .temple-page.talisman button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.temple-page.talisman .controls input { flex: 1; min-width: 12ch; font: 1em var(--mono); padding: 6px 10px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; }
+.temple-page.talisman .controls input:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
+.temple-page.talisman .stage { aspect-ratio: 1 / 1; max-height: 78vh; margin-top: 8px; }
+.temple-page.talisman .hint { margin: 10px 0 10px; }
+.temple-page.talisman .buttons { margin: 0 0 24px; }
+
 /* The librarian reading aloud: the paragraph being read is marked. */
 .temple-page.read .text .aloud { outline: 1px dashed var(--accent); outline-offset: 8px; }
 .temple-page.read .bar { margin: 0 0 10px; }
