@@ -72,6 +72,7 @@ HOSTS = [("gutenberg.org", "Gutenberg"), ("gnosis.org", "Gnostic Society Library
          ("rfc-editor.org", "the RFC Editor"), ("phrack.org", "Phrack"), ("marxists.org", "marxists.org")]
 # A file put there by hand whose text came from somewhere other than the shelf's own link.
 HAND = {
+    "keys": "https://archive.org/details/aleister-crowley-liber-chanokh",
     "origen": "https://www.ccel.org/ccel/schaff/anf04.txt",
     "irenaeus": "https://www.ccel.org/ccel/schaff/anf01.txt",
 }

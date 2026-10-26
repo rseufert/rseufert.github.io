@@ -1,0 +1,61 @@
+---
+layout: default
+css: /temple/temple.css
+title: The angelic alphabet
+description: "The twenty-one letters Dee and Kelley received in 1583, redrawn from Dee's own hand with their names and values; type and it is written in them, right to left as his tables are. The nineteen Keys are on the shelf."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read enochian">
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>John Dee and Edward Kelley &middot; 1583</span></p>
+<h1>The angelic alphabet</h1>
+<p class="lede">Twenty-one letters, given to Dee and Kelley at Mortlake in the spring of 1583, each with a name of its
+own and a value in the Latin alphabet, in an order that is nobody else's. Dee drew them in his record of
+the sessions, quickly, and they are redrawn here from that hand in the temple's line, roughly, since his
+pen was quicker than a stroke skeleton. Type below and it is written in them, right to left as his tables
+are written, or left to right if you ask. The language that goes with the letters, the nineteen Keys the
+angels delivered backwards a letter at a time, is <a href="/temple/read/#keys">on the shelf</a>.</p>
+
+<form class="press" onsubmit="return false">
+  <label for="enochian-text" class="visually-hidden">the text</label>
+  <input id="enochian-text" type="text" maxlength="120" placeholder="type here" autocapitalize="off" spellcheck="false" autocomplete="off">
+  <button type="button" id="enochian-dir" aria-pressed="true">right to left</button>
+</form>
+
+<div class="stage" id="enochian-room">
+  <canvas id="enochian-stage" aria-label="the text written in the angelic letters"></canvas>
+</div>
+<p class="buttons"><a class="button" id="enochian-save" href="#" download="enochian.png">save as an image</a></p>
+
+<h2>The letters</h2>
+<p class="hint">in Dee's order; tap one for its name, and it is added to the text</p>
+<div class="alphabet" id="enochian-table"></div>
+<p class="hint" id="enochian-name"></p>
+
+<p>What they are. On 26 March 1583, by Dee's diary, Kelley saw in the stone a table of forty-nine by
+forty-nine squares and an alphabet to fill it with, and over the following days the letters came one by
+one with their names: Pa, Veh, Ged, Gal, Or, Un, Graph, Tal, Gon, Na, Ur, Mals, Ger, Drux, Pal, Med, Don,
+Ceph, Van, Fam, Gisg. They stand for the Latin letters b, c, g, d, f, a, e, m, i, h, l, p, q, n, x, o, r,
+z, u, s, t, which leaves out j, k, v, w and y, so k is written with Veh, y and j with Gon, v and w with Van,
+as Dee did. The book the letters were for, <em>Liber Loagaeth</em>, the Book of the Speech of God, was
+dictated after them, forty-nine leaves of forty-nine-by-forty-nine letters each, and nobody, Dee
+included, has read it. The Keys came the next year, in a language with a grammar of sorts and a
+vocabulary the angels glossed word by word, and they were delivered backwards, since to speak them
+forwards, the angels said, would have been to work them.</p>
+
+<p>The letters here are drawn from the page of Sloane 3188 on which Dee wrote them out with their
+names, which the Esoteric Archives reproduce; later printed forms, Casaubon's in 1659 and the Golden
+Dawn's, tidy them in different directions, and this page follows the hand rather than either. The
+strokes are a sketch of each, not a facsimile. Nothing typed here is stored or sent; the image is made in
+your browser when you save it.</p>
+
+<p class="colophon">Dee's record of the sessions is British Library Sloane MS 3188 (1581 to 1583), transcribed as
+<em>Mysteriorum Libri Quinque</em> at the <a href="https://www.esotericarchives.com/dee/sl3188.htm">Esoteric
+Archives</a>, where the alphabet page is reproduced; the sessions of 1584 with the Keys are in Casaubon's
+<em>A True &amp; Faithful Relation</em>, 1659, on the
+<a href="https://archive.org/details/truefaithfulrela00deej">Internet Archive</a>. Public domain. The page is this
+site's own, in the temple's line like <a href="/temple/sigil/">the sigil press</a> and
+<a href="/temple/talisman/">the talisman press</a>. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/enochian.js">script</a>.</p>
+</div>
+<script src="/temple/enochian.js?v={{ site.time | date: '%s' }}"></script>
