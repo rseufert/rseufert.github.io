@@ -78,7 +78,11 @@ dystopias; and the machine, from Lovelace's notes to the Jargon File. Each is a 
 copy elsewhere, Project Gutenberg where it has one, otherwise the Gnostic
 Society Library, the Esoteric Archives, New Advent, the Internet Archive or
 the Internet Sacred Text Archive, with the edition in the faint ink and one
-line of shelf note. Every text is in the public domain in the United States
+line of shelf note, and a mark before the title for what the entry is
+(`tools/shelf.py` writes it from the manifest: ● kept here whole, ◐ a
+scan's OCR, ◆ made here, ○ a link out), with ☆ on the dozen "where to
+start" picks listed above the shelves, which the manifest carries as
+`pick` for the reading room and rickbot. Every text is in the public domain in the United States
 (the translations are the Victorian and Edwardian ones: Mead, Mathers,
 Legge, Budge, Taylor, Müller, the Ante-Nicene Fathers); the Nag Hammadi
 codices are not on the shelf because their English translations are not,
