@@ -31,6 +31,10 @@
     var fullButton = document.getElementById("city-full");
     var unfillButton = document.getElementById("city-unfill");
     var enterButton = document.getElementById("city-enter");
+    var pauseButton = document.getElementById("city-pause");
+    var settings = document.getElementById("city-settings");
+    var lookRange = document.getElementById("city-look"), walkRange = document.getElementById("city-walk");
+    var invertBox = document.getElementById("city-invert"), leftyBox = document.getElementById("city-lefty");
     var whereOut = document.getElementById("city-where");
 
     var MONO = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
@@ -762,6 +766,17 @@
     var PITCH_DOWN = -1.0, PITCH_UP = 1.45;
     var mode = "title";          // title, play, pause, enter, fall
     var keys = {}, stick = { x: 0, y: 0 };
+    // Controls, shared with the backrooms through localStorage "controls": how far the view
+    // turns per mouse or thumb movement (look), how far the left thumb travels to
+    // walk flat out (walk), both as multiples of the stock feel; invert look;
+    // left-handed, which swaps the thumbs.
+    var controls = (function () {
+        var c = null;
+        try { c = JSON.parse(localStorage.getItem("controls")); } catch (e) { c = null; }
+        c = c || {};
+        return { look: typeof c.look === "number" ? c.look : 1, walk: typeof c.walk === "number" ? c.walk : 1, invert: !!c.invert, lefty: !!c.lefty };
+    })();
+    function saveControls() { try { localStorage.setItem("controls", JSON.stringify(controls)); } catch (e) { /* a visit's worth */ } }
     var clock = 0, modeClock = 0, lastFrame = 0, still = 0, stepClock = 0, slow = 0, hue = 0;
     var msg = { text: "", at: 0, until: 0 }, nearDoor = null, going = null;
     var W = 0, H = 0, DPR = 1, f = 0;
@@ -819,6 +834,8 @@
         doors.forEach(function (d) { if (d.hidden) return; var dd = Math.hypot(d.x - cam.x, d.z - cam.z); if (dd < d.r && dd < best) { best = dd; nearDoor = d; } });
         if (nearDoor && nearDoor.kind === "hole") fall();
         if (enterButton) enterButton.hidden = !(nearDoor && TOUCH);
+        // A pause button where there is no esc to press, or no lock to let go of.
+        if (pauseButton) pauseButton.hidden = !(mode === "play" && (TOUCH || !lockable));
     }
     // The hill under the dashboard lifts you.
     function ground(x, z) {
@@ -1380,7 +1397,7 @@
     addEventListener("keydown", function (e) {
         if (mode === "title" || mode === "pause") return;
         if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
-        if (e.code === "Escape") return;
+        if (e.code === "Escape") { if (mode === "play" && !locked) pause("paused. click to walk on."); return; }
         if ((e.code === "KeyE" || e.code === "Enter") && mode === "play" && nearDoor) { enter(nearDoor); e.preventDefault(); return; }
         if (e.code === "KeyT" && mode === "play") { lapse = !lapse; say(lapse ? "the clock runs: an hour every second and a bit. watch the north. the dipper goes round polaris and never sets; orion rises in the east and sets in the west. T again to stop." : "the clock stops at " + Math.round(lapsed) + " hours on.", 8); return; }
         if (e.code === "KeyC") { namesOn = !namesOn; say(namesOn ? "the constellations are named. stand still and they are anyway." : "the names are off.", 4); return; }
@@ -1402,8 +1419,8 @@
     });
     addEventListener("mousemove", function (e) {
         if (!locked || mode !== "play") return;
-        cam.yaw += e.movementX * 0.0022;
-        cam.pitch = Math.max(PITCH_DOWN, Math.min(PITCH_UP, cam.pitch - e.movementY * 0.0022));
+        cam.yaw += e.movementX * 0.0022 * controls.look;
+        cam.pitch = Math.max(PITCH_DOWN, Math.min(PITCH_UP, cam.pitch - e.movementY * 0.0022 * controls.look * (controls.invert ? -1 : 1)));
         if (Math.abs(e.movementX) + Math.abs(e.movementY) > 2) still = 0;
     });
     var touches = {};
@@ -1411,15 +1428,16 @@
         if (mode !== "play" || locked) return;
         if (e.pointerType !== "touch" && e.button !== 0) return;
         var r = canvas.getBoundingClientRect();
-        touches[e.pointerId] = { x: e.clientX, y: e.clientY, side: e.pointerType === "touch" && e.clientX - r.left < r.width / 2 ? "walk" : "look" };
+        var leftHalf = e.clientX - r.left < r.width / 2;
+        touches[e.pointerId] = { x: e.clientX, y: e.clientY, side: e.pointerType === "touch" && leftHalf !== controls.lefty ? "walk" : "look" };
         canvas.setPointerCapture(e.pointerId);
         e.preventDefault();
     });
     canvas.addEventListener("pointermove", function (e) {
         var t = touches[e.pointerId];
         if (!t) return;
-        if (t.side === "walk") { stick.x = Math.max(-1, Math.min(1, (e.clientX - t.x) / 50)); stick.y = Math.max(-1, Math.min(1, (e.clientY - t.y) / 50)); }
-        else { cam.yaw += (e.clientX - t.x) * 0.006; cam.pitch = Math.max(PITCH_DOWN, Math.min(PITCH_UP, cam.pitch - (e.clientY - t.y) * 0.004)); t.x = e.clientX; t.y = e.clientY; still = 0; }
+        if (t.side === "walk") { var reach = 50 / controls.walk; stick.x = Math.max(-1, Math.min(1, (e.clientX - t.x) / reach)); stick.y = Math.max(-1, Math.min(1, (e.clientY - t.y) / reach)); }
+        else { cam.yaw += (e.clientX - t.x) * 0.006 * controls.look; cam.pitch = Math.max(PITCH_DOWN, Math.min(PITCH_UP, cam.pitch - (e.clientY - t.y) * 0.004 * controls.look * (controls.invert ? -1 : 1))); t.x = e.clientX; t.y = e.clientY; still = 0; }
         e.preventDefault();
     });
     function endTouch(e) { var t = touches[e.pointerId]; if (!t) return; if (t.side === "walk") stick.x = stick.y = 0; delete touches[e.pointerId]; }
@@ -1430,8 +1448,8 @@
 
     // ---- the veil ------------------------------------------------------------------------
     function pause(text) {
-        mode = "pause"; keys = {}; stick.x = stick.y = 0;
-        veilText.textContent = text; go.textContent = "walk on"; veil.hidden = false;
+        mode = "pause"; keys = {}; stick.x = stick.y = 0; touches = {};
+        veilText.textContent = text; go.textContent = "walk on"; if (settings) settings.hidden = false; veil.hidden = false;
         if (audio) audio.quiet(true);
     }
     function begin() {
@@ -1445,6 +1463,24 @@
         lock();
     }
     go.addEventListener("click", begin);
+    if (pauseButton) pauseButton.addEventListener("click", function () { if (mode === "play") pause(TOUCH ? "paused. tap to walk on." : "paused. click to walk on."); });
+    // Settings, on the pause veil.
+    function knob(range, key) {
+        if (!range) return;
+        var out = range.parentNode.querySelector("output");
+        function show() { out.textContent = Math.round(controls[key] * 100) + "%"; }
+        range.value = Math.round(controls[key] * 100); show();
+        range.addEventListener("input", function () { controls[key] = range.value / 100; show(); saveControls(); });
+    }
+    function toggle(box, key) {
+        if (!box) return;
+        box.checked = !!controls[key];
+        box.addEventListener("change", function () { controls[key] = box.checked; saveControls(); stage.classList.toggle("lefty", controls.lefty); });
+    }
+    knob(lookRange, "look"); knob(walkRange, "walk");
+    toggle(invertBox, "invert"); toggle(leftyBox, "lefty");
+    stage.classList.toggle("lefty", controls.lefty);
+    if (!TOUCH) { if (walkRange) walkRange.parentNode.hidden = true; if (leftyBox) leftyBox.parentNode.hidden = true; }
     // Fullscreen, or the nearest thing: iPhones have no Fullscreen API for
     // anything but video (Safari and Chrome alike), so there the stage is
     // pinned over the page instead, with a button to let it go.
@@ -1480,9 +1516,10 @@
     });
     soundButton.setAttribute("aria-pressed", soundOn ? "true" : "false");
     function title() {
-        var how = TOUCH ? "left thumb walks, right thumb looks; a button appears at a door or a person." : "wasd or arrows walk, the mouse looks, shift runs, E enters a door or talks, T runs the clock, C names the stars, Q is the errands, esc pauses.";
+        var how = TOUCH ? "left thumb walks, right thumb looks; a button appears at a door or a person. the top left corner pauses, and the settings are there." : "wasd or arrows walk, the mouse looks, shift runs, E enters a door or talks, T runs the clock, C names the stars, Q is the errands, esc pauses and has the settings.";
         veilText.textContent = "the site, as a city, laid out from today's date. " + how;
         go.textContent = "walk";
+        if (settings) settings.hidden = true;
         veil.hidden = false;
     }
 
