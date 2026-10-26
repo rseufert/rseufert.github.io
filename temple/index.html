@@ -24,9 +24,11 @@ whoever wrote it, which are the only kinds a library like this can afford.</p>
 </div>
 
 <div class="bar">
-  <p class="hint">point at a sign, or tap it &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> walk round &middot; <kbd>home</kbd> the monad &middot; <kbd>m</kbd> the drone, tuned to the hour's planet &middot; <kbd>f</kbd> the whole screen &middot; the names below are buttons too</p>
-  <p class="buttons"><button type="button" id="temple-sound">drone</button> <button type="button" id="temple-full">fullscreen</button> <output id="temple-hour" class="hour" title="the planetary hour: twelve unequal hours from sunrise to sunset, twelve from sunset to sunrise, each a planet's in the Chaldean order"></output></p>
+  <p class="hint">point at a sign, or tap it &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> walk round &middot; <kbd>home</kbd> the monad &middot; <kbd>m</kbd> the drone, tuned to the hour's planet &middot; <kbd>t</kbd> trace a pentagram at a quarter &middot; <kbd>f</kbd> the whole screen &middot; the names below are buttons too</p>
+  <p class="buttons"><button type="button" id="temple-sound">drone</button> <button type="button" id="temple-trace" aria-pressed="false">trace</button> <button type="button" id="temple-full">fullscreen</button> <output id="temple-hour" class="hour" title="the planetary hour: twelve unequal hours from sunrise to sunset, twelve from sunset to sunrise, each a planet's in the Chaldean order"></output></p>
 </div>
+
+<p class="hint trace-say" id="temple-trace-say" aria-live="polite"></p>
 
 <div class="reading" aria-live="polite">
   <h2 id="temple-name">The Monad</h2>
