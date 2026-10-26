@@ -521,7 +521,7 @@
             ask: "the heron: i have watched this gauge for nine years and i cannot read. go to the dashboard, the station on the hill, and read me the willamette. the number in feet. then come back and say it.",
             wait: "the heron: you have not been to the dashboard. the hill. the door at the station.",
             thanks: "the heron: you went. i will tell you what it says now; i had it all along, i only wanted company.",
-            after: "the heron: still watching.", then: sayGauge
+            after: (function () { var a = stored("augury"); return a && a.date === new Date().toISOString().slice(0, 10) ? "the heron: " + a.line + " i read it off the paper. i still cannot read; i had it read to me." : "the heron: still watching. the paper has my reading of the signs, if you want it."; })(), then: sayGauge
         });
         hn.polys.forEach(function (p) { p.pts = []; });   // the heron in the water is the heron; this one is the door
         labels.pop();
