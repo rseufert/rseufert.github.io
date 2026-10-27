@@ -289,7 +289,34 @@
         var sum = 0, parts = letters.map(function (c) { var v = LATIN[c] || 0; sum += v; return c.toLowerCase() + " " + v; });
         return word + " counts to " + sum + " by agrippa's latin table (" + parts.join(", ") + "). the talisman press will trace it on a planet's square: /temple/talisman/. the code clerk says everything written down is a number to somebody.";
     }
+    // The sky and the cards (js/zodiac.js, fetched the first time it is asked).
+    function withSky(fn) {
+        if (window.Zodiac) return fn(window.Zodiac);
+        return new Promise(function (res) {
+            var s = document.createElement("script"); s.src = "/js/zodiac.js";
+            s.onload = function () { res(fn(window.Zodiac)); }; s.onerror = function () { res("the sky is not in. the wheel has it: /temple/zodiac/."); };
+            document.head.appendChild(s);
+        });
+    }
+    function theSky(t) {
+        return withSky(function (Z) {
+            var sky = Z.sky(), m = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune|ascendant|rising)\b/.exec(t);
+            function one(b) { return (b.name === "Sun" || b.name === "Moon" ? "the " + b.name : b.name).toLowerCase() + " is at " + Z.fmt(b.lon).toLowerCase() + (b.retrograde ? ", retrograde" : "") + ", in the decan of " + b.decan.card.toLowerCase() + ", " + b.decan.title.toLowerCase() + (b.name === "Moon" ? ", " + sky.phase : ""); }
+            if (m && (m[1] === "ascendant" || m[1] === "rising")) return "rising over portland this minute: " + Z.fmt(sky.asc.lon).toLowerCase() + ", which is the decan of " + sky.asc.decan.card.toLowerCase() + ". it moves a degree every four minutes. the wheel draws it: /temple/zodiac/.";
+            if (m) { var b = sky.bodies.filter(function (x) { return x.name.toLowerCase() === m[1]; })[0]; if (b) return one(b) + "." + (b.trump ? " its trump is " + b.trump.toLowerCase() + "." : "") + " the wheel has the rest: /temple/zodiac/."; }
+            return sky.bodies.slice(0, 7).map(one).join("; ") + ". rising, " + Z.fmt(sky.asc.lon).toLowerCase() + ". drawn as a chart at /temple/zodiac/, and each decan is a card of the tarot."; 
+        });
+    }
+    function aCard(t) {
+        return withSky(function (Z) {
+            var deck = Z.deck(), c = deck[Math.floor(Math.random() * deck.length)], rev = Math.random() < 0.33;
+            var what = c.title ? ", the lord of " + c.title.toLowerCase() : c.trump != null ? ", trump " + c.trump : "";
+            return "i cut the deck and it is " + c.name.toLowerCase() + (rev ? ", reversed" : "") + what + ". i do not read them; waite does, under the spread at /temple/tarot/#card-" + c.name.toLowerCase().replace(/[^a-z]+/g, "-") + ". the sun stands in " + Z.sky().bodies[0].decan.card.toLowerCase() + " today, if you want a card with a reason.";
+        });
+    }
     var ANSWERS = [
+        [/\b(draw|pull|cut|deal|pick)( me)? (a|one|three)? ?(tarot )?cards?\b|\btarot\b|\bcard of the day\b/, aCard],
+        [/\b(what|which|whose) sign\b|\bhoroscope\b|\bzodiac\b|\bascendant\b|\b(what|where)('s| is) (the )?(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune|rising)\b|\bretrograde\b|\bmoon phase\b|\bfull moon\b|\bnew moon\b/, theSky],
         [/\b(gematria|number|count|value) (of|for) [a-z"\u201c]/, gematria],
         [/\b(augur(y|ies|s)?|auspices|omens?|portents?)\b/, "the heron reads the dashboard's feeds as omens in the paper, the way the augurs read birds: the river, the week's earthquakes, the planetary k index, the fireballs that fell. the verdict is their sum and it changes when the world does: /paper/#augury. the heron cannot read, which has never stopped an augur."],
         [/\b(whose|which|what) (planetary )?(hour|day) is (it|this)\b|\bplanetary (hours?|day)\b|\bhour of (the )?(sun|moon|mars|mercury|jupiter|venus|saturn)\b|\bchaldean\b|\bthe hours\b/, theHour],

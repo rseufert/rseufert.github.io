@@ -1,0 +1,81 @@
+---
+layout: default
+css: /temple/temple.css
+title: The cards
+description: "The seventy-eight cards of the tarot drawn as line art from Waite's descriptions, with what the Golden Dawn laid on each: a letter and a planet or sign for the trumps, a decan of the zodiac for the small cards, so the deck knows which cards the Sun and Moon stand in now. Waite's three spreads, his meanings, and his book on the shelf."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read tarot">
+{% include temple-nav.html active="tarot" %}
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>after Waite and Smith &middot; 1909, and Book T &middot; 1888</span></p>
+<h1>The cards</h1>
+<p class="lede">Seventy-eight cards: twenty-two trumps, and four suits of fourteen. These are drawn from Waite's
+descriptions of the pictures Pamela Colman Smith painted for him in 1909, in the temple's line, not traced from
+them; the pips are laid out as the old packs laid them. Each card carries what the Golden Dawn laid on it in
+<em>Book T</em>: a Hebrew letter and a planet, a sign or an element for each trump; a decan of the zodiac, ten
+degrees, for each two to ten; thirty degrees for each Knight, Queen and King. So the deck knows where the sky is:
+it can say which card the Sun stands in today, which the Moon, and whose trump the hour is. Draw one card, or
+three, or Waite's ten about a significator; the meanings are his, from the book on the shelf.</p>
+
+<p class="today" id="tarot-today"></p>
+<p class="controls">
+  <button type="button" data-spread="one" aria-pressed="true">a card</button>
+  <button type="button" data-spread="three" aria-pressed="false">three</button>
+  <button type="button" data-spread="cross" aria-pressed="false">the cross</button>
+  <button type="button" id="tarot-again">shuffle again</button>
+  <button type="button" id="tarot-reversals" aria-pressed="true">reversals</button>
+</p>
+
+<div class="stage" id="tarot-room">
+  <canvas id="tarot-stage" aria-label="the spread: tarot cards drawn as line art"></canvas>
+</div>
+<p class="buttons"><a class="button" id="tarot-save" href="#" download="tarot.png">save as an image</a></p>
+<div class="reading-list" id="tarot-reading" aria-live="polite"></div>
+
+<h2>The deck</h2>
+<p class="hint">tap a card to see it large with what it carries; the letter under each is its number or rank</p>
+<div class="deck" id="tarot-deck"></div>
+
+<h2>What they are</h2>
+<p>A pack of playing cards from northern Italy, about 1440, with a fifth suit of allegories added for a trick-taking
+game, <em>trionfi</em>, trumps: that is the whole of the tarot's history for its first three centuries, and the
+cards of Marseille, the pattern the French printers settled on, are what the cardmakers played with. In 1781
+Court de Gébelin announced that the pack was the Book of Thoth, the lost wisdom of Egypt, on no evidence
+whatever; Etteilla sold it as fortune-telling; Lévi in 1856 laid the twenty-two trumps on the twenty-two letters
+of the Hebrew alphabet; and the Golden Dawn, in the papers it called <em>Book T</em>, circulated from 1888, fixed
+the whole correspondence that is used here, with Strength and Justice swapped to eighth and eleventh so that the
+signs would come out in order. Waite, a member, had Smith paint a pack to his design in 1909, the first with
+pictures on all the small cards, and published his <em>Pictorial Key</em> the next year, veiled where his oath
+required; it is the pack nearly everyone has met since, and his meanings are the ones given under the spread,
+upright and reversed, word for word.</p>
+
+<p>How the sky gets into the cards. The order laid the thirty-six small cards from two to ten on the thirty-six
+decans, ten degrees of the zodiac each, starting with the Two of Wands at the first of Aries and going round:
+the twos, threes and fours on the cardinal signs, the fives, sixes and sevens on the fixed, the eights, nines
+and tens on the mutable, the suit by the sign's element. Each decan has a planet, in the old descending order
+from Mars at the first of Aries, and each card a title, the Lord of Dominion, of Strife, of Loss in Pleasure,
+which is what the page prints beside Waite's meaning. The court cards take thirty degrees each, the last decan
+of one sign and the first two of the next; the Aces and the Pages take the four quarters of the heavens about
+the pole. Waite's Knight is the order's Knight and his King its Prince; the page says so when it matters. The
+ephemeris is the one <a href="/temple/zodiac/">the wheel</a> uses, good to a degree or so, which is more than a
+decan needs.</p>
+
+<p>The spreads are Waite's. One card, or three, which he does not name but everyone lays. The cross is the method
+he printed as an ancient Celtic one, which it was not: a significator is laid face up, here the card the Sun
+stands in; the first card covers it, the second crosses it, the third crowns it, the fourth is beneath it, the
+fifth behind and the sixth before, and then four in a line to the right, himself, his house, his hopes or fears,
+and what will come. His own words for what each place means are given with the card. About a quarter of the
+cards fall reversed, if the reversals button is lit. The shuffle is the browser's random numbers; the deck keeps
+no record of what it dealt, and a reload deals again.</p>
+
+<p class="colophon">Arthur Edward Waite, <em>The Pictorial Key to the Tarot</em>, London, 1910, public domain, on the shelf as
+<a href="/temple/#lib-waite">the Pictorial Key</a>, from which the meanings and the method of the cross are taken; the attributions
+are the Golden Dawn's <em>Book T</em>, 1888, as every later book has them. The cards are drawn here from the
+descriptions and are this site's own; Smith's pictures are not copied. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/tarot.js">script</a>, and the
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/zodiac.js">ephemeris</a>.</p>
+</div>
+<script src="/js/hours.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/js/zodiac.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/tarot.js?v={{ site.time | date: '%s' }}"></script>

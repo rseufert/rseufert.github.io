@@ -16,6 +16,67 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `talisman/index.html`, `talisman.js` | the talisman press: Agrippa's seven planetary squares with the sigils of their intelligences and spirits traced, and a name traced by his Latin numeration |
 | `sigil/index.html`, `sigil.js` | the sigil press: a wish reduced and bound into one sign after Spare, charged by holding, burned when charged, nothing kept |
 | `monas/index.html`, `monas.js` | Dee's Monas Hieroglyphica: the figure constructed from its measure, and the twenty-four theorems in plain words with their figures |
+| `tarot/index.html`, `tarot.js` | the cards: the seventy-eight drawn as line art from Waite's descriptions, with Book T's letters, planets, signs and decans on them; Waite's one, three and the cross, with his meanings |
+| `zodiac/index.html`, `zodiac.js` | the wheel: the zodiac as a chart with the planets placed by `js/zodiac.js`, the Moon's phase, the ascendant over Portland, and each decan numbered with its card |
+
+## The cards
+
+`tarot/` draws the seventy-eight cards on a canvas, each from a few
+strokes in a card space two units wide and 3.4 tall (`pen`, with a small
+vocabulary: figure, crown, wings, flame, hills, cloud, wave, zig, star,
+rays): the trumps as emblems after Waite's descriptions of Smith's
+pictures (`TRUMP`, twenty-two functions), the pips laid out as the old
+packs lay them (`PIPS`) with the suit's emblem (`wand`, `cup`, `sword`,
+`pentacle`), the court as figures (`court`: a Page standing, a Knight
+mounted, a Queen and a King enthroned). Nothing is traced from the deck.
+The deck list comes from `Zodiac.deck()` and each card is decorated with
+Book T's attribution: the trumps' letters and planets, signs or elements
+(`TRUMP_OF`); each two to ten's decan (`Z.decan` of the sign with the
+suit's element and the rank's quality, so the title and ruler come from
+the one table); each Knight, Queen and King's thirty degrees (the last
+decan of one sign and the first two of the next, Waite's Knight being the
+order's Knight and his King its Prince). `about(card)` prints that and
+whether the Sun, the Moon or a planet stands there at the moment
+(`Zodiac.sky()`), and for a planet's trump whether it is the hour's
+(`Hours.now()`). The spreads are Waite's: one card, three, and his Celtic
+cross, whose significator is the card the Sun stands in and whose ten
+places are described in his words (`SPREADS.cross[].say`). Shuffles use
+`crypto.getRandomValues`; a third of the cards fall reversed when the
+button is lit. `WAITE` is his divinatory meanings, upright and reversed,
+extracted from the shelf's copy of the Pictorial Key by the session's
+cleaning script. The gallery under the spread is seventy-eight small
+canvases; `#card-<slug>` on the address shows one card large, which is how
+the wheel's links arrive. Nothing is stored.
+
+## The wheel
+
+`zodiac/` draws the chart: the ascendant on the left, longitudes going
+against the clock (`angle(lon) = π − (lon − asc)`), the sign band with
+the glyphs coloured by element, degree ticks, the decan band with each
+decan's card number, the horizon and meridian when the wheel stands as
+the sky does (a button turns it to Aries first), the planets on an inner
+ring nudged inward when within eight degrees of one another, the Moon in
+the middle lit by its elongation, and a stamp of the moment. The reading
+under it lists every body with its decan and card (linked into the deck),
+the planet's own trump, rulership or exaltation, and the hour's trump; a
+tap on a planet or a sign writes its line in the cell. A
+`datetime-local` input sets another moment (the horizon stays
+Portland's); "now" ticks every thirty seconds. The table of the signs is
+generated, with this year's decan dates from `Zodiac.decanDates`.
+
+`js/zodiac.js` is the shared table and the ephemeris, no dependencies:
+`SIGNS` (element, quality, ruler, exaltation, Book T's trump and letter),
+`PLANETS` (glyph, trump, letter), the decan rulers from Mars at the first
+of Aries in the Chaldean order descending, Book T's titles of the small
+cards, `decan(lon)` (sign, ruler, card, title, court), and `sky(date, lat,
+lon)`: Paul Schlyter's low-precision method, mean elements and Kepler's
+equation for the Sun, the Moon, Mercury to Neptune, with the Moon's,
+Jupiter's, Saturn's and Uranus's main perturbations, the mean node,
+retrograde by comparing with a day later, the Moon's phase from the
+elongation, and the ascendant and midheaven from the sidereal time. It
+was checked against the J2000 positions and the sky of October 2026 (the
+full Moon in Taurus, Venus and Mercury retrograde) to the degree; it is a
+wheel, not a navigator's almanac.
 
 ## The angelic alphabet
 
@@ -149,7 +210,7 @@ there is no Fullscreen API.
 Every room of the temple carries the same line at the top, from
 `_includes/temple-nav.html`: the nave, the library, the reading room, and
 the presses (sigil, talisman, alphabet, the Great Table, the Monas), the
-current one marked with `aria-current`. Pages include it with
+stars (the wheel, the cards), the current one marked with `aria-current`. Pages include it with
 `{% include temple-nav.html active="sigil" %}`.
 
 ## Tracing

@@ -71,8 +71,11 @@ HOSTS = [("gutenberg.org", "Gutenberg"), ("gnosis.org", "Gnostic Society Library
          ("ccel.org", "the Christian Classics Ethereal Library"), ("catb.org", "catb.org"), ("gnu.org", "gnu.org"), ("eff.org", "the EFF"),
          ("rfc-editor.org", "the RFC Editor"), ("phrack.org", "Phrack"), ("marxists.org", "marxists.org")]
 # A file put there by hand whose text came from somewhere other than the shelf's own link.
+# Hand-made files whose text is a scan's OCR, uncorrected: marked rough on the shelf.
+ROUGH = {"waite"}
 HAND = {
     "keys": "https://archive.org/details/aleister-crowley-liber-chanokh",
+    "waite": "https://archive.org/details/A.EWaiteThePictorialKeyToTheTarot",
     "origen": "https://www.ccel.org/ccel/schaff/anf04.txt",
     "irenaeus": "https://www.ccel.org/ccel/schaff/anf01.txt",
 }
@@ -221,6 +224,7 @@ def main():
             else:
                 entry["source"] = ref; entry["host"] = label(ref)
                 if kind == "free": entry["free"] = True
+                if kind == "hand" and slug in ROUGH: entry["ocr"] = True
                 src = ref
             if kind == "hand":
                 pass

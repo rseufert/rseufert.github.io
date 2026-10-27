@@ -230,3 +230,46 @@ body.filled { overflow: hidden; }
 }
 .temple-page.read .bar button:hover, .temple-page.read .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .temple-page.read .bar button[hidden] { display: none; }
+
+/* The cards (temple/tarot/) and the wheel (temple/zodiac/): controls, a stage, the reading as a list, the deck as a grid. */
+.temple-page.tarot .controls, .temple-page.zodiac .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 8px; }
+.temple-page.tarot .controls button, .temple-page.zodiac .controls button, .temple-page.tarot .buttons .button, .temple-page.zodiac .buttons .button { font: 13px var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 6px 12px; cursor: pointer; text-decoration: none; display: inline-block; }
+.temple-page.tarot .controls button:hover, .temple-page.zodiac .controls button:hover, .temple-page.tarot .buttons .button:hover, .temple-page.zodiac .buttons .button:hover, .temple-page.tarot button[aria-pressed="true"], .temple-page.zodiac button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.temple-page.zodiac .controls label { font: 13px var(--mono); color: var(--faint); }
+.temple-page.zodiac .controls input { font: 13px var(--mono); padding: 5px 8px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; color-scheme: dark; }
+.temple-page.zodiac .controls input:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
+.temple-page.tarot .today { font: 13px/1.6 var(--mono); color: var(--soft); margin: 0 0 12px; }
+.temple-page.tarot .today:empty { display: none; }
+.temple-page.tarot .stage { aspect-ratio: 16 / 10; max-height: 80vh; margin-top: 8px; }
+.temple-page.zodiac .stage { aspect-ratio: 1 / 1; max-height: 86vh; margin-top: 8px; cursor: crosshair; }
+.temple-page.tarot .buttons, .temple-page.zodiac .buttons { margin: 10px 0 16px; }
+.temple-page.zodiac .cell { font: 13px/1.6 var(--mono); color: var(--soft); min-height: 1.6em; margin: 10px 0 0; }
+.temple-page.zodiac .cell b { color: var(--ink); font-weight: normal; }
+.temple-page .reading-list { margin: 0 0 28px; }
+.temple-page .reading-list .card-read { border-top: 1px dashed var(--rule); padding: 12px 0 4px; }
+.temple-page .reading-list h3 { font: normal 1.05em var(--mono); margin: 0 0 6px; }
+.temple-page .reading-list h3::before { content: "["; color: var(--faint); }
+.temple-page .reading-list h3::after { content: "]"; color: var(--faint); }
+.temple-page .reading-list p { font-size: 1.1em; line-height: 1.5em; margin: 0 0 6px; }
+.temple-page .reading-list .pos { color: var(--faint); font-size: 1em; }
+.temple-page .reading-list .gd, .temple-page .reading-list .sig { color: var(--soft); font-size: 1em; }
+.temple-page .reading-list .angles { font-size: 1.1em; line-height: 1.5em; color: var(--soft); }
+.temple-page .reading-list ul { padding-left: 1.2em; margin: 0; }
+.temple-page .reading-list li { font-size: 1.1em; line-height: 1.5em; margin: 0 0 6px; color: var(--soft); }
+.temple-page .reading-list b { color: var(--ink); font-weight: normal; }
+.temple-page.tarot h2, .temple-page.zodiac h2 { font: normal 1.3em var(--mono); margin: 24px 0 6px; }
+.temple-page.tarot .deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px; margin: 10px 0 24px; }
+.temple-page.tarot .deck button { font: 11px var(--mono); color: var(--faint); background: #020705; border: 1px solid var(--rule); padding: 4px 3px 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.temple-page.tarot .deck button:hover { border-color: var(--accent); color: var(--accent); }
+.temple-page.tarot .deck canvas { display: block; }
+.temple-page.zodiac .wheel-signs { list-style: none; padding: 0; margin: 10px 0 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px 24px; }
+.temple-page.zodiac .wheel-signs li:target { background: var(--code-bg); outline: 2px dashed var(--accent); outline-offset: 6px; }
+.temple-page.zodiac .wheel-signs h3 { font: normal 1.15em var(--mono); margin: 0 0 4px; }
+.temple-page.zodiac .wheel-signs .glyph { font-family: Georgia, serif; }
+.temple-page.zodiac .wheel-signs p { font: 13px/1.6 var(--mono); color: var(--soft); margin: 0 0 4px; }
+.temple-page.zodiac .wheel-signs .decans { list-style: none; padding: 0; margin: 0; }
+.temple-page.zodiac .wheel-signs .decans li { font: 13px/1.6 var(--mono); color: var(--soft); margin: 0; }
+.temple-page.zodiac .wheel-signs .when { color: var(--faint); }
+@media (max-width: 700px) {
+    .temple-page.tarot .stage { aspect-ratio: 4 / 5; max-height: 84vh; }
+}
