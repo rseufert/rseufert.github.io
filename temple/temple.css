@@ -273,3 +273,45 @@ body.filled { overflow: hidden; }
 @media (max-width: 700px) {
     .temple-page.tarot .stage { aspect-ratio: 4 / 5; max-height: 84vh; }
 }
+
+/* The changes (temple/changes/), the animals (temple/animals/) and the Lenormand (temple/lenormand/). */
+.temple-page.changes .controls, .temple-page.animals .controls, .temple-page.lenormand .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 8px; }
+.temple-page.changes .controls button, .temple-page.lenormand .controls button, .temple-page.lenormand .buttons .button { font: 13px var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 6px 12px; cursor: pointer; text-decoration: none; display: inline-block; }
+.temple-page.changes .controls button:hover, .temple-page.lenormand .controls button:hover, .temple-page.lenormand .buttons .button:hover, .temple-page.changes button[aria-pressed="true"], .temple-page.lenormand button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.temple-page.changes .controls label, .temple-page.animals .controls label, .temple-page.lenormand .who { font: 13px var(--mono); color: var(--faint); }
+.temple-page.lenormand .who { margin-left: 10px; }
+.temple-page.changes .controls input, .temple-page.animals .controls input { font: 13px var(--mono); padding: 5px 8px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; color-scheme: dark; }
+.temple-page.changes .controls input:focus, .temple-page.animals .controls input:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
+.temple-page.changes #changes-question { flex: 1; min-width: 16ch; }
+.temple-page.changes #changes-lines { width: 12ch; }
+.temple-page.changes .stage { aspect-ratio: 16 / 9; max-height: 70vh; margin-top: 8px; }
+.temple-page.animals .stage { aspect-ratio: 1 / 1; max-height: 86vh; margin-top: 8px; cursor: crosshair; }
+.temple-page.lenormand .stage { aspect-ratio: 16 / 9; max-height: 80vh; margin-top: 8px; cursor: pointer; }
+.temple-page.lenormand .hint { margin: 8px 0 6px; }
+.temple-page.lenormand .buttons { margin: 0 0 14px; }
+.temple-page.animals .cell { font: 13px/1.6 var(--mono); color: var(--soft); min-height: 1.6em; margin: 10px 0 0; }
+.temple-page.animals .cell b { color: var(--ink); font-weight: normal; }
+.temple-page.changes h2, .temple-page.animals h2, .temple-page.lenormand h2 { font: normal 1.3em var(--mono); margin: 24px 0 6px; }
+.temple-page .reading-list .han { font-family: "Songti SC", "Noto Serif CJK SC", "SimSun", "PingFang SC", serif; font-size: 1.35em; line-height: 1.6em; color: var(--ink); margin: 10px 0 2px; }
+.temple-page .reading-list .han.line { font-size: 1.2em; }
+.temple-page .reading-list .han.chief { color: var(--accent); }
+.temple-page .reading-list .gloss { color: var(--soft); font-size: 1.05em; margin: 0 0 8px; }
+.temple-page .reading-list .rule, .temple-page .reading-list .tri, .temple-page .reading-list .kin { font: 13px/1.6 var(--mono); color: var(--faint); margin: 8px 0 4px; }
+.temple-page .reading-list .legge { color: var(--faint); font-size: 0.8em; }
+.temple-page .reading-list .py { color: var(--faint); font-size: 0.85em; }
+.temple-page .reading-list .tap { font-size: 1.05em; color: var(--soft); border-left: 2px solid var(--accent); padding-left: 10px; margin: 0 0 10px; }
+.temple-page.changes .hexagrams { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; margin: 10px 0 24px; }
+.temple-page.changes .hexagrams button { font: 11px var(--mono); color: var(--faint); background: #020705; border: 1px solid var(--rule); padding: 4px 3px 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.temple-page.changes .hexagrams button:hover { border-color: var(--accent); color: var(--accent); }
+.temple-page.changes .hexagrams canvas { display: block; }
+.temple-page.lenormand .deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; margin: 10px 0 24px; }
+.temple-page.lenormand .deck button { background: #020705; border: 1px solid var(--rule); padding: 3px; cursor: pointer; display: flex; justify-content: center; }
+.temple-page.lenormand .deck button:hover { border-color: var(--accent); }
+.temple-page.lenormand .deck canvas { display: block; }
+.temple-page.animals .cycle { list-style: none; padding: 0; margin: 10px 0 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 14px; font: 13px/1.7 var(--mono); color: var(--soft); }
+.temple-page.animals .cycle .han { font-family: "Songti SC", "Noto Serif CJK SC", "SimSun", "PingFang SC", serif; color: var(--ink); margin-right: 4px; }
+.temple-page.animals .cycle .now { outline: 1px dashed var(--accent); outline-offset: 2px; }
+@media (max-width: 700px) {
+    .temple-page.changes .stage { aspect-ratio: 4 / 3; }
+    .temple-page.lenormand .stage { aspect-ratio: 1 / 1; max-height: 84vh; }
+}

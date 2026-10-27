@@ -54,6 +54,7 @@ SCANS = {
     "cloud": ["bookofcontemplat00unde"],
     "dionysius": ["theworksofdionys00dionuoft", "worksofdionysius02pseu"],
     "upanishads": ["upanishads01ml"],
+    "yiking": ["mlbd.sacredbooksofeas0000fmax.vol.16"],
 }
 # Texts that are not public domain but freely redistributable by their authors' word (the shelf
 # note says so): fetched as plain text, HTML stripped, cut between two markers when given.

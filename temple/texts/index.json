@@ -936,5 +936,26 @@
   },
   "shelf": "yetzirah",
   "title": "Sefer Yetzirah"
+ },
+ "yijing": {
+  "bytes": 109868,
+  "edition": "the Yijing in Chinese · Zhou dynasty, with the Wings · Gutenberg #25501",
+  "gutenberg": 25501,
+  "robust": "whole",
+  "shelf": "yijing",
+  "title": "易經"
+ },
+ "yiking": {
+  "archive": "mlbd.sacredbooksofeas0000fmax.vol.16",
+  "bytes": 869509,
+  "edition": "the I Ching · tr. James Legge, 1882 · Sacred Books of the East XVI · Internet Archive",
+  "ocr": true,
+  "robust": "ocr",
+  "scan": {
+   "title": "SBE 16: The Sacred Books of China, part 2/6 – the texts of Confucianism: Yi King (Sacred Books of the East)",
+   "year": "1882"
+  },
+  "shelf": "yiking",
+  "title": "The Yî King"
  }
 }

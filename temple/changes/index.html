@@ -1,0 +1,67 @@
+---
+layout: default
+css: /temple/temple.css
+title: The changes
+description: "The I Ching cast by the yarrow stalks' odds or three coins: the hexagram drawn with its moving lines, the one it becomes, the Judgment and the lines from the Chinese text with a plain gloss, and Legge's translation of 1882 on the shelf."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read changes">
+{% include temple-nav.html active="changes" %}
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>the Zhou Yi &middot; China, about 800 BC, with the Wings &middot; Legge, 1882</span></p>
+<h1>The changes</h1>
+<p class="lede">Sixty-four figures of six lines, whole or broken, and a short text for each and for each line: the oldest
+book of divination still in use, and the one that works by arithmetic. Ask, and the page casts six lines from the
+bottom up by the odds the yarrow stalks give (an old yin one time in sixteen, a young yang five, a young yin seven,
+an old yang three), or by three coins if you prefer the even odds, or takes six numbers you threw yourself. The old
+lines move: they are marked, and the hexagram they turn into is drawn beside the first. The Judgment and the moving
+lines are read from the Chinese text, which is on the shelf, with a plain gloss of the Judgment; Legge's whole
+translation is on the shelf too, for the rest.</p>
+
+<p class="controls">
+  <label for="changes-question">the question</label>
+  <input id="changes-question" type="text" maxlength="120" placeholder="kept to yourself; the page does not read it" autocapitalize="off" spellcheck="false" autocomplete="off">
+</p>
+<p class="controls">
+  <button type="button" data-method="yarrow" aria-pressed="true">the stalks</button>
+  <button type="button" data-method="coins" aria-pressed="false">three coins</button>
+  <label for="changes-lines">or six numbers, 6 to 9, bottom first</label>
+  <input id="changes-lines" type="text" inputmode="numeric" maxlength="11" placeholder="7 8 8 9 7 6" autocomplete="off">
+</p>
+<div class="stage" id="changes-room">
+  <canvas id="changes-stage" aria-label="the hexagram cast, with its moving lines, and the hexagram it becomes"></canvas>
+</div>
+<div class="reading-list" id="changes-reading" aria-live="polite"></div>
+
+<h2>The sixty-four</h2>
+<p class="hint">in King Wen's order, the order of the book; tap one to read it unmoving</p>
+<div class="hexagrams" id="changes-all"></div>
+
+<h2>What it is</h2>
+<p>The <em>Zhou Yi</em>, the Changes of Zhou, is a Bronze Age handbook of omens: sixty-four hexagrams, each named,
+each with a Judgment, each line with a sentence, set down in the early first millennium BC from older
+stalk-divination and fixed in the order King Wen is said to have given it. The Ten Wings, the commentaries that
+make it a book of philosophy rather than a table of omens, were added over the following centuries and credited
+to Confucius; the Image, the sentence beginning <em>xiang yue</em> under each hexagram, is from them, and so is
+the whole apparatus of trigrams, families and directions. The eight trigrams are heaven, earth, thunder, water,
+mountain, wind, fire and lake; a hexagram is one over another, and within it a nuclear hexagram is made of its
+middle four lines. Leibniz saw the binary numbers in the Fu Xi arrangement in 1701 and was pleased; the hexagram
+is, in fact, a six-bit number, and the page keeps it as one.</p>
+
+<p>How it is cast. Fifty yarrow stalks, one set aside, the rest divided and counted off by fours three times for
+each line: a slow and uneven procedure whose outcomes are six, seven, eight or nine with the odds given above,
+weighted so that a moving yang is three times as likely as a moving yin. Three coins, the later shortcut, give the
+same four outcomes at two in eight, six, six and two. A seven or an eight is a young line and stays; a six or a
+nine is old, has reached its extreme, and turns into its opposite, which is what the word changes means. When lines
+move the book is read twice: the first hexagram for the situation and the lines that move within it, the second
+for where it tends. Which moving line to weigh when several move is a rule of thumb from Zhu Xi's school, given
+with the reading. The glosses of the Judgments are this site's own, kept close to the Chinese and to Legge; the
+lines are left in the Chinese, with Legge beside them on the shelf, since sixty-four Judgments is a page's worth
+and three hundred and eighty-four lines is a book's.</p>
+
+<p class="colophon">The Chinese text is Project Gutenberg's <a href="/temple/#lib-yijing">易經</a> (#25501), public domain; James Legge,
+<em>The Yî King</em>, Sacred Books of the East vol. XVI, Oxford, 1882, public domain, is on the shelf as
+<a href="/temple/#lib-yiking">the Yî King</a> from a scan at the Internet Archive. The casting, the drawing and the
+glosses are this site's own. One <a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/changes.js">script</a>.</p>
+</div>
+<script src="/temple/changes.js?v={{ site.time | date: '%s' }}"></script>
