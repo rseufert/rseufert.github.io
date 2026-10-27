@@ -41,7 +41,7 @@
     font: 14px/1.6 var(--mono);
 }
 .city-page .veil[hidden] { display: none; }
-.city-page .veil p { max-width: 480px; margin: 0 0 14px; }
+.city-page .veil p { max-width: 480px; margin: 0 0 14px; color: #c9c9d1; }
 .city-page .veil .banner {
     font-size: 28px;
     letter-spacing: 0.3em;
