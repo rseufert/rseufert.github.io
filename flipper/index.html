@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Flipper Zero apps
-description: "Eight apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; NW Crawl, a roguelike set in NW Portland; Yulia's Cats, a virtual pet; Tricorder, a handheld signal scanner; Jiggler, a mouse jiggler that pauses while you work; Spectre, a ghost hunting kit; and Grimoire, a pendulum, a sigil, a talisman and a wand."
+description: "Nine apps for the Flipper Zero: Hanzi Cards, Mandarin flashcards that play the tones; Step Seq, a step sequencer for the piezo speaker; NW Crawl, a roguelike set in NW Portland; Yulia's Cats, a virtual pet; Tricorder, a handheld signal scanner; Jiggler, a mouse jiggler that pauses while you work; Spectre, a ghost hunting kit; Grimoire, a pendulum, a sigil, a talisman and a wand; and Portal Putt, minigolf across fantasy and sci-fi worlds."
 image: /flipper/hanzi_cards.png
 ---
 <section class="projects flipper">
@@ -203,5 +203,31 @@ ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 git clone https://github.com/rseufert/grimoire &amp;&amp; cd grimoire
 ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
 		<p class="links"><a href="https://github.com/rseufert/grimoire">GitHub</a> · <a href="https://github.com/rseufert/grimoire#controls">Controls</a> · <a href="https://github.com/rseufert/grimoire#the-wands-frame">The wand's frame</a> · <a href="https://github.com/rseufert/grimoire#what-it-transmits">What it transmits</a> · <a href="https://github.com/rseufert/grimoire/releases/tag/v0.1">Release 0.1</a></p>
+	</div><!-- /.project -->
+	<div class="project" id="portal-putt">
+		<h3><a href="https://github.com/rseufert/portal_putt">Portal Putt</a> <span class="tag">game</span></h3>
+		<figure class="shot pair">
+			<img src="/flipper/portal_putt.png" width="512" height="256" loading="lazy" alt="Portal Putt on the Flipper's orange screen: a bar across the top reads &quot;5. Dragon's Hoard P4 S0 -10&quot;, the ball sits at the left with a dotted aim line, two hatched patches stand in the middle above and below the fairway, a square creature with dots for eyes and teeth waits beyond them, a wall rises on the right, and the flag is at the bottom right among small trees.">
+			<img src="/flipper/portal_putt_reactor.png" width="512" height="256" loading="lazy" alt="The top bar reads &quot;8. Reactor Core P4 S1 -20&quot;: a thick wall cuts off a narrow chamber on the left with a portal ring in it, a row of chevrons runs along the top, a large black gravity well sits in the middle with a smaller one beside it, a second portal ring is on the left of the main room, a hatched patch fills the bottom right corner, and the flag is at the top right.">
+			<figcaption>Dragon's Hoard, and the reactor core with its sealed chamber</figcaption>
+		</figure>
+		<figure class="shot pair">
+			<img src="/flipper/portal_putt_ace.png" width="512" height="256" loading="lazy" alt="Goblin Green, &quot;1. Goblin Green P2 S1 E&quot; across the top, with a box in the middle reading &quot;HOLE IN ONE!&quot; and &quot;1 on a par 2&quot; over the trees.">
+			<img src="/flipper/portal_putt_card.png" width="512" height="256" loading="lazy" alt="The scorecard: a row of holes 1 to 9, a row of pars 2 3 3 3 4 3 3 4 4, a row of scores 1 3 4 2 4 4 2 4 5, then &quot;29 strokes, E&quot; in bold and &quot;best round E OK: again&quot; below.">
+			<figcaption>an ace on Goblin Green, and a round at par</figcaption>
+		</figure>
+		<p>Minigolf on the Flipper: nine holes that take turns between fantasy and sci-fi, from Goblin Green and the Wizard's Spiral to Docking Bay 9, Black Hole Bend and the Rift. Par is 29.</p>
+		<ul class="features">
+			<li><strong>The putt.</strong> Left and right turn the aim, and holding keeps it turning; up and down nudge it a quarter step. Hold OK and a meter rises and falls; let go to putt. Back pauses.</li>
+			<li><strong>Portals.</strong> They come in pairs: in one, out the other, still rolling.</li>
+			<li><strong>Gravity wells.</strong> They pull harder the closer the ball gets, and touch the centre and the ball is gone.</li>
+			<li><strong>Lava and the void.</strong> A stroke's penalty, and the ball goes back to where the shot started.</li>
+			<li><strong>And the rest.</strong> Conveyors carry the ball, slime and moon dust hold it back four times as hard, bumpers send it off faster than it came, and some walls slide on a cycle of their own.</li>
+			<li><strong>The card.</strong> A hole stops at par plus four. Your best round is kept on the SD card, and the app transmits nothing. A solver on the host checks that every hole can be sunk within par.</li>
+		</ul>
+<pre><code>python3 -m pip install --upgrade ufbt
+git clone https://github.com/rseufert/portal_putt &amp;&amp; cd portal_putt
+ufbt launch     # Flipper on USB, qFlipper closed</code></pre>
+		<p class="links"><a href="https://github.com/rseufert/portal_putt">GitHub</a> · <a href="https://github.com/rseufert/portal_putt#controls">Controls</a> · <a href="https://github.com/rseufert/portal_putt#how-things-behave">How things behave</a> · <a href="https://github.com/rseufert/portal_putt#what-it-transmits">What it transmits</a> · <a href="https://github.com/rseufert/portal_putt/releases/tag/v0.1">Release 0.1</a></p>
 	</div><!-- /.project -->
 </section><!-- /.flipper -->
