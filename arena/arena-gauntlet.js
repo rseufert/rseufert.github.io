@@ -12,7 +12,7 @@
 }(this, function (A, R) {
     "use strict";
     var SEEDS = [1, 2, 3, 4];
-    var BAR = 27;                 // of 40: two duels in three; the starter wins 24, RICK 23, JOSH 30, HERON 31
+    var BAR = 30;                 // of 44: two duels in three; the starter wins 24, RICK 20, JOSH 31, SNOOP 31, HERON 33
     var MAX_SOURCE = 16000;
     var NAME = /^[A-Z0-9][A-Z0-9_-]{0,11}$/;
 
