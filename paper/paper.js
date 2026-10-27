@@ -85,8 +85,8 @@
         // the census: the reader's own standing in the city
         var q = null, done = 0; try { q = JSON.parse(localStorage.getItem("city-quests")); } catch (e) { q = null; }
         if (q && q.done) done = Object.keys(q.done).length;
-        var pop = done >= 12 ? 2 : 1;
-        html("paper-census", "Population " + pop + (pop === 2 ? ", counting you. A star is named after you, by Polaris. It does not set." : ". You are not counted until the errands are done: " + done + " of 12, by the city's reckoning in this browser.") + " Doors: 48. Mailboxes: as many as there are posts. Elves: unconfirmed.");
+        var ERRANDS = 14, pop = done >= ERRANDS ? 2 : 1;
+        html("paper-census", "Population " + pop + (pop === 2 ? ", counting you. A star is named after you, by Polaris. It does not set." : ". You are not counted until the errands are done: " + done + " of " + ERRANDS + ", by the city's reckoning in this browser.") + " Doors: 48 and a clubhouse. Mailboxes: as many as there are posts. Elves: unconfirmed.");
     })();
 
     // ---- sport: today's match, played here ---------------------------------------------------
@@ -114,7 +114,18 @@
             html("paper-sport", "<p>" + esc(names.map(function (n) { return n.toUpperCase(); }).join(", ")) + " entered the arena at the day's seed, " + seed + ". " +
                 (w ? w.name.toUpperCase() + " was the last standing after " + secs + " seconds. " : "After " + secs + " seconds, " + (alive.length ? alive.map(function (a) { return a.name.toUpperCase(); }).join(" and ") + " still stood. " : "nothing stood. ")) + colour + "</p>" +
                 (order.length ? "<p class=\"small\">" + esc(order.join(" · ")) + "</p>" : "") +
-                "<p class=\"small\">The same six, the same seed, the same result for every reader today; another match tomorrow. <a href=\"/arena/\">Write a tank.</a></p>");
+                "<p class=\"small\">The same six, the same seed, the same result for every reader today; another match tomorrow. <a href=\"/arena/\">Write a tank.</a></p>" + golf());
+        }
+        // Golf: the course of the day, by the same seed the game uses (its names and its par order are mirrored here).
+        function golf() {
+            var COURSES = ["Forest Park", "Willamette Bend", "Mount Tabor", "Burnside Links", "Sauvie Island", "Tryon Creek", "Rocky Butte", "Pittock Heights", "Laurelhurst", "Johnson Creek", "Powell Butte", "Kelley Point"];
+            var pars = [4, 4, 3, 5, 4, 3, 4, 5, 4], order = mulberry32(seed * 31 + 5);
+            for (var i = pars.length - 1; i > 0; i--) { var j = Math.floor(order() * (i + 1)), t = pars[i]; pars[i] = pars[j]; pars[j] = t; }
+            var g = null; try { g = JSON.parse(localStorage.getItem("golf")); } catch (e) { g = null; }
+            var best = g && g.best ? g.best[seed] : null;
+            return "<p><b>Golf.</b> The course of the day is " + esc(COURSES[seed % COURSES.length]) + ", par 36: " + pars.join(" ") + ". The wind is the airport's. " +
+                (best != null ? "Your best round on it so far is " + best + " (" + (best === 36 ? "E" : best > 36 ? "+" + (best - 36) : String(best - 36)) + "), in this browser. " : "No card has been handed in from this browser. ") +
+                "<a href=\"/golf/\">Tee off.</a></p>";
         }
         run();
     })();

@@ -88,6 +88,17 @@ each hole first (`v` shows it again); on the green the camera comes lower and
 closer, the distance is in feet, and little marks drift downhill across the
 green.
 
+## The wind off the river
+
+Every hole runs north, tee to green, so a compass wind means something:
+the latest observation at Portland's airport (api.weather.gov, station
+KPDX, no key, CORS open) is fetched when the page loads and when a round
+begins, turned from the direction it blows from to the direction it goes,
+and laid over every hole's seeded wind (`applyWind`); the HUD marks it PDX
+with the compass point. If the fetch fails the holes keep the wind they
+grew with. `Golf.wind` is the observation; `Golf.calm()` puts the seeded
+wind back.
+
 ## Sound
 
 WebAudio, behind the sound toggle and built on the first click, with
@@ -104,4 +115,15 @@ you after each shot, the longest that does not overshoot. Best rounds per
 course, and the sound setting, are in `localStorage` under `golf`.
 `window.Golf` exposes the generator, the ball and a few levers for poking at
 in the console, including `Golf.settle()`, which runs a shot to rest at once,
-and `Golf.hud(false)`, for a clean picture.
+and `Golf.hud(false)`, for a clean picture. The keyboard is the game's only
+while the stage is on screen. A light tick on the swing meter marks the
+power that reaches the pin with the chosen club, and the aim's ring sits
+at the pin when a full swing would fly past it.
+
+## Elsewhere on the site
+
+The city has a links block: one hole in miniature, a clubhouse whose door
+is `/golf/`, and the pro, whose errand is a finished round (`localStorage`
+`golf.rounds`). The paper's sport page prints the course of the day with
+its pars (the names and the par shuffle are mirrored there, by the same
+seed) and your best on it. Rickbot answers "golf".

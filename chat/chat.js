@@ -386,6 +386,13 @@
             var d = new Date(), n = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
             return "the intro at /intro/ is a cracktro: a plasma, a starfield, copper bars, the logo turning in three dimensions, a scroller greeting everyone, and a four-channel chiptune written from the date, so today's is tune #" + n + " and tomorrow's is someone else's problem. the elves cracked it. the original was supplied by rick. press fire.";
         }],
+        [/\bgolf\b|\btee off\b|\btrackball\b|\bgolden tee\b|\bnine holes\b|\bbirdie\b|\bbogey\b/, function () {
+            var COURSES = ["Forest Park", "Willamette Bend", "Mount Tabor", "Burnside Links", "Sauvie Island", "Tryon Creek", "Rocky Butte", "Pittock Heights", "Laurelhurst", "Johnson Creek", "Powell Butte", "Kelley Point"];
+            var d = new Date(), seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(), g = null;
+            try { g = JSON.parse(localStorage.getItem("golf")); } catch (e) { g = null; }
+            var best = g && g.best ? g.best[seed] : null, rounds = g ? g.rounds || 0 : 0;
+            return "the cabinet in the corner of the bar: /golf/. nine holes in phosphor, the same nine for everyone today, which is " + COURSES[seed % COURSES.length].toLowerCase() + ", par 36, with the wind off the airport. pull back, push through, keep it straight, and lean on it in the air if you must." + (best != null ? " your best on it is " + best + "." : rounds ? " you have played " + rounds + " round" + (rounds === 1 ? "" : "s") + ", none of them today." : " the pro in the city wants a card from you.");
+        }],
         [/\bat-?robots?\b|\barena\b|\btanks?\b|\brobot (wars?|battles?|games?)\b|\bprogram (a|my) robot\b|\brobots\b/, "the arena at /arena/ is an homage to AT-Robots, the DOS game from 1992: write a tank in a little assembly dialect, pick opponents from ten presets, and watch them fight. ports and interrupts, heat and armor, walls that hurt. read SENTRY first, then beat it."],
         [/\bphoto\b|\bpicture\b|\bwhite cap\b|\bglasses\b|\bpendant\b|\bsup\.jpe?g\b|\bthe guy\b|\bhim\b/, "the photo is sup.jpeg: josh allen in a white cap, rose-tinted rimless glasses and an iced-out heart pendant, according to the alt text, which i am not allowed to question."],
         [/\bjekyll\b|\bgithub pages\b|\bhtml\b|\bcss\b|\bjavascript\b|\bbuilt with\b|\bstack\b|\bhosted\b|\bframework\b|\breact\b|\bwordpress\b|\bhow (is|was) (this|the) (site|page) (made|built)/, "plain html and css, jekyll on github pages, no framework, no tracker, no cookies. a few scripts for the films, the dashboard, the strip, and me. the source is on github."],

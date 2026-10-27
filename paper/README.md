@@ -78,3 +78,9 @@ says so when solved, but is not counted.
 
 `window.Paper` exposes `seed`, `planets(date)` (ecliptic longitudes in
 degrees) and `puzzle(seed)`.
+
+## Golf, in sport
+
+Under the arena's result the sport page names the course of the day and
+its nine pars, by the same seed and the same shuffle golf uses (mirrored in
+`golf()` in `paper.js`), and your best round on it from `localStorage`.

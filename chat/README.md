@@ -76,6 +76,9 @@ reading and the card the Sun stands in.
 "I Ching" or "hexagram", "year of the" or "fire horse" or "four pillars",
 and "lenormand" or "grand tableau" each point at their room in the temple.
 
+"Golf", "tee off" or "trackball" names the course of the day and your best
+round on it, from `localStorage`.
+
 "Whose hour is it" (or "which planetary hour", "hour of mars", "whose day
 is it") gets the planetary hour from `js/hours.js`, fetched on the first
 asking and answered through the promise queue: the planet, which hour of
