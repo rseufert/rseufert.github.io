@@ -1,0 +1,133 @@
+---
+layout: default
+css: /temple/temple.css
+title: The neck
+description: "A guitar neck with every note on it: standard tuning and the common others, each string turned by the semitone, a scale over it (C major to start, the modes, the minors, the pentatonics or your own), a chord over that with its shapes, and Paul Foster Case's tone scale laying the twelve notes on the twelve signs, so the sky this minute is a chord."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read neck">
+{% include temple-nav.html active="neck" %}
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>the twelve notes &middot; the tone scale after Paul Foster Case</span></p>
+<h1>The neck</h1>
+<p class="lede">A fretboard with every note on it, in whatever tuning you give it. A scale is lit over it, C major to start,
+with its root in amber; a chord over that, filled, with the shapes it makes under four fingers; and the rest of the twelve
+in the faint ink, so nothing is hidden. Tap a note to hear it and to have it named, with what the temple lays on it: by
+Paul Foster Case's tone scale every note is a sign of the zodiac and a trump, and some of them a planet as well, so that the
+sky this minute is a chord you can play.</p>
+
+<div class="neck-bar">
+  <label>tuning <select id="neck-tuning"></select></label>
+  <label>key <select id="neck-root"></select></label>
+  <label>scale <select id="neck-scale"></select></label>
+  <label>chord <select id="neck-chord"></select></label>
+  <label>on <select id="neck-chord-root"></select></label>
+</div>
+
+<div class="stage" id="neck-room">
+  <canvas id="neck-stage" aria-label="a guitar neck with every note on it; the scale and chord lit"></canvas>
+</div>
+<p class="cell" id="neck-cell">tap a note to hear it and name it</p>
+
+<div class="neck-bar">
+  <button type="button" id="neck-play">play the scale</button>
+  <span id="neck-shapes"><button type="button" id="neck-shape-prev" aria-label="the shape before">&larr;</button><button type="button" id="neck-strum">strum</button><button type="button" id="neck-shape-next" aria-label="the next shape">&rarr;</button> <span class="hint" id="neck-shape-at"></span></span>
+</div>
+<div class="neck-bar">
+  <button type="button" id="neck-sky">the sky's chord</button>
+  <button type="button" id="neck-hour-key">the hour's key</button>
+  <span class="hint" id="neck-hour"></span>
+</div>
+
+<h2>The scale's own chords</h2>
+<p class="hint">thirds stacked on each degree, as triads and as sevenths; tap one to light it and hear it</p>
+<div class="neck-diatonic" id="neck-diatonic"></div>
+
+<div class="reading-list" id="neck-reading" aria-live="polite"></div>
+
+<h2>The strings</h2>
+<p class="hint">highest string first; each turns a semitone at a time</p>
+<div class="neck-strings" id="neck-strings"></div>
+<div class="neck-bar">
+  <button type="button" id="neck-add-low">+ a string below</button>
+  <button type="button" id="neck-drop-low">&minus; the lowest</button>
+  <button type="button" id="neck-add-high">+ a string above</button>
+  <button type="button" id="neck-drop-high">&minus; the highest</button>
+</div>
+<div class="neck-bar">
+  <input id="neck-tuning-name" type="text" placeholder="a name for this tuning" maxlength="40" aria-label="a name for this tuning">
+  <button type="button" id="neck-tuning-keep">keep it</button>
+  <button type="button" id="neck-tuning-forget" hidden>forget this one</button>
+</div>
+
+<h2>Your own</h2>
+<p class="hint">the intervals of the scale, from its root; press one to add it or take it away, then keep it under a name</p>
+<div class="neck-build" id="neck-scale-build"></div>
+<div class="neck-bar">
+  <input id="neck-scale-name" type="text" placeholder="a name for this scale" maxlength="40" aria-label="a name for this scale">
+  <button type="button" id="neck-scale-keep">keep it</button>
+  <button type="button" id="neck-scale-forget" hidden>forget this one</button>
+</div>
+<p class="hint">and the chord's, from its root</p>
+<div class="neck-build" id="neck-chord-build"></div>
+<div class="neck-bar">
+  <input id="neck-chord-name" type="text" placeholder="a name for this chord" maxlength="40" aria-label="a name for this chord">
+  <button type="button" id="neck-chord-keep">keep it</button>
+  <button type="button" id="neck-chord-forget" hidden>forget this one</button>
+</div>
+
+<h2>The showing</h2>
+<div class="neck-bar">
+  <label>notes as <select id="neck-labels">
+    <option value="names">names</option>
+    <option value="pitch">names with octaves</option>
+    <option value="intervals">intervals</option>
+    <option value="signs">signs</option>
+    <option value="letters">Hebrew letters</option>
+  </select></label>
+  <label>spelt with <select id="neck-spelling">
+    <option value="auto">the key's accidentals</option>
+    <option value="sharps">sharps</option>
+    <option value="flats">flats</option>
+  </select></label>
+  <label>frets <select id="neck-frets">
+    <option>12</option><option>15</option><option>19</option><option>21</option><option>22</option><option>24</option>
+  </select></label>
+</div>
+<div class="neck-bar">
+  <button type="button" id="neck-colours" aria-pressed="false">Case's colours</button>
+  <button type="button" id="neck-faint" aria-pressed="true">the other notes</button>
+  <button type="button" id="neck-flip" aria-pressed="false">left-handed</button>
+  <button type="button" id="neck-reset">back to standard and C major</button>
+</div>
+
+<h2>What it is</h2>
+<p>The neck is drawn as it is built, nearly: each fret a twelfth root of two nearer the bridge than the last, so that the
+twelfth fret halves the string and sounds its octave, though the spacing here is evened out a little so the high frets
+have room for their names. The notes are equal-tempered from A at 440, and the sound is a plucked string made the way
+Karplus and Strong made one in 1983, a burst of noise fed round a loop as long as the note's period and softened each
+time round. The shapes are found by the page, not looked up: in each four-fret window it tries every way of putting a
+chord tone or nothing under each string, keeps those with the root in the bass, every tone present (a fifth may go
+missing from a chord of four or more), no muted string above a sounding one and no more than four fingers, a barre
+counting as one, and shows the most playable at each position.</p>
+
+<p>The tone scale is Paul Foster Case's, from the Builders of the Adytum's tarot of the 1920s, which hung a note and a
+colour on each of the twenty-two trumps. Laid out it is simpler than it sounds: the twelve semitones from C go round
+the zodiac from Aries, as the twelve colours go round the spectrum from red, so that C is Aries and the Emperor, and
+red; E is Leo and Strength, and yellow; B is Pisces and the Moon, and violet-red. Each planet and element sits on the
+note of its trump, which puts Mars, the Tower and fire on C, the Sun on D, Mercury, the Magician and air on E, Venus on
+F♯, the Moon, the High Priestess and water on G♯, Saturn on A and Jupiter on A♯. The letters and trumps are the Golden
+Dawn's, as <a href="/temple/tarot/">the cards</a> and <a href="/temple/zodiac/">the wheel</a> have them. It is a
+correspondence, not an acoustics: nothing about a fifth makes Scorpio follow Aries, and the Pythagoreans, who had the
+planets sounding first, put them on other notes. The sky's chord takes where the seven stand this minute over Portland,
+from <a href="/temple/zodiac/">the wheel's</a> ephemeris, rooted on the Sun's sign; the hour's key is the note of the
+planet whose hour it is, by the temple's clock of planetary hours. Your tunings, scales,
+chords and settings are kept in this browser and sent nowhere.</p>
+
+<p class="colophon">The scales and chords are anyone's. The tone scale is Case's, in <i>The Tarot</i> (1947) and his
+Builders of the Adytum lessons; the trumps' letters and planets are Book T's. The neck, the shapes and the sound are made
+here, in one <a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/neck.js">script</a> with no library.</p>
+</div>
+<script src="/js/zodiac.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/js/hours.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/neck.js?v={{ site.time | date: '%s' }}"></script>
