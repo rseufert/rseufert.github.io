@@ -178,6 +178,12 @@ seed S`; `ghosts.yml` compiles the open ones with `tools/ghosts.py` into
 `ghosts.json` on the `sky-data` branch, with `data/ghosts.json` on `master`
 as the fallback. Close an issue to lay one to rest.
 
+The clubhouse board is the same again: a finished round of golf offers to
+post its card as an issue titled `card:`, `tools/cards.py` compiles the open
+ones into `cards.json` on `sky-data` (each player's best on each course, the
+par worked out from the seed with the game's own shuffle), and the game reads
+it from there (`.github/workflows/cards.yml`).
+
 `intro/` is a cracktro, the screen that played before a cracked game loaded:
 a plasma, a starfield, copper bars, the logo extruded and turning, a sine
 scroller greeting every part of the site, and a four-channel chiptune on
