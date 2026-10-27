@@ -15,24 +15,29 @@
 			<link rel="alternate" type="application/atom+xml" title="Rick Seufert's Blog" href="/blog/atom.xml">
 		</head>
 		<body>
-			<!-- Two rows: the work, then the play. ~ is home, as it is at a prompt. -->
+			<!-- Two rows: the work, then the play. ~ is home, as it is at a prompt.
+			     The page you are on is marked (aria-current), by the start of its address.
+			     On a phone the play row folds behind [play], a checkbox and no script. -->
+			{% assign u = page.url %}{% assign seg = u | split: '/' %}{% assign s1 = seg[1] | default: '' %}{% assign toys = 'arena backrooms intro city golf temple paper' | split: ' ' %}
 			<nav>
+				<input type="checkbox" id="nav-play" class="fold"{% if toys contains s1 %} checked{% endif %}>
 	    		<ul>
-	        		<li><a href="/" aria-label="home" title="home">~</a></li>
-	        		<li><a href="/#projects">projects</a></li>
-	        		<li><a href="/dashboard/">dashboard</a></li>
-	        		<li><a href="/#flipper">flipper</a></li>
-	        		<li><a href="/blog/">blog</a></li>
-	        		<li><a href="/media/">media</a></li>
+	        		<li><a href="/" aria-label="home" title="home"{% if u == '/' or u == '/index.html' %} aria-current="page"{% endif %}>~</a></li>
+	        		<li><a href="/#projects"{% if s1 contains 'mock-' or s1 == 'examples' or s1 == 'acme-treasury' %} aria-current="page"{% endif %}>projects</a></li>
+	        		<li><a href="/dashboard/"{% if s1 == 'dashboard' %} aria-current="page"{% endif %}>dashboard</a></li>
+	        		<li><a href="/flipper/"{% if s1 == 'flipper' %} aria-current="page"{% endif %}>flipper</a></li>
+	        		<li><a href="/blog/"{% if s1 == 'blog' %} aria-current="page"{% endif %}>blog</a></li>
+	        		<li><a href="/media/"{% if s1 == 'media' %} aria-current="page"{% endif %}>media</a></li>
+	        		<li class="fold"><label for="nav-play">play</label></li>
 	    		</ul>
 	    		<ul class="play">
-	        		<li><a href="/arena/">arena</a></li>
-	        		<li><a href="/backrooms/">backrooms</a></li>
-	        		<li><a href="/intro/">intro</a></li>
-	        		<li><a href="/city/">city</a></li>
-	        		<li><a href="/golf/">golf</a></li>
-	        		<li><a href="/temple/">temple</a></li>
-	        		<li><a href="/paper/">paper</a></li>
+	        		<li><a href="/arena/"{% if s1 == 'arena' %} aria-current="page"{% endif %}>arena</a></li>
+	        		<li><a href="/backrooms/"{% if s1 == 'backrooms' %} aria-current="page"{% endif %}>backrooms</a></li>
+	        		<li><a href="/intro/"{% if s1 == 'intro' %} aria-current="page"{% endif %}>intro</a></li>
+	        		<li><a href="/city/"{% if s1 == 'city' %} aria-current="page"{% endif %}>city</a></li>
+	        		<li><a href="/golf/"{% if s1 == 'golf' %} aria-current="page"{% endif %}>golf</a></li>
+	        		<li><a href="/temple/"{% if s1 == 'temple' %} aria-current="page"{% endif %}>temple</a></li>
+	        		<li><a href="/paper/"{% if s1 == 'paper' %} aria-current="page"{% endif %}>paper</a></li>
 	    		</ul>
 			</nav>
 			{% unless page.nostrip %}<a class="julia" href="/julia/" title="a julia set, zooming; click for the whole page"><canvas class="julia" aria-hidden="true"></canvas></a>

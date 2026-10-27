@@ -75,13 +75,33 @@ nav a::after  { content: "]"; color: var(--faint); }
 nav a:hover { text-decoration: none; }
 nav a:hover::before, nav a:hover::after { color: var(--accent); }
 /* The menu is two rows, the work and then the play; the play row steps back
-   a little, so it reads as the toys without a heading. */
+   a little, under a quiet label, and folds behind [play] on a phone. */
 nav { margin: 0.95em 0; }
 nav ul { margin: 0; }
 nav ul + ul { margin-top: 4px; }
+nav ul.play::before { content: "play:"; color: var(--faint); margin-right: 14px; }
 nav ul.play a { color: var(--soft); }
 nav ul.play a::before, nav ul.play a::after { color: var(--rule); }
 nav ul.play a:hover { color: var(--accent); }
+/* The page you are on: in ink and bold, its brackets lit. */
+nav a[aria-current], nav ul.play a[aria-current] { color: var(--ink); font-weight: bold; }
+nav a[aria-current]::before, nav a[aria-current]::after,
+nav ul.play a[aria-current]::before, nav ul.play a[aria-current]::after { color: var(--accent); }
+/* [play] folds the toys on a phone (see the media query); a checkbox, so no
+   script. It is hidden from sight but not from the keyboard. */
+nav input.fold { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+nav li.fold { display: none; }
+nav li.fold label { color: var(--accent); cursor: pointer; }
+nav li.fold label::before { content: "["; color: var(--faint); }
+nav li.fold label::after { content: " \25BE]"; color: var(--faint); }
+nav input.fold:checked + ul li.fold label::after { content: " \25B4]"; }
+nav input.fold:focus-visible + ul li.fold label { outline: 2px dashed var(--accent); outline-offset: 3px; }
+/* Jump links on the home page, under the hello, bracketed like the menu. */
+.blurb p.jump { font-family: var(--mono); font-size: 16px; line-height: 1.6; }
+.blurb p.jump a { margin-right: 6px; white-space: nowrap; }
+.blurb p.jump a::before { content: "["; color: var(--faint); }
+.blurb p.jump a::after { content: "]"; color: var(--faint); }
+.blurb p.jump a:hover { text-decoration: none; }
 
 /* The strip under the menu: a Julia set, drawn by julia/julia-set.js. The
    height is fixed so the page does not move when it loads; without
@@ -432,6 +452,16 @@ code {
     nav ul li {
         margin-right: 0;
     }
+    nav li.fold { display: list-item; list-style: none; }
+    nav ul.play { display: none; }
+    nav ul.play::before { content: none; }
+    nav input.fold:checked ~ ul.play { display: flex; }
+    /* The home page's tiles two across, so a column of them is half as long. */
+    .tiles.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 14px; }
+    .tiles.compact .project .shot img { width: 100%; height: auto; }
+    .tiles.compact .project h3 { font-size: 1.05em; margin-top: 8px; }
+    .tiles.compact .project p { font-size: 0.95em; }
+    .tiles.compact .project .links { font-size: 0.8em; }
     a.julia { margin-bottom: 18px; }
     canvas.julia { height: 72px; }
 }
@@ -525,6 +555,7 @@ code {
 .tiles .project h3 { font-size: 1.3em; margin-top: 12px; }
 .tiles .project .tag { font-size: 0.6em; }
 .tiles .project p { font-size: 1.1em; margin: 8px 0; }
+.project.all { margin: 0 0 40px; }
 /* The projects as tiles, three across where the column has room for it:
    the name, one line on what it is, its links, and the button to its page
    at the foot, level across a row. */

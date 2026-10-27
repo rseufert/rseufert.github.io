@@ -9,7 +9,8 @@ image: /blog/p2p_film.png
 	</figure>
 	<div class="who">
 		<marquee><h1>sup?</h1></marquee>
-		<p>Mock SAP, EDI, bank and e-invoicing systems, for testing integrations without a license, a VPN or a trading partner. Also apps for the <a href="/#flipper">Flipper Zero</a>, a <a href="/dashboard/">dashboard</a> of Portland and the sky, a <a href="/blog/">blog</a> and <a href="/media/">some music</a>.</p>
+		<p>Mock SAP, EDI, bank and e-invoicing systems, for testing integrations without a license, a VPN or a trading partner. Also apps for the <a href="/flipper/">Flipper Zero</a>, a <a href="/dashboard/">dashboard</a> of Portland and the sky, a <a href="/blog/">blog</a> and <a href="/media/">some music</a>.</p>
+		<p class="jump"><a href="#projects">projects</a> <a href="#dashboard">dashboard</a> <a href="#flipper">flipper</a> <a href="#play">play</a></p>
 	</div>
 </div><!-- /.blurb -->
 
@@ -17,7 +18,6 @@ image: /blog/p2p_film.png
 	<h2>Projects</h2>
 	<p class="lede">Mock enterprise systems for integration testing. Point your code at them and develop, test and demo without a license, a VPN tunnel, or a support ticket.</p>
 	<p class="lede">Using them together: <a href="/blog/2026/09/24/testing-an-sap-to-edi-integration">Testing an SAP-to-EDI integration without SAP or a trading partner</a>. On the failures you can't ask a partner to perform: <a href="/blog/2026/09/25/three-edi-behaviours-you-cannot-rehearse">three EDI behaviours you can't rehearse</a>.</p>
-	<p class="lede">The films
 	<p class="lede">The films are drawn by mock-films from the messages of a real run against a mock. The mocks have no screens of their own; these are the conversations they had. acme-treasury draws its own, from a real week against the mocks.</p>
 
 	<!-- The section's one film is the purchase that crosses all three mocks;
@@ -100,18 +100,12 @@ image: /blog/p2p_film.png
 	<h2>Flipper</h2>
 	<p class="lede">Apps for the <a href="https://flipperzero.one">Flipper Zero</a>: a 128&times;64 screen, a d-pad and a buzzer.</p>
 
-	<div class="tiles">
+	<div class="tiles compact">
 		<div class="project">
 			<a class="shot" href="/flipper/#hanzi-cards"><img src="/flipper/hanzi_cards.png" width="512" height="256" loading="lazy" alt="The back of a Hanzi Cards card on the Flipper's orange screen: the characters 公共汽车 large across the top, the pinyin gōng gòng qì chē below them, then the English &quot;bus&quot;, with &quot;Again&quot; at the bottom left and &quot;Good&quot; at the bottom right."></a>
 			<h3><a href="/flipper/#hanzi-cards">Hanzi Cards</a> <span class="tag">study</span></h3>
 			<p>Mandarin flashcards: simplified or traditional characters, pinyin with tone marks, and the tones played on the speaker.</p>
 			<p class="links"><a href="/flipper/#hanzi-cards">More</a> · <a href="https://github.com/rseufert/hanzi_cards">GitHub</a></p>
-		</div><!-- /.project -->
-		<div class="project">
-			<a class="shot" href="/flipper/#step-seq"><img src="/flipper/step_seq.png" width="512" height="256" loading="lazy" alt="Step Seq on the Flipper's orange screen. The top bar reads &quot;P1&quot;, &quot;D#3&quot; and &quot;D# Blues&quot;. Below it a dotted grid of 16 steps has one filled block per step at different heights, a melody climbing and falling, and along the bottom a drum row marked &quot;dr&quot; of filled blocks, hollow blocks and dashes for kick, snare and hi-hat."></a>
-			<h3><a href="/flipper/#step-seq">Step Seq</a> <span class="tag">music</span></h3>
-			<p>A step sequencer for the Flipper's piezo speaker, with a melody grid and a drum row.</p>
-			<p class="links"><a href="/flipper/#step-seq">More</a> · <a href="https://github.com/rseufert/step_seq">GitHub</a></p>
 		</div><!-- /.project -->
 		<div class="project">
 			<a class="shot" href="/flipper/#nw-crawl"><img src="/flipper/nw_crawl.png" width="512" height="256" loading="lazy" alt="NW Crawl on the Flipper's orange screen: the player stands next to a rat on a dotted floor, with street-sign walls around them. The top line reads &quot;Hit Rat. Rat bites -1&quot; and the bottom line &quot;HP11/12 c1 Burnside&quot;."></a>
@@ -120,34 +114,10 @@ image: /blog/p2p_film.png
 			<p class="links"><a href="/flipper/#nw-crawl">More</a> · <a href="https://github.com/rseufert/nw_crawl">GitHub</a></p>
 		</div><!-- /.project -->
 		<div class="project">
-			<a class="shot" href="/flipper/#yulia-cats"><img src="/flipper/yulia_cats.png" width="512" height="256" loading="lazy" alt="Yulia's Cats on the Flipper's orange screen: Yulia in round glasses on the left, a shelf with a plant and books, the sun in the window, and her two cats on the floor either side of the food bowl. The bottom bar shows a heart and 2, and &quot;Feed&quot; between arrows."></a>
-			<h3><a href="/flipper/#yulia-cats">Yulia's Cats</a> <span class="tag">pet</span></h3>
-			<p>A cozy virtual pet: Yulia and her two cats, Nugget and Baby, in a room that follows the clock.</p>
-			<p class="links"><a href="/flipper/#yulia-cats">More</a> · <a href="https://github.com/rseufert/yulia_cats">GitHub</a></p>
-		</div><!-- /.project -->
-		<div class="project">
 			<a class="shot" href="/flipper/#tricorder"><img src="/flipper/tricorder.png" width="512" height="256" loading="lazy" alt="Tricorder's RF tab on the Flipper's orange screen: tabs for RF, IR, EMF and TAG down the left with RF highlighted. A filled bar across the top reads &quot;RF 387-464&quot; and &quot;SCAN&quot;, a spectrum of spikes fills the middle with a marker over the tallest, and the bottom line reads &quot;PEAK 445.70 -71dBm&quot;."></a>
 			<h3><a href="/flipper/#tricorder">Tricorder</a> <span class="tag">tools</span></h3>
 			<p>A handheld signal scanner: Sub-GHz, infrared, NFC, RFID, a GPIO probe and the battery.</p>
 			<p class="links"><a href="/flipper/#tricorder">More</a> · <a href="https://github.com/rseufert/tricorder">GitHub</a></p>
-		</div><!-- /.project -->
-		<div class="project">
-			<a class="shot" href="/flipper/#jiggler"><img src="/flipper/jiggler.png" width="512" height="256" loading="lazy" alt="Jiggler on the Flipper's orange screen: &quot;Jiggler&quot; and &quot;USB ok&quot; across the top, a mouse pointer on the left, and beside it &quot;Jiggling&quot;, &quot;next move in 1:31&quot;, &quot;1 move in 0:06&quot; and &quot;Helper: idle 0:46&quot;. The bottom line reads &quot;OK: stop&quot; and &quot;Right: settings&quot;."></a>
-			<h3><a href="/flipper/#jiggler">Jiggler</a> <span class="tag">usb</span></h3>
-			<p>A mouse jiggler that keeps a computer awake, and pauses while you work.</p>
-			<p class="links"><a href="/flipper/#jiggler">More</a> · <a href="https://github.com/rseufert/jiggler">GitHub</a></p>
-		</div><!-- /.project -->
-		<div class="project">
-			<a class="shot" href="/flipper/#spectre"><img src="/flipper/spectre.png" width="512" height="256" loading="lazy" alt="Spectre's SENSE tab on the Flipper's orange screen: tabs for SENSE, BOX, VOICE and RADAR across the top with SENSE highlighted, &quot;FAINT&quot; and &quot;peak 47&quot; at the left, &quot;22.5C&quot; at the right, and a half-circle gauge with a needle pointing at 22."></a>
-			<h3><a href="/flipper/#spectre">Spectre</a> <span class="tag">toy</span></h3>
-			<p>A ghost hunting kit: an EMF needle, a spirit box, a spirit voice and a radar.</p>
-			<p class="links"><a href="/flipper/#spectre">More</a> · <a href="https://github.com/rseufert/spectre">GitHub</a></p>
-		</div><!-- /.project -->
-		<div class="project">
-			<a class="shot" href="/flipper/#grimoire"><img src="/flipper/grimoire.png" width="512" height="256" loading="lazy" alt="Grimoire's SIGIL page on the Flipper's orange screen: a bar across the top reads &quot;SIGIL&quot; between arrows, the letters &quot;W S H&quot; at the top left, &quot;hold OK: charge&quot; below, a sigil of crossed strokes and a diamond over a bar on the right, and &quot;JUPITER day 3 to 10:17&quot; along the bottom."></a>
-			<h3><a href="/flipper/#grimoire">Grimoire</a> <span class="tag">temple</span></h3>
-			<p>A pendulum, a sigil, a talisman and a wand, with the planetary hour on every page.</p>
-			<p class="links"><a href="/flipper/#grimoire">More</a> · <a href="https://github.com/rseufert/grimoire">GitHub</a></p>
 		</div><!-- /.project -->
 		<div class="project">
 			<a class="shot" href="/flipper/#portal-putt"><img src="/flipper/portal_putt.png" width="512" height="256" loading="lazy" alt="Portal Putt on the Flipper's orange screen: a bar across the top reads &quot;5. Dragon's Hoard P4 S0 -10&quot;, the ball at the left with a dotted aim line, two hatched patches in the middle, a square creature beyond them, a wall on the right, and the flag at the bottom right among small trees."></a>
@@ -156,110 +126,58 @@ image: /blog/p2p_film.png
 			<p class="links"><a href="/flipper/#portal-putt">More</a> · <a href="https://github.com/rseufert/portal_putt">GitHub</a></p>
 		</div><!-- /.project -->
 	</div><!-- /.tiles -->
+	<div class="project all"><p class="more"><a href="/flipper/">All nine apps</a></p></div>
 </section>
 
 <section id="play" class="projects">
 	<h2>Play</h2>
-	<p class="lede">The toys, which are the other half of the menu: an arena, a backrooms, a cracktro, a city and nine holes of golf.</p>
-</section><!-- /.play -->
+	<p class="lede">The toys, which are the other half of the menu: an arena, a backrooms, a cracktro, a city, nine holes of golf, a temple and a newspaper.</p>
 
-<section id="arena" class="projects">
-	<h2>Arena</h2>
-	<p class="lede">An homage to <a href="http://necrobones.com/atrobots/">AT-Robots</a>: write a tank in a small assembly language and watch it fight.</p>
-
-	<div class="tiles">
-		<div class="project">
+	<div class="tiles compact">
+		<div class="project" id="arena">
 			<a class="shot" href="/arena/"><img src="/arena/arena.png" width="512" height="256" loading="lazy" alt="The arena: six small tanks in different colours on a dark square, one with a translucent scanner wedge sweeping ahead of it, a missile in flight and a ring where one has just hit."></a>
 			<h3><a href="/arena/">Arena</a> <span class="tag">game</span></h3>
-			<p>Ten preset tanks to fight or read, one of which learns, one of which rolls dice and one of which circles, an editor for yours, ports and interrupts, heat and armor, walls that hurt.</p>
+			<p>An homage to <a href="http://necrobones.com/atrobots/">AT-Robots</a>: write a tank in a small assembly language and watch it fight.</p>
 			<p class="links"><a href="/arena/">Fight</a> · <a href="/arena/#preset=sentry">Read SENTRY</a></p>
 		</div><!-- /.project -->
-	</div>
-</section><!-- /.flipper -->
-
-<section id="backrooms" class="projects">
-	<h2>Backrooms</h2>
-	<p class="lede">You noclipped out of the site. Under it there is only wireframe, and something that walks when you are not looking.</p>
-
-	<div class="tiles">
-		<div class="project">
+		<div class="project" id="backrooms">
 			<a class="shot" href="/backrooms/"><img src="/backrooms/backrooms.png" width="512" height="256" loading="lazy" alt="A corridor drawn in amber wireframe on black, a drop ceiling and a tiled floor converging into fog, and a tall thin figure standing in it, drawn in red lines."></a>
 			<h3><a href="/backrooms/">Backrooms</a> <span class="tag">game</span></h3>
-			<p>Vector graphics the way the arcades did them, levels grown from a seed and bigger each time you fall, a hum at 60&nbsp;Hz, notes on the walls, and a rule the elves insisted on: it only moves while you are not looking.</p>
+			<p>You noclipped out of the site. Under it there is only wireframe, and something that walks when you are not looking.</p>
 			<p class="links"><a href="/backrooms/">Noclip</a></p>
 		</div><!-- /.project -->
-	</div>
-</section><!-- /.backrooms -->
-
-<section id="intro" class="projects">
-	<h2>Intro</h2>
-	<p class="lede">Before a cracked game loaded, there was this. The site has one now.</p>
-
-	<div class="tiles">
-		<div class="project">
+		<div class="project" id="intro">
 			<a class="shot" href="/intro/"><img src="/intro/intro.png" width="512" height="256" loading="lazy" alt="A cracktro frame: the word RICK in green wireframe turning over a purple and green plasma, copper bars across the screen, a tracker readout in the corner, and a scroller along the bottom in orange reading WELCOME TO RICKSEUFERT."></a>
 			<h3><a href="/intro/">Intro</a> <span class="tag">demo</span></h3>
-			<p>A plasma, a starfield, copper bars, the logo turning in three dimensions, a scroller on a sine wave greeting everyone, and a four-channel chiptune written at midnight by a seed, so there is a new one every day. Cracked by the machine elves; original supplied by Rick.</p>
+			<p>Before a cracked game loaded, there was this. The site has one now.</p>
 			<p class="links"><a href="/intro/">Press fire</a></p>
 		</div><!-- /.project -->
-	</div>
-</section><!-- /.intro -->
-
-<section id="city" class="projects">
-	<h2>City</h2>
-	<p class="lede">The site as a city, laid out from the date. Everything here is a door.</p>
-
-	<div class="tiles">
-		<div class="project">
+		<div class="project" id="city">
 			<a class="shot" href="/city/"><img src="/city/city.png" width="512" height="256" loading="lazy" alt="A wireframe city at night: the arena, an octagon of amber walls with floodlight poles at the corners and a scoreboard above it showing six small coloured tanks mid-fight, 6 STANDING, black towers behind, a grid of streets fading into the dark, and stars."></a>
 			<h3><a href="/city/">City</a> <span class="tag">overworld</span></h3>
-			<p>Every part of the site is a building: the arena a stadium with a live match on the scoreboard, the Julia set the river, the dashboard a weather station on a hill, the blog a row of mailboxes, the backrooms a manhole, rickbot the helpdesk. Street signs in the elves' script, which settle into English while you stand still. It rebuilds at midnight.</p>
+			<p>The site as a city, laid out from the date. Everything here is a door.</p>
 			<p class="links"><a href="/city/">Walk</a></p>
 		</div><!-- /.project -->
-	</div>
-</section><!-- /.city -->
-
-<section id="golf" class="projects">
-	<h2>Golf</h2>
-	<p class="lede">The cabinet in the corner of the bar, with the trackball worn smooth. Nine new holes every day.</p>
-
-	<div class="tiles">
-		<div class="project">
+		<div class="project" id="golf">
 			<a class="shot" href="/golf/"><img src="/golf/golf.png" width="512" height="256" loading="lazy" alt="A par three drawn in green wireframe on black: a fairway rising to a raised green on a finer yellow grid with a sand bunker beside it, a pond in blue to the left, wireframe pine trees on the right, and the white tracer of a ball in flight climbing toward the flag."></a>
 			<h3><a href="/golf/">Golf</a> <span class="tag">game</span></h3>
-			<p>Drawn the way the backrooms are, out on a course grown from the date: fairways that bend, sand where a drive lands, water, wind, and greens with a tilt you read from the marks drifting across them. Pull back, push through, and lean on it in the air.</p>
+			<p>The cabinet in the corner of the bar, with the trackball worn smooth. Nine new holes every day.</p>
 			<p class="links"><a href="/golf/">Tee off</a></p>
 		</div><!-- /.project -->
-	</div>
-</section><!-- /.golf -->
-
-<section id="temple" class="projects">
-	<h2>Temple</h2>
-	<p class="lede">A temple of gnostic signs on a far block of the city, and a library behind it.</p>
-
-	<div class="tiles">
-		<div class="project">
+		<div class="project" id="temple">
 			<a class="shot" href="/temple/"><img src="/temple/temple.png" width="512" height="256" loading="lazy" alt="Sixteen gnostic signs drawn in pale green line art in a ring on black: the ouroboros, Abraxas with a cock's head and serpent legs, the letters IAO, a lion-headed serpent, the Tree of Life, a hexagram, the Tetraktys; in the middle, large, Abraxas, named beneath."></a>
 			<h3><a href="/temple/">Temple</a> <span class="tag">nave, library and presses</span></h3>
-			<p>Sixteen signs round the Monad, each drawn from its description and explained: Abraxas, the ouroboros, the seven archons' heavens, the thirty aeons, the Tree, the Tetraktys, a Mandaean standard, John Dee's figure of everything. The floor is the Ophite diagram. Behind the nave, a library: a hundred-odd gnostic, hermetic, kabbalistic, magical and mystical texts, and the conspiracies, the radicals and the machine on three shelves at the back, kept here to read, every one older than copyright or given away.</p>
+			<p>A temple of gnostic signs on a far block of the city, and a library behind it.</p>
 			<p class="links"><a href="/temple/">Go in</a></p>
 		</div><!-- /.project -->
-	</div>
-</section><!-- /.temple -->
-
-<section id="paper" class="projects">
-	<h2>The paper</h2>
-	<p class="lede">The site's newspaper, set each midnight from the date. Price: no cookies.</p>
-
-	<div class="tiles">
-		<div class="project">
+		<div class="project" id="paper">
 			<a class="shot" href="/paper/"><img src="/paper/paper.png" width="512" height="256" loading="lazy" alt="A broadsheet front page on a dark ground: the masthead THE DAILY SEED between double rules, a dateline, a lead headline about the manhole still being open, briefs down the side, and columns headed Sport, Weather and Arts."></a>
 			<h3><a href="/paper/">The Daily Seed</a> <span class="tag">newspaper</span></h3>
-			<p>The arena's result, played in its engine from the day's seed. The river as the weather, live. The sky, and a horoscope cast from where the planets really are. Letters to the editor from the city's people, the classifieds, the backrooms' ghosts in the obituaries, a paragraph off the temple's shelf, and a cipher with a new key every day. The same paper all day; another at midnight.</p>
+			<p>The site's newspaper, set each midnight from the date. Price: no cookies.</p>
 			<p class="links"><a href="/paper/">Read today's</a></p>
 		</div><!-- /.project -->
-	</div>
-</section><!-- /.paper -->
+	</div><!-- /.tiles -->
+</section><!-- /.play -->
 <script src="/js/films.js?v={{ site.time | date: '%s' }}" defer></script>
 <script src="/js/home-dashboard.js?v={{ site.time | date: '%s' }}" defer></script>
 <script src="/js/hero.js?v={{ site.time | date: '%s' }}" defer></script>
