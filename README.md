@@ -11,6 +11,7 @@ works, so a piece can be read and discussed on its own:
 | [`backrooms/`](backrooms/) | a wireframe under the site, levels grown from a seed, ghosts of whoever it found | [README](backrooms/README.md) |
 | [`intro/`](intro/) | a cracktro: plasma, stars, copper bars, a 3D logo, a scroller, a chiptune from the date | [README](intro/README.md) |
 | [`city/`](city/) | the site as a wireframe city laid out from the date; every part of it a door | [README](city/README.md) |
+| [`golf/`](golf/) | nine holes in phosphor, a course of the day, and a trackball swing | [README](golf/README.md) |
 | [`temple/`](temple/) | a nave of sixteen gnostic signs round the Monad, explained, and a library of public-domain esoteric texts | [README](temple/README.md) |
 | [`paper/`](paper/) | the Daily Seed: the site's newspaper, set each midnight from the date | [README](paper/README.md) |
 | [`dashboard/`](dashboard/) | public data feeds, drawn with D3 | [README](dashboard/README.md) |
@@ -165,8 +166,8 @@ node arena/arena_test.js      # every preset assembles and every pairing ends; w
 
 `js/unmute.js` is what an iPhone needs before Web Audio is heard (a
 moment of silence through an audio element, so the ringer switch does not
-mute the page, and a resume on return); the backrooms, the city, the intro
-and the arena load it.
+mute the page, and a resume on return); the backrooms, the city, the intro,
+the arena and golf load it.
 
 `backrooms/` is a wireframe under the site: levels grown from a seed, a hum
 at 60 Hz, and something that only moves while you are not looking. Whoever
@@ -197,6 +198,14 @@ the Dipper go round Polaris, and twelve people with optional errands that
 send you to the rest of the site and check, when you come back, that you
 went (`chat/chat.js` keeps footprints of the pages visited, in the browser
 only).
+
+`golf/` is nine holes drawn the way the backrooms are, out of doors: a
+course grown from the date, so everyone plays the same nine today, with
+fairways that bend, sand, water, wind, and greens on a finer grid with a
+tilt to read. The swing is the bar cabinet's trackball done with a mouse or
+a thumb (pull back, push through, and the straighter the push the
+straighter the ball), or three presses of space; a ball in the air can
+still be leaned on. Best rounds are kept per course, in the browser.
 
 `temple/` is a block of the city and a page of its own: sixteen gnostic signs
 (Abraxas, the ouroboros, ΙΑΩ, Chnoubis, the Ophite diagram, the Pleroma, Horos,

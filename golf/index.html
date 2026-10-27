@@ -1,0 +1,58 @@
+---
+layout: default
+css: /golf/golf.css
+title: Golf
+description: Nine holes in phosphor, a new course every day, and a swing like the trackball on the cabinet in the corner of the bar. Pull back, push through, and lean on it in the air.
+image: /golf/share.jpg
+nostrip: true
+---
+<div class="golf-page">
+<h1>Golf</h1>
+<p class="lede">The cabinet in the corner of the bar, the one with the trackball worn smooth: nine holes drawn in
+phosphor, a fairway that bends, sand where a drive lands, water where you would rather it did not, and a green
+with a tilt you can only read by watching it. A new course grows from the date at midnight, so everyone plays
+the same nine today. Pull back to swing, push through to hit, and keep it straight.</p>
+
+<div class="stage" id="golf-room">
+  <canvas id="golf-stage" aria-label="a golf course in wireframe; drag down and flick up to swing, arrows to aim and choose a club"></canvas>
+  <div class="veil" id="golf-veil">
+    <p class="banner">GOLF</p>
+    <p id="golf-veil-text">the course of the day.</p>
+    <div id="golf-veil-card" class="card-wrap" hidden></div>
+    <p><button type="button" id="golf-go">tee off</button></p>
+  </div>
+  <button type="button" class="unfill" id="golf-unfill" hidden aria-label="leave fullscreen">&times;</button>
+  <div class="pads" id="golf-pads">
+    <button type="button" data-act="left" aria-label="aim left">&#9664;</button><button type="button" data-act="right" aria-label="aim right">&#9654;</button><button type="button" data-act="up" aria-label="longer club">&#9650;</button><button type="button" data-act="down" aria-label="shorter club">&#9660;</button><button type="button" data-act="view">hole</button>
+  </div>
+</div>
+
+<div class="bar">
+  <p class="hint">drag down, then flick up, to swing &middot; or <kbd>space</kbd> three times: start, power, aim &middot; <kbd>&#9664; &#9654;</kbd> aim (<kbd>shift</kbd> for fine) &middot; <kbd>&#9650; &#9660;</kbd> club &middot; <kbd>v</kbd> flies the hole &middot; in the air, drag or <kbd>&#9664; &#9654;</kbd> to lean on it &middot; <kbd>esc</kbd> pauses</p>
+  <p class="buttons"><button type="button" id="golf-sound">sound</button> <button type="button" id="golf-full">fullscreen</button> <button type="button" id="golf-new">another course</button> <output id="golf-score" class="score"></output></p>
+</div>
+
+<p>The swing is the trackball's. Press on the course and pull straight down: how far back you go is the most
+the shot can have, and the meter on the right shows it. Then push straight up, quickly: how fast you push
+decides how much of that you get, and how far off straight you push bends the ball, right for a push to the
+right, left for a pull. Past the line at the top of the meter is more than the club has, and every crooked
+pixel counts eight times over. With a putter it is only how far back, since a putt is a stroke and not a
+swing. If you would rather a keyboard, <kbd>space</kbd> starts the needle, <kbd>space</kbd> again sets the
+power on its way up, and the third press is where it stops on the line on its way down: on it is straight.</p>
+
+<p>Once it is in the air you can still lean on it, the way the cabinet let you spin the ball after the strike:
+drag left or right to bend it, down to put backspin on it so it checks, or even draws back, on the green. There
+is only so much lean to a shot, and the meter in the corner says what is left. The wind is the circle in the top
+right, drawn the way you are facing; it pushes the ball the whole time it is up.</p>
+
+<p>The course is drawn the way the <a href="/backrooms/">backrooms</a> are, and the
+<a href="/city/">city</a>: every patch of ground is a four-sided figure in the world, filled black and
+outlined in its colour (fairway, rough, sand, water, the green brighter and on a finer grid than the rest),
+painted from the far end of the hole to the near, which is how the far side of a hill stays behind it. No
+WebGL and no library; <a href="https://github.com/rseufert/rseufert.github.io/blob/master/golf/golf.js">one
+script</a> on a plain canvas. Each hole is a bent line from the tee to the green, and the ground is cut by
+how far it is from that line. On the green, the little marks drift the way a putt will fall. It is par 36,
+and the card keeps your best on each course in this browser.</p>
+</div>
+<script src="/js/unmute.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/golf/golf.js?v={{ site.time | date: '%s' }}"></script>
