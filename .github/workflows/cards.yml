@@ -1,0 +1,55 @@
+name: the clubhouse board
+
+# A round of golf ends with a card, and the page offers to post it to the
+# board, which is an issue on this repo titled "card: TOTAL on COURSE (SEED)"
+# with the card in a code block (golf/golf.js opens it, prefilled). This
+# compiles the open ones into cards.json and commits it to the sky-data
+# branch beside the ghosts, the guest book and the tanks, since master is
+# protected; the page reads it from raw.githubusercontent.com
+# (tools/cards.py). Closing an issue takes its card off the board.
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted]
+  schedule:
+    - cron: "52 12 * * *"   # once a day too, in case an event is missed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: sky-data            # the sky, guest book and tanks workflows push the same branch
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    name: compile the board
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, 'card:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python tools/cards.py --out "$RUNNER_TEMP/cards.json"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: commit to sky-data if changed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898338+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth 1 origin sky-data; then
+            git worktree add -B sky-data "$RUNNER_TEMP/branch" FETCH_HEAD
+          else
+            git worktree add --orphan -b sky-data "$RUNNER_TEMP/branch"
+          fi
+          cp "$RUNNER_TEMP/cards.json" "$RUNNER_TEMP/branch/cards.json"
+          cd "$RUNNER_TEMP/branch"
+          git add cards.json
+          if git diff --cached --quiet; then
+            echo "no change"
+            exit 0
+          fi
+          git commit -m "Post the cards"
+          git push origin sky-data

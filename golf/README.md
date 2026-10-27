@@ -120,10 +120,63 @@ while the stage is on screen. A light tick on the swing meter marks the
 power that reaches the pin with the chosen club, and the aim's ring sits
 at the pin when a full swing would fly past it.
 
+## The clubhouse board
+
+The web 0.9 way, like the guest book and the ghosts. When a round is done
+the veil offers "post your card", which opens an issue on the repo titled
+`card: TOTAL on COURSE (SEED)` with the card in a fenced code block, one
+line: `gc1:SEED:TOTAL:H1,...,H9:FLAGS` (the flags are what happened: `sq4`,
+sasquatch seen on hole 4; `hood6`, Mt Hood erupted on hole 6; `ace3`, a
+hole in one). `tools/cards.py` reads the open issues with that title,
+checks each line is a card and nothing else (nine holes of 1 to 10 that add
+to the total), works out the course and the par from the seed with the
+game's own shuffle (mulberry32, ported), keeps each player's best on each
+course, and writes `cards.json`; `.github/workflows/cards.yml` runs it on
+issue events and once a day and commits it to the `sky-data` branch. The
+page fetches it once (`fetchBoard`), shows the course's top ten with your
+place among them under your card, and the best anywhere; "the board" in
+the bar shows it mid-round, paused. Closing an issue takes a card down. An
+honour system, like the one in the clubhouse.
+
+## Something in the trees, and the mountain
+
+Some holes (one in five), a while after you reach them (eight to fifty
+seconds, while you are lining up), something tall walks out of the trees
+on one side of the hole, a quarter to two thirds of the way along, pauses,
+and goes back (`creatures`, `sasquatch`): a broad dark figure drawn with
+the trees' billboarding, 2.7 yards tall, arms swinging, two wood-knocks when
+it steps out. On the screen and inside the fog for a second in all and it
+counts: `sq<hole>` goes on the card and `golf.squatch` in `localStorage`
+goes up. `Golf.squatch()` calls it.
+
+Mt Hood stands on the horizon east by south (`HOOD.bearing`, 1.95 rad
+from the hole's north), a silhouette with a snow line, drawn in `sky()`.
+Once a round, if at all (six in a hundred a hole, or `#hood` on the
+address for the first hole), it erupts: a glow at the summit, a column of
+puffs leaning with the wind and growing for forty seconds, lightning in
+the column, ash drifting down the screen with the wind for a few minutes,
+the camera shaking for the first seven seconds, a rumble under everything
+(`audio.rumble`), and `hood<hole>` on the card. `Golf.hood()` calls it.
+
+## The muzak
+
+The clubhouse speaker, optional (the muzak button, kept in `localStorage`)
+and apart from the game's own sounds, on its own bus to the output through
+a low-pass and a compressor. `makeMuzak` schedules a bar at a time, half a
+second ahead: four chords twice (`CHORDS`, electric piano voicings; `ROOTS`
+under them) at 71 to the bar with swung eighths, a whole tone flat; the
+piano on the one, the and of two and sometimes the four (sine plus a quiet
+octave triangle plus a tine click, with a slow wow and a fast flutter on
+every pitch); a bass on the root and fifth that steps to the next root
+when it feels like it; kick, a brushed snare behind the beat, hats on the
+eighths with an open one now and then; a vibraphone phrase from the
+pentatonic every other bar; a bed of crackle and a pop or two a bar.
+
 ## Elsewhere on the site
 
 The city has a links block: one hole in miniature, a clubhouse whose door
 is `/golf/`, and the pro, whose errand is a finished round (`localStorage`
 `golf.rounds`). The paper's sport page prints the course of the day with
 its pars (the names and the par shuffle are mirrored there, by the same
-seed) and your best on it. Rickbot answers "golf".
+seed) and your best on it. Rickbot answers "golf", and says how many times the
+mountain has gone up on your watch.

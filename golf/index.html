@@ -19,6 +19,8 @@ the same nine today. Pull back to swing, push through to hit, and keep it straig
     <p class="banner">GOLF</p>
     <p id="golf-veil-text">the course of the day.</p>
     <div id="golf-veil-card" class="card-wrap" hidden></div>
+    <p><a class="button post" id="golf-post" href="#" target="_blank" rel="noopener" hidden>post your card to the board</a></p>
+    <div id="golf-veil-board" class="board-wrap" hidden></div>
     <p><button type="button" id="golf-go">tee off</button></p>
   </div>
   <button type="button" class="unfill" id="golf-unfill" hidden aria-label="leave fullscreen">&times;</button>
@@ -29,7 +31,7 @@ the same nine today. Pull back to swing, push through to hit, and keep it straig
 
 <div class="bar">
   <p class="hint">drag down, then flick up, to swing &middot; or <kbd>space</kbd> three times: start, power, aim &middot; <kbd>&#9664; &#9654;</kbd> aim (<kbd>shift</kbd> for fine) &middot; <kbd>&#9650; &#9660;</kbd> club &middot; <kbd>v</kbd> flies the hole &middot; in the air, drag or <kbd>&#9664; &#9654;</kbd> to lean on it &middot; <kbd>esc</kbd> pauses</p>
-  <p class="buttons"><button type="button" id="golf-sound">sound</button> <button type="button" id="golf-full">fullscreen</button> <button type="button" id="golf-new">another course</button> <output id="golf-score" class="score"></output></p>
+  <p class="buttons"><button type="button" id="golf-sound">sound</button> <button type="button" id="golf-full">fullscreen</button> <button type="button" id="golf-new">another course</button> <button type="button" id="golf-board">the board</button> <button type="button" id="golf-muzak" aria-pressed="false">muzak</button> <output id="golf-score" class="score"></output></p>
 </div>
 
 <p>The swing is the trackball's. Press on the course and pull straight down: how far back you go is the most
@@ -53,6 +55,16 @@ WebGL and no library; <a href="https://github.com/rseufert/rseufert.github.io/bl
 script</a> on a plain canvas. Each hole is a bent line from the tee to the green, and the ground is cut by
 how far it is from that line. On the green, the little marks drift the way a putt will fall. It is par 36,
 and the card keeps your best on each course in this browser.</p>
+
+<p>The clubhouse board is the web 0.9 way, like the guest book and the ghosts: when a round is done, post your card
+and it opens an issue on the site's repository with the card in it, and a workflow reads the open ones onto the
+board, each player's best on each course, which the game shows under your card and from the button. An honour
+system, like the one in the clubhouse; closing the issue takes the card down. The muzak is the clubhouse speaker,
+optional and apart from the game's own sounds: a slow loop on an electric piano with the tape running a little
+uneven, a bass that walks when it feels like it, brushed drums behind the beat, a vibraphone with an idea every
+other bar, and a record that has been on all afternoon, made here as it plays. Mt Hood stands east by south on
+the horizon. It is usually quiet. Some holes, a while after you reach them, something tall comes out of the trees
+on one side, far enough off to be a doubt, and goes back; if you see it, the card says so.</p>
 </div>
 <script src="/js/unmute.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/golf/golf.js?v={{ site.time | date: '%s' }}"></script>

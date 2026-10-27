@@ -27,6 +27,8 @@
     var newButton = document.getElementById("golf-new");
     var scoreOut = document.getElementById("golf-score");
     var pads = document.getElementById("golf-pads");
+    var boardButton = document.getElementById("golf-board"), muzakButton = document.getElementById("golf-muzak"), postLink = document.getElementById("golf-post"), veilBoard = document.getElementById("golf-veil-board");
+    var RAW = "https://raw.githubusercontent.com/rseufert/rseufert.github.io/sky-data/";
 
     var KEY = "golf";
     var MONO = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
@@ -86,7 +88,7 @@
         var s = null;
         try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
         s = s || {};
-        return { sound: s.sound !== false, best: s.best || {}, rounds: s.rounds || 0 };
+        return { sound: s.sound !== false, muzak: !!s.muzak, best: s.best || {}, rounds: s.rounds || 0, squatch: s.squatch || 0, hood: s.hood || 0 };
     }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* a visit's worth */ } }
 
@@ -393,13 +395,23 @@
     var trail = [];
     var paused = false;
     var showHud = true;        // Golf.hud(false) in the console, for a clean picture
+    var flags = [];            // what happened this round: sq4, hood6
+    var holeClock = 0;         // seconds on this hole
+    var squatch = null, squatchAt = -1;        // something in the trees
+    var HOOD = { bearing: 1.95, erupting: false, t: 0, at: -1, erupted: false, hole: 0, ash: [] };   // the mountain, east by south
 
     function startRound() {
-        holeNo = 0; scores = []; startHole();
+        holeNo = 0; scores = []; flags = [];
+        HOOD.erupting = false; HOOD.erupted = false; HOOD.t = 0; HOOD.ash = [];
+        startHole();
     }
     function startHole() {
         hole = generate(seed, holeNo);
         applyWind(hole);
+        holeClock = 0; squatch = null;
+        // Something in the trees, some holes, a while in; and the mountain, once a round if at all (#hood asks for it).
+        squatchAt = Math.random() < 0.2 ? 8 + Math.random() * 45 : -1;
+        HOOD.at = !HOOD.erupted && (Math.random() < 0.06 || (/\bhood\b/.test(location.hash) && holeNo === 0)) ? 4 + Math.random() * 25 : -1;
         strokes = 0;
         ball.x = 0; ball.z = 0; ball.y = height(hole, 0, 0); ball.lie = "tee";
         ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
@@ -620,6 +632,7 @@
     function finishHole(n) {
         scores[holeNo] = n;
         var diff = n - hole.par;
+        if (n === 1) flag("ace" + (holeNo + 1));
         var word = n === 1 ? "HOLE IN ONE" : diff <= -3 ? "ALBATROSS" : diff === -2 ? "EAGLE" : diff === -1 ? "BIRDIE" : diff === 0 ? "PAR" : diff === 1 ? "BOGEY" : diff === 2 ? "DOUBLE BOGEY" : "+" + diff;
         if (n >= 10 && diff > 2) word = "PICKED UP";
         message = word; messageClock = 0;
@@ -628,6 +641,7 @@
         updateScore();
     }
     function note(t) { message = t; messageClock = 0; }
+    function flag(f) { if (flags.indexOf(f) < 0) flags.push(f); }
     function total() { var s = 0; for (var i = 0; i < scores.length; i++) s += scores[i] || 0; return s; }
     function parSoFar() { var p = 0, pars = parsOf(seed); for (var i = 0; i < scores.length; i++) if (scores[i] != null) p += pars[i]; return p; }
     function toPar(n) { return n === 0 ? "E" : n > 0 ? "+" + n : String(n); }
@@ -659,10 +673,57 @@
         save();
         mode = "card";
         veil.hidden = false;
-        veilText.textContent = hole.name + ": " + t + " (" + toPar(t - p) + ")" + (newBest ? (best == null ? ", your first round on this course." : ", your best here.") : ". Your best here is " + best + ".");
+        veilText.textContent = hole.name + ": " + t + " (" + toPar(t - p) + ")" + (newBest ? (best == null ? ", your first round on this course." : ", your best here.") : ". Your best here is " + best + ".") + happened();
         veilCard.innerHTML = card();
         veilCard.hidden = false;
         go.textContent = "play again";
+        if (postLink) {
+            var line = "gc1:" + seed + ":" + t + ":" + scores.map(function (x) { return x || 10; }).join(",") + ":" + (flags.length ? flags.join(",") : "-");
+            var body = "course: " + hole.name + "\nseed: " + seed + "\ntotal: " + t + " (" + toPar(t - p) + ")\nholes: " + scores.join(" ") + "\n\n```\n" + line + "\n```\n\nPosted from rickseufert.com/golf/#seed=" + seed + ". Keep the code block as it is; a workflow reads open issues titled \"card:\" onto the clubhouse board, a player's best on each course. It is an honour system, like the one in the clubhouse. Closing the issue takes the card down.";
+            postLink.href = "https://github.com/rseufert/rseufert.github.io/issues/new?title=" + encodeURIComponent("card: " + t + " on " + hole.name + " (" + seed + ")") + "&body=" + encodeURIComponent(body);
+            postLink.hidden = false;
+        }
+        showBoard(seed, t);
+    }
+    function happened() {
+        var bits = flags.map(function (f) { var m = /^(sq|hood|ace)(\d)$/.exec(f); return !m ? "" : m[1] === "sq" ? "Something tall crossed the trees on hole " + m[2] + "." : m[1] === "hood" ? "Mt Hood erupted on hole " + m[2] + "." : "A hole in one at the " + m[2] + "th."; });
+        return bits.length ? " " + bits.join(" ") : "";
+    }
+
+    // ---- the clubhouse board ------------------------------------------------
+    // The cards posted as issues, compiled onto the sky-data branch by
+    // tools/cards.py: each player's best on each course. Fetched once, shown
+    // under the card at the end of a round and from the bar.
+    var board = null;
+    function fetchBoard() {
+        if (!window.fetch) return;
+        fetch(RAW + "cards.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.cards) { board = j.cards; if (!veil.hidden && veilBoard && !veilBoard.hidden) showBoard(seed); } }).catch(function () { board = null; });
+    }
+    function esc(x) { return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function boardHtml(forSeed, mine) {
+        if (!board) return "<p class=\"small\">the board has not come down from the clubhouse; it is read from the sky-data branch, once.</p>";
+        var here = board.filter(function (c) { return c.seed === forSeed; }).sort(function (a, b) { return a.total - b.total || (a.when < b.when ? -1 : 1); });
+        var name = NAMES[forSeed % NAMES.length], out = "<h3>THE BOARD · " + esc(name.toUpperCase()) + (forSeed === today() ? " · TODAY" : " · " + forSeed) + "</h3>";
+        if (!here.length) out += "<p class=\"small\">nobody has posted a card on this course" + (mine != null ? "; yours would be the first" : "") + ". an honour system, like the one in the clubhouse.</p>";
+        else {
+            out += "<table class=\"board\">";
+            here.slice(0, 10).forEach(function (c, i) { out += "<tr><td>" + (i + 1) + "</td><th>" + esc(c.by) + "</th><td>" + c.total + "</td><td class=\"" + (c.toPar < 0 ? "under" : c.toPar > 0 ? "over" : "") + "\">" + toPar(c.toPar) + "</td><td class=\"flags\">" + c.flags.map(function (f) { return /^sq/.test(f) ? "<span title=\"sasquatch, hole " + f.slice(2) + "\">S</span>" : /^hood/.test(f) ? "<span title=\"mt hood erupted, hole " + f.slice(4) + "\">▲</span>" : /^ace/.test(f) ? "<span title=\"a hole in one\">1</span>" : ""; }).join(" ") + "</td><td class=\"when\">" + esc(c.when) + "</td></tr>"; });
+            out += "</table>";
+            if (mine != null) { var place = here.filter(function (c) { return c.total < mine; }).length + 1; out += "<p class=\"small\">your " + mine + " would stand " + place + (place === 1 ? "st" : place === 2 ? "nd" : place === 3 ? "rd" : "th") + " of " + (here.length + 1) + ", if you post it.</p>"; }
+        }
+        var anywhere = board.slice().sort(function (a, b) { return a.toPar - b.toPar || a.total - b.total; }).slice(0, 5);
+        if (anywhere.length) out += "<p class=\"small\">best anywhere: " + anywhere.map(function (c) { return esc(c.by) + " " + toPar(c.toPar) + " on " + esc(c.course); }).join(" · ") + ".</p>";
+        return out;
+    }
+    function showBoard(forSeed, mine) {
+        if (!veilBoard) return;
+        veilBoard.innerHTML = boardHtml(forSeed, mine);
+        veilBoard.hidden = false;
+    }
+    function openBoard() {   // from the bar: the board over the game, paused
+        if (mode !== "title" && mode !== "card" && !paused) { paused = true; go.textContent = "play on"; veilText.textContent = "paused on " + hole.name + ", hole " + (holeNo + 1) + "."; veilCard.innerHTML = card(); veilCard.hidden = false; }
+        veil.hidden = false;
+        showBoard(seed, mode === "card" ? total() : null);
     }
 
     // ---- input -------------------------------------------------------------
@@ -781,6 +842,7 @@
         veil.hidden = !paused;
         veilText.textContent = "paused on " + hole.name + ", hole " + (holeNo + 1) + ".";
         veilCard.innerHTML = card(); veilCard.hidden = false;
+        if (veilBoard) veilBoard.hidden = true;
         go.textContent = "play on";
     }
 
@@ -834,7 +896,8 @@
         follow.x += (tx - follow.x) * k; follow.y += (ty - follow.y) * k; follow.z += (tz - follow.z) * k;
         var dy = tyaw - follow.yaw; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
         follow.yaw += dy * k; follow.pitch += (tpitch - follow.pitch) * k;
-        setCam(follow.x, follow.y, follow.z, follow.yaw, follow.pitch);
+        var shake = HOOD.erupting && HOOD.t < 7 ? (7 - HOOD.t) / 7 * 0.004 : 0;
+        setCam(follow.x, follow.y, follow.z, follow.yaw + (shake ? (Math.random() - 0.5) * shake * 4 : 0), follow.pitch + (shake ? (Math.random() - 0.5) * shake : 0));
     }
     function toCam(x, y, z, out) {
         var dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
@@ -859,6 +922,105 @@
         if (a <= 0) return 0;
         if (a > 1) a = 1;
         return a * a * (3 - 2 * a);
+    }
+
+    // ---- something in the trees, and the mountain --------------------------------
+    // Some holes, a while after you reach them, something tall walks out of the
+    // trees on one side of the hole, far enough off to be a doubt, and back in.
+    // Seen for a second and it goes on the card. Mt Hood stands east by south
+    // on the horizon all day; once a round, if at all, it goes up.
+    function creatures(dt) {
+        if (squatchAt > 0 && !squatch && holeClock > squatchAt && (mode === "aim" || mode === "rest")) {
+            // a spot at the tree line, ahead and to one side, that can be seen from where you stand; a few tries, then never mind
+            var a = along(hole, ball.x, ball.z), eye = { x: cam.x, y: cam.y, z: cam.z };
+            for (var k = 0; k < 8 && !squatch; k++) {
+                var t = Math.min(0.92, a.t + 0.05 + Math.random() * 0.2), p = pointAt(hole, t), side = Math.random() < 0.5 ? -1 : 1, off = hole.cw - 3;
+                var sx = p.x + p.nx * side * off, sz = p.z + p.nz * side * off;
+                if (!clearLine(eye, sx, height(hole, sx, sz) + 1.6, sz)) continue;
+                squatch = { x: sx, z: sz, dx: -p.nx * side * 1.3, dz: -p.nz * side * 1.3, t: 0, dur: 10 + Math.random() * 4, seen: 0, hole: holeNo + 1 };
+                if (audio) audio.knock();
+            }
+            squatchAt = -1;
+        }
+        if (squatch) {
+            squatch.t += dt;
+            var walk = squatch.t < squatch.dur * 0.5 ? 1 : -1;        // out of the trees, a pause, and back
+            if (squatch.t > squatch.dur * 0.4 && squatch.t < squatch.dur * 0.6) walk = 0;
+            squatch.x += squatch.dx * walk * dt; squatch.z += squatch.dz * walk * dt;
+            if (squatch.t > squatch.dur) squatch = null;
+        }
+        if (HOOD.at > 0 && holeClock > HOOD.at && !HOOD.erupting) {
+            HOOD.erupting = true; HOOD.erupted = true; HOOD.t = 0; HOOD.hole = holeNo + 1; HOOD.at = -1;
+            flag("hood" + HOOD.hole); saved.hood++; save();
+            note("MT HOOD");
+            if (audio) audio.rumble(90);
+        }
+        if (HOOD.erupting) {
+            HOOD.t += dt;
+            // ash, drifting down the screen with the wind, for as long as it goes
+            if (HOOD.t < 240 && Math.random() < dt * (HOOD.t < 100 ? 40 : 10)) HOOD.ash.push({ x: Math.random() * W, y: -4, v: 12 + Math.random() * 20, w: (Math.random() - 0.5) * 30, s: 1 + Math.random() * 1.6, a: 0.3 + Math.random() * 0.5 });
+            for (var i = HOOD.ash.length - 1; i >= 0; i--) { var f = HOOD.ash[i]; f.y += f.v * dt; f.x += (f.w + Math.sin(clock * 2 + f.y * 0.02) * 10) * dt; if (f.y > Hpx + 4) HOOD.ash.splice(i, 1); }
+            if (HOOD.t > 600) { HOOD.erupting = false; HOOD.ash = []; }
+        }
+    }
+    // Whether the ground stays under the line from the eye to a point: a sample every few yards.
+    function clearLine(eye, x, y, z) {
+        var n = 24;
+        for (var i = 1; i < n; i++) { var u = i / n, px = eye.x + (x - eye.x) * u, pz = eye.z + (z - eye.z) * u, py = eye.y + (y - eye.y) * u; if (height(hole, px, pz) > py - 0.2) return false; }
+        return true;
+    }
+    function sasquatch(it) {
+        var q = squatch, a = fade(it.d); if (!q || a <= 0.02) return;
+        var y = height(hole, q.x, q.z), h = 2.7, ang = Math.atan2(cam.x - q.x, cam.z - q.z), rx = Math.cos(ang), rz = -Math.sin(ang);
+        var sw = Math.sin(q.t * 4.2) * 0.35, arm = Math.sin(q.t * 4.2 + Math.PI) * 0.4;
+        function P(u, v) { return [q.x + rx * u, y + v, q.z + rz * u]; }
+        a = Math.max(a, 0.7);
+        ctx.strokeStyle = "#d9c391"; ctx.lineWidth = 1.8; ctx.globalAlpha = a; ctx.shadowColor = "#d9c391"; ctx.shadowBlur = 6;
+        poly3([P(-0.55, h * 0.3), P(-0.62, h * 0.72), P(-0.32, h * 0.86), P(0.32, h * 0.86), P(0.62, h * 0.72), P(0.55, h * 0.3), P(0.3, h * 0.3), P(-0.3, h * 0.3)], "#000");   // the torso, broad
+        poly3([P(-0.2, h * 0.86), P(-0.26, h), P(0.26, h), P(0.2, h * 0.86)], "#000");                                                                                          // the head, no neck to speak of
+        ctx.globalAlpha = a * 0.7;
+        poly3([P(-0.62, h * 0.72), P(-0.9 + arm * 0.3, h * 0.35), P(-0.8 + arm * 0.5, h * 0.1)], null);                                                                      // the arms, long
+        poly3([P(0.62, h * 0.72), P(0.9 - arm * 0.3, h * 0.35), P(0.8 - arm * 0.5, h * 0.1)], null);
+        poly3([P(-0.3, h * 0.3), P(-0.35 + sw * 0.5, 0.02)], null); poly3([P(0.3, h * 0.3), P(0.35 - sw * 0.5, 0.02)], null);                                                 // the legs
+        ctx.shadowBlur = 0;
+        // seen: on the screen, in the fog, for a second in all
+        var c = toCam(q.x, y + h / 2, q.z, { x: 0, y: 0, z: 0 });
+        if (c.z > NEAR && Math.abs(c.x) < c.z * (W / 2 / f) && it.d < FOG * 0.8) {
+            q.seen += frameDt;
+            if (q.seen > 1 && !q.counted) { q.counted = true; flag("sq" + q.hole); saved.squatch++; save(); }
+        }
+    }
+    function mountain(hz) {
+        var rel = Math.atan2(Math.sin(HOOD.bearing - cam.yaw), Math.cos(HOOD.bearing - cam.yaw));
+        if (Math.abs(rel) > 1.25) return;
+        var sx = W / 2 + f * Math.tan(rel), w = f * 0.2, h = f * 0.075, top = hz - h;
+        ctx.globalAlpha = 0.95; ctx.strokeStyle = "#7f8fd8"; ctx.lineWidth = 1.2; ctx.fillStyle = "#000";
+        ctx.beginPath(); ctx.moveTo(sx - w, hz); ctx.lineTo(sx - w * 0.42, hz - h * 0.62); ctx.lineTo(sx - w * 0.12, top + h * 0.04); ctx.lineTo(sx, top); ctx.lineTo(sx + w * 0.14, top + h * 0.12); ctx.lineTo(sx + w * 0.45, hz - h * 0.6); ctx.lineTo(sx + w, hz); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.strokeStyle = "#c9d7ff"; ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(sx - w * 0.2, top + h * 0.3); ctx.lineTo(sx - w * 0.05, top + h * 0.12); ctx.lineTo(sx + w * 0.08, top + h * 0.28); ctx.stroke();   // the snow line
+        if (!HOOD.erupting) return;
+        var t = HOOD.t, grow = Math.min(1, t / 40), tail = t > 150 ? Math.max(0.25, 1 - (t - 150) / 450) : 1;
+        // the glow at the summit, and the plume: a column of puffs leaning with the wind, higher as it goes
+        ctx.globalAlpha = 0.55 * Math.min(1, t / 3) * tail; ctx.fillStyle = "#ff5a1f";
+        ctx.beginPath(); ctx.ellipse(sx, top + h * 0.05, w * 0.12, h * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+        var lean = Math.sin(hole.wind.dir - cam.yaw) * 0.6, n = Math.floor(16 * grow);
+        for (var i = 0; i < n; i++) {
+            var u = i / 16, py = top - u * h * 4.5 * grow, px = sx + lean * u * h * 2.2 + Math.sin(clock * 0.7 + i * 1.7) * h * 0.15 * u, r = h * (0.12 + u * 0.55) * (0.8 + 0.2 * Math.sin(clock + i));
+            ctx.globalAlpha = (0.6 - u * 0.35) * tail; ctx.strokeStyle = i < 3 ? "#ff8a4a" : "#b4b4c4"; ctx.fillStyle = "#000"; ctx.lineWidth = 1.2;
+            ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        }
+        if (t < 150 && Math.random() < 0.025) {   // lightning in the column
+            ctx.globalAlpha = 0.9; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.beginPath();
+            var lx = sx + lean * h * 1.5, ly = top - h * 2.5; ctx.moveTo(lx, ly);
+            for (var k = 0; k < 6; k++) { lx += (Math.random() - 0.5) * h * 0.6; ly += h * 0.35; ctx.lineTo(lx, ly); }
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+    }
+    function ashfall() {
+        if (!HOOD.ash.length) return;
+        ctx.fillStyle = "#b9b9c4";
+        for (var i = 0; i < HOOD.ash.length; i++) { var fl = HOOD.ash[i]; ctx.globalAlpha = fl.a; ctx.fillRect(fl.x, fl.y, fl.s, fl.s); }
+        ctx.globalAlpha = 1;
     }
 
     // ---- drawing -----------------------------------------------------------
@@ -941,7 +1103,9 @@
         }
         ctx.globalAlpha = 1;
         if (mode === "aim" || mode === "rest") { aimLine(); if (club === PUTTER || ball.lie === "green") slopes(); }
+        if (squatch) { var sd = Math.hypot(squatch.x - cam.x, squatch.z - cam.z); if (clearLine(cam, squatch.x, height(hole, squatch.x, squatch.z) + 1.4, squatch.z)) sasquatch({ d: sd }); }
         if (mode === "flight") tracer();
+        ashfall();
         if (mode !== "title" && showHud) hud();
         ctx.globalAlpha = 1;
     }
@@ -952,6 +1116,7 @@
         ctx.fillStyle = g; ctx.fillRect(0, hz - 90, W, 94);
         ctx.strokeStyle = "#3a6fb0"; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(0, hz); ctx.lineTo(W, hz); ctx.stroke();
+        mountain(hz);
         // A low sun, and some stars above the haze: the course at dusk.
         var rel = Math.atan2(Math.sin(0.9 - cam.yaw), Math.cos(0.9 - cam.yaw)), sx = W / 2 + f * Math.tan(rel);
         if (Math.abs(rel) < 1.1 && sx > -40 && sx < W + 40) {
@@ -1265,6 +1430,16 @@
                 [2400, 1900, 2600, 2100].forEach(function (fq, i) { tone(t + i * 0.06, 0.07, "triangle", fq, 0.18 - i * 0.03); });
                 if (dunk) noise(t, 0.2, "bandpass", 900, 1, 0.3);
             },
+            knock: function () { var t = ac.currentTime; tone(t, 0.12, "sine", 180, 0.25, 120); tone(t + 0.42, 0.12, "sine", 170, 0.2, 110); },
+            rumble: function (secs) {
+                var t = ac.currentTime;
+                var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+                var fl = ac.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = 70; fl.Q.value = 0.8;
+                var g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.9, t + 4); g.gain.setValueAtTime(0.9, t + secs * 0.5); g.gain.exponentialRampToValueAtTime(0.0001, t + secs);
+                src.connect(fl); fl.connect(g); g.connect(master); src.start(t); src.stop(t + secs + 0.1);
+                var o = ac.createOscillator(); o.type = "sine"; o.frequency.value = 27; var og = ac.createGain(); og.gain.setValueAtTime(0.0001, t); og.gain.exponentialRampToValueAtTime(0.5, t + 3); og.gain.exponentialRampToValueAtTime(0.0001, t + secs * 0.7);
+                o.connect(og); og.connect(master); o.start(t); o.stop(t + secs);
+            },
             cheer: function (n) {
                 var t = ac.currentTime + 0.3, dur = 1.6 + n * 0.6;
                 noise(t, dur, "bandpass", 1400, 0.5, 0.18 + n * 0.08);
@@ -1275,18 +1450,109 @@
     function ensureAudio() {
         if (!audio) audio = makeAudio();
         if (audio && audio.ac.state !== "running") { try { audio.ac.resume(); } catch (e) { /* later */ } }
+        if (audio && saved.muzak && !muzak) muzak = makeMuzak(audio.ac);
+    }
+    // ---- the muzak ------------------------------------------------------------
+    // The clubhouse speaker: a slow four-chord loop on an electric piano with
+    // the tape running a little uneven, a bass that walks when it feels like
+    // it, brushed drums behind the beat, a vibraphone that has an idea every
+    // other bar, and the crackle of a record that has been on all afternoon.
+    // Generated here, nothing fetched; optional, and apart from the game's
+    // own sounds. Pitched a whole tone flat, as the genre requires.
+    var muzak = null;
+    function makeMuzak(ac) {
+        var bus = ac.createGain(); bus.gain.value = 0;
+        var warm = ac.createBiquadFilter(); warm.type = "lowpass"; warm.frequency.value = 3600; warm.Q.value = 0.5;
+        var comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; comp.attack.value = 0.02; comp.release.value = 0.3;
+        bus.connect(warm); warm.connect(comp); comp.connect(ac.destination);
+        bus.gain.setTargetAtTime(0.5, ac.currentTime, 2);
+        // the tape: one slow wobble on every pitched thing
+        var lfo = ac.createOscillator(); lfo.type = "sine"; lfo.frequency.value = 0.37; var wow = ac.createGain(); wow.gain.value = 7; lfo.connect(wow); lfo.start();
+        var flutter = ac.createOscillator(); flutter.type = "sine"; flutter.frequency.value = 5.3; var fg = ac.createGain(); fg.gain.value = 1.5; flutter.connect(fg); flutter.start();
+        var TRANSPOSE = -2, BPM = 71, BEAT = 60 / BPM, SWING = 0.14;
+        function hz(midi) { return 440 * Math.pow(2, (midi + TRANSPOSE - 69) / 12); }
+        var noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), nd = noiseBuf.getChannelData(0);
+        for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        // the loop: four chords, twice, with a turn at the end; bass roots under them
+        var CHORDS = [[57, 60, 64, 67], [60, 62, 65, 69], [58, 62, 65, 69], [58, 64, 67, 69], [55, 60, 64, 67], [60, 62, 65, 69], [57, 62, 65, 69], [58, 64, 67, 71]];
+        var ROOTS = [41, 38, 43, 36, 45, 38, 46, 36];
+        var PENTA = [65, 67, 69, 72, 74, 77, 79, 81];
+        function rhodes(midi, t, dur, vel) {
+            var fq = hz(midi), g = ac.createGain();
+            g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vel, t + 0.015); g.gain.exponentialRampToValueAtTime(vel * 0.35, t + 0.6); g.gain.setTargetAtTime(0.0001, t + dur, 0.12);
+            var o1 = ac.createOscillator(); o1.type = "sine"; o1.frequency.value = fq;
+            var o2 = ac.createOscillator(); o2.type = "triangle"; o2.frequency.value = fq * 2; var g2 = ac.createGain(); g2.gain.value = 0.12;
+            var tine = ac.createOscillator(); tine.type = "sine"; tine.frequency.value = fq * 4; var tg = ac.createGain(); tg.gain.setValueAtTime(vel * 0.3, t); tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+            wow.connect(o1.detune); wow.connect(o2.detune); fg.connect(o1.detune);
+            o1.connect(g); o2.connect(g2); g2.connect(g); tine.connect(tg); tg.connect(g); g.connect(bus);
+            o1.start(t); o2.start(t); tine.start(t); o1.stop(t + dur + 0.8); o2.stop(t + dur + 0.8); tine.stop(t + 0.1);
+        }
+        function bass(midi, t, dur, vel) {
+            var o = ac.createOscillator(); o.type = "triangle"; o.frequency.value = hz(midi); wow.connect(o.detune);
+            var fl = ac.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = 420;
+            var g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vel, t + 0.02); g.gain.setTargetAtTime(0.0001, t + dur * 0.8, 0.08);
+            o.connect(fl); fl.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.4);
+        }
+        function vibes(midi, t, dur, vel) {
+            var o = ac.createOscillator(); o.type = "sine"; o.frequency.value = hz(midi);
+            var vib = ac.createOscillator(); vib.frequency.value = 4.6; var vg = ac.createGain(); vg.gain.value = 9; vib.connect(vg); vg.connect(o.detune); wow.connect(o.detune);
+            var g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vel, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            o.connect(g); g.connect(bus); o.start(t); vib.start(t); o.stop(t + dur + 0.05); vib.stop(t + dur + 0.05);
+        }
+        function hiss(t, dur, type, freq, q, vel, to) {
+            var src = ac.createBufferSource(); src.buffer = noiseBuf;
+            var fl = ac.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(freq, t); fl.Q.value = q; if (to) fl.frequency.exponentialRampToValueAtTime(to, t + dur);
+            var g = ac.createGain(); g.gain.setValueAtTime(vel, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            src.connect(fl); fl.connect(g); g.connect(bus); src.start(t, Math.random()); src.stop(t + dur + 0.05);
+        }
+        function kick(t, vel) { var o = ac.createOscillator(); o.type = "sine"; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.09); var g = ac.createGain(); g.gain.setValueAtTime(vel, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.4); }
+        function snare(t, vel) { hiss(t, 0.16, "bandpass", 1600, 0.9, vel); var o = ac.createOscillator(); o.type = "triangle"; o.frequency.value = 185; var g = ac.createGain(); g.gain.setValueAtTime(vel * 0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.1); }
+        function hat(t, vel, open) { hiss(t, open ? 0.3 : 0.05, "highpass", 7500, 1, vel); }
+        // the record: a bed of crackle, and a pop now and then
+        var crackle = ac.createBufferSource(); crackle.buffer = noiseBuf; crackle.loop = true;
+        var cf = ac.createBiquadFilter(); cf.type = "lowpass"; cf.frequency.value = 2200; var cg = ac.createGain(); cg.gain.value = 0.014;
+        crackle.connect(cf); cf.connect(cg); cg.connect(bus); crackle.start();
+        var bar = 0, nextBar = ac.currentTime + 0.1, timer = null;
+        function scheduleBar(t0) {
+            var ch = CHORDS[bar % 8], root = ROOTS[bar % 8], b = BEAT, sw = b * 0.5 + b * SWING, i;
+            function at(beat) { return t0 + beat * b + (Math.random() - 0.5) * 0.012; }
+            // the piano: on the one, the and of two, and sometimes the four
+            ch.forEach(function (m, k) { rhodes(m, at(0) + k * 0.012, b * 1.6, 0.11 + Math.random() * 0.03); });
+            ch.forEach(function (m, k) { rhodes(m, t0 + b + sw + k * 0.01, b * 1.1, 0.07 + Math.random() * 0.03); });
+            if (Math.random() < 0.5) ch.slice(1).forEach(function (m, k) { rhodes(m, at(3) + k * 0.01, b * 0.8, 0.06); });
+            // the bass: root, fifth, and a step up to the next root on the and of four when it feels like it
+            bass(root, at(0), b * 1.7, 0.33); bass(root + 7, at(2), b * 1.2, 0.26);
+            if (Math.random() < 0.55) bass(ROOTS[(bar + 1) % 8] + (Math.random() < 0.5 ? -1 : 1), t0 + 3 * b + sw, b * 0.45, 0.22);
+            // the drums, behind the beat
+            kick(at(0) + 0.01, 0.55); kick(at(2) + 0.02, 0.45); if (Math.random() < 0.3) kick(t0 + 1 * b + sw, 0.3);
+            snare(at(1) + 0.028, 0.16); snare(at(3) + 0.03, 0.18);
+            for (i = 0; i < 8; i++) { var tt = t0 + Math.floor(i / 2) * b + (i % 2 ? sw : 0); hat(tt + 0.01, i % 2 ? 0.05 + Math.random() * 0.03 : 0.08 + Math.random() * 0.03, i === 7 && Math.random() < 0.35); }
+            // the vibes, an idea every other bar
+            if (bar % 2 === 1 && Math.random() < 0.7) {
+                var n = 3 + Math.floor(Math.random() * 3), start = Math.floor(Math.random() * 4) * 0.5, idx = Math.floor(Math.random() * PENTA.length);
+                for (i = 0; i < n; i++) { idx = Math.max(0, Math.min(PENTA.length - 1, idx + (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.7 ? 1 : 2))); var beat = start + i * (Math.random() < 0.3 ? 1 : 0.5); if (beat >= 4) break; vibes(PENTA[idx], t0 + Math.floor(beat) * b + (beat % 1 ? sw : 0), b * (0.6 + Math.random() * 0.8), 0.07 + Math.random() * 0.03); }
+            }
+            if (Math.random() < 0.6) hiss(t0 + Math.random() * 4 * b, 0.02, "highpass", 2500, 1, 0.08 + Math.random() * 0.1);   // a pop
+        }
+        function tick() { while (nextBar < ac.currentTime + 0.5) { scheduleBar(nextBar); nextBar += 4 * BEAT; bar++; } }
+        timer = setInterval(tick, 120); tick();
+        return {
+            stop: function () { bus.gain.setTargetAtTime(0, ac.currentTime, 0.5); clearInterval(timer); setTimeout(function () { try { crackle.stop(); lfo.stop(); flutter.stop(); bus.disconnect(); } catch (e) { /* gone */ } }, 3000); },
+            set: function (v) { bus.gain.setTargetAtTime(v, ac.currentTime, 0.5); }
+        };
     }
 
     // ---- the loop ----------------------------------------------------------
-    var last = 0, slowFrames = 0;
+    var last = 0, slowFrames = 0, frameDt = 1 / 60;
     function frame(now) {
         requestAnimationFrame(frame);
         var dt = Math.min(0.05, (now - (last || now)) / 1000);
-        last = now;
+        last = now; frameDt = dt;
         if (!hole) { render(); return; }
         if (paused) return;
-        clock += dt; modeClock += dt; messageClock += dt;
+        clock += dt; modeClock += dt; messageClock += dt; holeClock += dt;
         keyAim(dt);
+        creatures(dt);
         if (meter) {
             if (meter.phase === 1) { meter.v += meter.dir * dt / 0.95; if (meter.v >= 1.1) { meter.v = 1.1; meter.dir = -1; } if (meter.v < 0) { meter = null; } }
             else if (meter.phase === 2) { meter.v -= dt / 0.95; if (meter.v < -0.2) { var pw = meter.power; meter = null; strike(pw, -1); } }
@@ -1311,6 +1577,7 @@
         if (!live) fetchWind();
         if (audio) audio.wind(0);
         veil.hidden = true; veilCard.hidden = true;
+        if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true;
         if (paused) { paused = false; return; }
         if (mode === "card" || mode === "title") startRound();
         if (audio) audio.wind(hole.wind.mph);
@@ -1323,10 +1590,21 @@
         if (audio) audio.set(saved.sound);
     });
     soundButton.setAttribute("aria-pressed", saved.sound ? "true" : "false");
+    if (muzakButton) {
+        muzakButton.setAttribute("aria-pressed", saved.muzak ? "true" : "false");
+        muzakButton.addEventListener("click", function () {
+            saved.muzak = !saved.muzak; save();
+            muzakButton.setAttribute("aria-pressed", saved.muzak ? "true" : "false");
+            ensureAudio();
+            if (!saved.muzak && muzak) { muzak.stop(); muzak = null; }
+        });
+    }
+    if (boardButton) boardButton.addEventListener("click", openBoard);
     newButton.addEventListener("click", function () {
         seed = 1 + Math.floor(Math.random() * 999999);
         history.replaceState(null, "", "#seed=" + seed);
         paused = false; veil.hidden = true; veilCard.hidden = true;
+        if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true;
         ensureAudio();
         startRound();
         if (audio) audio.wind(hole.wind.mph);
@@ -1373,7 +1651,7 @@
     resize();
     // Behind the title, the first hole, flown over and over.
     hole = generate(seed, 0);
-    fetchWind();
+    fetchWind(); fetchBoard();
     ball.x = 0; ball.z = 0; ball.y = height(hole, 0, 0); ball.lie = "tee";
     aim = aimAtPin();
     veilText.textContent = "the course of the day: " + hole.name + ", nine holes" + (seed !== today() ? " (seed " + seed + ")" : "") + "." + (saved.best[seed] != null ? " Your best here is " + saved.best[seed] + "." : "");
@@ -1389,6 +1667,9 @@
         settle: function () { for (var n = 0; mode === "flight" && n < 240 * 90; n++) step(1 / 240); return mode; },
         next: function () { if (mode === "holed") nextHole(); }, pick: pickClub, toPin: yardsToPin,
         hud: function (on) { showHud = on !== false; },
-        get wind() { return live; }, calm: function () { live = null; if (hole) hole.wind = generate(seed, holeNo).wind; }
+        get wind() { return live; }, calm: function () { live = null; if (hole) hole.wind = generate(seed, holeNo).wind; },
+        board: function (cards) { if (cards) board = cards; return board; }, openBoard: openBoard, get flags() { return flags; },
+        squatch: function (now) { squatchAt = now ? 0.001 : holeClock + 0.5; if (now) holeClock = Math.max(holeClock, 1); }, hood: function () { HOOD.at = holeClock + 0.5; HOOD.erupted = false; }, get mountain() { return HOOD; }, get creature() { return squatch; }, get muzak() { return muzak; },
+        where: function () { if (!squatch) return null; var y = height(hole, squatch.x, squatch.z), c = toCam(squatch.x, y + 1.3, squatch.z, { x: 0, y: 0, z: 0 }); return { cam: [cam.x, cam.y, cam.z, cam.yaw, cam.pitch], c: c, screen: c.z > NEAR ? project(c) : null, clear: clearLine(cam, squatch.x, y + 1.4, squatch.z), W: W, H: Hpx, ground: y }; }
     };
 })();

@@ -123,3 +123,19 @@ body.filled { overflow: hidden; }
 .golf-page .pads { position: absolute; left: 12px; bottom: 40px; z-index: 2; display: none; gap: 6px; }
 .golf-page .pads button { font: 13px var(--mono); color: #ffcc33; background: rgba(0, 0, 0, 0.7); border: 1px solid #ffcc33; min-width: 40px; height: 40px; padding: 0 10px; cursor: pointer; }
 @media (hover: none) and (pointer: coarse) { .golf-page .pads { display: flex; } }
+
+/* The clubhouse board, on the veil: who posted what on this course. */
+.golf-page .board-wrap { max-width: 100%; overflow-x: auto; margin: 0 0 14px; }
+.golf-page .board-wrap[hidden] { display: none; }
+.golf-page .board-wrap h3 { font: 13px var(--mono); color: #ffcc33; letter-spacing: 0.12em; margin: 6px 0 8px; }
+.golf-page .board-wrap .small { font-size: 12px; color: #8d8d98; max-width: 460px; margin: 6px auto 0; }
+.golf-page table.board { border-collapse: collapse; font: 12px var(--mono); color: #c9c9d1; margin: 0 auto; }
+.golf-page table.board th, .golf-page table.board td { border-bottom: 1px solid #ffcc3333; padding: 3px 8px; text-align: left; font-weight: normal; }
+.golf-page table.board th { color: #e9e9f0; }
+.golf-page table.board td.under { color: #4dff7a; }
+.golf-page table.board td.over { color: #ff7a7a; }
+.golf-page table.board td.flags { color: #ffcc33; letter-spacing: 0.2em; }
+.golf-page table.board td.when { color: #7d7d88; }
+.golf-page .veil a.button { display: inline-block; font: 13px var(--mono); color: #8fe7ff; background: #000; border: 1px solid #8fe7ff; padding: 8px 18px; text-decoration: none; letter-spacing: 0.05em; }
+.golf-page .veil a.button:hover { background: #8fe7ff; color: #000; }
+.golf-page .veil a.button[hidden] { display: none; }
