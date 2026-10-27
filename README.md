@@ -25,7 +25,9 @@ pictures are not (see the licence note at the end).
 The home page is an index: one film, the purchase that crosses all three
 mocks, then each project as a tile, the dashboard as one of its numbers, the
 Willamette right now (`js/home-dashboard.js`, plain SVG, so the home page
-loads no D3 and asks one other host), and the Flipper apps as tiles.
+loads no D3 and asks one other host), four of the Flipper apps, and the
+toys as one grid of tiles (two across on a phone). The menu marks the page
+you are on, and on a phone the toys fold behind [play].
 The rest is a page each: `mock-sap/`, `mock-edi/`, `mock-bank/` and
 `mock-einvoice/` carry a mock's
 features and all its films, `examples/index.html` the worked examples in full, and
