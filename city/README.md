@@ -165,3 +165,11 @@ shared with the backrooms.
 
 `window.City` exposes `state()`, `step(ms)` for hand-stepped frames,
 `begin`, `enter` and `render`.
+
+## The links
+
+One block is a hole of the course of the day in miniature (a tee, a bent
+fairway, a bunker, a green with its flag, a few trees) and the clubhouse,
+whose door is `/golf/` and whose sign names today's course by the same seed
+golf uses. The pro stands by the first tee; his errand is a finished round,
+which golf records in `localStorage` under `golf.rounds`.

@@ -354,6 +354,31 @@
         H.mapCanvas = c; H.mapPx = px; H.mapPz = pz;
     }
 
+    // ---- the wind off the river ------------------------------------------------
+    // Every hole here runs north, tee to green, so a compass wind means
+    // something: the latest observation at the airport (api.weather.gov,
+    // KPDX, no key) blows across the course of the day when it can be had,
+    // and the HUD says so. Otherwise each hole keeps the wind it grew with.
+    var live = null;
+    function fetchWind() {
+        if (!window.fetch) return;
+        fetch("https://api.weather.gov/stations/KPDX/observations/latest", { headers: { Accept: "application/geo+json" } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (j) {
+                var p = j && j.properties; if (!p || p.windSpeed == null || p.windSpeed.value == null) return;
+                var kmh = p.windSpeed.value, from = p.windDirection && p.windDirection.value;
+                if (/km_h/.test(p.windSpeed.unitCode || "")) kmh = kmh; else if (/m_s/.test(p.windSpeed.unitCode || "")) kmh *= 3.6; else if (/kn/.test(p.windSpeed.unitCode || "")) kmh *= 1.852;
+                var mph = Math.round(kmh * 0.621371);
+                // the game's direction is where the wind goes, from north round by east; the airport's is where it comes from
+                live = { mph: mph, dir: from == null ? 0 : ((from + 180) % 360) * Math.PI / 180, from: from, when: p.timestamp ? new Date(p.timestamp) : null };
+                if (mph === 0 || from == null) live.dir = 0;
+                if (hole) applyWind(hole);
+                if (audio && hole) audio.wind(hole.wind.mph);
+            }).catch(function () { /* the course keeps its own wind */ });
+    }
+    function applyWind(H) { if (live) { H.wind = { mph: live.mph, dir: live.dir, live: true }; } }
+    function compass(deg) { return ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"][Math.round(deg / 22.5) % 16]; }
+
     // ---- state -------------------------------------------------------------
     var W = 0, Hpx = 0, DPR = 1, f = 1, slow = false;
     var seed = hashSeed() || today();
@@ -374,6 +399,7 @@
     }
     function startHole() {
         hole = generate(seed, holeNo);
+        applyWind(hole);
         strokes = 0;
         ball.x = 0; ball.z = 0; ball.y = height(hole, 0, 0); ball.lie = "tee";
         ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
@@ -648,7 +674,7 @@
         if (mode === "flyover") { endFlyover(); return; }
         if (mode === "holed" && modeClock > 0.6) { nextHole(); return; }
         if (mode === "rest") { if (modeClock > 0.3) readyToHit(); return; }
-        if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+        if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* a pointer already gone */ } }
         if (mode === "flight") { swing = { id: e.pointerId, x: e.clientX, y: e.clientY, lean: true }; return; }
         if (mode !== "aim") return;
         var r = canvas.getBoundingClientRect();
@@ -678,7 +704,7 @@
         var down = e.clientY - swing.y0;
         if (swing.phase === "back") {
             if (down > swing.back) swing.back = down;
-            if (swing.back > 18 && down < swing.back - 24) { swing.phase = "fwd"; swing.fx = e.clientX; swing.fy = e.clientY; swing.ft = now; swing.from = swing.pts.length - 1; }
+            if (swing.back > 18 && down < swing.back - 24) { swing.phase = "fwd"; swing.fx = e.clientX; swing.fy = e.clientY; swing.ft = now; swing.from = swing.pts[swing.pts.length - 1]; }
         }
         if (swing.phase === "fwd" && e.clientY < swing.y0 - 6) release();
     }
@@ -696,7 +722,7 @@
         if (club === PUTTER) p = backFrac;
         else p = backFrac * Math.max(0.45, Math.min(1.08, speed / (Hpx * 2.2)));
         // Crooked: how far the push leaned off straight up.
-        var fx = pts[s.from] ? pts[s.from] : a, ang = Math.atan2(b.x - fx.x, (fx.y - b.y) || 1);
+        var fx = s.from || a, ang = Math.atan2(b.x - fx.x, (fx.y - b.y) || 1);
         var side = Math.max(-1, Math.min(1, ang / 0.32));
         if (Math.abs(side) < 0.08) side = 0;
         strike(p, side);
@@ -1023,9 +1049,15 @@
         ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 2 * Math.PI); ctx.fill();
     }
     // Where this club goes from here if hit full and true, and the line to it.
+    // How much of this club reaches the pin from here: for the tick on the meter, and the ring.
+    function powerToPin() {
+        if (club === PUTTER) return Math.min(1.1, Math.sqrt(2 * LIE[ball.lie].roll * yardsToPin()) / (PUTT_MAX * (ball.lie === "green" ? 1 : 1.25)));
+        var full = CLUBS[club].carry * (LIE[ball.lie].take || 1);
+        return Math.min(1.1, yardsToPin() / full);
+    }
     function aimLine() {
         var putt = club === PUTTER;
-        var reach = putt ? Math.min(yardsToPin(), 34) : CLUBS[club].carry * (LIE[ball.lie].take || 1);
+        var reach = putt ? Math.min(yardsToPin(), 34) : CLUBS[club].carry * (LIE[ball.lie].take || 1) * Math.min(1, powerToPin());
         if (meter && meter.phase >= 2 && !putt) reach *= Math.min(1.1, meter.power);
         if (swing && swing.phase && !putt) reach *= Math.min(1.1, swing.back / backReach());
         if (swing && swing.phase && putt) reach = rollFor(Math.min(1.1, swing.back / backReach()));
@@ -1107,6 +1139,7 @@
             ctx.moveTo(ex, ey); ctx.lineTo(ex - Math.sin(a + 0.5) * 7, ey + Math.cos(a + 0.5) * 7); ctx.stroke();
         }
         text(hole.wind.mph ? hole.wind.mph + " MPH" : "CALM", wx, wy + 26, fs - 1, "#8fe7ff", "center");
+        if (hole.wind.live) text("PDX" + (live && live.from != null && hole.wind.mph ? " · " + compass(live.from) : ""), wx, wy + 26 + fs, fs - 3, "#8fe7ff", "center", 0.8);
         // The club, bottom left.
         var c = CLUBS[club], by2 = Hpx - pad - fs - 4;
         if (mode === "aim" || mode === "rest") {
@@ -1123,6 +1156,9 @@
             ctx.beginPath(); ctx.moveTo(mx - 5, zero); ctx.lineTo(mx + 17, zero); ctx.stroke();
             var full = my + mh * (1 - 1 / 1.25 * 1);
             ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(mx - 3, full); ctx.lineTo(mx + 15, full); ctx.stroke();
+            // the tick: the power that reaches the pin with this club, if it is less than all of it
+            var need = powerToPin();
+            if (need < 0.995) { var ny = zero - (zero - full) * need; ctx.globalAlpha = 0.9; ctx.strokeStyle = "#8fe7ff"; ctx.beginPath(); ctx.moveTo(mx - 6, ny); ctx.lineTo(mx + 18, ny); ctx.stroke(); ctx.strokeStyle = gold; }
             var v = null;
             if (meter) v = meter.phase === 1 ? meter.v : meter.v;
             else if (swing && swing.phase) v = Math.min(1.1, swing.back / backReach());
@@ -1272,6 +1308,7 @@
     // ---- the page ----------------------------------------------------------
     function begin() {
         ensureAudio();
+        if (!live) fetchWind();
         if (audio) audio.wind(0);
         veil.hidden = true; veilCard.hidden = true;
         if (paused) { paused = false; return; }
@@ -1324,18 +1361,19 @@
     canvas.addEventListener("pointercancel", function () { swing = null; });
     window.addEventListener("keydown", function (e) {
         if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
-        if (!stageInView() && mode === "title") return;
+        if (!stageInView()) return;
         keyDown(e);
     });
     window.addEventListener("keyup", keyUp);
     function stageInView() { var r = stage.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }
     window.addEventListener("resize", resize);
-    window.addEventListener("hashchange", function () { var s = hashSeed(); if (s && s !== seed) { seed = s; if (mode !== "title") startRound(); } });
+    window.addEventListener("hashchange", function () { var s = hashSeed() || today(); if (s !== seed) { seed = s; if (mode !== "title") startRound(); } });
     document.addEventListener("fullscreenchange", function () { setTimeout(resize, 50); });
 
     resize();
     // Behind the title, the first hole, flown over and over.
     hole = generate(seed, 0);
+    fetchWind();
     ball.x = 0; ball.z = 0; ball.y = height(hole, 0, 0); ball.lie = "tee";
     aim = aimAtPin();
     veilText.textContent = "the course of the day: " + hole.name + ", nine holes" + (seed !== today() ? " (seed " + seed + ")" : "") + "." + (saved.best[seed] != null ? " Your best here is " + saved.best[seed] + "." : "");
@@ -1350,6 +1388,7 @@
         start: begin, clubs: CLUBS, scores: scores, launchSpeed: launchSpeed, rollFor: rollFor,
         settle: function () { for (var n = 0; mode === "flight" && n < 240 * 90; n++) step(1 / 240); return mode; },
         next: function () { if (mode === "holed") nextHole(); }, pick: pickClub, toPin: yardsToPin,
-        hud: function (on) { showHud = on !== false; }
+        hud: function (on) { showHud = on !== false; },
+        get wind() { return live; }, calm: function () { live = null; if (hole) hole.wind = generate(seed, holeNo).wind; }
     };
 })();

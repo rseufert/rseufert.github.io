@@ -110,7 +110,7 @@
         // The river runs along one east-west street, not the plaza's.
         var row = pick([1, 2, 5, 6]);
         river = { z0: origin(0, row).z - STREET, z1: origin(0, row).z, row: row };
-        var builders = [theArena, theMocks, theDashboard, theFlipper, theBlog, theVenue, theShop, theCinema, theTemple];
+        var builders = [theArena, theMocks, theDashboard, theFlipper, theBlog, theVenue, theShop, theCinema, theTemple, theLinks];
         builders.forEach(function (fn, n) { var b = blocks[n], o = origin(b.i, b.j); fn(o.x, o.z, b); });
         blocks.slice(builders.length).forEach(function (b) { var o = origin(b.i, b.j); filler(o.x, o.z, b); });
         // Baby, asleep in a doorway on a far block.
@@ -443,6 +443,38 @@
             after: "the projectionist: tomorrow's will be different. come back."
         });
     }
+    function theLinks(x, z) {
+        // One hole of the course of the day, in miniature: a tee, a bent
+        // fairway, a bunker, a green with its flag, and the clubhouse with the
+        // cabinet in it, which is /golf/. The course's name is the day's, by
+        // the same seed golf uses.
+        var cx = x + BLOCK / 2, cz = z + BLOCK / 2, k, a, pts;
+        var COURSES = ["Forest Park", "Willamette Bend", "Mount Tabor", "Burnside Links", "Sauvie Island", "Tryon Creek", "Rocky Butte", "Pittock Heights", "Laurelhurst", "Johnson Creek", "Powell Butte", "Kelley Point"];
+        var course = COURSES[today() % COURSES.length], g = stored("golf"), best = g && g.best ? g.best[today()] : null;
+        // the fairway, a bent band from the south-west to the green in the north-east
+        pts = [];
+        for (k = 0; k <= 8; k++) { a = k / 8; pts.push([cx - 10 + a * 14 + Math.sin(a * Math.PI) * -4, cz - 10 + a * 16]); }
+        for (k = 8; k >= 0; k--) { a = k / 8; pts.push([cx - 4 + a * 14 + Math.sin(a * Math.PI) * -4, cz - 10 + a * 16]); }
+        flat(pts, { closed: true, col: "#4dff7a" });
+        flat([[cx - 8.5, cz - 12], [cx - 5.5, cz - 12], [cx - 5.5, cz - 9.5], [cx - 8.5, cz - 9.5]], { closed: true, col: "#e8ffe0" });   // the tee
+        pole(cx - 8, cz - 11, 0.4, { col: "#e8ffe0" }); pole(cx - 6, cz - 11, 0.4, { col: "#e8ffe0" });
+        ring(cx + 4.5, cz + 2, 2.2, 12, { col: "#ffd36b" });                                                                               // sand
+        ring(cx + 7, cz + 8, 4.6, 20, { col: "#bfff6e" }); ring(cx + 7, cz + 8, 3.2, 16, { col: "#bfff6e", dash: 2 });                       // the green
+        pole(cx + 8, cz + 8.5, 2.6, { col: "#f2f2f2" });
+        poly([[cx + 8, 2.6, cz + 8.5], [cx + 9.2, 2.35, cz + 8.9], [cx + 8, 2.1, cz + 8.5]], { closed: true, col: "#ff4646" });
+        for (k = 0; k < 5; k++) { var tx = cx - 12 + k * 1.2 + (k % 2) * 0.6, tz = cz + 6 + k * 1.6; poly([[tx - 1, 0, tz], [tx, 3.2, tz], [tx + 1, 0, tz]], { closed: true, col: "#35d06c" }); poly([[tx - 0.7, 1.4, tz], [tx, 3.9, tz], [tx + 0.7, 1.4, tz]], { closed: true, col: "#35d06c" }); }
+        // the clubhouse, by the first tee, with the cabinet in the corner
+        box(cx - 13, cz - 13, 6, 4, 3, { col: "#ffcc33", label: "CLUBHOUSE" });
+        label("GOLF · 9 HOLES · " + course.toUpperCase(), cx - 10, 1.4, cz - 13.05, 0.24, "#ffcc33");
+        label("TRACKBALL WORN SMOOTH", cx - 10, 0.9, cz - 13.05, 0.2, "#ffcc33");
+        door(cx - 10, cz - 14.2, "the clubhouse", "/golf/", "link", 2.4);
+        npc(cx - 4, cz - 14.5, "the pro", "cap", "#ffcc33", {
+            ask: "the pro: nine holes in the cabinet, a new course at midnight, the same nine for everyone; today it is " + course.toLowerCase() + ", par 36, and the wind is the airport's. pull back, push through, keep it straight. play the round through, all nine, and bring me the card.",
+            wait: "the pro: you have not finished a round. nine holes; the ones you pick up count ten. the clubhouse is right there.",
+            thanks: "the pro: a card. " + (best != null ? "your best on " + course.toLowerCase() + " is " + best + ", which is " + (best - 36 === 0 ? "level par" : best > 36 ? (best - 36) + " over" : (36 - best) + " under") + "." : "you have been round, which is more than most of this town can say.") + " the greens break toward the river, mostly. that is not in the manual; there is no manual.",
+            after: "the pro: it rebuilds at midnight. the wind is whatever the airport says it is. nobody has shot the course record because there is no course by tomorrow."
+        });
+    }
     function theTemple(x, z) {
         // Three steps, a cella with the Monad over its door and ΙΑΩ on the
         // lintel, a colonnade of sixteen, a pediment with the serpent that
@@ -554,6 +586,7 @@
         { id: "turn", who: "the astronomer", title: "watch the sky turn", check: function () { return (Q.flags.lapsed || 0) >= 24; } },
         { id: "sign", who: "the hierophant", title: "go into the temple", check: function () { return went(/^\/temple\/?/); } },
         { id: "cipher", who: "the code clerk", title: "read the wall", check: function () { var c = null; try { c = localStorage.getItem("cipher"); } catch (e) { c = null; } return !!c; } },
+        { id: "round", who: "the pro", title: "play a round", check: function () { var g = stored("golf"); return !!(g && g.rounds > 0); } },
         { id: "puzzle", who: "the newsagent", title: "solve the day's puzzle", check: function () { var d = new Date(), stamp = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2), v = null; try { v = localStorage.getItem("paper-solved"); } catch (e) { v = null; } return v === stamp; } }
     ];
     function doneCount() { return QUESTS.filter(function (q) { return Q.done[q.id]; }).length; }
