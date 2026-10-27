@@ -479,6 +479,12 @@
         return t + here(function (b) { return Z.rev(b.lon - card.from) < 30; });
     }
     function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    // a trump's note by Case's tone scale, a link to the neck in that key
+    function toneLine(card) {
+        if (card.trump == null || !Z.tone) return "";
+        var pc = Z.tone(card.of); if (pc == null) return "";
+        return "<p class=\"gd\">Its note by Paul Foster Case's tone scale is <a href=\"" + Z.toneLink(pc) + "\">" + Z.NOTES[pc] + "</a>, and its colour " + Z.TONE_COLOURS[pc] + ": play it on the neck.</p>";
+    }
     function reading() {
         if (!readOut) return;
         var slots = SPREADS[spread].slots, out = [];
@@ -488,7 +494,7 @@
             out.push("<div class=\"card-read\" id=\"" + c.card.slug + "\"><h3>" + (spread === "cross" ? (i + 1) + ". This " + esc(s.what) + ": " : spread === "three" ? esc(s.what) + ": " : "") + esc(c.card.name) + (c.reversed ? ", reversed" : "") + "</h3>"
                 + (s.say ? "<p class=\"pos\">" + esc(s.say) + ".</p>" : "")
                 + "<p class=\"waite\">Waite: " + esc(mean) + "</p>"
-                + "<p class=\"gd\">" + esc(about(c.card)) + "</p></div>");
+                + "<p class=\"gd\">" + esc(about(c.card)) + "</p>" + toneLine(c.card) + "</div>");
         });
         readOut.innerHTML = out.join("");
     }

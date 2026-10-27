@@ -21,7 +21,7 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `lenormand/index.html`, `lenormand.js` | the Lenormand: the thirty-six cards of the Game of Hope as emblems with their insets; three, nine and the Grand Tableau, read by neighbours and houses |
 | `changes/index.html`, `changes.js` | the changes: the I Ching cast by the stalks' odds or coins, drawn with its moving lines, read from the Chinese text with plain glosses of the Judgments |
 | `animals/index.html`, `animals.js` | the animals: the Chinese zodiac as a wheel, the year and the hour by `js/east.js`, the four pillars of a moment or a birth |
-| `neck/index.html`, `neck.js` | the neck: a fretboard with every note on it in any tuning, a scale and a chord lit over it with the chord's shapes found and strummed, your own tunings, scales and chords kept in the browser, and Case's tone scale putting a sign, a trump and a colour on each note, so the sky (`Zodiac.sky()`) is a chord and the hour (`Hours.now()`) a key |
+| `neck/index.html`, `neck.js` | the neck: a fretboard with every note on it in any tuning, a scale and a chord lit over it with the chord's shapes found and strummed, your own tunings, scales and chords kept in the browser, and Case's tone scale putting a sign, a trump and a colour on each note, so the sky (`Zodiac.sky()`) is a chord and the hour (`Hours.now()`) a key; a capo, a chord named from the frets put down, a microphone tuner (Yin, nothing kept), and the whole setting in the address (`#key=E&scale=minor&chord=m7&on=A&tuning=D2-A2-D3-G3-B3-E4&capo=2`, `&note=E` to explain one note), which is how the cards, the wheel (`Zodiac.tone()`, `Zodiac.toneLink()`) and rickbot send a note there |
 
 ## The cards
 

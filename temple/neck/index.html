@@ -18,6 +18,7 @@ sky this minute is a chord you can play.</p>
 
 <div class="neck-bar">
   <label>tuning <select id="neck-tuning"></select></label>
+  <label>capo <select id="neck-capo"></select></label>
   <label>key <select id="neck-root"></select></label>
   <label>scale <select id="neck-scale"></select></label>
   <label>chord <select id="neck-chord"></select></label>
@@ -32,6 +33,15 @@ sky this minute is a chord you can play.</p>
 <div class="neck-bar">
   <button type="button" id="neck-play">play the scale</button>
   <span id="neck-shapes"><button type="button" id="neck-shape-prev" aria-label="the shape before">&larr;</button><button type="button" id="neck-strum">strum</button><button type="button" id="neck-shape-next" aria-label="the next shape">&rarr;</button> <span class="hint" id="neck-shape-at"></span></span>
+</div>
+<div class="neck-bar">
+  <button type="button" id="neck-name" aria-pressed="false">name a chord</button>
+  <button type="button" id="neck-name-light" hidden>light it</button>
+  <span class="hint" id="neck-named" aria-live="polite"></span>
+</div>
+<div class="neck-bar">
+  <button type="button" id="neck-tuner" aria-pressed="false">tune by ear</button>
+  <span class="hint tuned" id="neck-tuned" aria-live="polite"></span>
 </div>
 <div class="neck-bar">
   <button type="button" id="neck-sky">the sky's chord</button>
@@ -98,6 +108,7 @@ sky this minute is a chord you can play.</p>
   <button type="button" id="neck-colours" aria-pressed="false">Case's colours</button>
   <button type="button" id="neck-faint" aria-pressed="true">the other notes</button>
   <button type="button" id="neck-flip" aria-pressed="false">left-handed</button>
+  <button type="button" id="neck-link">copy the link to this</button>
   <button type="button" id="neck-reset">back to standard and C major</button>
 </div>
 
@@ -109,7 +120,16 @@ Karplus and Strong made one in 1983, a burst of noise fed round a loop as long a
 time round. The shapes are found by the page, not looked up: in each four-fret window it tries every way of putting a
 chord tone or nothing under each string, keeps those with the root in the bass, every tone present (a fifth may go
 missing from a chord of four or more), no muted string above a sounding one and no more than four fingers, a barre
-counting as one, and shows the most playable at each position.</p>
+counting as one, and shows the most playable at each position. With a capo the capo is the nut, and the shapes are
+written from it, as a player writes them.</p>
+
+<p>Name a chord turns it round: put a finger on each string you want, by tapping, and the page tries each note you have
+put down as a root against every chord it knows, the fifth allowed to be missing, and names what it finds, with the
+lowest note after a slash when it is not the root. Tune by ear asks for the microphone and finds the note's period in
+what it hears by de Cheveigné and Kawahara's Yin method (2002), says how many cents it is off and which string it is
+nearest; the sound is looked at as it comes in and kept nowhere. The address carries the whole setting, the key, the
+scale, the chord and its root, the tuning and the capo, so a link sends someone the neck as you have it; the cards and
+the wheel send a trump's or a sign's note here the same way.</p>
 
 <p>The tone scale is Paul Foster Case's, from the Builders of the Adytum's tarot of the 1920s, which hung a note and a
 colour on each of the twenty-two trumps. Laid out it is simpler than it sounds: the twelve semitones from C go round

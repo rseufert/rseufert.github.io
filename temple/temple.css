@@ -343,3 +343,4 @@ body.filled { overflow: hidden; }
 .temple-page.neck .reading-list { margin-top: 18px; }
 .temple-page.neck .reading-list a { color: var(--soft); }
 .temple-page.neck .swatch { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 6px; vertical-align: -1px; }
+.temple-page.neck .tuned { white-space: pre-wrap; color: var(--ink); }
