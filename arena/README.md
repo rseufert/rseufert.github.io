@@ -6,7 +6,7 @@ dialect, pick opponents from the presets, and watch them fight.
 | file | what |
 | --- | --- |
 | `arena-engine.js` | the assembler and the simulation; no page in it, so it runs in the browser, in node and in rickbot's dungeon (UMD) |
-| `arena-robots.js` | the ten presets and the starter |
+| `arena-robots.js` | the eleven presets and the starter |
 | `arena_lab.js` | duel one tank against another over many seeds: wins, hit rates, aim error, how much it moved |
 | `lab/` | not on the roster: the tank that aimed right and fired too slowly, the test that found its rule, the RICK grafts that measured worse; see its README |
 | `arena.js` | the page: the canvas, the score panel, the debug view, the editor, saving and sharing |
@@ -71,7 +71,14 @@ each pass), HERON (circles: keeps across the target's line of sight at
 five to seven hundred, where their straight shots pass behind it, and
 leads its own by the bearing's rate less its own motion's share; it beats
 DODGER about always and CIRCLER three times in four, and loses to RAMMER,
-which does not aim). The balance is measured headlessly; `arena_test.js`
+which does not aim), SNOOP (lays low: survival first, across the line of
+sight at four to five hundred, off the walls, away from anything close,
+changing pace when hit, and learning in 300-tick spells whether a steady
+pace or jinking costs it less; when it senses the endgame, one other tank
+left or 1500 ticks gone, it closes on a slant to 240 and circles there,
+still jinking, so a rush is not a straight line to be shot down; it beats
+nearly everything and loses to RAMMER, which it cannot outrun in a corner).
+The balance is measured headlessly; `arena_test.js`
 prints who beats whom over several seeds, and `arena_lab.js` takes one tank
 against one opponent apart:
 
@@ -93,9 +100,9 @@ one of the tanks sent in.
 
 A visitor's tank can join the roster if it is good enough. *Send it in* runs
 the gauntlet in the page (`arena-gauntlet.js`): a duel against each of the
-ten presets over seeds 1 to 4, 40 in all, one a turn so the page keeps up.
-The bar is 27 wins without a fault (the starter wins 24, RICK 23, SNIPER 25,
-JOSH 30, HERON 31), a `#name` of up to 12 characters that is not a preset's, and a
+eleven presets over seeds 1 to 4, 44 in all, one a turn so the page keeps up.
+The bar is 30 wins without a fault (the starter wins 24, RICK 20, SNIPER 26,
+JOSH 31, SNOOP 31, HERON 33), a `#name` of up to 12 characters that is not a preset's, and a
 program under 16 000 characters. A tank that passes is offered a prefilled
 GitHub issue titled `tank: NAME` with the program in a code block (or, if
 too long for an address, the body goes by the clipboard). `tanks.yml` runs
