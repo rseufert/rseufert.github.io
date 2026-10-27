@@ -16,6 +16,126 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `talisman/index.html`, `talisman.js` | the talisman press: Agrippa's seven planetary squares with the sigils of their intelligences and spirits traced, and a name traced by his Latin numeration |
 | `sigil/index.html`, `sigil.js` | the sigil press: a wish reduced and bound into one sign after Spare, charged by holding, burned when charged, nothing kept |
 | `monas/index.html`, `monas.js` | Dee's Monas Hieroglyphica: the figure constructed from its measure, and the twenty-four theorems in plain words with their figures |
+| `tarot/index.html`, `tarot.js` | the cards: the seventy-eight drawn as line art from Waite's descriptions, with Book T's letters, planets, signs and decans on them; Waite's one, three and the cross, with his meanings |
+| `zodiac/index.html`, `zodiac.js` | the wheel: the zodiac as a chart with the planets placed by `js/zodiac.js`, the Moon's phase, the ascendant over Portland, and each decan numbered with its card |
+| `lenormand/index.html`, `lenormand.js` | the Lenormand: the thirty-six cards of the Game of Hope as emblems with their insets; three, nine and the Grand Tableau, read by neighbours and houses |
+| `changes/index.html`, `changes.js` | the changes: the I Ching cast by the stalks' odds or coins, drawn with its moving lines, read from the Chinese text with plain glosses of the Judgments |
+| `animals/index.html`, `animals.js` | the animals: the Chinese zodiac as a wheel, the year and the hour by `js/east.js`, the four pillars of a moment or a birth |
+
+## The cards
+
+`tarot/` draws the seventy-eight cards on a canvas, each from a few
+strokes in a card space two units wide and 3.4 tall (`pen`, with a small
+vocabulary: figure, crown, wings, flame, hills, cloud, wave, zig, star,
+rays): the trumps as emblems after Waite's descriptions of Smith's
+pictures (`TRUMP`, twenty-two functions), the pips laid out as the old
+packs lay them (`PIPS`) with the suit's emblem (`wand`, `cup`, `sword`,
+`pentacle`), the court as figures (`court`: a Page standing, a Knight
+mounted, a Queen and a King enthroned). Nothing is traced from the deck.
+The deck list comes from `Zodiac.deck()` and each card is decorated with
+Book T's attribution: the trumps' letters and planets, signs or elements
+(`TRUMP_OF`); each two to ten's decan (`Z.decan` of the sign with the
+suit's element and the rank's quality, so the title and ruler come from
+the one table); each Knight, Queen and King's thirty degrees (the last
+decan of one sign and the first two of the next, Waite's Knight being the
+order's Knight and his King its Prince). `about(card)` prints that and
+whether the Sun, the Moon or a planet stands there at the moment
+(`Zodiac.sky()`), and for a planet's trump whether it is the hour's
+(`Hours.now()`). The spreads are Waite's: one card, three, and his Celtic
+cross, whose significator is the card the Sun stands in and whose ten
+places are described in his words (`SPREADS.cross[].say`). Shuffles use
+`crypto.getRandomValues`; a third of the cards fall reversed when the
+button is lit. `WAITE` is his divinatory meanings, upright and reversed,
+extracted from the shelf's copy of the Pictorial Key by the session's
+cleaning script. The gallery under the spread is seventy-eight small
+canvases; `#card-<slug>` on the address shows one card large, which is how
+the wheel's links arrive. Nothing is stored.
+
+## The wheel
+
+`zodiac/` draws the chart: the ascendant on the left, longitudes going
+against the clock (`angle(lon) = π − (lon − asc)`), the sign band with
+the glyphs coloured by element, degree ticks, the decan band with each
+decan's card number, the horizon and meridian when the wheel stands as
+the sky does (a button turns it to Aries first), the planets on an inner
+ring nudged inward when within eight degrees of one another, the Moon in
+the middle lit by its elongation, and a stamp of the moment. The reading
+under it lists every body with its decan and card (linked into the deck),
+the planet's own trump, rulership or exaltation, and the hour's trump; a
+tap on a planet or a sign writes its line in the cell. A
+`datetime-local` input sets another moment (the horizon stays
+Portland's); "now" ticks every thirty seconds. The table of the signs is
+generated, with this year's decan dates from `Zodiac.decanDates`.
+
+`js/zodiac.js` is the shared table and the ephemeris, no dependencies:
+`SIGNS` (element, quality, ruler, exaltation, Book T's trump and letter),
+`PLANETS` (glyph, trump, letter), the decan rulers from Mars at the first
+of Aries in the Chaldean order descending, Book T's titles of the small
+cards, `decan(lon)` (sign, ruler, card, title, court), and `sky(date, lat,
+lon)`: Paul Schlyter's low-precision method, mean elements and Kepler's
+equation for the Sun, the Moon, Mercury to Neptune, with the Moon's,
+Jupiter's, Saturn's and Uranus's main perturbations, the mean node,
+retrograde by comparing with a day later, the Moon's phase from the
+elongation, and the ascendant and midheaven from the sidereal time. It
+was checked against the J2000 positions and the sky of October 2026 (the
+full Moon in Taurus, Venus and Mercury retrograde) to the degree; it is a
+wheel, not a navigator's almanac.
+
+## The Lenormand
+
+`lenormand/` draws the thirty-six cards (`CARDS`: name, the playing card
+the old packs inset, a few words, a line; `EMBLEM`: one small drawing
+each in a unit box) and lays them three in a line, nine in a square or all
+thirty-six in the Grand Tableau, four rows of nine. The reading is the
+pack's grammar rather than a fortune: for three, the middle card as the
+noun and its neighbours as adjectives; for nine, the rows, columns and
+corners about the middle; for the tableau, where the Man or the Woman fell
+(a button chooses), the eight cards touching, the first and last cards and
+the corners, the cards that fell in their own houses (the n-th card of the
+pack in the n-th place), the distance of the cards that matter most, and
+every card named by the house it landed in. A tap on a laid card prints
+its line. The gallery is the pack in order; `#card-fox` shows one.
+
+## The changes
+
+`changes/` casts the I Ching. `KW` is the sixty-four hexagrams in King
+Wen's order as six bits from the bottom (checked, in the session, against
+the line labels of the Chinese text, which name every line nine or six);
+`TEXT` is the Chinese from the Gutenberg Yijing (`texts/yijing.txt`),
+parsed by a script in the session: name, Judgment, Image, six lines and the
+seventh text of the first two; `NAMES` gives pinyin, Legge's spelling and
+a plain gloss of the name, and `JUDGE` a plain gloss of each Judgment,
+this site's own and kept close to the Chinese and to Legge. Casting is by
+the stalks' odds (`yarrow`: 1, 5, 7, 3 in sixteen for 6, 7, 8, 9), by
+three coins (`coins`), or six typed numbers. The canvas draws the hexagram
+with its moving lines marked (a ring on an old nine, a cross on an old
+six, in the other ink) and the hexagram it becomes beside it, with the
+trigrams named; the reading gives the Judgment and the Image in Chinese,
+the gloss, each moving line's Chinese with the old rule for which to
+weigh (`principal`), the second hexagram's Judgment, and the nuclear,
+opposite and inverse hexagrams, linked; `#hex-23` shows one unmoving.
+Legge's 1882 translation is on the shelf as OCR (`SCANS["yiking"]`).
+
+## The animals
+
+`animals/` draws the twelve branches round a wheel, the rat at the top and
+the hours round with the clock, each with its animal (`ANIMAL`: twelve
+small drawings) and double-hour, the hand of the current double-hour, and
+the year's name in the middle; a tap on a branch gives its element,
+direction, trine, opposite and years. `js/east.js` does the calendar:
+stems, branches and the cycle of sixty (`pillar(i)`); new moons and the
+Sun's stations by bisection on the ephemeris; the lunar months by the
+almanac's rule (the month holding the December solstice is the eleventh;
+thirteen months between solstices means a leap month, the first without a
+principal term), so `newYear(y)` agrees with the almanac for every year
+checked from 1930 to 2034, the leap years 2015, 2033 and 2034 included;
+`yearOf` (the popular year, from the New Year), `solarYearOf` (the
+almanac's year pillar, from the start of spring at 315°), `monthOf` (by
+the Sun's station, stem by the year's), `dayOf` (counted from 2000 Jan 1,
+戊午, the rat's hour belonging to the next day) and `hourOf`; `pillars()`
+gives all four and `lunar()` the month and day of the moon. The page
+prints the pillars of now and of any birth entered, and the cycle of sixty
+as years.
 
 ## The angelic alphabet
 
@@ -149,7 +269,8 @@ there is no Fullscreen API.
 Every room of the temple carries the same line at the top, from
 `_includes/temple-nav.html`: the nave, the library, the reading room, and
 the presses (sigil, talisman, alphabet, the Great Table, the Monas), the
-current one marked with `aria-current`. Pages include it with
+stars (the wheel, the cards, the Lenormand) and the east (the changes, the
+animals), the current one marked with `aria-current`. Pages include it with
 `{% include temple-nav.html active="sigil" %}`.
 
 ## Tracing

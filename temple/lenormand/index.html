@@ -1,0 +1,66 @@
+---
+layout: default
+css: /temple/temple.css
+title: The Lenormand
+description: "The thirty-six cards of the petit Lenormand drawn as small emblems with their playing-card insets, laid three in a line, nine in a square, or all thirty-six in the Grand Tableau, and read by neighbours and houses; the pack is the Game of Hope of 1799."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read lenormand">
+{% include temple-nav.html active="lenormand" %}
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>the Game of Hope &middot; Nuremberg, 1799; Mlle Lenormand's name, after 1843</span></p>
+<h1>The Lenormand</h1>
+<p class="lede">Thirty-six small cards with plain pictures on them: a rider, a clover, a ship, a house, a tree, and so on
+to the cross. They are not the tarot and do not pretend to be; they are a parlour game from Nuremberg in 1799, the
+Game of Hope, a race round the board with the cards laid out in six rows, which the rules at the back said could
+also be used to tell fortunes, and which took the name of Marie Anne Lenormand, the most famous card-reader in
+Paris, after she died and could not object. Each card carries the playing card the old packs printed in its corner.
+They are read in lines, by what lies next to what, and in the Grand Tableau, all thirty-six at once, by where the
+man or the woman has fallen and what surrounds them. The words under the cards are plain ones and this site's own.</p>
+
+<p class="controls">
+  <button type="button" data-spread="three" aria-pressed="true">three</button>
+  <button type="button" data-spread="nine" aria-pressed="false">nine</button>
+  <button type="button" data-spread="tableau" aria-pressed="false">the grand tableau</button>
+  <button type="button" id="lenormand-again">shuffle again</button>
+  <span class="who">read for</span>
+  <button type="button" data-who="Woman" aria-pressed="true">the woman</button>
+  <button type="button" data-who="Man" aria-pressed="false">the man</button>
+</p>
+<div class="stage" id="lenormand-room">
+  <canvas id="lenormand-stage" aria-label="the Lenormand cards laid out"></canvas>
+</div>
+<p class="hint">tap a card in the layout for its line; in the tableau the significator is in the other ink, and a card's number is too when it fell in its own house</p>
+<p class="buttons"><a class="button" id="lenormand-save" href="#" download="lenormand.png">save as an image</a></p>
+<div class="reading-list" id="lenormand-reading" aria-live="polite"></div>
+
+<h2>The pack</h2>
+<p class="hint">tap a card for its meaning and its house</p>
+<div class="deck" id="lenormand-deck"></div>
+
+<h2>What it is</h2>
+<p>Johann Kaspar Hechtel, a Nuremberg maker of games, published <em>Das Spiel der Hoffnung</em> in 1799: thirty-six
+cards to be laid out in a six-by-six board and raced across with dice, the ship a good square to land on and the
+coffin a bad one, each card also bearing a German playing card in its corner so that the pack could be used for
+ordinary games. Mlle Lenormand, who read cards for Josephine and was arrested under Napoleon, used ordinary
+piquet packs and left no deck; within a few years of her death in 1843 the printers had put her name on Hechtel's
+game, and it has been the petit Lenormand ever since, the everyday pack of Germany, France and the Low Countries
+while the tarot became the occultists'. The pictures are deliberately plain: a mouse is a mouse, and a reader
+learns to say what mice do.</p>
+
+<p>How it is read. Not one card at a time but in strings: a card is a noun and its neighbour an adjective, so the
+Rider beside the Letter is news in writing and beside the Coffin is news of a death, and three in a line are
+read as a sentence. The nine-card square puts the matter in the middle and reads the rows, the columns and the
+diagonals through it. The Grand Tableau lays the whole pack in four rows of nine (the older way; the other is
+eight by four with four below): the Man or the Woman is the asker, the cards above are what weighs on them,
+below what they stand on, behind what has passed and before what is coming; the cards that touch count most and
+distance weakens; the first card is the theme and the last the outcome; and each place on the table is a house,
+the first the Rider's and the thirty-sixth the Cross's, so that a card is also read by whose house it landed in,
+and a card in its own house speaks plainly. The page does that much of the work and leaves the sentences to
+you. Nothing is stored or sent.</p>
+
+<p class="colophon">The Game of Hope, 1799, is in the public domain and in the British Museum; the pack's standard order,
+insets and meanings are common property. The emblems are drawn here and are this site's own. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/lenormand.js">script</a>.</p>
+</div>
+<script src="/temple/lenormand.js?v={{ site.time | date: '%s' }}"></script>

@@ -1,0 +1,66 @@
+---
+layout: default
+css: /temple/temple.css
+title: The wheel
+description: "The zodiac as the astrologers draw it, with the planets where they are now, the Moon's phase, the ascendant over Portland, and the thirty-six decans, each of which is a card of the tarot; set it to any moment for the sky then."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read zodiac">
+{% include temple-nav.html active="zodiac" %}
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>the twelve signs &middot; Babylon, about 500 BC; the decans, Egypt, older</span></p>
+<h1>The wheel</h1>
+<p class="lede">The zodiac, drawn the way the astrologers draw a chart: the ascendant on the left, the signs going round
+against the clock, the planets where the ephemeris puts them at this minute, the Moon in the middle lit as it is
+tonight, the horizon and the meridian across it. On the rim the thirty-six decans are ticked, ten degrees each,
+and each is numbered with its card, since the Golden Dawn laid the small cards of the tarot on them; the reading
+under the wheel says where everything stands and which card that is. Set the moment to any date and hour and it
+shows that sky instead, which is as near a birth chart as a page without your birthplace can come.</p>
+
+<p class="controls">
+  <label for="zodiac-when">the moment</label>
+  <input id="zodiac-when" type="datetime-local">
+  <button type="button" id="zodiac-now" aria-pressed="true">now</button>
+  <button type="button" id="zodiac-turn" aria-pressed="true">as the sky stands</button>
+</p>
+<div class="stage" id="zodiac-room">
+  <canvas id="zodiac-stage" aria-label="the zodiac wheel with the planets placed"></canvas>
+</div>
+<p class="cell" id="zodiac-cell"></p>
+<p class="buttons"><a class="button" id="zodiac-save" href="#" download="wheel.png">save as an image</a></p>
+<div class="reading-list" id="zodiac-reading" aria-live="polite"></div>
+
+<h2>The signs</h2>
+<p class="hint">each with its element, quality and ruler, its letter and trump in the Golden Dawn's order, and its three decans with their planets and cards; the dates are this year's, from the ephemeris</p>
+<ol class="wheel-signs" id="zodiac-table"></ol>
+
+<h2>What it is</h2>
+<p>The zodiac is the band of sky the Sun walks through in a year, cut into twelve equal signs of thirty degrees
+from the point where the Sun crosses the equator in spring. The Babylonians cut it so about 500 BC, naming the
+signs for the constellations that stood behind them then; the signs have since slid a whole sign away from
+those stars, because the equinox moves, and the wheel here is the signs, not the stars, as Western astrology
+has always used them. The decans are older and Egyptian, thirty-six stars or groups whose risings marked the
+hours of the night, ten days to each; the Greeks laid them under the signs, three to a sign, and gave each a
+planet, going down through the seven from Mars at the first of Aries in the old order of their speed. The
+planets have their houses, two each except the lights, and their exaltations, and the Golden Dawn laid a Hebrew
+letter and a trump on each sign and each planet, which is how the tarot and the wheel know one another.</p>
+
+<p>How the sky is computed. The positions are Paul Schlyter's low-precision method: each planet's mean orbital
+elements for the date, Kepler's equation solved for where it is in its orbit, the main perturbations for the
+Moon, Jupiter and Saturn added, and the Earth's own position subtracted to give the longitude as seen from here.
+That is good to a degree or so for the planets and a fraction of one for the Sun, which is what a wheel in signs
+needs, and nothing like what a navigator would want. The ascendant is the degree of the zodiac rising on the
+eastern horizon at Portland at that moment, from the sidereal time and the latitude; it changes a degree every
+four minutes, which is why the astrologers wanted the hour of a birth. Give the page another moment and the
+horizon stays Portland's; the planets do not care where you stand. Nothing is stored or sent.</p>
+
+<p class="colophon">The ephemeris follows Paul Schlyter's <em>How to compute planetary positions</em>, after Meeus; the
+decans and their cards are the Golden Dawn's <em>Book T</em>, 1888, and the cards themselves are
+<a href="/temple/tarot/">drawn here</a>. The planetary hour is from the same clock
+<a href="/paper/#hours">the paper</a> prints. The page is this site's own. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/zodiac.js">script</a>, and the
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/zodiac.js">ephemeris</a>.</p>
+</div>
+<script src="/js/hours.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/js/zodiac.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/zodiac.js?v={{ site.time | date: '%s' }}"></script>

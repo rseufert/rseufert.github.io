@@ -84,7 +84,7 @@
             var n = setPages(text);
             if (hint) hint.hidden = false;
             foot.innerHTML = n + " paragraphs. " + (m.ocr
-                ? "This is the OCR text of a public-domain scan at the Internet Archive, read by a machine and not corrected by anyone, so a letter is wrong here and there and the Greek is mostly lost; the scan itself, with the pages, is <a href=\"https://archive.org/details/" + esc(m.archive) + "\">there</a>, and the text file is <a href=\"/temple/texts/" + slug + ".txt\">here</a>."
+                ? "This is the OCR text of a public-domain scan at the Internet Archive, read by a machine and not corrected by anyone, so a letter is wrong here and there and the Greek is mostly lost; the scan itself, with the pages, is <a href=\"" + (m.archive ? "https://archive.org/details/" + esc(m.archive) : esc(m.source || "/temple/#library")) + "\">there</a>, and the text file is <a href=\"/temple/texts/" + slug + ".txt\">here</a>."
                 : m.free ? "This text is not public domain but is free to copy by its author's word (the shelf note says whose); taken from <a href=\"" + esc(m.source) + "\">" + esc(m.host || "its source") + "</a> and kept here as a plain file, <a href=\"/temple/texts/" + slug + ".txt\">this one</a>."
                 : m.source ? "This is a public-domain translation, the text taken from <a href=\"" + esc(m.source) + "\">" + esc(m.host || "its source") + "</a> and kept here as a plain file, <a href=\"/temple/texts/" + slug + ".txt\">this one</a>."
                 : "This is a Project Gutenberg eBook, in the public domain in the United States; the file it was set from, with the licence, is <a href=\"/temple/texts/" + slug + ".txt\">here</a>, whole.") +

@@ -447,7 +447,7 @@
  },
  "keys": {
   "bytes": 22149,
-  "edition": "Dee and Kelley, 1584 · Casaubon, 1659 · as the Equinox printed them, 1912 · Casaubon at the Internet Archive",
+  "edition": "Dee and Kelley, 1584 · Casaubon, 1659 · as the Equinox printed them, 1912 · Casaubon at the Internet Archive · Internet Archive",
   "host": "Internet Archive",
   "robust": "whole",
   "shelf": "keys",
@@ -898,6 +898,16 @@
   "shelf": "virgin",
   "title": "The Virgin of the World"
  },
+ "waite": {
+  "bytes": 182179,
+  "edition": "A. E. Waite, 1910 · Internet Archive",
+  "host": "Internet Archive",
+  "ocr": true,
+  "robust": "ocr",
+  "shelf": "waite",
+  "source": "https://archive.org/details/A.EWaiteThePictorialKeyToTheTarot",
+  "title": "The Pictorial Key to the Tarot"
+ },
  "we": {
   "bytes": 380176,
   "edition": "Yevgeny Zamyatin, 1921 · tr. Gregory Zilboorg, 1924 · Gutenberg #61963",
@@ -926,5 +936,26 @@
   },
   "shelf": "yetzirah",
   "title": "Sefer Yetzirah"
+ },
+ "yijing": {
+  "bytes": 109868,
+  "edition": "the Yijing in Chinese · Zhou dynasty, with the Wings · Gutenberg #25501",
+  "gutenberg": 25501,
+  "robust": "whole",
+  "shelf": "yijing",
+  "title": "易經"
+ },
+ "yiking": {
+  "archive": "mlbd.sacredbooksofeas0000fmax.vol.16",
+  "bytes": 869509,
+  "edition": "the I Ching · tr. James Legge, 1882 · Sacred Books of the East XVI · Internet Archive",
+  "ocr": true,
+  "robust": "ocr",
+  "scan": {
+   "title": "SBE 16: The Sacred Books of China, part 2/6 – the texts of Confucianism: Yi King (Sacred Books of the East)",
+   "year": "1882"
+  },
+  "shelf": "yiking",
+  "title": "The Yî King"
  }
 }

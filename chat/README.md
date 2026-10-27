@@ -66,6 +66,16 @@ which traces the same number on a planet's square.
 
 ## The hour
 
+"What sign is the moon in", "horoscope", "is mercury retrograde", "what's
+rising" get the sky from `js/zodiac.js`, fetched on the first asking: each
+of the seven with its degree, its decan and the decan's tarot card, the
+ascendant over Portland; "draw me a card" or "tarot" cuts the deck for one
+card, named with its Book T title, and points at the deck for Waite's
+reading and the card the Sun stands in.
+
+"I Ching" or "hexagram", "year of the" or "fire horse" or "four pillars",
+and "lenormand" or "grand tableau" each point at their room in the temple.
+
 "Whose hour is it" (or "which planetary hour", "hour of mars", "whose day
 is it") gets the planetary hour from `js/hours.js`, fetched on the first
 asking and answered through the promise queue: the planet, which hour of

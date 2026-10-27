@@ -1,0 +1,68 @@
+---
+layout: default
+css: /temple/temple.css
+title: The animals
+description: "The Chinese zodiac as a wheel: the twelve branches with their animals and double-hours, the year we are in named as the almanac names it, with its New Year reckoned from the new moons, the hour's animal with a moving hand, and the four pillars of this minute or of any birth."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read animals">
+{% include temple-nav.html active="animals" %}
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>the twelve branches &middot; China, by the Han dynasty</span></p>
+<h1>The animals</h1>
+<p class="lede">Twelve earthly branches, which count the years, the months, the days and the double-hours, and the twelve
+animals that have ridden them since at least the Han: rat, ox, tiger, rabbit, dragon, snake, horse, goat, monkey,
+rooster, dog, pig. Paired with the ten heavenly stems, which carry the five elements, they make the cycle of sixty
+that names every year, so that this one is the fire horse. The wheel has the rat at the north and goes round with
+the clock; the hand is the double-hour we are in, and the animal at the centre is the year's, which began at the New
+Year's new moon as the page reckons it from the ephemeris. Under it are the four pillars of this minute, and a
+place to put a birth for its own.</p>
+
+<div class="stage" id="animals-room">
+  <canvas id="animals-stage" aria-label="the twelve animals round a wheel, with the hour's hand and the year's name in the middle"></canvas>
+</div>
+<p class="cell" id="animals-cell"></p>
+<div class="reading-list" id="animals-reading" aria-live="polite"></div>
+
+<h2>Your pillars</h2>
+<p class="controls">
+  <label for="animals-born">a birth, with the hour if you know it</label>
+  <input id="animals-born" type="datetime-local">
+</p>
+<div class="reading-list" id="animals-you" aria-live="polite"></div>
+
+<h2>The cycle of sixty</h2>
+<p class="hint">from the last 甲子, 1984, to the next; the year we are in is marked</p>
+<ol class="cycle" id="animals-cycle"></ol>
+
+<h2>What it is</h2>
+<p>The stems and branches are older than the animals: they are on the Shang oracle bones, naming the days in a
+cycle of sixty, three thousand years ago, and the branches were the twelve double-hours and the twelve stations
+of Jupiter round the sky before anyone put a rat on one. The animals are on a bamboo almanac buried in 217 BC,
+in nearly the order we have, and the folk tale of the race across the river, with the rat riding the ox and
+jumping off first, is the explanation that came later. The five elements ride the stems in pairs, yang and yin,
+wood, fire, earth, metal and water, so that each animal comes round in each element once in sixty years, and a
+year's name is a stem and a branch: 丙午, the yang fire stem and the horse branch, a fire horse, 2026, as 1966
+was. Japan, where the sixty-year names were kept more carefully than in China, held that a woman born in a fire
+horse year would kill her husband, and in 1966 the birth rate fell by a quarter; 2026 is the first test since.</p>
+
+<p>How the page reckons it. The year begins at the New Year, the first day of the first lunar month, which is the
+second new moon after the winter solstice in most years, and the third in a year with a leap month, which the
+almanac inserts by a rule about the solar terms; the page finds the new moons and the Sun's stations with the
+ephemeris <a href="/temple/zodiac/">the wheel</a> uses and applies the rule, and agrees with the almanac for every
+year checked between 1930 and 2034. The almanac's own year pillar, for the four pillars of a birth, changes
+instead at the start of spring, when the Sun reaches fifteen degrees of Aquarius, about the fourth of February;
+the month pillar changes at each station of the Sun after that; the day pillar counts from a day known to have
+been 戊午 (the first of January 2000), and the double-hours run from eleven at night, so that the rat's hour
+belongs to the next day. The hours are the local clock's, which is to say Portland's or yours. Nothing is stored
+or sent.</p>
+
+<p class="colophon">The tables are the almanac's and anyone's; the reckoning follows the rules in the Chinese calendar's
+public descriptions, the new moons and the Sun's stations from Paul Schlyter's low-precision method in
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/zodiac.js">the ephemeris</a>, the calendar in
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/east.js">one file</a>. The animals are drawn here. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/animals.js">script</a>.</p>
+</div>
+<script src="/js/zodiac.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/js/east.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/animals.js?v={{ site.time | date: '%s' }}"></script>
