@@ -315,3 +315,31 @@ body.filled { overflow: hidden; }
     .temple-page.changes .stage { aspect-ratio: 4 / 3; }
     .temple-page.lenormand .stage { aspect-ratio: 1 / 1; max-height: 84vh; }
 }
+/* The neck: the fretboard is as tall as its strings need, so the stage gives up its aspect ratio. */
+.temple-page.neck .stage { aspect-ratio: auto; max-height: none; margin-top: 8px; }
+.temple-page.neck .stage::after { background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.14) 2px 3px); }
+.temple-page.neck .neck-bar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 0 8px; }
+.temple-page.neck .neck-bar label { font: 13px var(--mono); color: var(--faint); display: inline-flex; gap: 6px; align-items: center; }
+.temple-page.neck select, .temple-page.neck input { font: 13px var(--mono); padding: 5px 8px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; color-scheme: dark; max-width: 100%; }
+.temple-page.neck #neck-tuning { max-width: 22em; }
+.temple-page.neck input { flex: 1; min-width: 12ch; max-width: 24em; }
+.temple-page.neck select:focus, .temple-page.neck input:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
+.temple-page.neck button { font: 13px var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 6px 12px; cursor: pointer; }
+.temple-page.neck button:hover:not(:disabled), .temple-page.neck button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.temple-page.neck button:disabled { color: var(--faint); cursor: default; }
+.temple-page.neck button[hidden], .temple-page.neck #neck-shapes[hidden] { display: none; }
+.temple-page.neck #neck-shapes { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.temple-page.neck .neck-bar .hint, .temple-page.neck #neck-shapes .hint { margin: 0; }
+.temple-page.neck .cell { font: 13px/1.6 var(--mono); color: var(--soft); min-height: 3.2em; margin: 10px 0 12px; }
+.temple-page.neck .cell b { color: var(--ink); font-weight: normal; }
+.temple-page.neck .neck-strings { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 0 0 10px; }
+.temple-page.neck .neck-strings .string { display: inline-flex; align-items: center; gap: 4px; font: 13px var(--mono); }
+.temple-page.neck .neck-strings .string span { min-width: 3.4ch; text-align: center; color: var(--ink); }
+.temple-page.neck .neck-strings button { padding: 4px 9px; }
+.temple-page.neck .neck-build { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px; }
+.temple-page.neck .neck-build button { min-width: 3.4em; padding: 6px 6px; }
+.temple-page.neck .neck-diatonic .row { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 6px; }
+.temple-page.neck .neck-diatonic .num { color: var(--faint); }
+.temple-page.neck .reading-list { margin-top: 18px; }
+.temple-page.neck .reading-list a { color: var(--soft); }
+.temple-page.neck .swatch { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 6px; vertical-align: -1px; }
