@@ -155,6 +155,20 @@
         });
         return cards;
     }
+    // Paul Foster Case's tone scale: the twelve semitones from C round the signs from Aries, and each planet and element on
+    // the note of its trump. tone("Leo"), tone("Mercury"), tone("Air") are all 4, E; the colours go round the spectrum from red.
+    var NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+    var TONE_COLOURS = ["red", "red-orange", "orange", "orange-yellow", "yellow", "yellow-green", "green", "green-blue", "blue", "blue-violet", "violet", "violet-red"];
+    var PLANET_TONE = { Mars: 0, Sun: 2, Mercury: 4, Venus: 6, Moon: 8, Saturn: 9, Jupiter: 10 }, ELEMENT_TONE = { Fire: 0, Air: 4, Water: 8 };
+    function tone(name) {
+        for (var i = 0; i < 12; i++) if (SIGNS[i].name === name) return i;
+        if (PLANET_TONE[name] != null) return PLANET_TONE[name];
+        if (ELEMENT_TONE[name] != null) return ELEMENT_TONE[name];
+        return null;
+    }
+    // a link to the neck in that note's key: /temple/neck/#key=Cs&note=Cs
+    function toneLink(pc) { var k = NOTES[pc].replace("♯", "s"); return "/temple/neck/#key=" + k + "&note=" + k; }
     window.Zodiac = { SIGNS: SIGNS, PLANETS: PLANETS, ELEMENTS: ELEMENTS, TITLES: TITLES, RANKS: RANKS, DECAN_RULERS: DECAN_RULERS, ORDER: ORDER,
-        signOf: signOf, decan: decan, fmt: fmt, longitudes: longitudes, sky: sky, decanDates: decanDates, deck: deck, rev: rev };
+        signOf: signOf, decan: decan, fmt: fmt, longitudes: longitudes, sky: sky, decanDates: decanDates, deck: deck, rev: rev,
+        NOTES: NOTES, TONE_COLOURS: TONE_COLOURS, PLANET_TONE: PLANET_TONE, ELEMENT_TONE: ELEMENT_TONE, tone: tone, toneLink: toneLink };
 })();

@@ -314,11 +314,52 @@
             return "i cut the deck and it is " + c.name.toLowerCase() + (rev ? ", reversed" : "") + what + ". i do not read them; waite does, under the spread at /temple/tarot/#card-" + c.name.toLowerCase().replace(/[^a-z]+/g, "-") + ". the sun stands in " + Z.sky().bodies[0].decan.card.toLowerCase() + " today, if you want a card with a reason.";
         });
     }
+    // The neck: a scale or chord named in the question, spelled and sent there; or a sign's or planet's note by Case's scale.
+    var NECK_SCALES = { "major": ["major", "1 2 3 4 5 6 7"], "ionian": ["major", "1 2 3 4 5 6 7"], "minor": ["minor", "1 2 b3 4 5 b6 b7"], "aeolian": ["minor", "1 2 b3 4 5 b6 b7"],
+        "dorian": ["dorian", "1 2 b3 4 5 6 b7"], "phrygian": ["phrygian", "1 b2 b3 4 5 b6 b7"], "lydian": ["lydian", "1 2 3 #4 5 6 7"], "mixolydian": ["mixolydian", "1 2 3 4 5 6 b7"],
+        "locrian": ["locrian", "1 b2 b3 4 b5 b6 b7"], "harmonic minor": ["harmonic", "1 2 b3 4 5 b6 7"], "melodic minor": ["melodic", "1 2 b3 4 5 6 7"],
+        "major pentatonic": ["majpent", "1 2 3 5 6"], "minor pentatonic": ["minpent", "1 b3 4 5 b7"], "pentatonic": ["minpent", "1 b3 4 5 b7"], "blues": ["blues", "1 b3 4 b5 5 b7"],
+        "whole tone": ["whole", "1 2 3 #4 #5 b7"] };
+    var NECK_CHORDS = { "major": ["maj", "", "1 3 5"], "minor": ["min", "m", "1 b3 5"], "m": ["min", "m", "1 b3 5"], "7": ["dom7", "7", "1 3 5 b7"], "maj7": ["maj7", "maj7", "1 3 5 7"],
+        "major 7": ["maj7", "maj7", "1 3 5 7"], "m7": ["m7", "m7", "1 b3 5 b7"], "minor 7": ["m7", "m7", "1 b3 5 b7"], "dim": ["dim", "°", "1 b3 b5"], "diminished": ["dim", "°", "1 b3 b5"],
+        "aug": ["aug", "+", "1 3 #5"], "augmented": ["aug", "+", "1 3 #5"], "sus2": ["sus2", "sus2", "1 2 5"], "sus4": ["sus4", "sus4", "1 4 5"], "9": ["nine", "9", "1 3 5 b7 9"],
+        "6": ["six", "6", "1 3 5 6"], "m7b5": ["m7b5", "m7♭5", "1 b3 b5 b7"], "dim7": ["dim7", "°7", "1 b3 b5 bb7"], "add9": ["add9", "add9", "1 3 5 9"], "5": ["five", "5", "1 5"] };
+    function neckSpell(root, acc, f) {
+        var L = "cdefgab".indexOf(root), NAT = [0, 2, 4, 5, 7, 9, 11], r = NAT[L] + acc;
+        return f.split(" ").map(function (x) {
+            var m = /^([b#]*)(\d+)$/.exec(x), a = 0; m[1].split("").forEach(function (c) { a += c === "b" ? -1 : 1; });
+            var n = +m[2] - 1, l = (L + n) % 7, pc = r + NAT[n % 7] + a, d = ((pc - NAT[l]) % 12 + 18) % 12 - 6;
+            return "CDEFGAB"[l] + (d > 0 ? "♯♯".slice(0, d) : d < 0 ? "♭♭".slice(0, -d) : "");
+        });
+    }
+    function theNeck(t) {
+        var m = /\b([a-g])(?: ?(#|♯|sharp|b|♭|flat))? ?(major pentatonic|minor pentatonic|harmonic minor|melodic minor|whole tone|pentatonic|blues|major|minor|ionian|aeolian|dorian|phrygian|lydian|mixolydian|locrian) scale\b/.exec(t)
+            || /\b([a-g])(?: ?(#|♯|sharp|b|♭|flat))? ?(dorian|phrygian|lydian|mixolydian|locrian|pentatonic)\b/.exec(t);
+        var acc = function (a) { return !a ? 0 : /#|♯|sharp/.test(a) ? 1 : -1; };
+        var key = function (root, a) { return root.toUpperCase() + (a > 0 ? "s" : a < 0 ? "b" : ""); };
+        if (m) {
+            var sc = NECK_SCALES[m[3]], a = acc(m[2]), notes = neckSpell(m[1], a, sc[1]);
+            return notes[0] + " " + m[3] + ": " + notes.join(" ") + ". every one of them on the neck, in any tuning: /temple/neck/#key=" + key(m[1], a) + "&scale=" + sc[0] + ".";
+        }
+        m = /\b([a-g])(?: ?(#|♯|sharp|b|♭|flat))? ?(major 7|minor 7|maj7|m7b5|dim7|add9|sus2|sus4|diminished|augmented|major|minor|dim|aug|m7|m|7|9|6|5)? chord\b/.exec(t);
+        if (m) {
+            var ch = NECK_CHORDS[m[3] || "major"], a2 = acc(m[2]), cn = neckSpell(m[1], a2, ch[2]);
+            return cn[0] + ch[1] + " is " + cn.join(" ") + ". the neck finds its shapes and strums them: /temple/neck/#key=" + key(m[1], a2) + "&scale=major&chord=" + ch[0] + ".";
+        }
+        m = /\b(?:what|which) (?:note|key) is (?:the )?(aries|taurus|gemini|cancer|leo|virgo|libra|scorpio|sagittarius|capricorn|aquarius|pisces|sun|moon|mercury|venus|mars|jupiter|saturn|fire|air|water)\b/.exec(t);
+        if (m) return withSky(function (Z) {
+            if (!Z.tone) return null;
+            var name = m[1][0].toUpperCase() + m[1].slice(1), pc = Z.tone(name);
+            return pc == null ? null : "by paul foster case's tone scale " + (name === "Sun" || name === "Moon" ? "the " + m[1] : m[1]) + " is " + Z.NOTES[pc] + ", " + Z.TONE_COLOURS[pc] + ". the twelve notes go round the signs from c at aries, and the planets sit on their trumps' notes. play it: " + Z.toneLink(pc) + ".";
+        });
+        return "the neck is in the temple: a guitar's fretboard with every note on it, standard tuning or drop d or dadgad or your own, a capo, a scale lit over it and a chord over that with its shapes, a chord named from the notes you put down, a tuner that listens, and case's tone scale making each note a sign and a trump. the sky this minute is a chord there: /temple/neck/.";
+    }
     var ANSWERS = [
         [/\b(draw|pull|cut|deal|pick)( me)? (a|one|three)? ?(tarot )?cards?\b|\btarot\b|\bcard of the day\b/, aCard],
         [/\b(what|which|whose) sign\b|\bhoroscope\b|\bzodiac\b|\bascendant\b|\b(what|where)('s| is) (the )?(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune|rising)\b|\bretrograde\b|\bmoon phase\b|\bfull moon\b|\bnew moon\b/, theSky],
         [/\b(i ?ching|yi ?jing|hexagram|cast the (changes|stalks|coins)|book of changes)\b/, "the changes are cast in the temple: six lines by the yarrow stalks' odds or three coins, the hexagram drawn with its moving lines and the one it becomes, and the judgment read from the chinese with legge beside it: /temple/changes/. i would cast one for you but a bot's coins all come up the same."],
         [/\b(year of the|chinese (zodiac|new year|year|horoscope)|fire horse|lunar new year|what animal|which animal|my animal|four pillars|ba ?zi)\b/, "the animals are on a wheel in the temple, the rat at the top: the year we are in, named from the new moons as the almanac names it, the hour's animal with a hand, and the four pillars of any birth. it is a fire horse year, the first since 1966: /temple/animals/."],
+        [/\b(guitar|fretboard|fret ?board|capo|tunings?|drop d|dadgad|open g|pentatonic|dorian|phrygian|lydian|mixolydian|locrian|arpeggios?|chords?|scales?|(what|which) (note|key) is)\b/, theNeck],
         [/\blenormand\b|\bgrand tableau\b|\bgame of hope\b/, "the lenormand is laid in the temple: thirty-six plain cards from a nuremberg race game of 1799, three in a line, nine in a square, or the whole grand tableau read for the man or the woman by what touches them: /temple/lenormand/. a mouse is a mouse."],
         [/\b(gematria|number|count|value) (of|for) [a-z"\u201c]/, gematria],
         [/\b(augur(y|ies|s)?|auspices|omens?|portents?)\b/, "the heron reads the dashboard's feeds as omens in the paper, the way the augurs read birds: the river, the week's earthquakes, the planetary k index, the fireballs that fell. the verdict is their sum and it changes when the world does: /paper/#augury. the heron cannot read, which has never stopped an augur."],

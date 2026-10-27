@@ -10,7 +10,10 @@
    and the three elements on the notes of their trumps, each with its
    colour: so a note is a sign, a trump and a letter, and the sky this
    minute (js/zodiac.js) is a chord, and the planetary hour (js/hours.js)
-   a key. Your tunings, scales, chords and settings are kept in this
+   a key. A capo; a chord named from the notes you put down; a tuner that
+   listens through the microphone and keeps nothing; and the whole setting
+   in the address (#key=E&scale=minor&chord=m7&on=A&tuning=D2-A2-D3-G3-B3-E4&capo=2),
+   which is how the cards and the wheel send a note here. Your tunings, scales, chords and settings are kept in this
    browser (localStorage temple-neck) and nowhere else. One script, no
    library. */
 (function () {
@@ -102,8 +105,8 @@
     // Case's tone scale: the chromatic scale laid on the zodiac from C at Aries, and the planets and elements on the notes of their trumps.
     var COLOUR = [["red", "#ff4a3d"], ["red-orange", "#ff6f2a"], ["orange", "#ff9a1f"], ["orange-yellow", "#ffc21a"], ["yellow", "#ffe82e"], ["yellow-green", "#b9e83a"],
         ["green", "#3ed47a"], ["green-blue", "#2ccdb4"], ["blue", "#4f8dff"], ["blue-violet", "#8a7dff"], ["violet", "#b06cff"], ["violet-red", "#ee4fa6"]];
-    var PLANET_NOTE = { Mars: 0, Sun: 2, Mercury: 4, Venus: 6, Moon: 8, Saturn: 9, Jupiter: 10 };
-    var ELEMENT_NOTE = { Fire: 0, Air: 4, Water: 8 };
+    var PLANET_NOTE = (Z && Z.PLANET_TONE) || { Mars: 0, Sun: 2, Mercury: 4, Venus: 6, Moon: 8, Saturn: 9, Jupiter: 10 };
+    var ELEMENT_NOTE = (Z && Z.ELEMENT_TONE) || { Fire: 0, Air: 4, Water: 8 };
     var ELEMENT_GLYPH = { Fire: "△", Air: "🜁", Water: "▽" };
     var HEBREW = { Aleph: "א", Beth: "ב", Gimel: "ג", Daleth: "ד", Heh: "ה", Vav: "ו", Zayin: "ז", Cheth: "ח", Teth: "ט", Yod: "י", Kaph: "כ", Lamed: "ל",
         Mem: "מ", Nun: "נ", Samekh: "ס", Ayin: "ע", Peh: "פ", Tzaddi: "צ", Qoph: "ק", Resh: "ר", Shin: "ש", Tav: "ת" };
@@ -122,20 +125,25 @@
     // ---- the state, kept in this browser --------------------------------------------------------------
     var KEY = "temple-neck";
     var S = { tuning: TUNINGS[0][1].slice(), tuningName: "Standard", frets: 22, root: 0, scale: "major", chordRoot: null, chord: null,
-        labels: "names", colours: false, spelling: "auto", flip: false, faint: true, mine: { tunings: {}, scales: {}, chords: {} } };
+        labels: "names", colours: false, spelling: "auto", flip: false, faint: true, capo: 0, mine: { tunings: {}, scales: {}, chords: {} } };
     try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved && typeof saved === "object") Object.keys(S).forEach(function (k) { if (saved[k] !== undefined) S[k] = saved[k]; }); } catch (e) { /* a fresh neck */ }
     ["tunings", "scales", "chords"].forEach(function (k) { if (!S.mine || typeof S.mine !== "object") S.mine = {}; if (!S.mine[k]) S.mine[k] = {}; });
     if (!Array.isArray(S.tuning) || !S.tuning.length) S.tuning = TUNINGS[0][1].slice();
     var sky = null;   // the sky's chord, when asked for: not kept
+    var LINKED = {};  // a scale or chord that came in on the address, not one of the named ones
+    var naming = null; // the frets put down to have a chord named, one a string or null
+    S.capo = Math.max(0, Math.min(12, +S.capo || 0));
     if (S.chord === "sky") { S.chord = null; S.chordRoot = null; }
     function keep() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* a visit's worth */ } }
 
     function scaleDef(id) { var k = String(id).slice(5);
+        if (id === "link" && LINKED.scale) return { id: "link", name: "from the link", f: LINKED.scale, linked: true };
         return SCALE[id] || (id.indexOf("mine:") === 0 && S.mine.scales[k] && { id: id, name: k, f: S.mine.scales[k], mine: true }) || SCALE.major; }
     function chordDef(id) {
         if (!id) return null;
         if (id === "sky" && sky) return sky;
         var k = String(id).slice(5);
+        if (id === "link" && LINKED.chord) return { id: "link", sym: " (from the link)", name: "from the link", f: LINKED.chord, linked: true };
         return CHORD[id] || (id.indexOf("mine:") === 0 && S.mine.chords[k] && { id: id, sym: " " + k, name: k, f: S.mine.chords[k], mine: true }) || null;
     }
     // What is lit: the scale spelled, the chord spelled, each a map from pitch class to name and label.
@@ -251,13 +259,18 @@
             ctx.fillStyle = view.scale[pc] ? INK : "#5f8f7c"; ctx.font = "12px " + MONO;
             ctx.fillText(view.names[pc] + (Math.floor(S.tuning[i] / 12) - 1), lp.x, lp.y);
         }
-        // the notes
-        var shape = shapesFound[shapeAt] || null;
-        for (i = 0; i < n; i++) for (f = 0; f <= N; f++) drawNote(i, f, shape);
+        // the capo, just behind its fret
+        if (S.capo) {
+            var ca = G.line(S.capo) - Math.min(9, (G.line(S.capo) - G.line(S.capo - 1)) * 0.3);
+            lineAlong(ca, G.across0 - 4, ca, G.across1 + 4, "#b8923f", 7);
+        }
+        // the notes; behind a capo there are none
+        var shape = naming || shapesFound[shapeAt] || null;
+        for (i = 0; i < n; i++) for (f = S.capo ? S.capo : 0; f <= N; f++) drawNote(i, f, shape);
         // muted strings in the shape
         if (shape) shape.forEach(function (fr, i) {
             if (fr !== null) return;
-            var p = G.pos(i, 0); ctx.strokeStyle = "#ff6a5a"; ctx.lineWidth = 1.5; var k = G.r * 0.5;
+            var p = G.pos(i, S.capo ? S.capo : 0); ctx.strokeStyle = "#ff6a5a"; ctx.lineWidth = 1.5; var k = G.r * 0.5;
             ctx.beginPath(); ctx.moveTo(p.x - k, p.y - k); ctx.lineTo(p.x + k, p.y + k); ctx.moveTo(p.x + k, p.y - k); ctx.lineTo(p.x - k, p.y + k); ctx.stroke();
         });
     }
@@ -268,12 +281,12 @@
         var inShape = shape && shape[i] === f, muted = shape && shape[i] === null;
         var lit = view.chord ? inChord : inScale;
         var text = labelFor(pc, midi), col = S.colours ? COLOUR[pc][1] : isRoot ? AMBER : INK;
-        var key = i + ":" + f, hot = sounding[key] || (hover && hover.i === i && hover.f === f);
+        var key = i + ":" + f, hot = sounding[key] || (hover && hover.i === i && hover.f === f) || heard === midi;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         var fontPx = S.labels === "letters" ? Math.round(r * 1.25) : text.length > 3 ? Math.round(r * 0.78) : Math.round(r * 0.95);
         var font = (S.labels === "letters" ? fontPx + "px " + HEB : fontPx + "px " + MONO);
-        if (shape && view.chord) {   // with a shape up, the shape is lit and the rest of the chord steps back
-            if (inShape) drawDot(p, r, col, true, text, font, hot);
+        if (shape) {   // with a shape up, or frets put down to be named, those are lit and the rest steps back
+            if (inShape) drawDot(p, r, naming && !S.colours ? INK : col, true, text, font, hot);
             else if (lit) drawDot(p, r * 0.8, S.colours ? COLOUR[pc][1] : DIM, false, text, font, hot, true);
             else if (S.faint && !muted) faintText(p, text, font, hot);
             return;
@@ -301,12 +314,13 @@
 
     // ---- shapes: where a chord falls under four fingers -----------------------------------------------
     function findShapes() {
-        var n = S.tuning.length, N = S.frets, chord = view.chord, rootPc = view.chordRoot;
-        if (!chord || n > 8 || n < 3) return [];
+        var n = S.tuning.length, capo = S.capo, N = S.frets - capo, chord = view.chord, rootPc = view.chordRoot;
+        var tun = S.tuning.map(function (t) { return t + capo; });   // above a capo the capo is the nut
+        if (!chord || n > 8 || n < 3 || N < 4) return [];
         var pcs = Object.keys(chord).map(Number), fifth = mod(rootPc + 7, 12), need = pcs.length;
         var minSound = Math.min(n, Math.max(3, n - 2, Math.min(need, n))), seen = {}, out = [];
         for (var start = 1; start <= Math.max(1, N - 3); start++) {
-            var cand = S.tuning.map(function (t) {
+            var cand = tun.map(function (t) {
                 var list = []; if (start <= 3 && chord[mod(t, 12)]) list.push(0);   // open strings only in the open position
                 for (var f = start; f <= Math.min(N, start + 3); f++) if (chord[mod(t + f, 12)]) list.push(f);
                 return list;
@@ -314,8 +328,8 @@
             (function walk(i, acc, sounding) {
                 if (i === n) {
                     if (sounding < minSound) return;
-                    var have = {}, fretted = [], bass = null;
-                    acc.forEach(function (f, j) { if (f === null) return; var pc = mod(S.tuning[j] + f, 12); have[pc] = 1; if (bass === null) bass = pc; if (f > 0) fretted.push(f); });
+                    var have = {}, fretted = [], bass = null, low = Infinity;
+                    acc.forEach(function (f, j) { if (f === null) return; var m = tun[j] + f; have[mod(m, 12)] = 1; if (m < low) { low = m; bass = mod(m, 12); } if (f > 0) fretted.push(f); });
                     if (bass !== rootPc) return;
                     var missing = pcs.filter(function (pc) { return !have[pc]; });
                     if (missing.length > (need >= 4 && missing[0] === fifth ? 1 : 0)) return;
@@ -336,12 +350,16 @@
                 cand[i].forEach(function (f) { acc.push(f); walk(i + 1, acc, sounding + 1); acc.pop(); });
             })(0, [], 0);
         }
-        // the best shape at each position, low to high
+        // the best shape at each position, low to high, put back on the neck above the capo
         var best = {};
         out.forEach(function (s) { if (!best[s.at] || s.score < best[s.at].score) best[s.at] = s; });
-        return Object.keys(best).map(Number).sort(function (a, b) { return a - b; }).map(function (k) { return best[k].frets; }).slice(0, 14);
+        return Object.keys(best).map(Number).sort(function (a, b) { return a - b; }).slice(0, 14)
+            .map(function (k) { return best[k].frets.map(function (f) { return f === null ? null : f + capo; }); });
     }
-    function shapeText(shape) { return shape.map(function (f) { return f === null ? "x" : f; }).join(shape.some(function (f) { return f !== null && f > 9; }) ? " " : ""); }
+    function shapeText(shape) {   // as a player writes it: from the capo, the lowest string first
+        var r = shape.map(function (f) { return f === null ? "x" : f - S.capo; });
+        return r.join(r.some(function (f) { return f > 9; }) ? " " : "") + (S.capo ? " (capo " + S.capo + ")" : "");
+    }
 
     // ---- sound: a plucked string, Karplus and Strong's ------------------------------------------------
     var AC = null, BUF = {};
@@ -374,7 +392,7 @@
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]; }); }
     function describe(i, f) {
         var midi = S.tuning[i] + f, pc = mod(midi, 12), name = labelForName(pc), hz = 440 * Math.pow(2, (midi - 69) / 12);
-        var where = "string " + (S.tuning.length - i) + ", " + (f === 0 ? "open" : "fret " + f);
+        var where = "string " + (S.tuning.length - i) + ", " + (f === 0 ? "open" : "fret " + f) + (S.capo && f >= S.capo ? (f === S.capo ? ", open above the capo" : ", " + (f - S.capo) + " above the capo") : "");
         var role = [];
         if (view.chord && view.chord[pc]) role.push("the " + view.chord[pc].label + " of " + view.chordName);
         if (view.scale[pc]) role.push("the " + view.scale[pc].label + " of " + view.rootName + " " + view.sd.name.toLowerCase());
@@ -419,7 +437,7 @@
     }
     function retune(i, by) {
         var m = S.tuning[i] + by; if (m < 16 || m > 88) return;
-        S.tuning[i] = m; S.tuningName = ""; changed(); pluck(m, 0, i + ":0");
+        S.tuning[i] = m; S.tuningName = ""; if (naming) naming = S.tuning.map(function () { return null; }); changed(); pluck(m, 0, i + ":0");
     }
     function fillRoots(sel, value, withScaleRoot) {
         sel.innerHTML = "";
@@ -429,6 +447,7 @@
     function fillScales() {
         var sel = $("neck-scale"); sel.innerHTML = "";
         SCALES.forEach(function (g) { var og = group(sel, g[0]); g[1].forEach(function (s) { option(og, s[0], s[1], S.scale === s[0]); }); });
+        if (LINKED.scale) option(sel, "link", "from the link · " + LINKED.scale, S.scale === "link");
         var mine = Object.keys(S.mine.scales); if (mine.length) { var og = group(sel, "yours"); mine.forEach(function (k) { option(og, "mine:" + k, k, S.scale === "mine:" + k); }); }
         $("neck-scale-forget").hidden = !view.sd.mine;
     }
@@ -436,6 +455,7 @@
         var sel = $("neck-chord"); sel.innerHTML = "";
         option(sel, "", "no chord, the scale alone", !S.chord);
         if (sky) option(sel, "sky", "the sky this minute", S.chord === "sky");
+        if (LINKED.chord) option(sel, "link", "from the link · " + LINKED.chord, S.chord === "link");
         CHORDS.forEach(function (g) { var og = group(sel, g[0]); g[1].forEach(function (c) { option(og, c[0], (c[1] ? c[1] + " · " : "") + c[2], S.chord === c[0]); }); });
         var mine = Object.keys(S.mine.chords); if (mine.length) { var og = group(sel, "yours"); mine.forEach(function (k) { option(og, "mine:" + k, k, S.chord === "mine:" + k); }); }
         $("neck-chord-forget").hidden = !(view.cd && view.cd.mine);
@@ -514,8 +534,11 @@
 
     var scaleToggles = {}, chordToggles = {};
     function changed(keepShape) {
+        if (naming && naming.length !== S.tuning.length) naming = S.tuning.map(function () { return null; });
         compute(); if (!keepShape) shapeAt = 0;
-        keep(); fillTunings(); fillStrings(); fillScales(); fillChords();
+        keep(); writeHash(); fillTunings(); fillStrings(); fillScales(); fillChords();
+        $("neck-capo").value = String(S.capo);
+        $("neck-name").setAttribute("aria-pressed", naming ? "true" : "false");
         fillRoots($("neck-root"), S.root); fillRoots($("neck-chord-root"), S.chordRoot, true);
         $("neck-chord-root").disabled = !S.chord || S.chord === "sky";
         $("neck-labels").value = S.labels; $("neck-frets").value = String(S.frets); $("neck-spelling").value = S.spelling;
@@ -527,7 +550,7 @@
         var shapeBox = $("neck-shapes");
         shapeBox.hidden = !view.chord;
         $("neck-shape-at").textContent = shapesFound.length ? "shape " + (shapeAt + 1) + " of " + shapesFound.length + ": " + shapeText(shapesFound[shapeAt]) : view.chord ? "no shape under four fingers" : "";
-        diatonic(); fillReading(); resize();
+        diatonic(); fillReading(); resize(); nameIt();
     }
     // A toggle pressed: the set as it now stands, unnamed until kept.
     function mineFrom(kind, a) {
@@ -550,18 +573,18 @@
         changed();
     }
     function strum() {
-        var sh = shapesFound[shapeAt];
+        var sh = naming || shapesFound[shapeAt];
         if (sh) { var k = 0; sh.forEach(function (f, i) { if (f !== null) pluck(S.tuning[i] + f, 0.045 * k++, i + ":" + f); }); return; }
         if (!view.chord) return;
-        var base = S.tuning[0] + mod(view.chordRoot - S.tuning[0], 12);
+        var low = S.tuning[0] + S.capo, base = low + mod(view.chordRoot - low, 12);
         formula(view.cd.f).forEach(function (t, k) { pluck(base + t.semis, 0.07 * k); });
     }
     function playScale() {
-        var base = S.tuning[0] + mod(S.root - S.tuning[0], 12), notes = view.st.map(function (t) { return base + t.semis; }).concat([base + 12]);
+        var low = S.tuning[0] + S.capo, base = low + mod(S.root - low, 12), notes = view.st.map(function (t) { return base + t.semis; }).concat([base + 12]);
         notes.forEach(function (m, k) {
             // light it where it falls lowest on the neck
-            var at = null; for (var i = 0; i < S.tuning.length && !at; i++) { var f = m - S.tuning[i]; if (f >= 0 && f <= Math.min(S.frets, 4)) at = i + ":" + f; }
-            for (i = 0; i < S.tuning.length && !at; i++) { f = m - S.tuning[i]; if (f >= 0 && f <= S.frets) at = i + ":" + f; }
+            var at = null; for (var i = 0; i < S.tuning.length && !at; i++) { var f = m - S.tuning[i]; if (f >= S.capo && f <= Math.min(S.frets, S.capo + 4)) at = i + ":" + f; }
+            for (i = 0; i < S.tuning.length && !at; i++) { f = m - S.tuning[i]; if (f >= S.capo && f <= S.frets) at = i + ":" + f; }
             pluck(m, 0.26 * k, at);
         });
     }
@@ -585,9 +608,151 @@
         changed(); playScale();
     }
 
+    // ---- the address: the setting as a link, and a link as a setting ----------------------------------------
+    function noteKey(pc) { return SHARP[pc].replace("♯", "s"); }
+    function noteParse(v) {
+        var m = /^([a-gA-G])(s|#|♯|b|♭)?$/.exec(String(v || "").trim()); if (!m) return null;
+        return mod(NAT[LETTERS.indexOf(m[1].toUpperCase())] + (m[2] ? (/[s#♯]/.test(m[2]) ? 1 : -1) : 0), 12);
+    }
+    function pitchKey(m) { return noteKey(mod(m, 12)) + (Math.floor(m / 12) - 1); }
+    function pitchParse(v) {
+        var m = /^([a-gA-G])(s|#|♯|b|♭)?(\d)$/.exec(String(v).trim()); if (!m) return null;
+        return (+m[3] + 1) * 12 + NAT[LETTERS.indexOf(m[1].toUpperCase())] + (m[2] ? (/[s#♯]/.test(m[2]) ? 1 : -1) : 0);
+    }
+    function fEnc(f) { return f.replace(/♭/g, "b").replace(/♯/g, "s").split(/\s+/).join("."); }
+    function fDec(v) { return String(v).split(".").map(function (x) { return x.replace(/^[bs#]+/, function (a) { return a.replace(/b/g, "♭").replace(/[s#]/g, "♯"); }); }).join(" "); }
+    function toHash() {
+        var p = ["key=" + noteKey(S.root)], sd = scaleDef(S.scale), cd = chordDef(S.chord);
+        p.push(sd.mine || sd.linked ? "scalef=" + fEnc(sd.f) : "scale=" + sd.id);
+        if (cd && cd.id !== "sky") {
+            p.push(cd.mine || cd.linked ? "chordf=" + fEnc(cd.f) : "chord=" + cd.id);
+            if (S.chordRoot != null) p.push("on=" + noteKey(S.chordRoot));
+        }
+        if (S.tuning.join(",") !== TUNINGS[0][1].join(",")) p.push("tuning=" + S.tuning.map(pitchKey).join("-"));
+        if (S.capo) p.push("capo=" + S.capo);
+        return p.join("&");
+    }
+    function writeHash() { try { history.replaceState(null, "", location.pathname + location.search + "#" + toHash()); } catch (e) { /* a file:// page */ } }
+    // Apply what an address asks for; the address wins over what this browser kept. Returns what it found, or null.
+    function fromHash(h) {
+        var q = {}; String(h || "").replace(/^#/, "").split("&").forEach(function (kv) { var i = kv.indexOf("="); if (i > 0) q[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1)); });
+        if (!Object.keys(q).length) return null;
+        var pc = noteParse(q.key); if (pc != null) S.root = pc;
+        if (q.key) { S.tuning = TUNINGS[0][1].slice(); S.tuningName = "Standard"; S.capo = 0; }   // a link is the whole setting: what it leaves out is standard
+        if (q.scale && SCALE[q.scale]) S.scale = q.scale;
+        if (q.scalef) { var sf = fDec(q.scalef); if (formula(sf).length) { LINKED.scale = sf; S.scale = "link"; } }
+        if (q.chord !== undefined) S.chord = CHORD[q.chord] ? q.chord : null;
+        if (q.chordf) { var cf = fDec(q.chordf); if (formula(cf).length) { LINKED.chord = cf; S.chord = "link"; } }
+        if (q.chord !== undefined || q.chordf) S.chordRoot = null;
+        pc = noteParse(q.on); if (pc != null && S.chord) S.chordRoot = pc;
+        if (q.tuning) {
+            var t = q.tuning.split("-").map(pitchParse);
+            if (t.length && t.length <= 10 && t.every(function (m) { return m != null && m >= 16 && m <= 88; })) { S.tuning = t; S.tuningName = ""; }
+        }
+        if (q.capo !== undefined) S.capo = Math.max(0, Math.min(12, parseInt(q.capo, 10) || 0));
+        if (S.capo > S.frets - 4) S.frets = 24;
+        if (q.key && q.chord === undefined && !q.chordf) { S.chord = null; S.chordRoot = null; }   // a link names its chord or has none
+        return { note: noteParse(q.note) };
+    }
+    // One note's place in the temple, for a link that came asking about it.
+    function noteCell(pc) {
+        var here = onNote(pc).map(function (o) { return "<b>" + o.glyph + " " + esc(o.name) + "</b>, " + cardLink(o.trump) + " (" + HEBREW[o.letter] + " " + o.letter + ")"; });
+        return "<b>" + esc(view.names[pc]) + "</b>, " + COLOUR[pc][0] + ", by Case's scale: " + here.join(" · ") + ". Every place it falls on the neck is marked; the scale is its major.";
+    }
+
+    // ---- naming a chord from the notes put down ----------------------------------------------------------
+    function nameChord(picks) {
+        var notes = []; picks.forEach(function (f, i) { if (f !== null) notes.push(S.tuning[i] + f); });
+        if (!notes.length) return { pcs: [], found: [] };
+        var bass = mod(Math.min.apply(null, notes), 12), set = {};
+        notes.forEach(function (m) { set[mod(m, 12)] = 1; });
+        var pcs = Object.keys(set).map(Number), found = [];
+        pcs.forEach(function (r) {
+            var rel = pcs.map(function (pc) { return mod(pc - r, 12); }).sort(function (a, b) { return a - b; }).join(",");
+            Object.keys(CHORD).forEach(function (id) {
+                var cs = formula(CHORD[id].f).map(function (t) { return mod(t.semis, 12); }).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
+                var exact = cs.join(",") === rel;
+                var noFifth = !exact && cs.length >= 4 && cs.indexOf(7) >= 0 && cs.filter(function (v) { return v !== 7; }).join(",") === rel;
+                if (exact || noFifth) found.push({ id: id, root: r, noFifth: noFifth, score: (noFifth ? 2 : 0) + (r === bass ? 0 : 1) + cs.length * 0.01 });
+            });
+        });
+        found.sort(function (a, b) { return a.score - b.score; });
+        found.forEach(function (c) { c.name = view.names[c.root] + CHORD[c.id].sym + (c.root !== bass ? "/" + view.names[bass] : "") + (c.noFifth ? " (no 5)" : ""); });
+        return { pcs: pcs, bass: bass, found: found.slice(0, 5) };
+    }
+    function nameIt() {
+        var out = $("neck-named"), light = $("neck-name-light");
+        if (!naming) { out.textContent = ""; light.hidden = true; return; }
+        var r = nameChord(naming);
+        if (!r.pcs.length) { out.textContent = "put down a note on each string you want; tap again to lift it"; light.hidden = true; }
+        else if (!r.found.length) { out.textContent = r.pcs.map(function (pc) { return view.names[pc]; }).join(" ") + ": no common chord"; light.hidden = true; }
+        else { out.textContent = r.found.map(function (c) { return c.name; }).join(" · ") + "  (" + shapeText(naming) + ")"; light.hidden = false; }
+        draw();
+    }
+
+    // ---- the tuner: the microphone, Yin's way of finding a period, and nothing kept ---------------------------
+    var tuner = null, heard = null;
+    function yin(buf, sr) {
+        var n = buf.length, rms = 0, i, tau;
+        for (i = 0; i < n; i++) rms += buf[i] * buf[i];
+        if (Math.sqrt(rms / n) < 0.01) return null;
+        var maxLag = Math.min(Math.floor(sr / 38), n >> 1), minLag = Math.floor(sr / 1400), W = n - maxLag;
+        var cm = new Float32Array(maxLag + 2), run = 0; cm[0] = 1;
+        for (tau = 1; tau <= maxLag + 1 && tau < n - W; tau++) {
+            var sum = 0; for (i = 0; i < W; i++) { var x = buf[i] - buf[i + tau]; sum += x * x; }
+            run += sum; cm[tau] = run ? sum * tau / run : 1;
+        }
+        for (tau = minLag; tau <= maxLag; tau++) if (cm[tau] < 0.12) {
+            while (tau + 1 <= maxLag && cm[tau + 1] < cm[tau]) tau++;
+            var a = cm[tau - 1], b = cm[tau], c = cm[tau + 1], den = a + c - 2 * b;
+            return sr / (tau + (den ? (a - c) / (2 * den) : 0));
+        }
+        return null;
+    }
+    function startTuner() {
+        var out = $("neck-tuned"), a = audio();
+        if (!a || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { out.textContent = "this browser will not lend the page a microphone"; return; }
+        out.textContent = "asking for the microphone…";
+        navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }).then(function (stream) {
+            var src = a.createMediaStreamSource(stream), an = a.createAnalyser(); an.fftSize = 4096; src.connect(an);
+            tuner = { stream: stream, an: an, buf: new Float32Array(an.fftSize), raf: 0, tick: 0, last: [] };
+            $("neck-tuner").setAttribute("aria-pressed", "true"); $("neck-tuner").textContent = "stop listening";
+            out.textContent = "listening: play one string";
+            listen();
+        }, function () { out.textContent = "the microphone was refused, so nothing is heard"; });
+    }
+    function stopTuner() {
+        if (!tuner) return;
+        cancelAnimationFrame(tuner.raf); tuner.stream.getTracks().forEach(function (t) { t.stop(); });
+        tuner = null; heard = null; $("neck-tuner").setAttribute("aria-pressed", "false"); $("neck-tuner").textContent = "tune by ear"; $("neck-tuned").textContent = ""; draw();
+    }
+    function listen() {
+        if (!tuner) return;
+        tuner.raf = requestAnimationFrame(listen);
+        if (tuner.tick++ % 3) return;
+        tuner.an.getFloatTimeDomainData(tuner.buf);
+        var hz = yin(tuner.buf, AC.sampleRate);
+        if (!hz) { if (heard !== null && tuner.tick % 60 === 0) { heard = null; draw(); } return; }
+        tuner.last.push(hz); if (tuner.last.length > 5) tuner.last.shift();
+        var sorted = tuner.last.slice().sort(function (a, b) { return a - b; }); hz = sorted[sorted.length >> 1];
+        var mf = 69 + 12 * Math.log(hz / 440) / Math.LN2, m = Math.round(mf), cents = Math.round((mf - m) * 100);
+        // the string it is nearest, open (or at the capo)
+        var best = -1, bd = Infinity;
+        S.tuning.forEach(function (t, i) { var d = Math.abs(t + S.capo - mf); if (d < bd) { bd = d; best = i; } });
+        var meter = ""; for (var k = -5; k <= 5; k++) meter += k === 0 ? "|" : (Math.round(cents / 10) === k ? "●" : "·");
+        if (Math.round(cents / 10) === 0) meter = "·····●·····";
+        var say = view.names[mod(m, 12)] + (Math.floor(m / 12) - 1) + " " + (cents > 0 ? "+" : cents < 0 ? "−" : "±") + Math.abs(cents) + "¢  " + meter + "  " + hz.toFixed(1) + " Hz";
+        if (best >= 0 && bd < 2.5) {
+            var want = S.tuning[best] + S.capo, off = Math.round((mf - want) * 100);
+            say += " · string " + (S.tuning.length - best) + " (" + pitchKey(want).replace("s", "♯") + ") " + (Math.abs(off) <= 4 ? "is in tune" : Math.abs(off) + "¢ " + (off > 0 ? "sharp: down" : "flat: up"));
+        }
+        $("neck-tuned").textContent = say;
+        if (heard !== m) { heard = m; draw(); }
+    }
+
     // ---- wiring ------------------------------------------------------------------------------------------
     $("neck-tuning").onchange = function () {
-        var v = this.value; if (!v) return;
+        var v = this.value; if (!v) return; naming = null;
         var t = v.indexOf("b:") === 0 ? TUNINGS.filter(function (x) { return x[0] === v.slice(2); })[0][1] : S.mine.tunings[v.slice(2)];
         S.tuning = t.slice(); S.tuningName = v.slice(2); changed();
     };
@@ -616,11 +781,25 @@
     $("neck-faint").onclick = function () { S.faint = !S.faint; changed(true); };
     $("neck-flip").onclick = function () { S.flip = !S.flip; changed(true); };
     $("neck-sky").onclick = skyChord;
+    (function () { var sel = $("neck-capo"); for (var c = 0; c <= 12; c++) option(sel, c, c ? "fret " + c : "none", c === S.capo); })();
+    $("neck-capo").onchange = function () { S.capo = +this.value; if (S.capo > S.frets - 4) S.frets = 24; if (naming) naming = naming.map(function () { return null; }); changed(); };
+    $("neck-name").onclick = function () { naming = naming ? null : S.tuning.map(function () { return null; }); changed(true); };
+    $("neck-name-light").onclick = function () {
+        var r = naming && nameChord(naming); if (!r || !r.found.length) return;
+        S.chord = r.found[0].id; S.chordRoot = r.found[0].root; naming = null; changed();
+    };
+    $("neck-link").onclick = function () {
+        var u = location.href, ok = function () { cell.innerHTML = "<b>the link is copied</b>: " + esc(u); }, no = function () { cell.innerHTML = "<b>the link to this</b>: " + esc(u); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, no); else no();
+    };
+    $("neck-tuner").onclick = function () { if (tuner) stopTuner(); else startTuner(); };
+    window.addEventListener("hashchange", function () { var a = fromHash(location.hash); changed(); if (a && a.note != null) cell.innerHTML = noteCell(a.note); });
     $("neck-hour-key").onclick = hourKey;
     $("neck-reset").onclick = function () {
         var mine = S.mine;
         S = { tuning: TUNINGS[0][1].slice(), tuningName: "Standard", frets: 22, root: 0, scale: "major", chordRoot: null, chord: null,
-            labels: "names", colours: false, spelling: "auto", flip: false, faint: true, mine: mine };
+            labels: "names", colours: false, spelling: "auto", flip: false, faint: true, capo: 0, mine: mine };
+        LINKED = {}; naming = null;
         sky = null; changed();
     };
     ["neck-tuning-name", "neck-scale-name", "neck-chord-name"].forEach(function (id, k) {
@@ -629,7 +808,7 @@
 
     function hit(e) {
         var r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, best = null, bd = Infinity;
-        for (var i = 0; i < G.n; i++) for (var f = 0; f <= G.N; f++) {
+        for (var i = 0; i < G.n; i++) for (var f = S.capo ? S.capo : 0; f <= G.N; f++) {
             var p = G.pos(i, f), d = Math.hypot(p.x - x, p.y - y);
             if (d < bd) { bd = d; best = { i: i, f: f }; }
         }
@@ -646,13 +825,16 @@
     canvas.addEventListener("pointerleave", function () { hover = null; draw(); });
     canvas.addEventListener("click", function (e) {
         var h = hit(e); if (!h) return;
-        cell.innerHTML = describe(h.i, h.f);
+        if (naming) { naming[h.i] = naming[h.i] === h.f ? null : h.f; nameIt(); }
+        else cell.innerHTML = describe(h.i, h.f);
         pluck(S.tuning[h.i] + h.f, 0, h.i + ":" + h.f);
     });
     var rt = null;
     window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(resize, 80); });
 
+    var arrived = fromHash(location.hash);
     compute(); changed(); fillHour();
+    if (arrived && arrived.note != null) cell.innerHTML = noteCell(arrived.note);
     setInterval(fillHour, 60000);
-    window.Neck = { state: function () { return JSON.parse(JSON.stringify(S)); }, view: function () { return view; }, shapes: function () { return shapesFound; }, spell: spell, formula: formula };
+    window.Neck = { state: function () { return JSON.parse(JSON.stringify(S)); }, yin: function (b, sr) { return yin(b, sr); }, put: function (i, f) { if (naming) { naming[i] = naming[i] === f ? null : f; nameIt(); } return $("neck-named").textContent; }, view: function () { return view; }, shapes: function () { return shapesFound; }, spell: spell, formula: formula };
 })();

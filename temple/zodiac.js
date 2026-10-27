@@ -107,6 +107,7 @@
         if (b.trump && s.ruler === b.name) t += "; it rules " + s.name;
         else if (b.trump && s.exalted === b.name) t += "; it is exalted in " + s.name;
         if (b.trump) t += ".";
+        if (b.trump && Z.tone && Z.tone(b.name) != null) t += " Its note is <a href=\"" + Z.toneLink(Z.tone(b.name)) + "\">" + Z.NOTES[Z.tone(b.name)] + "</a>.";
         if (b.name === "Node") t = "<b>☊ The Node</b>, the dragon's head, at " + esc(Z.fmt(b.lon)) + ", moving backward; its tail opposite, at " + esc(Z.fmt(b.lon + 180)) + ". The geomancers' two figures are named for them.";
         if (b.name === "Uranus" || b.name === "Neptune") t = "<b>" + b.glyph + " " + b.name + "</b> at " + esc(Z.fmt(b.lon)) + (b.retrograde ? ", retrograde" : "") + ", in " + cardLink(d) + "; a later planet, with no trump of its own.";
         return t;
@@ -127,7 +128,8 @@
         var s = Z.SIGNS[what.index], decans = [0, 1, 2].map(function (k) { return Z.decan(what.index * 30 + k * 10); });
         var there = sky.bodies.filter(function (b) { return b.name !== "Node" && b.sign.index === what.index; }).map(function (b) { return the(b.name); });
         cellOut.innerHTML = "<b>" + s.glyph + " " + s.name + "</b>, " + s.quality + " " + s.element + ", ruled by " + esc(the(s.ruler)) + (s.exalted ? ", where " + esc(the(s.exalted)) + " is exalted" : "") + "; the letter " + s.letter + " and the trump <a href=\"/temple/tarot/#" + slug(s.trump) + "\">" + esc(s.trump) + "</a>; " + s.body + ". "
-            + "Its decans: " + decans.map(function (d) { return d.ruler + ", " + cardLink(d); }).join("; ") + "." + (there.length ? " " + there.join(" and ").replace(/^the/, "The") + (there.length > 1 ? " are" : " is") + " there now." : "");
+            + "Its decans: " + decans.map(function (d) { return d.ruler + ", " + cardLink(d); }).join("; ") + "."
+            + (Z.tone ? " Its note is <a href=\"" + Z.toneLink(what.index) + "\">" + Z.NOTES[what.index] + "</a>, " + Z.TONE_COLOURS[what.index] + "." : "") + (there.length ? " " + there.join(" and ").replace(/^the/, "The") + (there.length > 1 ? " are" : " is") + " there now." : "");
     }
     // ---- the table of the signs, under the wheel ---------------------------------------------------
     function table() {
