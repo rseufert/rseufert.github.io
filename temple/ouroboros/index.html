@@ -1,0 +1,37 @@
+---
+layout: default
+css: /temple/temple.css
+title: The ouroboros
+description: "A poem that is also a program, a quine: four quatrains on the serpent that eats its tail, which, run, answer with their own text, letter for letter."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read ouroboros">
+{% include temple-nav.html active="ouroboros" %}
+<p class="crumbs"><a href="/temple/#sign-ouroboros">&larr; the serpent in the nave</a> <span>a poem in the form of a quine &middot; JavaScript</span></p>
+<h1>The ouroboros</h1>
+<p class="lede">A quine is a program whose only output is its own text. This one is a poem: four quatrains on the
+serpent that eats its tail, said by a word that has nothing to say but itself. Read it as verse. Then run it, and it
+answers with the whole of itself, every letter and every space, the tail in the teeth.</p>
+
+{% capture poem %}{% include_relative poem.js %}{% endcapture %}
+<pre class="quine" id="ouro-src"><code>{{ poem | escape }}</code></pre>
+
+<div class="bar">
+  <button type="button" id="ouro-run">run it</button>
+  <span class="hint" id="ouro-verdict" aria-live="polite"></span>
+</div>
+<pre class="quine said" id="ouro-out" hidden aria-label="what it said"><code></code></pre>
+
+<p>How it knows itself: a function in JavaScript can be asked for its own text, and since 2019 the language has
+promised that the answer is the text exactly as written, comments and spaces and all. So the poem lives in a
+comment inside a function called <code>ouroboros</code>, and the one line of the function that does anything puts
+back the parentheses that hold it and the call that runs it. What comes back is the program. Some keep a stricter
+rule for quines, that a program may not read itself; the gnostics would have said that reading oneself is the
+whole of the work.</p>
+
+<p>To check it without this page, copy the poem into a browser's console and press enter: it says itself back.
+It is kept as <a href="/temple/ouroboros/poem.js">its own file</a>, and this page shows that file and runs it,
+and compares the two.</p>
+</div>
+<script src="/temple/ouroboros.js?v={{ site.time | date: '%s' }}"></script>

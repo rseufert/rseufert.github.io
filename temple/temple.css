@@ -344,3 +344,12 @@ body.filled { overflow: hidden; }
 .temple-page.neck .reading-list a { color: var(--soft); }
 .temple-page.neck .swatch { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 6px; vertical-align: -1px; }
 .temple-page.neck .tuned { white-space: pre-wrap; color: var(--ink); }
+
+/* The ouroboros: the poem as its source, and what it says when run, in the same set. Sized so
+   the longest line fits a phone without scrolling the page; the box scrolls if it must. */
+.temple-page.ouroboros pre.quine { font: clamp(10.5px, 2.7vw, 15px)/1.6 var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 16px 14px; margin: 18px 0; overflow-x: auto; tab-size: 2; }
+.temple-page.ouroboros pre.quine code { font: inherit; background: none; padding: 0; color: inherit; }
+.temple-page.ouroboros pre.said { border-color: var(--accent); }
+@media (max-width: 700px) { .temple-page.ouroboros pre.quine { padding: 14px 6px; } }
+.temple-page.ouroboros .bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.temple-page.ouroboros .bar .hint { margin: 0; }
