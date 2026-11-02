@@ -418,7 +418,10 @@
         trail = [];
         aim = aimAtPin();
         club = pickClub();
-        mode = "flyover"; modeClock = 0;
+        // The flyover shows the hole first; with less motion asked for, a cut to the tee instead.
+        mode = REDUCED ? "aim" : "flyover"; modeClock = 0;
+        follow.ready = false; shotCam.phase = ""; drop = null;
+        look.target = look.yaw = 0; look.reverse = false;
         message = "HOLE " + (holeNo + 1) + "  PAR " + hole.par + "  " + Math.round(yardsToPin()) + " YDS"; messageClock = 0;
         updateScore();
     }
@@ -500,22 +503,46 @@
         trail = [];
         mode = "flight"; modeClock = 0;
         shotNote = "";
+        // The shot's camera: a putt is watched from above and behind; anything
+        // else is watched from where you stood until it is on its way.
+        shotCam.phase = club === PUTTER ? "putt" : "watch";
+        var eye = follow.ready ? follow : addressTarget();    // where you stood, even if the camera has not caught up with you
+        shotCam.eye = { x: eye.x, y: eye.y, z: eye.z };
+        shotCam.tried = false; shotCam.land = null;
+        look.target = look.yaw = 0;
+        if (look.reverse) { look.reverse = false; follow.ready = false; }
     }
 
     // ---- the ball in the world ---------------------------------------------
+    // In the air: gravity, a little drag, the wind, and the curve. b is the
+    // ball, or a copy of it when the landing camera asks where it will come down.
+    function fly(b, dt) {
+        var sp = Math.hypot(b.vx, b.vy, b.vz), k = 0.0016 * sp;
+        b.vx -= b.vx * k * dt; b.vy -= b.vy * k * dt; b.vz -= b.vz * k * dt;
+        b.vy -= G * dt;
+        var wa = hole.wind.mph * WIND_ACC;
+        b.vx += Math.sin(hole.wind.dir) * wa * dt; b.vz += Math.cos(hole.wind.dir) * wa * dt;
+        var hs = Math.hypot(b.vx, b.vz) || 1, curve = b.side * SIDE_ACC * Math.max(0, 1 - b.flight / 5);
+        var rx = b.vz / hs, rz = -b.vx / hs;                  // to the right of the flight
+        b.vx += rx * curve * dt; b.vz += rz * curve * dt;
+        b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+    }
+    // Where the ball in the air will first touch the ground, and how long until it does, if nothing leans on it.
+    function predictLanding() {
+        var b = { x: ball.x, y: ball.y, z: ball.z, vx: ball.vx, vy: ball.vy, vz: ball.vz, side: ball.side, flight: ball.flight }, dt = 1 / 120;
+        for (var t = 0; t < 15; t += dt) {
+            b.flight += dt;
+            fly(b, dt);
+            if (b.x < hole.box.x0 || b.x > hole.box.x1 || b.z < hole.box.z0 || b.z > hole.box.z1) return null;
+            var gh = height(hole, b.x, b.z);
+            if (b.y <= gh) return { x: b.x, y: gh, z: b.z, t: t, vx: b.vx, vz: b.vz };
+        }
+        return null;
+    }
     function step(dt) {
         ball.flight += dt;
         if (!ball.rolling) {
-            // In the air: gravity, a little drag, the wind, and the curve.
-            var sp = Math.hypot(ball.vx, ball.vy, ball.vz), k = 0.0016 * sp;
-            ball.vx -= ball.vx * k * dt; ball.vy -= ball.vy * k * dt; ball.vz -= ball.vz * k * dt;
-            ball.vy -= G * dt;
-            var wa = hole.wind.mph * WIND_ACC;
-            ball.vx += Math.sin(hole.wind.dir) * wa * dt; ball.vz += Math.cos(hole.wind.dir) * wa * dt;
-            var hs = Math.hypot(ball.vx, ball.vz) || 1, curve = ball.side * SIDE_ACC * Math.max(0, 1 - ball.flight / 5);
-            var rx = ball.vz / hs, rz = -ball.vx / hs;                  // to the right of the flight
-            ball.vx += rx * curve * dt; ball.vz += rz * curve * dt;
-            ball.x += ball.vx * dt; ball.y += ball.vy * dt; ball.z += ball.vz * dt;
+            fly(ball, dt);
             if (inCup() && ball.vy < 0 && ball.y < height(hole, ball.x, ball.z) + 0.3 && Math.hypot(ball.vx, ball.vz) < 9) return holed(true);
             var gh = height(hole, ball.x, ball.z);
             if (ball.y <= gh) contact(gh);
@@ -594,11 +621,15 @@
             var dist = Math.hypot(ball.x - ball.from.x, ball.z - ball.from.z);
             shotNote = Math.round(dist) + " YDS · " + LIE[ball.lie].label.toUpperCase();
         } else shotNote = LIE[ball.lie].label.toUpperCase();
+        nextShot();
         if (strokes >= 10) {
             note("PICKED UP");
             finishHole(10);
         }
     }
+    // The next aim and club, chosen as the ball stops, so the camera makes one
+    // move from the shot to the lie rather than two.
+    function nextShot() { aim = aimAtPin(); club = pickClub(); }
     function splash() {
         if (audio) audio.splash();
         note("WATER · +1");
@@ -607,13 +638,27 @@
         // Drop on dry ground on the near side of where it went in.
         var bx = d.x, bz = d.z, back = Math.atan2(ball.from.x - bx, ball.from.z - bz);
         for (var k = 0; k < 40 && (classify(hole, bx, bz) === "water" || classify(hole, bx, bz) === "ob"); k++) { bx += Math.sin(back) * 1.5; bz += Math.cos(back) * 1.5; }
-        place(bx, bz);
+        penalty(bx, bz);
     }
     function outOfBounds() {
         if (audio) audio.thud();
         note("OUT OF BOUNDS · +1");
         strokes++;
-        place(ball.from.x, ball.from.z);
+        penalty(ball.from.x, ball.from.z);
+    }
+    // A penalty holds on where it went in or out, with the note on the screen,
+    // then cuts to the drop: the camera never flies back across the hole.
+    var drop = null;
+    function penalty(x, z) {
+        ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
+        drop = { x: x, z: z };
+        mode = "penalty"; modeClock = 0;
+    }
+    function takeDrop() {
+        var d = drop; drop = null;
+        if (!d) return;
+        place(d.x, d.z);
+        follow.ready = false; shotCam.phase = "";
     }
     function place(x, z) {
         ball.x = x; ball.z = z; ball.y = height(hole, x, z);
@@ -621,6 +666,7 @@
         ball.lie = classify(hole, x, z);
         updateScore();
         mode = "rest"; modeClock = 0; shotNote = LIE[ball.lie].label.toUpperCase();
+        nextShot();
         if (strokes >= 10) { note("PICKED UP"); finishHole(10); }
     }
     function holed(dunk) {
@@ -734,6 +780,7 @@
         if (mode === "title" || mode === "card") return;
         if (mode === "flyover") { endFlyover(); return; }
         if (mode === "holed" && modeClock > 0.6) { nextHole(); return; }
+        if (look.reverse) { look.reverse = false; follow.ready = false; return; }   // a tap leaves the view from the green
         if (mode === "rest") { if (modeClock > 0.3) readyToHit(); return; }
         if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* a pointer already gone */ } }
         if (mode === "flight") { swing = { id: e.pointerId, x: e.clientX, y: e.clientY, lean: true }; return; }
@@ -791,9 +838,7 @@
     function backReach() { return Math.max(90, Hpx * 0.36); }
     function readyToHit() {
         if (mode !== "rest") return;
-        aim = aimAtPin();
-        club = pickClub();
-        mode = "aim"; modeClock = 0;
+        mode = "aim"; modeClock = 0;     // the aim and the club were chosen as the ball stopped (nextShot)
     }
     function nextHole() {
         if (holeNo + 1 >= HOLES) return endRound();
@@ -822,6 +867,12 @@
             return;
         }
         if (k === "ArrowLeft" || k === "ArrowRight" || k === "a" || k === "d" || k === "ArrowUp" || k === "ArrowDown" || k === "w" || k === "s") e.preventDefault();
+        // A look round, while lining up: q and e turn the head, r stands on the green looking back. Both snap back on release.
+        if ((mode === "aim" || mode === "rest") && !meter) {
+            if (k === "q" || k === "Q") look.target = -LOOK_MAX;
+            if (k === "e" || k === "E") look.target = LOOK_MAX;
+            if ((k === "r" || k === "R") && !look.reverse) { look.reverse = true; follow.ready = false; }
+        }
         if (mode === "aim" && !meter) {
             if (k === "ArrowUp" || k === "w") club = Math.max(0, club - 1);
             if (k === "ArrowDown" || k === "s") club = Math.min(PUTTER, club + 1);
@@ -829,7 +880,12 @@
         }
         keys[k] = true;
     }
-    function keyUp(e) { keys[e.key] = false; }
+    function keyUp(e) {
+        keys[e.key] = false;
+        var k = (e.key || "").toLowerCase();
+        if (k === "q" || k === "e") look.target = keys.q || keys.Q ? -LOOK_MAX : keys.e || keys.E ? LOOK_MAX : 0;
+        if (k === "r" && look.reverse) { look.reverse = false; follow.ready = false; }
+    }
     function keyAim(dt) {
         var turn = (keys.ArrowLeft || keys.a ? -1 : 0) + (keys.ArrowRight || keys.d ? 1 : 0);
         if (!turn) return;
@@ -851,53 +907,181 @@
         cam.x = x; cam.y = y; cam.z = z; cam.yaw = yaw; cam.pitch = pitch;
         cam.sy = Math.sin(yaw); cam.cy = Math.cos(yaw); cam.sp = Math.sin(pitch); cam.cp = Math.cos(pitch);
     }
+    // One smoothed follow target, and a target for it from whichever camera
+    // the moment calls for. A target is a place, a heading, and either a
+    // pitch or a point to frame: the pitch that puts that point at a given
+    // height in the picture is worked out from where the camera has got to,
+    // so the ball stays where it is put while the camera is still moving.
+    //   address  behind the ball at the lie, the ball at FRAME_AT of the height
+    //   watch    a full shot, from where you stood, until it is on its way
+    //   chase    behind it and below it near the top, so the arc is seen against the sky
+    //   land     a cut to ahead of where it will come down, looking back
+    //   putt     above and behind, so the slope it rolls on is in the picture
+    //   reverse  from beyond the green, looking back at the ball (r, or the pad)
     var follow = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, ready: false };
+    var shotCam = { phase: "", eye: null, land: null, tried: false };
+    var look = { yaw: 0, target: 0, reverse: false, touch: null };
+    var LOOK_MAX = 1.1;                            // how far q and e turn the head, in radians
+    var FRAME_AT = 0.78, FRAME_LO = 0.70, FRAME_HI = 0.84;   // where the ball sits at address, as a fraction of the height down the frame
+    var addressCache = { key: "", at: null };
+
+    // The pitch that puts point q at fraction `at` of the frame's height, seen
+    // from (x, y, z) facing yaw. Down is a positive pitch.
+    function pitchFor(x, y, z, yaw, q, at) {
+        var fwd = (q.x - x) * Math.sin(yaw) + (q.z - z) * Math.cos(yaw);
+        return Math.atan2(y - q.y, Math.max(0.5, fwd)) - Math.atan((at - 0.5) * Hpx / f);
+    }
+    // Whether the ground stays under the line from the eye to q, stopping a
+    // third of a yard short of q so a ball's own lie does not count against it.
+    function sightline(eye, q) {
+        var d = Math.hypot(q.x - eye.x, q.z - eye.z);
+        if (d < 0.4) return true;
+        var n = Math.max(8, Math.ceil(d / 1.5)), stop = 1 - 0.35 / d;
+        for (var i = 1; i <= n; i++) {
+            var u = i / n * stop, px = eye.x + (q.x - eye.x) * u, pz = eye.z + (q.z - eye.z) * u, py = eye.y + (q.y - eye.y) * u;
+            if (height(hole, px, pz) > py - 0.03) return false;
+        }
+        return true;
+    }
+    // A camera at c, up yards above the ground, moved until it can see q:
+    // raised first, then pulled in toward q, never more than maxUp higher or nearer than 2.5 yards.
+    function unblock(c, q, up, maxUp) {
+        if (sightline(c, q)) return c;
+        var t = { x: c.x, y: c.y, z: c.z }, rise;
+        for (rise = 0.4; rise <= maxUp + 1e-6; rise += 0.4) { t.y = c.y + rise; if (sightline(t, q)) return t; }
+        var d = Math.hypot(q.x - c.x, q.z - c.z);
+        for (var u = 0.15; u < 0.95 && d * (1 - u) >= 2.5; u += 0.15) {
+            t.x = c.x + (q.x - c.x) * u; t.z = c.z + (q.z - c.z) * u;
+            var base = Math.max(height(hole, t.x, t.z), q.y) + up;
+            for (rise = 0; rise <= maxUp + 1e-6; rise += 0.4) { t.y = base + rise; if (sightline(t, q)) return t; }
+        }
+        return { x: c.x, y: c.y + maxUp, z: c.z };
+    }
+    function ballPoint() { return { x: ball.x, y: ball.y + 0.06, z: ball.z }; }
+
+    function addressTarget() {
+        var putt = club === PUTTER || ball.lie === "green";
+        var dist = putt ? 4.5 : 7, up = putt ? 2.2 : 2.6, q = ballPoint();
+        var key = [seed, holeNo, ball.x, ball.z, aim, putt, W, Hpx].join();
+        if (addressCache.key !== key) {
+            var c = { x: ball.x - Math.sin(aim) * dist, z: ball.z - Math.cos(aim) * dist };
+            c.y = Math.max(ball.y, height(hole, c.x, c.z)) + up;
+            addressCache = { key: key, at: unblock(c, q, up, 3) };
+        }
+        var at = addressCache.at;
+        // What the old camera did: pitch to the ground some way ahead. Leaned toward, as far as the ball stays in its band.
+        var ahead = putt ? Math.min(20, yardsToPin() + 3) : 60;
+        var ground = height(hole, ball.x + Math.sin(aim) * ahead, ball.z + Math.cos(aim) * ahead);
+        var prefer = Math.atan2(follow.y - ground, ahead + dist) + (putt ? 0.06 : 0.02);
+        return { x: at.x, y: at.y, z: at.z, yaw: aim, frame: { q: q, at: FRAME_AT, lo: FRAME_LO, hi: FRAME_HI, prefer: prefer }, rate: 6 };
+    }
+    function reverseTarget() {
+        var gx = hole.pin.x - ball.x, gz = hole.pin.z - ball.z, gl = Math.hypot(gx, gz) || 1;
+        var x = hole.pin.x + gx / gl * 12, z = hole.pin.z + gz / gl * 12;
+        return { x: x, y: Math.max(height(hole, x, z), height(hole, hole.pin.x, hole.pin.z)) + 6, z: z,
+                 yaw: Math.atan2(ball.x - x, ball.z - z), frame: { q: ballPoint(), at: 0.55 }, rate: 6 };
+    }
+    function trackFrom(eye, at, rate) {   // a camera that stays put and turns to keep the ball at `at`
+        var dx = ball.x - eye.x, dz = ball.z - eye.z;
+        return { x: eye.x, y: eye.y, z: eye.z, yaw: Math.hypot(dx, dz) > 1 ? Math.atan2(dx, dz) : follow.yaw, frame: { q: ballPoint(), at: at }, rate: rate };
+    }
+    // The landing camera: ahead of where it will come down and off to one
+    // side, low, where it can see the spot. Null if there is no time to cut to it.
+    function landingCamera() {
+        var L = predictLanding();
+        if (!L || L.t < 0.9 || Math.hypot(L.x - ball.from.x, L.z - ball.from.z) < 50) return null;
+        var hs = Math.hypot(L.vx, L.vz) || 1, dx = L.vx / hs, dz = L.vz / hs, spot = { x: L.x, y: L.y + 0.5, z: L.z };
+        for (var side = -1; side <= 1; side += 2) {   // the left of the line first, then the right
+            var c = { x: L.x + dx * 16 + dz * side * 6, z: L.z + dz * 16 - dx * side * 6 };
+            c.y = Math.max(height(hole, c.x, c.z), L.y) + 2.4;
+            var u = unblock(c, spot, 2.4, 4);
+            if (sightline(u, spot)) return u;
+        }
+        return null;
+    }
+
+    function cameraTarget() {
+        if (mode === "penalty") return { x: follow.x, y: follow.y, z: follow.z, yaw: follow.yaw, pitch: follow.pitch, rate: 0 };   // hold on the spot
+        if (mode === "flight") {
+            var from = ball.from || ball, out = Math.hypot(ball.x - from.x, ball.z - from.z);
+            // With less motion asked for, the camera stays where you stood for the whole shot.
+            if (shotCam.phase === "watch" && !REDUCED && (ball.rolling || ball.flight > 0.9 || out > 70)) shotCam.phase = "chase";
+            if (shotCam.phase === "chase" && !REDUCED && !shotCam.tried && !ball.rolling && ball.vy < 0) {
+                shotCam.tried = true;
+                var land = landingCamera();
+                if (land) { shotCam.phase = "land"; shotCam.land = land; follow.ready = false; }
+            }
+            if (shotCam.phase === "land" && ball.rolling) {
+                // If it runs at the camera, or past it, go back behind it.
+                var lx = ball.x - shotCam.land.x, lz = ball.z - shotCam.land.z;
+                if (Math.hypot(lx, lz) < 5 || lx * ball.vx + lz * ball.vz > 0) shotCam.phase = "chase";
+            }
+            if (shotCam.phase === "watch") return trackFrom(shotCam.eye, 0.5, 6);
+            if (shotCam.phase === "land") return trackFrom(shotCam.land, 0.55, 8);
+            var hs = Math.hypot(ball.vx, ball.vz), dir = hs > 0.5 ? Math.atan2(ball.vx, ball.vz) : follow.yaw;
+            var putt = shotCam.phase === "putt", back = putt ? 5 : ball.rolling ? 7 : 13, q = ballPoint();
+            var c = { x: ball.x - Math.sin(dir) * back, z: ball.z - Math.cos(dir) * back }, gc = height(hole, c.x, c.z), gb = height(hole, ball.x, ball.z);
+            if (putt) c.y = Math.max(gc, ball.y) + 3.0;
+            else if (ball.rolling) c.y = Math.max(gc, gb) + 2.4;
+            else c.y = Math.max(gc, gb) + 2 + Math.max(0, ball.y - gb) * 0.45;    // under the ball near the top, so it climbs past the horizon
+            c = unblock(c, q, putt ? 3.0 : 2.4, 3);
+            return { x: c.x, y: c.y, z: c.z, yaw: dir, frame: { q: q, at: putt ? 0.62 : ball.rolling ? 0.6 : 0.4 }, rate: 4.5 };
+        }
+        // At rest, or holed: the landing camera stays a moment to see it stop (or drop), then cuts to the lie.
+        if (shotCam.phase === "land") {
+            if (mode === "holed" || (mode === "rest" && modeClock < 0.9)) return trackFrom(shotCam.land, 0.55, 8);
+            shotCam.phase = ""; follow.ready = false;
+        }
+        if (look.reverse && (mode === "aim" || mode === "rest")) return reverseTarget();
+        return addressTarget();
+    }
+    function framePitch(F) {
+        var p = pitchFor(follow.x, follow.y, follow.z, follow.yaw, F.q, F.at);
+        if (F.prefer == null) return p;
+        // The band: a larger pitch puts the ball higher in the frame.
+        var low = pitchFor(follow.x, follow.y, follow.z, follow.yaw, F.q, F.hi), high = pitchFor(follow.x, follow.y, follow.z, follow.yaw, F.q, F.lo);
+        return Math.max(low, Math.min(high, F.prefer));
+    }
+
     function placeCamera(dt) {
         var tx, ty, tz, tyaw, tpitch;
         if (mode === "title") {
-            var w = (clock / 9) % 1, a0 = pointAt(hole, w), a1 = pointAt(hole, Math.min(1, w + 0.15));
-            tx = a0.x - a0.dx * 20 + Math.sin(clock * 0.3) * 8; tz = a0.z - a0.dz * 20; ty = height(hole, a0.x, a0.z) + 30;
+            var w = REDUCED ? 0.3 : (clock / 9) % 1, a0 = pointAt(hole, w), a1 = pointAt(hole, Math.min(1, w + 0.15));
+            tx = a0.x - a0.dx * 20 + (REDUCED ? 0 : Math.sin(clock * 0.3) * 8); tz = a0.z - a0.dz * 20; ty = height(hole, a0.x, a0.z) + 30;
             setCam(tx, ty, tz, Math.atan2(a1.x - tx, a1.z - tz), Math.atan2(ty - height(hole, a1.x, a1.z), Math.hypot(a1.x - tx, a1.z - tz)));
             follow.ready = false;
             return;
         }
         if (mode === "flyover") {
-            var u = Math.min(1, modeClock / 5), e = u * u * (3 - 2 * u);
+            // With less motion asked for, a still from halfway down the hole instead of the flight.
+            var u = REDUCED ? 0.55 : Math.min(1, modeClock / 5), e = u * u * (3 - 2 * u);
             var p = pointAt(hole, Math.min(1, e * 1.02)), q = pointAt(hole, Math.min(1, e + 0.18));
             var gh = height(hole, p.x, p.z);
             tx = p.x - p.dx * 30; tz = p.z - p.dz * 30; ty = gh + 42 - e * 24;
             tyaw = Math.atan2(q.x - tx, q.z - tz);
             tpitch = Math.atan2(ty - height(hole, q.x, q.z), Math.hypot(q.x - tx, q.z - tz));
             setCam(tx, ty, tz, tyaw, tpitch); follow.ready = false;
-            if (modeClock > 5.4) endFlyover();
+            if (modeClock > (REDUCED ? 3.5 : 5.4)) endFlyover();
             return;
         }
-        var gy = height(hole, ball.x, ball.z);
-        if (mode === "flight") {
-            var hs = Math.hypot(ball.vx, ball.vz);
-            var dir = hs > 0.5 ? Math.atan2(ball.vx, ball.vz) : follow.yaw;
-            var back = ball.rolling ? 6 : 13;
-            tyaw = dir;
-            tx = ball.x - Math.sin(dir) * back; tz = ball.z - Math.cos(dir) * back;
-            ty = Math.max(height(hole, tx, tz) + 2, ball.y + (ball.rolling ? 2.6 : 4));
-            tpitch = Math.atan2(ty - ball.y, back) * 0.8;
-        } else {
-            var putt = club === PUTTER || ball.lie === "green";
-            var dist = putt ? 4.5 : 7, up = putt ? 2.2 : 2.6;
-            tyaw = aim;
-            tx = ball.x - Math.sin(aim) * dist; tz = ball.z - Math.cos(aim) * dist;
-            ty = Math.max(gy, height(hole, tx, tz)) + up;
-            var look = putt ? Math.min(20, yardsToPin() + 3) : 60;
-            var ahead = height(hole, ball.x + Math.sin(aim) * look, ball.z + Math.cos(aim) * look);
-            tpitch = Math.atan2(ty - ahead, look + dist) + (putt ? 0.06 : 0.02);
+        var T = cameraTarget();
+        if (!follow.ready) {
+            follow.x = T.x; follow.y = T.y; follow.z = T.z; follow.yaw = T.yaw;
+            follow.pitch = T.frame ? framePitch(T.frame) : T.pitch;
+            follow.ready = true;
         }
-        if (!follow.ready) { follow.x = tx; follow.y = ty; follow.z = tz; follow.yaw = tyaw; follow.pitch = tpitch; follow.ready = true; }
-        var k = 1 - Math.exp(-dt * (mode === "flight" ? 4.5 : 6));
-        follow.x += (tx - follow.x) * k; follow.y += (ty - follow.y) * k; follow.z += (tz - follow.z) * k;
-        var dy = tyaw - follow.yaw; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
-        follow.yaw += dy * k; follow.pitch += (tpitch - follow.pitch) * k;
-        var shake = HOOD.erupting && HOOD.t < 7 ? (7 - HOOD.t) / 7 * 0.004 : 0;
-        setCam(follow.x, follow.y, follow.z, follow.yaw + (shake ? (Math.random() - 0.5) * shake * 4 : 0), follow.pitch + (shake ? (Math.random() - 0.5) * shake : 0));
+        var k = 1 - Math.exp(-dt * T.rate);
+        follow.x += (T.x - follow.x) * k; follow.y += (T.y - follow.y) * k; follow.z += (T.z - follow.z) * k;
+        var dy = T.yaw - follow.yaw; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
+        follow.yaw += dy * k;
+        // A framed point is worked out from where the camera now is, and followed quickly, so the ball does not drift.
+        tpitch = T.frame ? framePitch(T.frame) : T.pitch;
+        follow.pitch += (tpitch - follow.pitch) * (T.frame ? 1 - Math.exp(-dt * 14) : k);
+        // The look round: a turn of the head on top of the camera, while lining up.
+        if (!(mode === "aim" || mode === "rest") || look.reverse) look.target = 0;
+        look.yaw = REDUCED ? look.target : look.yaw + (look.target - look.yaw) * (1 - Math.exp(-dt * 8));
+        var shake = !REDUCED && HOOD.erupting && HOOD.t < 7 ? (7 - HOOD.t) / 7 * 0.004 : 0;
+        setCam(follow.x, follow.y, follow.z, follow.yaw + look.yaw + (shake ? (Math.random() - 0.5) * shake * 4 : 0), follow.pitch + (shake ? (Math.random() - 0.5) * shake : 0));
     }
     function toCam(x, y, z, out) {
         var dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
@@ -1056,7 +1240,9 @@
         }
         var pd = Math.hypot(hole.pin.x - cam.x, hole.pin.z - cam.z);
         items.push({ pin: true, d: pd - 0.5 });
-        if (mode !== "holed") items.push({ ball: true, d: Math.hypot(ball.x - cam.x, ball.z - cam.z, ball.y - cam.y) - 0.3 });
+        // The ball goes in front of the patch of ground it sits on: sorted by its centre, that patch is
+        // often nearer than the ball and would be painted over it. Ground really between it and the eye still hides it.
+        if (mode !== "holed") items.push({ ball: true, d: Math.hypot(ball.x - cam.x, ball.z - cam.z, ball.y - cam.y) - COARSE * 0.8 });
         items.push({ teeMarks: true, d: Math.hypot(0 - cam.x, -1 - cam.z) });
         items.sort(function (a, b) { return b.d - a.d; });
     }
@@ -1309,7 +1495,7 @@
         var c = CLUBS[club], by2 = Hpx - pad - fs - 4;
         if (mode === "aim" || mode === "rest") {
             text(c.id + "  " + c.name.toUpperCase() + (c.carry ? "  " + Math.round(c.carry * (LIE[ball.lie].take || 1)) + " YDS" : ""), pad, by2, fs + 1, gold);
-            if (!TOUCH) text("▲▼ club  ◀▶ aim  space swing", pad, by2 - fs - 6, fs - 2, "#7d7d88");
+            if (!TOUCH) text("▲▼ club  ◀▶ aim  q e look  r green  space swing", pad, by2 - fs - 6, fs - 2, "#7d7d88");
         }
         if (mode === "flight" && english > 0 && !ball.rolling && club !== PUTTER) text("LEAN ◀ ▶ ▼  " + Math.round(english * 100) + "%", pad, by2, fs, "#8fe7ff", "left", 0.8);
         // The swing meter, on the right.
@@ -1354,6 +1540,7 @@
         }
         if (mode === "rest" && shotNote) text(shotNote, W / 2, Hpx * 0.22, fs + 3, "#ffffff", "center", Math.min(1, modeClock * 3));
         if (mode === "rest" && modeClock > 0.6) text(TOUCH ? "tap to line up" : "click or space to line up", W / 2, Hpx * 0.22 + fs + 12, fs - 1, "#7d7d88", "center");
+        if (look.reverse && (mode === "aim" || mode === "rest")) text("FROM THE GREEN · " + (TOUCH ? "tap to go back" : "let go of r to go back"), W / 2, Hpx * 0.16, fs + 1, gold, "center");   // clear of the pads at the bottom
         if (mode === "flyover") text(hole.name.toUpperCase() + " · HOLE " + (holeNo + 1), W / 2, Hpx - 46, fs + 2, gold, "center", Math.min(1, modeClock * 2));
         if (mode === "aim" && !swing && !meter && modeClock < 4 && strokes === 0 && holeNo === 0) {
             var tip = small ? ["drag down, then flick up to swing", TOUCH ? "drag the sky to aim" : "or space three times"] : [TOUCH ? "drag down, then flick up to swing · drag the sky to aim" : "drag down, then flick up to swing · or space three times"];
@@ -1550,6 +1737,16 @@
         last = now; frameDt = dt;
         if (!hole) { render(); return; }
         if (paused) return;
+        advance(dt);
+        var t0 = performance.now();
+        gather();
+        render();
+        var took = performance.now() - t0;
+        slowFrames = took > 18 ? Math.min(30, slowFrames + 1) : Math.max(0, slowFrames - 1);
+        slow = slowFrames > 10;
+    }
+    // A frame's worth of the game, without drawing it: the loop's, and Golf.tick's in the console.
+    function advance(dt) {
         clock += dt; modeClock += dt; messageClock += dt; holeClock += dt;
         keyAim(dt);
         creatures(dt);
@@ -1561,14 +1758,9 @@
             var n = Math.ceil(dt / (1 / 240));
             for (var i = 0; i < n && mode === "flight"; i++) step(dt / n);
         }
+        if (mode === "penalty" && modeClock > 0.9) takeDrop();
         if (mode === "holed" && modeClock > 6 && holeNo + 1 < HOLES) nextHole();
         placeCamera(dt);
-        var t0 = performance.now();
-        gather();
-        render();
-        var took = performance.now() - t0;
-        slowFrames = took > 18 ? Math.min(30, slowFrames + 1) : Math.max(0, slowFrames - 1);
-        slow = slowFrames > 10;
     }
 
     // ---- the page ----------------------------------------------------------
@@ -1631,10 +1823,43 @@
             if (act === "left") aim -= club === PUTTER ? 0.006 : 0.04;
             if (act === "right") aim += club === PUTTER ? 0.006 : 0.04;
             if (act === "view") { mode = "flyover"; modeClock = 0; }
+            if (act === "back") { look.reverse = !look.reverse; follow.ready = false; }   // the view from the green, and back
         });
     }
-    canvas.addEventListener("pointerdown", function (e) { ensureAudio(); pointerDown(e); });
-    canvas.addEventListener("pointermove", pointerMove);
+    // Two fingers on the stage while lining up are a look round: drag them
+    // sideways to turn the head, lift one to snap back. The swing is one finger.
+    // Only touches count, a finger is forgotten wherever it lifts (a tap can
+    // end off the canvas, and some taps are never captured), and the first
+    // touch of a gesture starts the count afresh, so no stale finger can turn
+    // every later single touch into two and stop the swing.
+    var fingers = {};
+    function fingerCount() { return Object.keys(fingers).length; }
+    function fingerMid() { var s = 0, n = 0; for (var id in fingers) { s += fingers[id]; n++; } return n ? s / n : 0; }
+    function fingerUp(e) {
+        delete fingers[e.pointerId];
+        if (look.touch && fingerCount() < 2) { look.touch = null; look.target = 0; }
+    }
+    window.addEventListener("pointerup", fingerUp);
+    window.addEventListener("pointercancel", fingerUp);
+    canvas.addEventListener("pointerdown", function (e) {
+        ensureAudio();
+        if (e.pointerType === "touch") {
+            if (e.isPrimary) { fingers = {}; if (look.touch) { look.touch = null; look.target = 0; } }
+            fingers[e.pointerId] = e.clientX;
+        }
+        if (fingerCount() === 2 && (mode === "aim" || mode === "rest") && !look.reverse) {
+            swing = null; meter = null;
+            look.touch = { x0: fingerMid(), from: look.target };
+            return;
+        }
+        if (look.touch) return;
+        pointerDown(e);
+    });
+    canvas.addEventListener("pointermove", function (e) {
+        if (e.pointerId in fingers) fingers[e.pointerId] = e.clientX;
+        if (look.touch) { look.target = Math.max(-1.3, Math.min(1.3, look.touch.from + (fingerMid() - look.touch.x0) * 0.006)); return; }
+        pointerMove(e);
+    });
     canvas.addEventListener("pointerup", pointerUp);
     canvas.addEventListener("pointercancel", function () { swing = null; });
     window.addEventListener("keydown", function (e) {
@@ -1664,7 +1889,29 @@
         strike: function (p, s) { if (mode !== "aim") readyToHit(); strike(p, s || 0); },
         aim: function (a) { if (a != null) aim = a; return aim; }, club: function (c) { if (c != null) club = c; return club; },
         start: begin, clubs: CLUBS, scores: scores, launchSpeed: launchSpeed, rollFor: rollFor,
-        settle: function () { for (var n = 0; mode === "flight" && n < 240 * 90; n++) step(1 / 240); return mode; },
+        settle: function () { for (var n = 0; mode === "flight" && n < 240 * 90; n++) step(1 / 240); if (mode === "penalty") takeDrop(); return mode; },
+        // The camera's levers: where it is, what it is following, the game run on by hand, and where the ball is in the picture.
+        get cam() { return cam; }, get follow() { return follow; }, get shotCam() { return shotCam; }, get look() { return look; },
+        tick: function (ms) {
+            var left = (ms == null ? 1000 / 60 : ms) / 1000;
+            while (left > 1e-9 && hole) { var dt = Math.min(0.05, left); left -= dt; frameDt = dt; if (!paused) advance(dt); }
+            if (hole) { gather(); render(); }
+            return mode;
+        },
+        holeTo: function (n) { holeNo = Math.max(0, Math.min(HOLES - 1, n)); startHole(); endFlyover(); return hole.name + ", hole " + (holeNo + 1); },
+        put: function (x, z) {        // the ball set down at (x, z), lined up at the pin, the camera cut to it
+            ball.x = x; ball.z = z; ball.y = height(hole, x, z); ball.lie = classify(hole, x, z);
+            ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
+            mode = "aim"; modeClock = 0; nextShot();
+            follow.ready = false; shotCam.phase = ""; look.target = look.yaw = 0; look.reverse = false;
+            return ball.lie;
+        },
+        framing: function () {
+            var c = toCam(ball.x, ball.y + 0.06, ball.z, { x: 0, y: 0, z: 0 }), p = c.z > NEAR ? project(c) : null;
+            return { x: p ? p.x / W : null, y: p ? p.y / Hpx : null, inFrame: !!p && p.x >= 0 && p.x <= W && p.y >= 0 && p.y <= Hpx,
+                     seen: sightline(cam, ballPoint()), cam: [cam.x, cam.y, cam.z, cam.yaw, cam.pitch], phase: shotCam.phase, mode: mode };
+        },
+        predict: function () { return mode === "flight" && !ball.rolling ? predictLanding() : null; },
         next: function () { if (mode === "holed") nextHole(); }, pick: pickClub, toPin: yardsToPin,
         hud: function (on) { showHud = on !== false; },
         get wind() { return live; }, calm: function () { live = null; if (hole) hole.wind = generate(seed, holeNo).wind; },

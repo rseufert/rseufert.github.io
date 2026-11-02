@@ -83,10 +83,65 @@ top 28% of the stage turns the aim instead.
 
 While the ball is in the air there is a budget of lean (the arcade's spin
 after the strike): drag or the arrows to bend it left or right, down for
-backspin. The camera goes behind the ball and follows it; a flyover shows
-each hole first (`v` shows it again); on the green the camera comes lower and
-closer, the distance is in feet, and little marks drift downhill across the
-green.
+backspin. A flyover shows each hole first (`v` shows it again); on the green
+the distance is in feet, and little marks drift downhill across the green.
+
+## The camera
+
+One smoothed follow target (`follow`), eased frame-rate independently, and a
+target for it from whichever camera the moment calls for (`cameraTarget`). A
+target is a place, a heading, and either a pitch or a point to frame: the
+pitch that puts that point at a given height in the picture (`pitchFor`) is
+worked out from where the camera has got to, not where it is going, so the
+ball stays where it is put while the camera is still moving.
+
+- **Address.** Seven yards behind the ball and 2.6 up (4.5 and 2.2 for a
+  putt), facing the aim. The ball sits at 0.78 of the frame's height, and the
+  pitch leans toward the ground some way ahead only as far as keeps the ball
+  between 0.70 and 0.84. If the ground between would hide it (`sightline`,
+  which stops a third of a yard short so the ball's own lie does not count),
+  the camera is raised, then pulled in, never more than three yards higher
+  or nearer than two and a half (`unblock`).
+- **Watch.** A full shot is watched from where you stood for its first 0.9
+  seconds, the camera turning to keep the ball in the middle as it climbs.
+- **Chase.** Then behind it, 13 yards back, and low: two yards over the ground
+  plus under half the ball's height, so near the top of a drive the camera is
+  under the ball and the arc is seen against the sky.
+- **Land.** Past the apex, the ball's flight is run on ahead without it
+  (`predictLanding`, the same steps as `fly`), and the camera cuts to 16
+  yards beyond where it will come down and six to one side, low, looking
+  back, so the bounce and the roll come at you. Only for a carry of 50 yards
+  or more with most of a second to go, and only where it can see the spot. If
+  the ball runs at the camera or past it, it goes back behind; when the ball
+  stops, it holds most of a second and cuts to the lie.
+- **Putt.** Above and behind, five yards back and three up, so the slope
+  the ball is rolling on is in the picture.
+- **Penalties.** Water or out of bounds holds on the spot for 0.9 seconds
+  with the note on the screen, then cuts to the drop.
+
+The next aim and club are chosen as the ball stops (`nextShot`), so the
+camera makes one move from the shot to the lie, not two. While lining up,
+`q` and `e` (or two fingers dragged sideways) turn the head, and `r` (or the
+green pad) stands 12 yards beyond the pin looking back at the ball; both snap
+back. With `prefers-reduced-motion` the hole is not flown (a cut to the tee,
+and `v` is a still), the title camera holds still, a full shot is watched
+from where you stood the whole way, and the mountain does not shake it.
+
+The ball is sorted in front of the patch of ground it sits on (most of a
+coarse cell nearer than its distance), since sorted by its centre that patch
+is often nearer than the ball and would be painted over it; ground really
+between the ball and the eye still hides it.
+
+`Golf.cam`, `Golf.follow` and `Golf.shotCam` are the camera's state,
+`Golf.tick(ms)` runs the game on by hand and draws it, `Golf.holeTo(n)` and
+`Golf.put(x, z)` set a hole and a lie, `Golf.framing()` says where the ball
+is in the picture (as fractions of the width and height) and whether the
+ground hides it, and `Golf.predict()` is where the ball in the air will land.
+So a camera change can be measured rather than eyeballed:
+
+```js
+Golf.start(); Golf.holeTo(0); Golf.put(10, 120); Golf.tick(33); Golf.framing()
+```
 
 ## The wind off the river
 
@@ -109,9 +164,11 @@ splash, the rattle of the cup, and a crowd for anything under par.
 ## Controls and state
 
 Drag down and flick up to swing; arrows aim (shift for fine) and choose the
-club; `v` flies the hole; `esc` pauses; on a phone there are buttons for aim,
-club and the flyover, and a drag across the sky aims. The club is chosen for
-you after each shot, the longest that does not overshoot. Best rounds per
+club; `v` flies the hole; hold `q` or `e` to look round and `r` to look back
+from the green; `esc` pauses; on a phone there are buttons for aim, club, the
+flyover and the view from the green, a drag across the sky aims, and two
+fingers dragged sideways look round. The club is chosen for
+you as each shot stops, the longest that does not overshoot. Best rounds per
 course, and the sound setting, are in `localStorage` under `golf`.
 `window.Golf` exposes the generator, the ball and a few levers for poking at
 in the console, including `Golf.settle()`, which runs a shot to rest at once,
