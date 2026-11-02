@@ -1828,6 +1828,10 @@
     }
     // Two fingers on the stage while lining up are a look round: drag them
     // sideways to turn the head, lift one to snap back. The swing is one finger.
+    // Only touches count, a finger is forgotten wherever it lifts (a tap can
+    // end off the canvas, and some taps are never captured), and the first
+    // touch of a gesture starts the count afresh, so no stale finger can turn
+    // every later single touch into two and stop the swing.
     var fingers = {};
     function fingerCount() { return Object.keys(fingers).length; }
     function fingerMid() { var s = 0, n = 0; for (var id in fingers) { s += fingers[id]; n++; } return n ? s / n : 0; }
@@ -1835,9 +1839,14 @@
         delete fingers[e.pointerId];
         if (look.touch && fingerCount() < 2) { look.touch = null; look.target = 0; }
     }
+    window.addEventListener("pointerup", fingerUp);
+    window.addEventListener("pointercancel", fingerUp);
     canvas.addEventListener("pointerdown", function (e) {
         ensureAudio();
-        fingers[e.pointerId] = e.clientX;
+        if (e.pointerType === "touch") {
+            if (e.isPrimary) { fingers = {}; if (look.touch) { look.touch = null; look.target = 0; } }
+            fingers[e.pointerId] = e.clientX;
+        }
         if (fingerCount() === 2 && (mode === "aim" || mode === "rest") && !look.reverse) {
             swing = null; meter = null;
             look.touch = { x0: fingerMid(), from: look.target };
@@ -1851,8 +1860,8 @@
         if (look.touch) { look.target = Math.max(-1.3, Math.min(1.3, look.touch.from + (fingerMid() - look.touch.x0) * 0.006)); return; }
         pointerMove(e);
     });
-    canvas.addEventListener("pointerup", function (e) { fingerUp(e); pointerUp(e); });
-    canvas.addEventListener("pointercancel", function (e) { fingerUp(e); swing = null; });
+    canvas.addEventListener("pointerup", pointerUp);
+    canvas.addEventListener("pointercancel", function () { swing = null; });
     window.addEventListener("keydown", function (e) {
         if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
         if (!stageInView()) return;

@@ -120,8 +120,8 @@ body.filled { overflow: hidden; }
 .golf-page table.card td.under { color: #4dff7a; }
 .golf-page table.card td.over { color: #ff7a7a; }
 /* Aim and club, as buttons in the stage, for thumbs. */
-.golf-page .pads { position: absolute; left: 12px; bottom: 40px; z-index: 2; display: none; gap: 6px; }
-.golf-page .pads button { font: 13px var(--mono); color: #ffcc33; background: rgba(0, 0, 0, 0.7); border: 1px solid #ffcc33; min-width: 40px; height: 40px; padding: 0 10px; cursor: pointer; }
+.golf-page .pads { position: absolute; left: 12px; bottom: 40px; z-index: 2; display: none; gap: 4px; }   /* six pads, clear of the swing meter at 375 wide */
+.golf-page .pads button { font: 13px var(--mono); color: #ffcc33; background: rgba(0, 0, 0, 0.7); border: 1px solid #ffcc33; min-width: 40px; height: 40px; padding: 0 8px; cursor: pointer; }
 @media (hover: none) and (pointer: coarse) { .golf-page .pads { display: flex; } }
 
 /* The clubhouse board, on the veil: who posted what on this course. */
