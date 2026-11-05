@@ -1,0 +1,84 @@
+---
+layout: default
+css: /temple/temple.css
+title: The daimon
+description: "The guardian spirit the old astrologers found in a birth chart: give the page a moment and a place and it finds the lord of the geniture over the five hylegiacal places, Ibn Ezra's way, and spells the genius's name by Agrippa's rule, the Hebrew letters cast round the zodiac a degree each."
+image: /temple/share.jpg
+nostrip: true
+---
+<div class="temple-page read daimon">
+{% include temple-nav.html active="daimon" %}
+<p class="crumbs"><a href="/temple/">&larr; the temple</a> <span>Plato, c. 375 BC &middot; Porphyry and Iamblichus, c. 300 &middot; Ibn Ezra, 1148 &middot; Agrippa, 1533</span></p>
+<h1>The daimon</h1>
+<p class="lede">In the Myth of Er each soul chooses a daimon before it is born, a keeper who sees it through the life it
+picked, and the Platonists after Plato tied the keeper to the stars. Porphyry said the horoscope shows it through the
+ruler of the nativity, and Iamblichus answered that the whole heaven assigns it and the chart only reads it off.
+The astrologers' way of reading it off is here: the figure of the heaven erected for a moment and a place, the five
+places the life hangs on weighed for every planet's dignity, the winner named lord of the geniture, and then, by the
+rule Agrippa wrote down from the Hebrew and Arabic masters, the twenty-two letters cast round the zodiac a degree
+each and the name of the genius read from the degrees. Give it your own hour and birthplace. Nothing is stored or
+sent; the figure is kept only in the address, so the link is the chart.</p>
+
+<p class="controls">
+  <label for="daimon-when">the moment</label>
+  <input id="daimon-when" type="datetime-local">
+  <label for="daimon-zone">hours from UTC</label>
+  <input id="daimon-zone" type="number" step="0.5" min="-12" max="14" inputmode="decimal">
+  <label for="daimon-lat">latitude</label>
+  <input id="daimon-lat" type="number" step="any" min="-89" max="89" inputmode="decimal">
+  <label for="daimon-lon">longitude</label>
+  <input id="daimon-lon" type="number" step="any" min="-180" max="180" inputmode="decimal">
+  <button type="button" id="daimon-here">where I am</button>
+  <button type="button" id="daimon-now">this moment</button>
+</p>
+<div class="stage" id="daimon-room">
+  <canvas id="daimon-stage" aria-label="a birth chart with the five hylegiacal places joined on a ring of Hebrew letters, and the name of the genius in the middle"></canvas>
+</div>
+<p class="cell name" id="daimon-name" aria-live="polite"></p>
+<p class="buttons"><a class="button" id="daimon-save" href="#" download="daimon.png">save as an image</a></p>
+<div class="reading-list" id="daimon-reading" aria-live="polite"></div>
+
+<h2>The weighing</h2>
+<p class="hint">each planet's points over the five places, Ibn Ezra's scale; the lord of the geniture has the most; hover a cell for which dignities it is</p>
+<div id="daimon-table"></div>
+
+<h2>What it is</h2>
+<p>The Greeks called it the daimon, the Romans the genius, the Christians the guardian angel, and the magicians of the
+Renaissance, who read all three, the good genius or the daimon of the nativity. Agrippa says every man has three
+keepers: a holy one given by God and not by the stars, which cannot be computed; one of the nativity, which the
+heaven at the birth appoints; and one of the profession, which changes when the work does. Only the second is a
+matter of arithmetic, and the arithmetic is the astrologers'. The five hylegiacal places are the Sun, the Moon, the
+degree rising, the Lot of Fortune, and the new or full Moon before the birth; by day the Sun leads and by night the
+Moon. Every planet is scored for whatever dignity it holds in each: five for its house, four for its exaltation,
+three for the triplicity it rules by that sect, two for the Egyptian term the degree falls in, one for the face, which
+is the decan. The planet with the most is the almuten of the figure, the lord of the geniture, and the old books
+make it the native's star: Porphyry's lady of the nativity, Firmicus's ruler of the chart, Agrippa's genius.</p>
+
+<p>The name is Agrippa's, from the twenty-sixth chapter of his third book. The twenty-two letters are projected round
+the heaven a degree each, Aleph at the first degree of Aries, so the alphabet goes round sixteen times with eight
+letters over; the letters that fall on the five places, taken in the astrologers' order, are the name, and El, a name
+of God, is put on the end as the custom was. He gives the Hebrews' variant too, the almutens of the places in order
+of their dignity with the letters cast from the ascendant instead, and the contrary spirit from the opposite points
+counted backward from the end of Pisces, which this page prints and does not recommend. The vowels are not in the
+rule; a name of consonants is given one between each pair so it can be said, which is roughly what the Golden Dawn
+did with the names they drew from the same tables. Agrippa himself says such names are the more powerful for being
+unknown in sound, so do not expect a word.</p>
+
+<p>The Lot of Spirit, which Valens calls the Lot of Daimon, is marked on the wheel with its own sign: Fortune is the
+Moon's lot and shows what happens to a person, Spirit is the Sun's and shows what they do, and the Hellenistic
+astrologers read the daimon's work from it. The positions are the same low-precision ephemeris as
+<a href="/temple/zodiac/">the wheel</a>, good to about a degree, which is enough for the signs, terms and faces here
+but means a degree on a term's edge may be a term over; the syzygy is found by stepping the ephemeris back and
+bisecting. The hour matters: the ascendant moves a degree every four minutes and the letters a degree each, so a
+birth time an hour off gives a different name, which the astrologers would say is the point.</p>
+
+<p class="colophon">Plato, <em>Republic</em> X; Plotinus, <em>Ennead</em> III.4, on our allotted guardian spirit, <a href="/temple/read/#plotinus">in the library</a>;
+Porphyry's letter to Anebo and Iamblichus's answer, <em>On the Mysteries</em> IX, <a href="/temple/read/#iamblichus">in the library</a>;
+Abraham Ibn Ezra, <em>The Beginning of Wisdom</em>, 1148, for the weights; Ptolemy, <em>Tetrabiblos</em> I.21, for the Egyptian terms; Cornelius Agrippa,
+<em>Three Books of Occult Philosophy</em> III.21–22 and 26, 1533, in the 1651 English at the
+<a href="https://www.esotericarchives.com/agrippa/agripp3b.htm">Esoteric Archives</a>. The page is this site's own. One
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/daimon.js">script</a>, and the
+<a href="https://github.com/rseufert/rseufert.github.io/blob/master/js/zodiac.js">ephemeris</a>.</p>
+</div>
+<script src="/js/zodiac.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/daimon.js?v={{ site.time | date: '%s' }}"></script>

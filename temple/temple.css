@@ -353,3 +353,25 @@ body.filled { overflow: hidden; }
 @media (max-width: 700px) { .temple-page.ouroboros pre.quine { padding: 14px 6px; } }
 .temple-page.ouroboros .bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
 .temple-page.ouroboros .bar .hint { margin: 0; }
+
+/* the daimon */
+.temple-page.daimon .stage { aspect-ratio: 1 / 1; max-height: 78vh; }
+.temple-page.daimon .controls { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 0 8px; }
+.temple-page.daimon .controls label { font: 13px var(--mono); color: var(--faint); }
+.temple-page.daimon .controls input { font: 13px var(--mono); padding: 5px 8px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; color-scheme: dark; width: 9ch; }
+.temple-page.daimon .controls input[type="datetime-local"] { width: auto; }
+.temple-page.daimon .controls input:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
+.temple-page.daimon .controls button, .temple-page.daimon .buttons .button { font: 13px var(--mono); color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); padding: 6px 12px; cursor: pointer; text-decoration: none; display: inline-block; }
+.temple-page.daimon .controls button:hover, .temple-page.daimon .buttons .button:hover { border-color: var(--accent); color: var(--accent); }
+.temple-page.daimon .name { font: 1.1em var(--mono); margin: 10px 0 6px; }
+.temple-page.daimon .name .rom { color: var(--accent); }
+.temple-page.daimon .name .lord { color: var(--soft); }
+.temple-page.daimon .heb { font-family: "SBL Hebrew", "Times New Roman", "Arial Hebrew", serif; font-size: 1.25em; direction: rtl; unicode-bidi: isolate; }
+.temple-page.daimon .reading-list h3 { margin-top: 18px; }
+.temple-page.daimon .reading-list ul { padding-left: 1.2em; }
+.temple-page.daimon .reading-list li { margin: 0 0 6px; }
+.temple-page.daimon table.almuten { border-collapse: collapse; font: 13px/1.5 var(--mono); margin: 10px 0 24px; }
+.temple-page.daimon table.almuten caption { text-align: left; color: var(--faint); padding: 0 0 6px; }
+.temple-page.daimon table.almuten th, .temple-page.daimon table.almuten td { border: 1px solid var(--rule); padding: 4px 10px; text-align: center; }
+.temple-page.daimon table.almuten th:first-child { text-align: left; }
+.temple-page.daimon table.almuten tr.lord td, .temple-page.daimon table.almuten tr.lord th { color: var(--accent); }

@@ -72,6 +72,9 @@ of the seven with its degree, its decan and the decan's tarot card, the
 ascendant over Portland; "draw me a card" or "tarot" cuts the deck for one
 card, named with its Book T title, and points at the deck for Waite's
 reading and the card the Sun stands in.
+"Daimon", "guardian angel", "almuten" or "lord of the geniture" get a line on
+the keeper the astrologers read off a chart and a pointer at the temple's
+daimon, which does the arithmetic from an hour and a birthplace.
 
 "I Ching" or "hexagram", "year of the" or "fire horse" or "four pillars",
 and "lenormand" or "grand tableau" each point at their room in the temple.
