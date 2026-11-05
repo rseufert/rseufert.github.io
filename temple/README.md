@@ -18,6 +18,7 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `monas/index.html`, `monas.js` | Dee's Monas Hieroglyphica: the figure constructed from its measure, and the twenty-four theorems in plain words with their figures |
 | `tarot/index.html`, `tarot.js` | the cards: the seventy-eight drawn as line art from Waite's descriptions, with Book T's letters, planets, signs and decans on them; Waite's one, three and the cross, with his meanings |
 | `zodiac/index.html`, `zodiac.js` | the wheel: the zodiac as a chart with the planets placed by `js/zodiac.js`, the Moon's phase, the ascendant over Portland, and each decan numbered with its card |
+| `daimon/index.html`, `daimon.js` | the daimon: a birth chart for a moment and a place, the five hylegiacal places scored for every planet's dignity (Ibn Ezra's 5/4/3/2/1 over house, exaltation, triplicity, Egyptian term and face), the lord of the geniture, the Lots of Fortune and Spirit, the syzygy before the birth, and the genius's name by Agrippa's rule (III.26), drawn as a sigil on a ring of the twenty-two letters; the figure kept in the address |
 | `lenormand/index.html`, `lenormand.js` | the Lenormand: the thirty-six cards of the Game of Hope as emblems with their insets; three, nine and the Grand Tableau, read by neighbours and houses |
 | `changes/index.html`, `changes.js` | the changes: the I Ching cast by the stalks' odds or coins, drawn with its moving lines, read from the Chinese text with plain glosses of the Judgments |
 | `animals/index.html`, `animals.js` | the animals: the Chinese zodiac as a wheel, the year and the hour by `js/east.js`, the four pillars of a moment or a birth |
@@ -52,6 +53,39 @@ extracted from the shelf's copy of the Pictorial Key by the session's
 cleaning script. The gallery under the spread is seventy-eight small
 canvases; `#card-<slug>` on the address shows one card large, which is how
 the wheel's links arrive. Nothing is stored.
+
+## The daimon
+
+`daimon/` erects a chart with `Zodiac.sky()` for the moment, zone and
+place given (Portland and now by default; `#when=…&zone=…&lat=…&lon=…`
+keeps a figure in the address and nothing is stored) and reads the
+guardian of the nativity off it the way the old books do. Sect is the
+Sun above the horizon. The five hylegiacal places are the Sun, the Moon,
+the ascendant, the Lot of Fortune (asc + Moon − Sun by day, the reverse by
+night; Spirit is the other) and the syzygy before the birth, found by
+stepping the ephemeris back six hours at a time until the elongation
+crosses and bisecting; a full Moon's place is the luminary that was above
+the horizon at the birth, after Ptolemy. `dignities(lon, day)` gives every
+planet's claim on a degree: house 5, exaltation 4, the Dorothean
+triplicity ruler of the sect 3, the Egyptian term 2 (Ptolemy's table,
+`TERMS`), the face 1 (`Zodiac.decan`). The totals over the five places make
+the almuten of the figure, the lord of the geniture; ties fall to the
+Chaldean order and are said so. Firmicus's other candidate, the ruler of
+the sign the Moon enters next, is named too.
+
+The name follows Agrippa III.26: the twenty-two Hebrew letters cast round
+the zodiac one a degree from 0° Aries, so letter = floor(longitude) mod
+22; the letters at the five places in their order (Sun first by day, Moon
+by night) with El appended are the good genius, the almutens of the
+places ranked by dignity with the letters cast from the ascendant are the
+Hebrews' variant, and the opposite points with the letters counted back
+from 29° Pisces are the contrary spirit. `spell()` puts an "a" between
+consonants that have no vowel of their own, which is a convenience and not
+a rule. The wheel draws the five places on the ring of letters and joins
+them in order, a ring at the start and a bar at the end, which is the name
+as a sigil, with the lord's glyph and the name in the middle; the Lot of
+Spirit is marked with its own sign. `window.Daimon` exposes `figure`,
+`dignities`, `term`, `syzygy` and `spell` for the console.
 
 ## The wheel
 
