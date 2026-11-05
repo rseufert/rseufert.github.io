@@ -20,10 +20,11 @@ temple is a block of the [city](../city/) and this is the inside of it.
 | `zodiac/index.html`, `zodiac.js` | the wheel: the zodiac as a chart with the planets placed by `js/zodiac.js`, the Moon's phase, the ascendant over Portland, and each decan numbered with its card |
 | `daimon/index.html`, `daimon.js` | the daimon: a birth chart for a moment and a place, the five hylegiacal places scored for every planet's dignity (Ibn Ezra's 5/4/3/2/1 over house, exaltation, triplicity, Egyptian term and face), the lord of the geniture, the Lots of Fortune and Spirit, the syzygy before the birth, and the genius's name by Agrippa's rule (III.26), drawn as a sigil on a ring of the twenty-two letters; the figure kept in the address |
 | `lenormand/index.html`, `lenormand.js` | the Lenormand: the thirty-six cards of the Game of Hope as emblems with their insets; three, nine and the Grand Tableau, read by neighbours and houses |
-| `changes/index.html`, `changes.js` | the changes: the I Ching cast by the stalks' odds or coins, drawn with its moving lines, read from the Chinese text with plain glosses of the Judgments |
+| `changes/index.html`, `changes.js` | the changes: the I Ching cast by the stalks' odds or coins, drawn with its moving lines, read from the Chinese text with plain glosses of the Judgments, and a sovereign hexagram's note played and sent to the neck |
+| `pipes.js` | the twelve sovereign hexagrams on the twelve pitch pipes, shared by the neck and the changes, with the foundation on C or by the season on A |
 | `animals/index.html`, `animals.js` | the animals: the Chinese zodiac as a wheel, the year and the hour by `js/east.js`, the four pillars of a moment or a birth |
 | `ouroboros/poem.js`, `ouroboros/index.html`, `ouroboros.js` | the ouroboros: a poem that is a quine, four quatrains in a comment inside a function that returns its own text (`Function.prototype.toString`, exact since ES2019) wrapped in the call that runs it; the page shows `poem.js` (`include_relative`, so there is one copy), runs it, types out the answer and compares it, letter for letter |
-| `neck/index.html`, `neck.js` | the neck: a fretboard with every note on it in any tuning, a scale and a chord lit over it with the chord's shapes found and strummed, your own tunings, scales and chords kept in the browser, and Case's tone scale putting a sign, a trump and a colour on each note, so the sky (`Zodiac.sky()`) is a chord and the hour (`Hours.now()`) a key; a capo, a chord named from the frets put down, a microphone tuner (Yin, nothing kept), and the whole setting in the address (`#key=E&scale=minor&chord=m7&on=A&tuning=D2-A2-D3-G3-B3-E4&capo=2`, `&note=E` to explain one note), which is how the cards, the wheel (`Zodiac.tone()`, `Zodiac.toneLink()`) and rickbot send a note there |
+| `neck/index.html`, `neck.js` | the neck: a fretboard with every note on it in any tuning, a scale and a chord lit over it with the chord's shapes found and strummed, your own tunings, scales and chords kept in the browser, and Case's tone scale putting a sign, a trump and a colour on each note, so the sky (`Zodiac.sky()`) is a chord and the hour (`Hours.now()`) a key; the twelve sovereign hexagrams on the notes by `pipes.js`, as a reading, a label and a switch between C and the season; a capo, a chord named from the frets put down, a microphone tuner (Yin, nothing kept), and the whole setting in the address (`#key=E&scale=minor&chord=m7&on=A&tuning=D2-A2-D3-G3-B3-E4&capo=2`, `&note=E` to explain one note), which is how the cards, the wheel (`Zodiac.tone()`, `Zodiac.toneLink()`) and rickbot send a note there |
 
 ## The cards
 
@@ -150,7 +151,22 @@ trigrams named; the reading gives the Judgment and the Image in Chinese,
 the gloss, each moving line's Chinese with the old rule for which to
 weigh (`principal`), the second hexagram's Judgment, and the nuclear,
 opposite and inverse hexagrams, linked; `#hex-23` shows one unmoving.
+When the hexagram cast, or the one it becomes, is one of the twelve
+sovereign hexagrams, the reading names its month and pitch pipe, plays its
+note (`hear`, a sine bell) and links it on the neck (`pipes`), with the
+foundation's switch under it (`pipesNote`).
 Legge's 1882 translation is on the shelf as OCR (`SCANS["yiking"]`).
+
+## The pipes
+
+`pipes.js` is shared by the neck and the changes: `TWELVE` is the twelve
+sovereign hexagrams from the solstice's month on (Return, 24, to Earth,
+2), each with its month and its pitch pipe, the lü, a semitone apart from
+黃鐘 Huángzhōng. `MODES` puts the foundation on C (`c`, the default) or on
+A (`season`: the winter solstice opens Capricorn, which Case's tone scale
+makes A). `Pipes.onNote(pc)` and `Pipes.noteOf(hex)` go either way;
+`Pipes.toggle()` switches and tells both pages (`onChange`), and the choice
+is kept in `localStorage` (`temple-pipes`), across tabs as well.
 
 ## The animals
 

@@ -8,7 +8,9 @@
    a plain English gloss of the Judgment that is this site's own and
    Legge's full translation of 1882 on the shelf beside it. The nuclear,
    the opposite and the inverse hexagrams are named, and the trigrams.
-   Nothing is stored or sent. One script, no library. */
+   The twelve sovereign hexagrams, the months', are given their pitch
+   pipe's note (temple/pipes.js), to hear and to find on the neck.
+   Nothing is stored or sent but the pipes' setting, which the neck shares. One script, no library. */
 (function () {
     "use strict";
     var canvas = document.getElementById("changes-stage");
@@ -243,6 +245,32 @@
         ctx.textAlign = "center"; ctx.fillStyle = FAINT; ctx.font = "11px " + MONO;
         ctx.fillText(cast.method === "shown" ? "the hexagram, unmoving" : "cast by " + (cast.method === "yarrow" ? "the stalks' odds" : "three coins") + " · " + cast.lines.join(" ") + " from the bottom", W / 2, H - 14);
     }
+    // ---- the pipes: a sovereign hexagram's month and note --------------------------------
+    var P = window.Pipes, SHARP = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"], ac = null;
+    function pipes(n) {
+        var e = P && P.ofHex(n + 1); if (!e) return "";
+        var pc = P.noteOf(n + 1), key = SHARP[pc].replace("♯", "s");
+        return "<p class=\"kin pipes\">" + e.glyph + " " + esc(NAMES[n][0]) + " is one of the twelve sovereign hexagrams, " + esc(e.month) + ", whose pipe is " + e.pipe + " " + esc(e.pinyin) +
+            ": <b>" + SHARP[pc] + "</b>. <button type=\"button\" data-pipe-note=\"" + pc + "\">hear it</button> <a href=\"/temple/neck/#key=" + key + "&amp;note=" + key + "\">on the neck</a></p>";
+    }
+    function pipesNote() {
+        var any = cast && (P && (P.ofHex(cast.n + 1) || (cast.to != null && P.ofHex(cast.to + 1))));
+        if (!any) return "";
+        return "<p class=\"kin pipes\"><button type=\"button\" data-pipes-toggle aria-pressed=\"" + (P.mode() === "season") + "\">the notes by the season</button> " +
+            (P.mode() === "season" ? "黃鐘 on A, the note Case's tone scale gives Capricorn, the sign the winter solstice opens" : "黃鐘 on C, as modern tables write it") + "; the neck keeps the same choice.</p>";
+    }
+    function hear(pc) {   // a struck bell, near enough: two partials, quickly gone
+        var A = window.AudioContext || window.webkitAudioContext; if (!A) return;
+        ac = ac || new A(); if (ac.state === "suspended") ac.resume();
+        var t = ac.currentTime, f = 261.63 * Math.pow(2, pc / 12), out = ac.createGain();
+        out.gain.setValueAtTime(0.0001, t); out.gain.exponentialRampToValueAtTime(0.3, t + 0.01); out.gain.exponentialRampToValueAtTime(0.0001, t + 2.4);
+        out.connect(ac.destination);
+        [[1, 1], [2.01, 0.35], [3, 0.12]].forEach(function (h) {
+            var o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.value = f * h[0]; g.gain.value = h[1];
+            o.connect(g); g.connect(out); o.start(t); o.stop(t + 2.5);
+        });
+    }
+
     // ---- the reading ------------------------------------------------------------------
     function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     function link(n) { return "<a href=\"#hex-" + (n + 1) + "\" data-hex=\"" + n + "\">" + (n + 1) + " " + esc(TEXT[n][0]) + " " + esc(NAMES[n][0]) + ", " + esc(NAMES[n][2]) + "</a>"; }
@@ -276,6 +304,7 @@
         } else out.push("<p class=\"rule\">No line moves: the Judgment is the answer, and there is no second hexagram.</p>");
         out.push("<p class=\"kin\">Within it, the nuclear hexagram " + link(hexOf(nuclear(b))) + "; its opposite, every line turned, " + link(hexOf(opposite(b))) + "; turned upside down, " + (hexOf(inverse(b)) === n ? "itself" : link(hexOf(inverse(b)))) + ".</p>");
         out.push("<p class=\"kin\">" + esc(TRI[lower(b)].en.charAt(0).toUpperCase() + TRI[lower(b)].en.slice(1)) + " below is " + esc(TRI[lower(b)].family) + ", " + esc(TRI[lower(b)].point) + ", " + esc(TRI[lower(b)].animal) + ", " + esc(TRI[lower(b)].body) + "; " + esc(TRI[upper(b)].en) + " above is " + esc(TRI[upper(b)].family) + ", " + esc(TRI[upper(b)].point) + ", " + esc(TRI[upper(b)].animal) + ", " + esc(TRI[upper(b)].body) + ".</p>");
+        out.push(pipes(n)); if (cast.to != null) out.push(pipes(cast.to)); out.push(pipesNote());
         readOut.innerHTML = out.join("");
     }
     // ---- all sixty-four, small --------------------------------------------------------
@@ -301,7 +330,12 @@
         if (digits.length !== 6) return;
         method = "typed"; cast = { lines: digits.split("").map(Number), method: "typed" }; settle();
     });
-    if (readOut) readOut.addEventListener("click", function (e) { var a = e.target.closest("a[data-hex]"); if (a) { e.preventDefault(); show(+a.dataset.hex); } });
+    if (readOut) readOut.addEventListener("click", function (e) {
+        var a = e.target.closest("a[data-hex]"); if (a) { e.preventDefault(); show(+a.dataset.hex); return; }
+        var b = e.target.closest("button[data-pipe-note]"); if (b) { hear(+b.dataset.pipeNote); return; }
+        if (e.target.closest("button[data-pipes-toggle]")) P.toggle();
+    });
+    if (P) P.onChange(function () { reading(); });
     addEventListener("resize", resize);
     gallery();
     var m = /^#hex-(\d+)$/.exec(location.hash || "");
