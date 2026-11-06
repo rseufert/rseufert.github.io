@@ -26,6 +26,9 @@
         if (fp.indexOf(here0) < 0) { fp.push(here0); if (fp.length > 80) fp.shift(); localStorage.setItem("footprints", JSON.stringify(fp)); }
     } catch (e) { /* no storage, no footprints */ }
     var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Whether the page carries the counter (_includes/counter.html), so the
+    // answers about cookies and trackers say what is so and not what was.
+    function counted() { return !!document.querySelector("script[data-goatcounter]"); }
     // What the visitor is holding, so the hack can be described from where
     // they sit: a desk, a phone in the hand, or a tablet.
     var coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches && window.matchMedia("(hover: none)").matches;
@@ -437,8 +440,15 @@
         }],
         [/\bat-?robots?\b|\barena\b|\btanks?\b|\brobot (wars?|battles?|games?)\b|\bprogram (a|my) robot\b|\brobots\b/, "the arena at /arena/ is an homage to AT-Robots, the DOS game from 1992: write a tank in a little assembly dialect, pick opponents from ten presets, and watch them fight. ports and interrupts, heat and armor, walls that hurt. read SENTRY first, then beat it."],
         [/\bphoto\b|\bpicture\b|\bwhite cap\b|\bglasses\b|\bpendant\b|\bsup\.jpe?g\b|\bthe guy\b|\bhim\b/, "the photo is sup.jpeg: josh allen in a white cap, rose-tinted rimless glasses and an iced-out heart pendant, according to the alt text, which i am not allowed to question."],
-        [/\bjekyll\b|\bgithub pages\b|\bhtml\b|\bcss\b|\bjavascript\b|\bbuilt with\b|\bstack\b|\bhosted\b|\bframework\b|\breact\b|\bwordpress\b|\bhow (is|was) (this|the) (site|page) (made|built)/, "plain html and css, jekyll on github pages, no framework, no tracker, no cookies. a few scripts for the films, the dashboard, the strip, and me. the source is on github."],
-        [/\bcookies?\b|\bprivacy\b|\btrack(ing|er)?\b|\banalytics\b|\bdata\b|\bstorage\b/, "no cookies, no analytics. i keep our chat in your browser's own storage and nowhere else; RESET forgets it. the footer says plain html, no cookies, and it means it."],
+        [/\bjekyll\b|\bgithub pages\b|\bhtml\b|\bcss\b|\bjavascript\b|\bbuilt with\b|\bstack\b|\bhosted\b|\bframework\b|\breact\b|\bwordpress\b|\bhow (is|was) (this|the) (site|page) (made|built)/, function () {
+            return "plain html and css, jekyll on github pages, no framework, no cookies" + (counted() ? ", one counter" : ", no tracker") + ". a few scripts for the films, the dashboard, the strip, and me. the source is on github.";
+        }],
+        [/\bcookies?\b|\bprivacy\b|\btrack(ing|ers?)?\b|\banalytics\b|\bdata\b|\bstorage\b/, function () {
+            return (counted()
+                ? "no cookies. there is a counter, goatcounter, which is told the page, where you came from and how wide your screen is, and nothing that would know you tomorrow: no cookie, no fingerprint, and it keeps no address. a browser that asks not to be tracked is not counted. "
+                : "no cookies, no analytics. ")
+                + "i keep our chat in your browser's own storage and nowhere else; RESET forgets it. the footer says plain html, no cookies, and it means it.";
+        }],
         [/\bnetscape\b|\b800\s?[x×]\s?600\b|\best\.? 2016\b|\b2016\b|\bfooter\b/, "est. 2016. best viewed at 800×600 in netscape navigator, which is a joke, mostly. the footer has been saying it for ten years and will not stop."],
         // rick, about whom rickbot is not objective
         [/\bwho is rick\b|\babout rick\b|\brick seufert\b|\bwhose site\b|\bwho runs\b|\bwho('s| is) (the )?(owner|author)/, "rick seufert: portland, integrations, mocks of SAP and EDI and banks so people can test without them, apps for the flipper, a dashboard of the city and the sky, music as dick dank, and this site since 2016. also 6'13\", but ask me that separately."],

@@ -1,0 +1,41 @@
+{%- comment -%}
+The counter. GoatCounter, when _config.yml names a site code; nothing at all
+when it does not. No cookie and no storage: GoatCounter tells visits apart by
+a salted hash of the address and browser that it throws away each day, and
+the site asks it for nothing more than the page. The path sent is the
+pathname only, and the referrer is cut at its query string; neither the
+query nor the hash goes, so a chart kept in a temple room's address stays
+in the address. A browser that asks not to be
+tracked (Do Not Track or Global Privacy Control) is not counted. On
+localhost and in a frame count.js already declines on its own.
+{%- endcomment -%}
+{%- if site.goatcounter and site.goatcounter != "" %}
+<script>
+(function () {
+    var n = navigator;
+    if (n.doNotTrack === "1" || window.doNotTrack === "1" || n.globalPrivacyControl) return;
+    // no_onload: count.js would also send the query string as a field of its
+    // own, so the count is sent from here, through get_data with that blanked.
+    window.goatcounter = {
+        no_onload: true,
+        path: function () { return location.pathname || "/"; },
+        referrer: function (r) { return (r || "").split(/[?#]/)[0]; }
+    };
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://gc.zgo.at/count.js";
+    s.setAttribute("data-goatcounter", "https://{{ site.goatcounter }}.goatcounter.com/count");
+    s.onload = function () {
+        var g = window.goatcounter, data = g.get_data;
+        g.get_data = function (v) { var d = data(v); d.q = ""; return d; };
+        if (document.visibilityState === "visible") g.count();
+        else document.addEventListener("visibilitychange", function once() {
+            if (document.visibilityState !== "visible") return;
+            document.removeEventListener("visibilitychange", once);
+            g.count();
+        });
+    };
+    document.body.appendChild(s);
+})();
+</script>
+{%- endif %}
