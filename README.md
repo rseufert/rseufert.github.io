@@ -22,6 +22,15 @@ the bones. `js/` holds only what the site shares: the films, the hero photo's
 dream, the home page's one dashboard tile. The code is MIT; the posts and
 pictures are not (see the licence note at the end).
 
+The counter is GoatCounter, when `goatcounter:` in `_config.yml` names a
+site code, and nothing when it is empty: `_includes/counter.html`, which the
+layout puts last in the body, loads the script with the pathname only, never
+the query string or the hash, and not at all for a browser that sends Do Not
+Track or Global Privacy Control. It sets no cookie and uses no storage, which
+keeps the footer honest; rickbot looks for the script before it answers about
+trackers. The dashboard is at `CODE.goatcounter.com`, and can be made public
+there.
+
 The home page is an index: one film, the purchase that crosses all three
 mocks, then each project as a tile, the dashboard as one of its numbers, the
 Willamette right now (`js/home-dashboard.js`, plain SVG, so the home page

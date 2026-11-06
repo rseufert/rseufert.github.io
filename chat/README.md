@@ -16,6 +16,9 @@ text adventure through a dungeon made of the site.
 
 The state lives in `localStorage` under `rickbot` and carries from page to
 page; `RESET` starts over.
+Asked about cookies, trackers or how the site is built, rickbot looks for
+the counter's script tag (`_includes/counter.html`) before it answers, so it
+says "one counter" when there is one and "no tracker" when there is not.
 
 1. **bot**: a helpdesk persona. `ANSWERS` is an ordered list of regexes and
    replies about the site, the mocks, the Flipper apps, the dashboard, the
