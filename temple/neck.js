@@ -10,7 +10,9 @@
    and the three elements on the notes of their trumps, each with its
    colour: so a note is a sign, a trump and a letter, and the sky this
    minute (js/zodiac.js) is a chord, and the planetary hour (js/hours.js)
-   a key. A capo; a chord named from the notes you put down; a tuner that
+   a key. The twelve sovereign hexagrams of the I Ching's calendar stand on
+   the notes as well, by their pitch pipes (temple/pipes.js), with C or
+   the solstice's A as the foundation. A capo; a chord named from the notes you put down; a tuner that
    listens through the microphone and keeps nothing; and the whole setting
    in the address (#key=E&scale=minor&chord=m7&on=A&tuning=D2-A2-D3-G3-B3-E4&capo=2),
    which is how the cards and the wheel send a note here. Your tunings, scales, chords and settings are kept in this
@@ -21,7 +23,7 @@
     var canvas = document.getElementById("neck-stage");
     if (!canvas) return;
     var ctx = canvas.getContext("2d"), stage = canvas.parentNode;
-    var Z = window.Zodiac, H = window.Hours;
+    var Z = window.Zodiac, H = window.Hours, P = window.Pipes;
     var $ = function (id) { return document.getElementById(id); };
     var MONO = 'Menlo, Consolas, "DejaVu Sans Mono", monospace', HEB = '"SBL Hebrew", "Arial Hebrew", "Times New Roman", serif';
     var INK = "#7cf5c8", DIM = "#2a5a4a", FAINT = "#1f4a3c", AMBER = "#ffb000", PAPER = "#020705", BOARD = "#06120d", STRING = "#4d7d6a";
@@ -121,6 +123,12 @@
         Object.keys(ELEMENT_NOTE).forEach(function (e) { if (ELEMENT_NOTE[e] === pc && Z) out.push({ glyph: ELEMENT_GLYPH[e], name: e, trump: Z.ELEMENTS[e].trump, letter: Z.ELEMENTS[e].letter }); });
         return out;
     }
+    // The sovereign hexagram on a note, by temple/pipes.js: its month and its pipe, with a link to it in the changes.
+    function hexOnNote(pc) {
+        if (!P) return "";
+        var e = P.onNote(pc);
+        return "<a href=\"/temple/changes/#hex-" + e.hex + "\">" + e.glyph + " " + e.hex + " " + esc(e.name) + "</a>, " + esc(e.en) + ", " + esc(e.month) + ", the pipe " + e.pipe + " " + esc(e.pinyin);
+    }
 
     // ---- the state, kept in this browser --------------------------------------------------------------
     var KEY = "temple-neck";
@@ -217,6 +225,7 @@
             case "intervals": return c ? c.label : s ? s.label : INT[mod(pc - S.root, 12)];
             case "signs": return SIGNS[pc] ? SIGNS[pc].glyph : name;
             case "letters": return SIGNS[pc] ? HEBREW[SIGNS[pc].letter] : name;
+            case "hexagrams": return P ? P.onNote(pc).glyph : name;
             default: return name;
         }
     }
@@ -283,7 +292,7 @@
         var text = labelFor(pc, midi), col = S.colours ? COLOUR[pc][1] : isRoot ? AMBER : INK;
         var key = i + ":" + f, hot = sounding[key] || (hover && hover.i === i && hover.f === f) || heard === midi;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        var fontPx = S.labels === "letters" ? Math.round(r * 1.25) : text.length > 3 ? Math.round(r * 0.78) : Math.round(r * 0.95);
+        var fontPx = S.labels === "letters" || S.labels === "hexagrams" ? Math.round(r * 1.25) : text.length > 3 ? Math.round(r * 0.78) : Math.round(r * 0.95);
         var font = (S.labels === "letters" ? fontPx + "px " + HEB : fontPx + "px " + MONO);
         if (shape) {   // with a shape up, or frets put down to be named, those are lit and the rest steps back
             if (inShape) drawDot(p, r, naming && !S.colours ? INK : col, true, text, font, hot);
@@ -399,12 +408,15 @@
         else role.push("not in " + view.rootName + " " + view.sd.name.toLowerCase());
         var temple = onNote(pc).map(function (o) { return "<b>" + o.glyph + " " + esc(o.name) + "</b>, " + cardLink(o.trump) + " (" + HEBREW[o.letter] + " " + o.letter + ")"; });
         return "<b>" + esc(name) + (Math.floor(midi / 12) - 1) + "</b> · " + hz.toFixed(1) + " Hz · " + where + " · " + esc(role.join("; ")) +
-            (temple.length ? "<br>" + temple.join(" · ") + " · " + COLOUR[pc][0] : "");
+            (temple.length ? "<br>" + temple.join(" · ") + " · " + COLOUR[pc][0] : "") + (P ? "<br>" + hexOnNote(pc) : "");
     }
     function labelForName(pc) { var c = view.chord && view.chord[pc], s = view.scale[pc]; return (c && c.name) || (s && s.name) || view.names[pc]; }
 
     // ---- the controls --------------------------------------------------------------------------------
     var cell = $("neck-cell"), reading = $("neck-reading");
+    // What the cell says about a note, kept so it can be said again when the pipes are switched (if nothing has replaced it since).
+    var cellFor = null, cellSaid = "";
+    function showCell(f) { cellFor = f; cell.innerHTML = f(); cellSaid = cell.innerHTML; }
     function option(sel, value, text, selected) { var o = document.createElement("option"); o.value = value; o.textContent = text; if (selected) o.selected = true; sel.appendChild(o); return o; }
     function group(sel, label) { var g = document.createElement("optgroup"); g.label = label; sel.appendChild(g); return g; }
     function fillTunings() {
@@ -515,7 +527,9 @@
             if (seen[pc]) return; seen[pc] = 1;
             var nm = labelForName(pc), here = onNote(pc).map(function (o) { return o.glyph + " " + esc(o.name) + ", " + cardLink(o.trump) + " " + HEBREW[o.letter]; });
             var planets = sky ? sky.bodies.filter(function (b) { return b.pc === pc; }).map(function (b) { return b.glyph + " " + b.name.toLowerCase() + " is there now"; }) : [];
-            lis.push("<li><b><span class=\"swatch\" style=\"background:" + COLOUR[pc][1] + "\"></span>" + esc(nm) + "</b> " + here.join(" · ") + " · " + COLOUR[pc][0] + (planets.length ? " · <b>" + esc(planets.join(", ")) + "</b>" : "") + "</li>");
+            var hx = P ? P.onNote(pc) : null;
+            lis.push("<li><b><span class=\"swatch\" style=\"background:" + COLOUR[pc][1] + "\"></span>" + esc(nm) + "</b> " + here.join(" · ") + " · " + COLOUR[pc][0] +
+                (hx ? " · <a href=\"/temple/changes/#hex-" + hx.hex + "\">" + hx.glyph + " " + esc(hx.en) + "</a> " + hx.pipe : "") + (planets.length ? " · <b>" + esc(planets.join(", ")) + "</b>" : "") + "</li>");
         });
         out.push("<div class=\"card-read\"><h3>in the temple</h3><ul>" + lis.join("") + "</ul></div>");
         reading.innerHTML = out.join("");
@@ -545,6 +559,7 @@
         $("neck-colours").setAttribute("aria-pressed", S.colours ? "true" : "false");
         $("neck-faint").setAttribute("aria-pressed", S.faint ? "true" : "false");
         $("neck-flip").setAttribute("aria-pressed", S.flip ? "true" : "false");
+        if (P) { $("neck-pipes").setAttribute("aria-pressed", P.mode() === "season" ? "true" : "false"); $("neck-pipes-say").textContent = P.MODES[P.mode()].say; }
         scaleToggles = semisOf(view.sd.f); fillBuilder("neck-scale-build", scaleToggles, function (a) { mineFrom("scales", a); });
         chordToggles = view.cd ? semisOf(view.cd.f) : { 0: true }; fillBuilder("neck-chord-build", chordToggles, function (a) { mineFrom("chords", a); });
         var shapeBox = $("neck-shapes");
@@ -657,7 +672,7 @@
     // One note's place in the temple, for a link that came asking about it.
     function noteCell(pc) {
         var here = onNote(pc).map(function (o) { return "<b>" + o.glyph + " " + esc(o.name) + "</b>, " + cardLink(o.trump) + " (" + HEBREW[o.letter] + " " + o.letter + ")"; });
-        return "<b>" + esc(view.names[pc]) + "</b>, " + COLOUR[pc][0] + ", by Case's scale: " + here.join(" · ") + ". Every place it falls on the neck is marked; the scale is its major.";
+        return "<b>" + esc(view.names[pc]) + "</b>, " + COLOUR[pc][0] + ", by Case's scale: " + here.join(" · ") + "." + (P ? " Among the twelve pipes: " + hexOnNote(pc) + "." : "") + " Every place it falls on the neck is marked; the scale is its major.";
     }
 
     // ---- naming a chord from the notes put down ----------------------------------------------------------
@@ -780,6 +795,8 @@
     $("neck-colours").onclick = function () { S.colours = !S.colours; changed(true); };
     $("neck-faint").onclick = function () { S.faint = !S.faint; changed(true); };
     $("neck-flip").onclick = function () { S.flip = !S.flip; changed(true); };
+    if (P) { $("neck-pipes").onclick = function () { P.toggle(); }; P.onChange(function () { changed(true); if (cellFor && cell.innerHTML === cellSaid) showCell(cellFor); }); }
+    else $("neck-pipes").parentNode.hidden = true;
     $("neck-sky").onclick = skyChord;
     (function () { var sel = $("neck-capo"); for (var c = 0; c <= 12; c++) option(sel, c, c ? "fret " + c : "none", c === S.capo); })();
     $("neck-capo").onchange = function () { S.capo = +this.value; if (S.capo > S.frets - 4) S.frets = 24; if (naming) naming = naming.map(function () { return null; }); changed(); };
@@ -793,7 +810,7 @@
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, no); else no();
     };
     $("neck-tuner").onclick = function () { if (tuner) stopTuner(); else startTuner(); };
-    window.addEventListener("hashchange", function () { var a = fromHash(location.hash); changed(); if (a && a.note != null) cell.innerHTML = noteCell(a.note); });
+    window.addEventListener("hashchange", function () { var a = fromHash(location.hash); changed(); if (a && a.note != null) showCell(function () { return noteCell(a.note); }); });
     $("neck-hour-key").onclick = hourKey;
     $("neck-reset").onclick = function () {
         var mine = S.mine;
@@ -819,14 +836,14 @@
         var h = hit(e);
         if ((h && hover && h.i === hover.i && h.f === hover.f) || (!h && !hover)) return;
         hover = h; canvas.style.cursor = h ? "pointer" : "default";
-        if (h) cell.innerHTML = describe(h.i, h.f);
+        if (h) showCell(function () { return describe(h.i, h.f); });
         draw();
     });
     canvas.addEventListener("pointerleave", function () { hover = null; draw(); });
     canvas.addEventListener("click", function (e) {
         var h = hit(e); if (!h) return;
         if (naming) { naming[h.i] = naming[h.i] === h.f ? null : h.f; nameIt(); }
-        else cell.innerHTML = describe(h.i, h.f);
+        else showCell(function () { return describe(h.i, h.f); });
         pluck(S.tuning[h.i] + h.f, 0, h.i + ":" + h.f);
     });
     var rt = null;
@@ -834,7 +851,7 @@
 
     var arrived = fromHash(location.hash);
     compute(); changed(); fillHour();
-    if (arrived && arrived.note != null) cell.innerHTML = noteCell(arrived.note);
+    if (arrived && arrived.note != null) showCell(function () { return noteCell(arrived.note); });
     setInterval(fillHour, 60000);
     window.Neck = { state: function () { return JSON.parse(JSON.stringify(S)); }, yin: function (b, sr) { return yin(b, sr); }, put: function (i, f) { if (naming) { naming[i] = naming[i] === f ? null : f; nameIt(); } return $("neck-named").textContent; }, view: function () { return view; }, shapes: function () { return shapesFound; }, spell: spell, formula: formula };
 })();

@@ -94,6 +94,7 @@ sky this minute is a chord you can play.</p>
     <option value="intervals">intervals</option>
     <option value="signs">signs</option>
     <option value="letters">Hebrew letters</option>
+    <option value="hexagrams">hexagrams</option>
   </select></label>
   <label>spelt with <select id="neck-spelling">
     <option value="auto">the key's accidentals</option>
@@ -110,6 +111,10 @@ sky this minute is a chord you can play.</p>
   <button type="button" id="neck-flip" aria-pressed="false">left-handed</button>
   <button type="button" id="neck-link">copy the link to this</button>
   <button type="button" id="neck-reset">back to standard and C major</button>
+</div>
+<div class="neck-bar">
+  <button type="button" id="neck-pipes" aria-pressed="false">the hexagrams by the season</button>
+  <span class="hint" id="neck-pipes-say"></span>
 </div>
 
 <h2>What it is</h2>
@@ -144,10 +149,23 @@ from <a href="/temple/zodiac/">the wheel's</a> ephemeris, rooted on the Sun's si
 planet whose hour it is, by the temple's clock of planetary hours. Your tunings, scales,
 chords and settings are kept in this browser and sent nowhere.</p>
 
+<p>The hexagrams are China's, and older than the tone scale by two thousand years. Han scholars of the I Ching, Meng
+Xi among them, gave twelve of the sixty-four to the months: after the winter solstice the whole lines climb from the
+bottom, one a month, from <a href="/temple/changes/#hex-24">Return</a> to <a href="/temple/changes/#hex-1">Heaven</a>,
+all six whole, in the fourth month; after the summer solstice the broken ones climb the same way, from
+<a href="/temple/changes/#hex-44">the Meeting</a> to <a href="/temple/changes/#hex-2">Earth</a>. The Monthly
+Ordinances gave each month a pitch pipe too, the twelve lü, a semitone apart, from 黃鐘 Huángzhōng, the yellow bell, in
+the solstice's month; so each of the twelve hexagrams has a note. Where the yellow bell sits is the one choice left
+open, and the button decides it. Off, it is on C, as modern tables usually write it. On, it is on the note of the sign
+the winter solstice opens, Capricorn, which Case's scale makes A, so that the hexagrams go round the wheel with the
+year: the spring equinox's Great Strength falls on C with Aries, and the summer solstice's Meeting on D♯ with Cancer.
+<a href="/temple/changes/">The changes</a> share the choice, and play a sovereign hexagram's note when one is cast.</p>
+
 <p class="colophon">The scales and chords are anyone's. The tone scale is Case's, in <i>The Tarot</i> (1947) and his
 Builders of the Adytum lessons; the trumps' letters and planets are Book T's. The neck, the shapes and the sound are made
 here, in one <a href="https://github.com/rseufert/rseufert.github.io/blob/master/temple/neck.js">script</a> with no library.</p>
 </div>
 <script src="/js/zodiac.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/js/hours.js?v={{ site.time | date: '%s' }}"></script>
+<script src="/temple/pipes.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/temple/neck.js?v={{ site.time | date: '%s' }}"></script>
