@@ -28,6 +28,7 @@
     var scoreOut = document.getElementById("golf-score");
     var pads = document.getElementById("golf-pads");
     var boardButton = document.getElementById("golf-board"), muzakButton = document.getElementById("golf-muzak"), postLink = document.getElementById("golf-post"), veilBoard = document.getElementById("golf-veil-board");
+    var recordsButton = document.getElementById("golf-records"), veilRecords = document.getElementById("golf-veil-records");
     var RAW = "https://raw.githubusercontent.com/rseufert/rseufert.github.io/sky-data/";
 
     var KEY = "golf";
@@ -103,7 +104,8 @@
         var s = null;
         try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
         s = s || {};
-        return { sound: s.sound !== false, muzak: !!s.muzak, best: s.best || {}, rounds: s.rounds || 0, squatch: s.squatch || 0, hood: s.hood || 0 };
+        return { sound: s.sound !== false, muzak: !!s.muzak, best: s.best || {}, rounds: s.rounds || 0, squatch: s.squatch || 0, hood: s.hood || 0,
+                 records: s.records || {}, career: s.career || { aces: 0, eagles: 0, birdies: 0 }, initials: typeof s.initials === "string" ? s.initials : "" };
     }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* a visit's worth */ } }
 
@@ -458,7 +460,7 @@
 
     function stat() { return stats[holeNo] || (stats[holeNo] = { putts: 0, fairway: false, gir: false, drive: 0, pens: 0, holeOut: false }); }
     function startRound() {
-        holeNo = 0; scores = []; flags = []; stats = [];
+        holeNo = 0; scores = []; flags = []; stats = []; fresh = {}; flash = null;
         HOOD.erupting = false; HOOD.erupted = false; HOOD.t = 0; HOOD.ash = [];
         startHole();
     }
@@ -813,7 +815,12 @@
         if (ball.from && c.carry) {
             var dist = Math.hypot(ball.x - ball.from.x, ball.z - ball.from.z);
             shotNote = Math.round(dist) + " YDS · " + LIE[ball.lie].label.toUpperCase();
-            if (ball.from.lie === "tee" && hole.par > 3) { st.drive = Math.round(dist); st.fairway = ball.lie === "fairway"; }
+            if (ball.from.lie === "tee" && hole.par > 3) {
+                st.drive = Math.round(dist); st.fairway = ball.lie === "fairway";
+                // The longest drive is one that finds the short grass, as the cabinet had it.
+                if (ball.lie === "fairway" || ball.lie === "fringe" || ball.lie === "green") tryRecord("drive", Math.round(dist));
+            }
+            if (ball.from.lie === "tee" && hole.par === 3 && strokes === 1 && ball.lie === "green") tryRecord("pin", Math.max(1, Math.round(yardsToPin() * 36)));
         } else shotNote = LIE[ball.lie].label.toUpperCase();
         if (ball.lie === "green" && strokes <= hole.par - 2) st.gir = true;
         // A ball this close on the green is tapped in, for a stroke.
@@ -877,6 +884,10 @@
     function holed(dunk, tapIn) {
         var st = stat();
         if (!tapIn && ball.from && ball.from.lie !== "green") st.holeOut = true;
+        if (!tapIn && ball.from) {
+            var far = Math.hypot(ball.from.x - hole.pin.x, ball.from.z - hole.pin.z);
+            if (ball.from.lie === "green") tryRecord("putt", Math.round(far * 3)); else tryRecord("holeOut", Math.round(far));
+        }
         if (strokes <= hole.par - 1) st.gir = true;
         ball.x = hole.pin.x; ball.z = hole.pin.z; ball.y = height(hole, ball.x, ball.z) - 0.1;
         ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
@@ -888,6 +899,8 @@
         scores[holeNo] = n;
         var diff = n - hole.par;
         if (n === 1) flag("ace" + (holeNo + 1));
+        if (n === 1) saved.career.aces++; else if (diff <= -2) saved.career.eagles++; else if (diff === -1) saved.career.birdies++;
+        if (diff < 0) save();
         var word = n === 1 ? "HOLE IN ONE" : diff <= -3 ? "ALBATROSS" : diff === -2 ? "EAGLE" : diff === -1 ? "BIRDIE" : diff === 0 ? "PAR" : diff === 1 ? "BOGEY" : diff === 2 ? "DOUBLE BOGEY" : "+" + diff;
         if (n >= 10 && diff > 2) word = "PICKED UP";
         message = word; messageClock = 0;
@@ -945,6 +958,7 @@
         var newBest = best == null || t < best;
         if (newBest) saved.best[seed] = t;
         saved.rounds++;
+        roundRecords();
         var keys = Object.keys(saved.best);
         if (keys.length > 60) delete saved.best[keys.sort()[0]];
         save();
@@ -961,11 +975,130 @@
             postLink.href = "https://github.com/rseufert/rseufert.github.io/issues/new?title=" + encodeURIComponent("card: " + t + " on " + hole.name + " (" + seed + ")") + "&body=" + encodeURIComponent(body);
             postLink.hidden = false;
         }
+        showRecords(true);
         showBoard(seed, t);
     }
     function happened() {
         var bits = flags.map(function (f) { var m = /^(sq|hood|ace)(\d)$/.exec(f); return !m ? "" : m[1] === "sq" ? "Something tall crossed the trees on hole " + m[2] + "." : m[1] === "hood" ? "Mt Hood erupted on hole " + m[2] + "." : "A hole in one at the " + m[2] + "th."; });
         return bits.length ? " " + bits.join(" ") : "";
+    }
+
+    // ---- the cabinet's records ----------------------------------------------
+    // The record board, the way the cabinet in the bar kept one: the longest
+    // drive, the longest putt, the best round, and whose initials are on each.
+    // The house records came with the cabinet and are there to be beaten. A
+    // record that falls is kept in this browser (localStorage, under golf)
+    // with the initials in use, the course, the hole and the day. Shots are
+    // weighed as they happen, rounds when the ninth hole is in. Whole numbers
+    // only, so a record is beaten by a yard, a foot or an inch, not a hair.
+    function feet(v) { return v + " FT"; }
+    var RECORDS = [
+        { key: "drive",    label: "LONGEST DRIVE",        show: function (v) { return v + " YDS"; },
+          house: { v: 325, who: "SAS", course: "Forest Park", hole: 7, when: "1998" } },
+        { key: "putt",     label: "LONGEST PUTT",         show: feet,
+          house: { v: 28, who: "HRN", course: "Sauvie Island", hole: 3, when: "1997" } },
+        { key: "holeOut",  label: "LONGEST HOLE OUT",     show: function (v) { return v + " YDS"; },
+          house: { v: 18, who: "ELF", course: "Mount Tabor", hole: 5, when: "1999" } },
+        { key: "pin",      label: "NEAREST THE PIN",      lower: true, show: function (v) { return v >= 12 ? Math.floor(v / 12) + " FT " + (v % 12) + " IN" : v + " IN"; },
+          house: { v: 108, who: "BOT", course: "Burnside Links", hole: 2, when: "1998" } },
+        { key: "round",    label: "BEST ROUND",           lower: true, round: true, show: function (v) { return v + " (" + toPar(v - 36) + ")"; },
+          house: { v: 35, who: "RIK", course: "Willamette Bend", hole: 0, when: "1996" } },
+        { key: "birdies",  label: "MOST BIRDIES",         round: true, show: function (v) { return String(v); },
+          house: { v: 3, who: "JSH", course: "Rocky Butte", hole: 0, when: "1999" } },
+        { key: "fairways", label: "FAIRWAYS HIT",         round: true, show: function (v) { return v + " OF 7"; },
+          house: { v: 5, who: "PDX", course: "Laurelhurst", hole: 0, when: "1997" } },
+        { key: "greens",   label: "GREENS HIT",           round: true, show: function (v) { return v + " OF 9"; },
+          house: { v: 7, who: "MTH", course: "Pittock Heights", hole: 0, when: "1998" } },
+        { key: "putts",    label: "FEWEST PUTTS",         lower: true, round: true, show: function (v) { return String(v); },
+          house: { v: 15, who: "ELF", course: "Tryon Creek", hole: 0, when: "1999" } }
+    ];
+    var fresh = {};            // the records that fell this round
+    var flash = null;          // the one that fell just now, for the screen
+    function recordFor(key) { for (var i = 0; i < RECORDS.length; i++) if (RECORDS[i].key === key) return RECORDS[i]; return null; }
+    function holder(r) { return saved.records[r.key] || r.house; }
+    function stamp() { var d = new Date(), two = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()); }
+    // A number offered to the board: kept if it beats what is there.
+    function tryRecord(key, v, quiet) {
+        var r = recordFor(key);
+        if (!r || !hole || !isFinite(v) || v < 0) return false;
+        var cur = holder(r).v;
+        if (r.lower ? v >= cur : v <= cur) return false;
+        saved.records[key] = { v: v, who: saved.initials, course: hole.name, hole: r.round ? 0 : holeNo + 1, when: stamp(), seed: seed };
+        save();
+        fresh[key] = true;
+        if (!quiet) { flash = { text: r.label + " · " + r.show(v), at: clock }; if (audio) audio.cheer(1); }
+        return true;
+    }
+    // A finished round, weighed: the total, the birdies, and, where every
+    // hole's numbers were kept and none was picked up, the fairways, the
+    // greens and the putts.
+    function roundRecords() {
+        var pars = parsOf(seed), bird = 0, fw = 0, gr = 0, pu = 0, whole = true, kept = true, i;
+        for (i = 0; i < HOLES; i++) {
+            if (scores[i] == null) { whole = false; break; }
+            if (scores[i] < pars[i]) bird++;
+            var st = stats[i];
+            if (!st || scores[i] >= 10) { kept = false; continue; }
+            if (pars[i] > 3 && st.fairway) fw++;
+            if (st.gir) gr++;
+            pu += st.putts || 0;
+        }
+        if (!whole) return;
+        tryRecord("round", total(), true);
+        tryRecord("birdies", bird, true);
+        if (kept) { tryRecord("fairways", fw, true); tryRecord("greens", gr, true); tryRecord("putts", pu, true); }
+    }
+    // The initials in use: three letters or figures. The first time they are
+    // given, the records made before there were any take them.
+    function setInitials(v) {
+        v = String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3);
+        if (v && !saved.initials) Object.keys(saved.records).forEach(function (k) { if (!saved.records[k].who) saved.records[k].who = v; });
+        saved.initials = v;
+        save();
+        return v;
+    }
+    function recordsHtml(onlyFresh) {
+        var out = "<h3>" + (onlyFresh ? "NEW CABINET RECORD" + (Object.keys(fresh).length === 1 ? "" : "S") : "RECORDS · THIS CABINET") + "</h3>";
+        if (!onlyFresh) out += "<p class=\"small initials\"><label>your initials <input type=\"text\" id=\"golf-initials\" maxlength=\"3\" size=\"3\" autocomplete=\"off\" autocapitalize=\"characters\" spellcheck=\"false\" value=\"" + esc(saved.initials) + "\" placeholder=\"YOU\"></label></p>";
+        out += "<table class=\"board records\">";
+        RECORDS.forEach(function (r) {
+            if (onlyFresh && !fresh[r.key]) return;
+            var h = holder(r), mine = !!saved.records[r.key];
+            var where = h.course.toLowerCase() + (h.hole ? " · hole " + h.hole : "") + " · " + h.when;
+            out += "<tr" + (fresh[r.key] ? " class=\"fresh\"" : "") + "><th>" + r.label + "<small>" + esc(where) + "</small></th><td class=\"where\">" + esc(where) + "</td><td class=\"val\">" + esc(r.show(h.v)) + "</td><td class=\"who" + (mine ? " mine" : "") + "\">" + esc(h.who || "YOU") + "</td></tr>";
+        });
+        out += "</table>";
+        if (onlyFresh) return out;
+        var c = saved.career, bits = [saved.rounds + (saved.rounds === 1 ? " round" : " rounds")];
+        if (c.aces) bits.push(c.aces + (c.aces === 1 ? " hole in one" : " holes in one"));
+        if (c.eagles) bits.push(c.eagles + (c.eagles === 1 ? " eagle" : " eagles"));
+        bits.push(c.birdies + (c.birdies === 1 ? " birdie" : " birdies"));
+        if (saved.squatch) bits.push("something tall, " + saved.squatch + (saved.squatch === 1 ? " time" : " times"));
+        if (saved.hood) bits.push("the mountain, " + saved.hood + (saved.hood === 1 ? " time" : " times"));
+        out += "<p class=\"small\">on this cabinet: " + bits.join(" · ") + ".</p>";
+        out += "<p class=\"small\">kept in this browser. the house records came with the cabinet; yours are in green.</p>";
+        return out;
+    }
+    function showRecords(onlyFresh) {
+        if (!veilRecords) return;
+        if (onlyFresh && !Object.keys(fresh).length) { veilRecords.hidden = true; return; }
+        veilRecords.innerHTML = recordsHtml(onlyFresh);
+        veilRecords.hidden = false;
+    }
+    // From the bar: the records over the game, paused, with the card put by to
+    // make room; the button again puts them away and brings back what was there.
+    function openRecords() {
+        if (veilRecords && !veilRecords.hidden && !veil.hidden && veilRecords.querySelector("#golf-initials")) { closeRecords(); return; }
+        if (mode !== "title" && mode !== "card" && !paused) { paused = true; go.textContent = "play on"; veilText.textContent = "paused on " + hole.name + ", hole " + (holeNo + 1) + "."; }
+        veilCard.hidden = true; if (postLink) postLink.hidden = true;
+        if (veilBoard) veilBoard.hidden = true;
+        veil.hidden = false;
+        showRecords(false);
+    }
+    function closeRecords() {
+        if (veilRecords) veilRecords.hidden = true;
+        if (mode === "card") { veilCard.hidden = false; if (postLink) postLink.hidden = false; showRecords(true); showBoard(seed, total()); }
+        else if (mode !== "title") { veilCard.innerHTML = card(); veilCard.hidden = false; }
     }
 
     // ---- the clubhouse board ------------------------------------------------
@@ -1001,6 +1134,8 @@
     function openBoard() {   // from the bar: the board over the game, paused
         if (mode !== "title" && mode !== "card" && !paused) { paused = true; go.textContent = "play on"; veilText.textContent = "paused on " + hole.name + ", hole " + (holeNo + 1) + "."; veilCard.innerHTML = card(); veilCard.hidden = false; }
         veil.hidden = false;
+        if (veilRecords) veilRecords.hidden = true;
+        if (mode === "card") { veilCard.hidden = false; if (postLink) postLink.hidden = false; showRecords(true); }   // back from the records to the card
         showBoard(seed, mode === "card" ? total() : null);
     }
 
@@ -1131,6 +1266,7 @@
         veilText.textContent = "paused on " + hole.name + ", hole " + (holeNo + 1) + ".";
         veilCard.innerHTML = card(); veilCard.hidden = false;
         if (veilBoard) veilBoard.hidden = true;
+        if (veilRecords) veilRecords.hidden = true;
         go.textContent = "play on";
     }
 
@@ -1802,6 +1938,12 @@
                 if (modeClock > 0.8) text(holeNo + 1 >= HOLES ? "click for the card" : "click for the next hole", W / 2, Hpx * 0.3 + big + 34, fs, "#7d7d88", "center", al);
             }
         }
+        // A record that has just fallen: five seconds, under whatever else is being said.
+        if (flash && clock - flash.at < 5 && mode !== "title" && mode !== "card") {
+            var ft = clock - flash.at, fo = Math.min(1, ft * 4) * Math.min(1, (5 - ft) * 2), fy = Hpx * 0.3 + (mode === "holed" ? (small ? 30 : 46) + 58 : 34);
+            text("NEW CABINET RECORD", W / 2, fy, fs, gold, "center", fo * (REDUCED ? 1 : 0.6 + 0.4 * Math.sin(ft * 10)));
+            text(flash.text, W / 2, fy + fs + 6, fs + 2, "#ffffff", "center", fo);
+        }
         if (mode === "rest" && shotNote) text(shotNote, W / 2, Hpx * 0.22, fs + 3, "#ffffff", "center", Math.min(1, modeClock * 3));
         if (mode === "rest" && modeClock > 0.6) text(TOUCH ? "tap to line up" : "click or space to line up", W / 2, Hpx * 0.22 + fs + 12, fs - 1, "#7d7d88", "center");
         if (look.reverse && (mode === "aim" || mode === "rest")) text("FROM THE GREEN · " + (TOUCH ? "tap to go back" : "let go of r to go back"), W / 2, Hpx * 0.16, fs + 1, gold, "center");   // clear of the pads at the bottom
@@ -2037,7 +2179,7 @@
         if (!live) fetchWind();
         if (audio) audio.wind(0);
         veil.hidden = true; veilCard.hidden = true;
-        if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true;
+        if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true; if (veilRecords) veilRecords.hidden = true;
         if (paused) { paused = false; return; }
         var kept = mode === "title" ? keptRound() : null;
         if (kept) resumeRound(kept);
@@ -2062,11 +2204,21 @@
         });
     }
     if (boardButton) boardButton.addEventListener("click", openBoard);
+    if (recordsButton) recordsButton.addEventListener("click", openRecords);
+    if (veilRecords) {
+        veilRecords.addEventListener("input", function (e) {
+            if (e.target.id !== "golf-initials") return;
+            var v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3);
+            if (v !== e.target.value) e.target.value = v;
+        });
+        veilRecords.addEventListener("change", function (e) { if (e.target.id === "golf-initials") { setInitials(e.target.value); showRecords(false); } });
+        veilRecords.addEventListener("keydown", function (e) { if (e.target.id === "golf-initials" && e.key === "Enter") e.target.blur(); e.stopPropagation(); });
+    }
     newButton.addEventListener("click", function () {
         seed = 1 + Math.floor(Math.random() * 999999);
         history.replaceState(null, "", "#seed=" + seed);
         paused = false; veil.hidden = true; veilCard.hidden = true;
-        if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true;
+        if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true; if (veilRecords) veilRecords.hidden = true;
         ensureAudio();
         startRound();
         if (audio) audio.wind(hole.wind.mph);
@@ -2182,6 +2334,9 @@
         forecast: function (p) { return forecast(p == null ? plannedPower() : p); }, need: solveNeed, summary: summary,
         rain: function (on) { if (on != null) wet = !!on; return wet; }, get bearing() { return hole && hole.bearing; }, get shape() { return hole && hole.shape; },
         keep: keepRound, kept: keptRound, forget: forgetRound,
+        // The record board: what stands, a number offered to it, the initials, and the board itself.
+        get records() { return RECORDS.map(function (r) { var h = holder(r); return { key: r.key, label: r.label, v: h.v, shown: r.show(h.v), who: h.who || "YOU", course: h.course, hole: h.hole, when: h.when, mine: !!saved.records[r.key] }; }); },
+        record: tryRecord, initials: function (v) { return v == null ? saved.initials : setInitials(v); }, openRecords: openRecords, get career() { return saved.career; },
         settle: function () { for (var n = 0; mode === "flight" && n < 240 * 90; n++) step(1 / 240); if (mode === "penalty") takeDrop(); return mode; },
         // The camera's levers: where it is, what it is following, the game run on by hand, and where the ball is in the picture.
         get cam() { return cam; }, get follow() { return follow; }, get shotCam() { return shotCam; }, get look() { return look; },
