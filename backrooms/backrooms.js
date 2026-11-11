@@ -699,7 +699,7 @@
         }
         ctx.globalAlpha = 1;
         notes(horizon, col, bright);
-        figures(horizon, bright);
+        figures(horizon, bright, glow);
         apparitions(horizon, bright);
         hud(col);
         if (near < 3 && !REDUCED && mode === "play") glitch((3 - near) / 3);
@@ -772,7 +772,7 @@
     }
     // The figures: tall, thin, stooped under the ceiling, drawn as a few
     // lines facing you, with static where a face would be.
-    function figures(horizon, bright) {
+    function figures(horizon, bright, glow) {   // glow: render's, off when frames are slow
         // the chalk, on the floor, fading as it wears off
         circles.forEach(function (c) {
             var ring = [], n = 36;
