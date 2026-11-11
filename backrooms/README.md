@@ -98,8 +98,10 @@ else out of sight, behind you (further from the way down than you are).
 
 Whoever it finds leaves a ghost. While you play, the camera's position and
 yaw are recorded ten times a second and the last thirty seconds kept; FOUND
-packs them into one line, `bk1:SEED:LEVEL:HZ:DATA`, six URL-safe base64
-characters a sample (x and z in 64ths of a cell, yaw in 4096ths of a turn),
+packs them into one line, `bk2:SEED:LEVEL:HZ:DATA`, six URL-safe base64
+characters a sample (x and z in 64ths of a cell, yaw in 4096ths of a turn;
+`bk2` is the generation of the levels, and `bk1` ghosts, walked on the levels
+as they were before November 2026, are neither replayed nor read in),
 and stores it in `localStorage` under `backrooms-ghosts` (the newest forty).
 Entering a level gathers the ghosts of that seed and level, yours first and
 then the ones sent in, eight at most, and each walks its half minute again
@@ -200,7 +202,9 @@ under the clock, and said on the drop screen. A descent is timed from the top
 of level 0 of a seed, through every FOUND, to wherever it gets, and shown
 under that; on each drop the *post your descent* link offers it as an issue
 titled `descent: level L in M:SS (seed S)` with one line,
-`bd1:SEED:LEVEL:SECONDS:FOUND`. `tools/ghosts.py` reads those too, keeps each
+`bd1:SEED:LEVEL:SECONDS:FOUND`. A descent ends if an address jumps it to a
+level it did not walk to. `tools/ghosts.py` reads those too (level 1 to 60, at
+least five seconds a level), keeps each
 person's deepest then quickest on each seed (a hundred in all) as `descents`
 in `ghosts.json`, and the title says the deepest three on the seed you are on.
 

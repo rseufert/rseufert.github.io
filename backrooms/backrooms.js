@@ -342,8 +342,17 @@
         breath = 1; winded = false; heard = 0; circles = [];
         if (fresh) { chalk = CHALK; fuzz = 0; fuzzCool = 0; foundHere = 0; levelClock = 0; marks = []; moved = 0; }
         rec = []; recClock = 0;
-        // A descent starts at the top of level 0 and is timed to wherever it gets.
-        if (level === 0 && !again) saved.descent = { seed: saved.seed, t: 0, found: 0, deepest: 0 };
+        // A descent starts at the top of level 0 and is timed to wherever it gets: down by
+        // the way down, up by being found, or back to where it was after a reload. Arriving
+        // anywhere else (an address that jumps, #level=30) ends it.
+        var D = saved.descent;
+        if (level === 0 && !again) saved.descent = D = { seed: saved.seed, t: 0, found: 0, deepest: 0, at: 0 };
+        else if (D) {
+            var at = D.at == null ? D.deepest : D.at;
+            if (D.seed !== saved.seed || (!again && level !== at && level !== at + 1)) saved.descent = D = null;
+            else D.at = level;
+        }
+        if (!saved.descent && descentLink) descentLink.hidden = true;
         saved.level = level;
         if (level > saved.best) saved.best = level;
         save();
@@ -600,13 +609,19 @@
     // cannot see them.
     var B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
     var HZ = 10, KEEP = 30 * HZ, GKEY = "backrooms-ghosts", MOST = 8;
+    // The generation of the levels a ghost was walked on. The levels were
+    // regrown in November 2026 (a grid of 22 + 2·level, rooms stopped at a
+    // third open), so a bk1 ghost walks through what are walls now: only bk2
+    // is replayed, counted or offered, and tools/ghosts.py reads only bk2.
+    var GEN = "bk2";
+    function current(g) { return g && typeof g.path === "string" && g.path.indexOf(GEN + ":") === 0; }
     var rec = [], recClock = 0, ghosts = [], book = null, lastGhost = null, sawGhost = false;
     function enc(v) { v = Math.max(0, Math.min(4095, Math.round(v))); return B64.charAt(v >> 6) + B64.charAt(v & 63); }
     function dec(s, i) { return B64.indexOf(s.charAt(i)) * 64 + B64.indexOf(s.charAt(i + 1)); }
-    // A ghost is one line: bk1:seed:level:hz: then six characters a sample,
+    // A ghost is one line: bk2:seed:level:hz: then six characters a sample,
     // x and z in 64ths of a cell and the yaw in 4096ths of a turn.
     function pack(samples, seed, level) {
-        var s = "bk1:" + seed + ":" + level + ":" + HZ + ":";
+        var s = GEN + ":" + seed + ":" + level + ":" + HZ + ":";
         for (var i = 0; i < samples.length; i += 3) {
             var yaw = samples[i + 2] % (Math.PI * 2);
             if (yaw < 0) yaw += Math.PI * 2;
@@ -615,7 +630,7 @@
         return s;
     }
     function unpack(path) {
-        var m = /^bk1:(\d{1,7}):(\d{1,2}):(\d{1,2}):([A-Za-z0-9_-]{18,1800})$/.exec(path || "");
+        var m = /^bk2:(\d{1,7}):(\d{1,2}):(\d{1,2}):([A-Za-z0-9_-]{18,1800})$/.exec(path || "");
         if (!m || m[4].length % 6) return null;
         var pts = [], d = m[4];
         for (var i = 0; i < d.length; i += 6) pts.push([dec(d, i) / 64, dec(d, i + 2) / 64, dec(d, i + 4) / 4095 * Math.PI * 2]);
@@ -633,7 +648,7 @@
         try { g = JSON.parse(localStorage.getItem(GKEY)) || []; } catch (e) { g = []; }
         return Array.isArray(g) ? g : [];
     }
-    function allGhosts() { return localGhosts().concat(book && book.ghosts || []); }
+    function allGhosts() { return localGhosts().concat(book && book.ghosts || []).filter(current); }
     function ghostCount() {
         var seen = {}, n = 0;
         allGhosts().forEach(function (g) { if (g && g.seed === saved.seed && !seen[g.path]) { seen[g.path] = 1; n++; } });
@@ -669,7 +684,7 @@
     }
     // The deepest descents posted on a seed, deepest first, then quickest.
     function descents(seed) {
-        var list = (book && book.descents || []).filter(function (d) { return d && d.seed === seed; });
+        var list = (book && book.descents || []).filter(function (d) { return d && d.seed === seed && d.level >= 1 && d.level <= 60 && d.seconds >= 5 * d.level; });
         list.sort(function (a, b) { return b.level - a.level || a.seconds - b.seconds; });
         return list.slice(0, 3).map(function (d) { return (d.by || "someone") + " to level " + d.level + " in " + clockText(d.seconds); });
     }
@@ -1519,7 +1534,8 @@
             save();
         })
         .catch(function () { /* unhaunted */ });
-    if (localGhosts().length) offer(localGhosts()[0]);
+    var mine = localGhosts().filter(current);
+    if (mine.length) offer(mine[0]);
     // #seed= and #level= are read again when the address changes, as golf's are.
     addEventListener("hashchange", function () {
         var m = /seed=(\d+)/.exec(location.hash), l = /level=(\d+)/.exec(location.hash);
