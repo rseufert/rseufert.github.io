@@ -85,6 +85,8 @@ def descent(body):
     if not m:
         return None
     d = DESCENT.match(m.group(1).strip())
+    if not d:
+        return None
     level, seconds = int(d.group(2)), int(d.group(3))
     if not 1 <= level <= MAX_LEVEL or seconds < SECONDS_A_LEVEL * level:
         return None
