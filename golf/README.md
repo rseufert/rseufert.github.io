@@ -303,24 +303,49 @@ Under the board, the cabinet's counts: rounds, holes in one, eagles, birdies
 (`career`), and how often the trees and the mountain have had something to
 say. `Golf.records` is the board, `Golf.record(key, v)` offers it a number,
 `Golf.initials("RIK")` sets the initials. Nothing is sent anywhere; the
-clubhouse board below is the shared one.
+clubhouse's records, below, are the shared ones, and the board's second view.
 
 ## The clubhouse board
 
 The web 0.9 way, like the guest book and the ghosts. When a round is done
 the veil offers "post your card", which opens an issue on the repo titled
 `card: TOTAL on COURSE (SEED)` with the card in a fenced code block, one
-line: `gc1:SEED:TOTAL:H1,...,H9:FLAGS` (the flags are what happened: `sq4`,
-sasquatch seen on hole 4; `hood6`, Mt Hood erupted on hole 6; `ace3`, a
-hole in one). `tools/cards.py` reads the open issues with that title,
-checks each line is a card and nothing else (nine holes of 1 to 10 that add
-to the total), works out the course and the par from the seed with the
-game's own shuffle (mulberry32, ported), keeps each player's best on each
-course, and writes `cards.json`; `.github/workflows/cards.yml` runs it on
+line (`cardLine`): `gc2:SEED:TOTAL:H1,...,H9:FLAGS:STATS:INITIALS:CHECK`.
+The flags are what happened: `sq4`, sasquatch seen on hole 4; `hood6`, Mt
+Hood erupted on hole 6; `ace3`, a hole in one. The stats are the round's
+numbers, a letter and a figure each, only the ones there are: `d` the
+longest drive that found the short grass, `p` the longest putt to drop (in
+feet), `o` the longest hole out, `n` nearest the pin (in inches), and `f`,
+`g`, `u` the fairways, greens and putts, which a round with a hole picked up
+does not carry. Each hole keeps its own best shots with its other numbers
+(`fwd`, `holed`, `out`, `pin` in `stats`), so they come through a reload
+with the kept round. The initials are the ones in use, or a dash; given at
+the card, they go on it. The last field is a check word over the rest
+(`checkWord`, FNV-1a with a phrase on the end), so a number changed by hand
+no longer adds up; it is no secret, the source being public, which makes it
+a lock on the door of an honour system and no more. The first generation,
+`gc1:SEED:TOTAL:H1,...,H9:FLAGS`, is still read.
+
+`tools/cards.py` reads the open issues with that title, checks each line is
+a card and nothing else (nine holes of 1 to 10 that add to the total, a
+check word that matches, numbers a round could have had: no more fairways
+than par fours and fives, no 500 yard drive), and, with a token, asks who
+last edited each issue: a card whose issue was last edited by someone other
+than its author is left out, since it is no longer that player's card. It
+works out the course and the par from the seed with the game's own shuffle
+(mulberry32, ported), keeps each player's best on each course, takes the
+best of each kind among every card as the clubhouse's records (oldest first,
+so a record stands until it is beaten and not matched; the best round and
+the most birdies from any card, the rest from second-generation ones), and
+writes `cards.json` with both; `tools/cards_test.py` tries it on good cards
+and doctored ones and checks its check word against the game's; `.github/workflows/cards.yml` runs it on
 issue events and once a day and commits it to the `sky-data` branch. The
 page fetches it once (`fetchBoard`), shows the course's top ten with your
 place among them under your card, and the best anywhere; "the board" in
-the bar shows it mid-round, paused. Closing an issue takes a card down. An
+the bar shows it mid-round, paused. The records board's second view, THE
+CLUBHOUSE, lists the shared records with the initials from the card and the
+name it was posted under, which links to the card; and the post button says
+when the round just played would take any of them (`wouldTake`). Closing an issue takes a card down. An
 honour system, like the one in the clubhouse.
 
 ## Something in the trees, and the mountain

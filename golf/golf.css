@@ -150,7 +150,13 @@ body.filled { overflow: hidden; }
     .golf-page table.records th small { display: none; }
     .golf-page table.records td.where { display: table-cell; }
 }
-.golf-page .veil:has(.records-wrap:not([hidden]) .initials) .banner, .golf-page .veil:has(.records-wrap:not([hidden]) .initials) #golf-veil-text { display: none; }
+.golf-page .veil:has(.records-wrap:not([hidden]) .tabs) .banner, .golf-page .veil:has(.records-wrap:not([hidden]) .tabs) #golf-veil-text { display: none; }
+/* The board's two views, this cabinet and the clubhouse, as a pair of small buttons in its heading. */
+.golf-page .board-wrap h3.tabs button { font: inherit; letter-spacing: inherit; padding: 2px 8px; margin: 0 1px; color: #8d8d98; background: #000; border: 1px solid #ffcc3355; cursor: pointer; }
+.golf-page .board-wrap h3.tabs button[aria-pressed="true"] { color: #ffcc33; border-color: #ffcc33; }
+.golf-page .board-wrap h3.tabs button:hover { color: #000; background: #ffcc33; }
+.golf-page table.records a { color: #8fe7ff; }
+.golf-page table.records tr.open th, .golf-page table.records tr.open td.val { color: #4d4d57; }
 .golf-page .records-wrap .initials { margin: 0 auto 8px; }
 .golf-page table.records td.val { color: #ffcc33; text-align: right; white-space: nowrap; }
 .golf-page table.records td.who { color: #8fe7ff; letter-spacing: 0.18em; }

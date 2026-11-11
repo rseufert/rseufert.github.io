@@ -192,8 +192,10 @@ as the fallback. Close an issue to lay one to rest.
 The clubhouse board is the same again: a finished round of golf offers to
 post its card as an issue titled `card:`, `tools/cards.py` compiles the open
 ones into `cards.json` on `sky-data` (each player's best on each course, the
-par worked out from the seed with the game's own shuffle), and the game reads
-it from there (`.github/workflows/cards.yml`).
+par worked out from the seed with the game's own shuffle, and the clubhouse's
+records, the best of each kind among every card), and the game reads it from
+there (`.github/workflows/cards.yml`). A card whose issue was last edited by
+someone other than its author is left out.
 
 `intro/` is a cracktro, the screen that played before a cracked game loaded:
 a plasma, a starfield, copper bars, the logo extruded and turning, a sine
