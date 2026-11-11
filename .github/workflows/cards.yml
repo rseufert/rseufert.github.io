@@ -6,7 +6,10 @@ name: the clubhouse board
 # compiles the open ones into cards.json and commits it to the sky-data
 # branch beside the ghosts, the guest book and the tanks, since master is
 # protected; the page reads it from raw.githubusercontent.com
-# (tools/cards.py). Closing an issue takes its card off the board.
+# (tools/cards.py). Closing an issue takes its card off the board. The file
+# carries the clubhouse's records too, the best of each kind among the cards,
+# and a card whose issue was last edited by someone other than its author is
+# left out: the tool asks the API who that was, with this job's token.
 on:
   issues:
     types: [opened, edited, closed, reopened, deleted]

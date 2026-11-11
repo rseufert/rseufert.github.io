@@ -818,9 +818,9 @@
             if (ball.from.lie === "tee" && hole.par > 3) {
                 st.drive = Math.round(dist); st.fairway = ball.lie === "fairway";
                 // The longest drive is one that finds the short grass, as the cabinet had it.
-                if (ball.lie === "fairway" || ball.lie === "fringe" || ball.lie === "green") tryRecord("drive", Math.round(dist));
+                if (ball.lie === "fairway" || ball.lie === "fringe" || ball.lie === "green") { st.fwd = Math.max(st.fwd || 0, Math.round(dist)); tryRecord("drive", Math.round(dist)); }
             }
-            if (ball.from.lie === "tee" && hole.par === 3 && strokes === 1 && ball.lie === "green") tryRecord("pin", Math.max(1, Math.round(yardsToPin() * 36)));
+            if (ball.from.lie === "tee" && hole.par === 3 && strokes === 1 && ball.lie === "green") { st.pin = Math.max(1, Math.round(yardsToPin() * 36)); tryRecord("pin", st.pin); }
         } else shotNote = LIE[ball.lie].label.toUpperCase();
         if (ball.lie === "green" && strokes <= hole.par - 2) st.gir = true;
         // A ball this close on the green is tapped in, for a stroke.
@@ -886,7 +886,8 @@
         if (!tapIn && ball.from && ball.from.lie !== "green") st.holeOut = true;
         if (!tapIn && ball.from) {
             var far = Math.hypot(ball.from.x - hole.pin.x, ball.from.z - hole.pin.z);
-            if (ball.from.lie === "green") tryRecord("putt", Math.round(far * 3)); else tryRecord("holeOut", Math.round(far));
+            if (ball.from.lie === "green") { st.holed = Math.round(far * 3); tryRecord("putt", st.holed); }
+            else { st.out = Math.round(far); tryRecord("holeOut", st.out); }
         }
         if (strokes <= hole.par - 1) st.gir = true;
         ball.x = hole.pin.x; ball.z = hole.pin.z; ball.y = height(hole, ball.x, ball.z) - 0.1;
@@ -969,14 +970,22 @@
         veilCard.innerHTML = card();
         veilCard.hidden = false;
         go.textContent = "play again";
+        postCard();
+        showRecords(true);
+        showBoard(seed, t);
+    }
+    // The card as an issue, prefilled; and under the scorecard, what it would take at the clubhouse.
+    function postCard() {
+        var t = total(), p = parSoFar();
         if (postLink) {
-            var line = "gc1:" + seed + ":" + t + ":" + scores.map(function (x) { return x || 10; }).join(",") + ":" + (flags.length ? flags.join(",") : "-");
+            var line = cardLine();
             var body = "course: " + hole.name + "\nseed: " + seed + "\ntotal: " + t + " (" + toPar(t - p) + ")\nholes: " + scores.join(" ") + (summary() ? "\n" + summary() : "") + "\n\n```\n" + line + "\n```\n\nPosted from rickseufert.com/golf/#seed=" + seed + ". Keep the code block as it is; a workflow reads open issues titled \"card:\" onto the clubhouse board, a player's best on each course. It is an honour system, like the one in the clubhouse. Closing the issue takes the card down.";
             postLink.href = "https://github.com/rseufert/rseufert.github.io/issues/new?title=" + encodeURIComponent("card: " + t + " on " + hole.name + " (" + seed + ")") + "&body=" + encodeURIComponent(body);
             postLink.hidden = false;
+            var take = wouldTake();
+            postLink.textContent = take.length ? "post your card: it would take " + (take.length === 1 ? "a clubhouse record" : take.length + " clubhouse records") : "post your card to the board";
+            postLink.title = take.length ? take.join(", ").toLowerCase() : "";
         }
-        showRecords(true);
-        showBoard(seed, t);
     }
     function happened() {
         var bits = flags.map(function (f) { var m = /^(sq|hood|ace)(\d)$/.exec(f); return !m ? "" : m[1] === "sq" ? "Something tall crossed the trees on hole " + m[2] + "." : m[1] === "hood" ? "Mt Hood erupted on hole " + m[2] + "." : "A hole in one at the " + m[2] + "th."; });
@@ -1029,24 +1038,72 @@
         if (!quiet) { flash = { text: r.label + " · " + r.show(v), at: clock }; if (audio) audio.cheer(1); }
         return true;
     }
-    // A finished round, weighed: the total, the birdies, and, where every
-    // hole's numbers were kept and none was picked up, the fairways, the
-    // greens and the putts.
-    function roundRecords() {
-        var pars = parsOf(seed), bird = 0, fw = 0, gr = 0, pu = 0, whole = true, kept = true, i;
+    // A round's numbers: the total and the birdies, the best shots of each
+    // kind, and, where every hole's numbers were kept and none was picked up,
+    // the fairways, the greens and the putts. null until the ninth hole is in.
+    function roundNumbers() {
+        var pars = parsOf(seed), n = { round: 0, birdies: 0, fairways: 0, greens: 0, putts: 0, drive: 0, putt: 0, holeOut: 0, pin: 0, kept: true }, i;
         for (i = 0; i < HOLES; i++) {
-            if (scores[i] == null) { whole = false; break; }
-            if (scores[i] < pars[i]) bird++;
+            if (scores[i] == null) return null;
+            n.round += scores[i];
+            if (scores[i] < pars[i]) n.birdies++;
             var st = stats[i];
-            if (!st || scores[i] >= 10) { kept = false; continue; }
-            if (pars[i] > 3 && st.fairway) fw++;
-            if (st.gir) gr++;
-            pu += st.putts || 0;
+            if (st) {
+                n.drive = Math.max(n.drive, st.fwd || 0); n.putt = Math.max(n.putt, st.holed || 0); n.holeOut = Math.max(n.holeOut, st.out || 0);
+                if (st.pin && (!n.pin || st.pin < n.pin)) n.pin = st.pin;
+            }
+            if (!st || scores[i] >= 10) { n.kept = false; continue; }
+            if (pars[i] > 3 && st.fairway) n.fairways++;
+            if (st.gir) n.greens++;
+            n.putts += st.putts || 0;
         }
-        if (!whole) return;
-        tryRecord("round", total(), true);
-        tryRecord("birdies", bird, true);
-        if (kept) { tryRecord("fairways", fw, true); tryRecord("greens", gr, true); tryRecord("putts", pu, true); }
+        return n;
+    }
+    // A finished round, weighed against the cabinet's records.
+    function roundRecords() {
+        var n = roundNumbers();
+        if (!n) return;
+        tryRecord("round", n.round, true);
+        tryRecord("birdies", n.birdies, true);
+        if (n.kept) { tryRecord("fairways", n.fairways, true); tryRecord("greens", n.greens, true); tryRecord("putts", n.putts, true); }
+    }
+    // The card's line for the board, second generation: the course, the
+    // total, the holes and what happened, as before, then the round's numbers
+    // (d the longest drive, p the longest putt, o the longest hole out, n the
+    // nearest the pin in inches, f fairways, g greens, u putts; only the ones
+    // there are), the initials, and a check word over the rest, so a number
+    // changed by hand no longer adds up. Anyone who reads this can make a
+    // check word; it is an honour system with a lock on the door.
+    function checkWord(str) {
+        var h = 0x811c9dc5, t = str + "|the trackball worn smooth";
+        for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+        return (h >>> 0).toString(36);
+    }
+    function cardLine() {
+        var n = roundNumbers();
+        if (!n) return "";
+        var bits = [];
+        if (n.drive) bits.push("d" + n.drive);
+        if (n.putt) bits.push("p" + n.putt);
+        if (n.holeOut) bits.push("o" + n.holeOut);
+        if (n.pin) bits.push("n" + n.pin);
+        if (n.kept) bits.push("f" + n.fairways, "g" + n.greens, "u" + n.putts);
+        var line = "gc2:" + seed + ":" + n.round + ":" + scores.map(function (x) { return x || 10; }).join(",") + ":" + (flags.length ? flags.join(",") : "-") + ":" + (bits.length ? bits.join(",") : "-") + ":" + (saved.initials || "-");
+        return line + ":" + checkWord(line);
+    }
+    // The clubhouse's records (cards.json, compiled from the cards posted):
+    // which of them this round's numbers would take, were its card posted.
+    var shared = null;
+    function wouldTake() {
+        var n = roundNumbers(), out = [];
+        if (!n || !shared) return out;
+        RECORDS.forEach(function (r) {
+            var v = n[r.key], sh = shared[r.key];
+            if (!v && r.key !== "putts") return;                // no such shot this round, and nought of something is not a record
+            if (!n.kept && (r.key === "fairways" || r.key === "greens" || r.key === "putts")) return;
+            if (!sh || (r.lower ? v < sh.v : v > sh.v)) out.push(r.label);
+        });
+        return out;
     }
     // The initials in use: three letters or figures. The first time they are
     // given, the records made before there were any take them.
@@ -1057,8 +1114,12 @@
         save();
         return v;
     }
+    var recordsView = "cabinet";   // or "clubhouse": the records of everyone who posted a card
     function recordsHtml(onlyFresh) {
-        var out = "<h3>" + (onlyFresh ? "NEW CABINET RECORD" + (Object.keys(fresh).length === 1 ? "" : "S") : "RECORDS · THIS CABINET") + "</h3>";
+        var club = !onlyFresh && recordsView === "clubhouse";
+        var out = onlyFresh ? "<h3>NEW CABINET RECORD" + (Object.keys(fresh).length === 1 ? "" : "S") + "</h3>"
+            : "<h3 class=\"tabs\">RECORDS · <button type=\"button\" data-view=\"cabinet\" aria-pressed=\"" + !club + "\">THIS CABINET</button> <button type=\"button\" data-view=\"clubhouse\" aria-pressed=\"" + club + "\">THE CLUBHOUSE</button></h3>";
+        if (club) return out + clubhouseHtml();
         if (!onlyFresh) out += "<p class=\"small initials\"><label>your initials <input type=\"text\" id=\"golf-initials\" maxlength=\"3\" size=\"3\" autocomplete=\"off\" autocapitalize=\"characters\" spellcheck=\"false\" value=\"" + esc(saved.initials) + "\" placeholder=\"YOU\"></label></p>";
         out += "<table class=\"board records\">";
         RECORDS.forEach(function (r) {
@@ -1079,6 +1140,25 @@
         out += "<p class=\"small\">kept in this browser. the house records came with the cabinet; yours are in green.</p>";
         return out;
     }
+    // The clubhouse's records: the best of each kind among the cards posted,
+    // with the initials on the card and the name it was posted under, which
+    // is a link to the card.
+    function clubhouseHtml() {
+        if (!shared) return "<p class=\"small\">the records have not come down from the clubhouse; they are read from the sky-data branch, once.</p>";
+        var out = "<table class=\"board records\">", any = false;
+        RECORDS.forEach(function (r) {
+            var h = shared[r.key];
+            if (!h || typeof h.v !== "number") { out += "<tr class=\"open\"><th>" + r.label + "</th><td class=\"where\"></td><td class=\"val\">—</td><td class=\"who\"></td></tr>"; return; }
+            any = true;
+            var by = String(h.by || "someone"), link = /^https:\/\/github\.com\//.test(h.url || "") ? "<a href=\"" + esc(h.url).replace(/"/g, "&quot;") + "\" target=\"_blank\" rel=\"noopener\">" + esc(by) + "</a>" : esc(by);
+            var where = esc(String(h.course || "").toLowerCase() + " · " + (h.when || "")) + " · " + link;
+            var who = /^[A-Z0-9]{1,3}$/.test(h.initials || "") ? h.initials : by.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase();
+            out += "<tr><th>" + r.label + "<small>" + where + "</small></th><td class=\"where\">" + where + "</td><td class=\"val\">" + esc(r.show(h.v)) + "</td><td class=\"who" + (saved.initials && h.initials === saved.initials ? " mine" : "") + "\">" + esc(who) + "</td></tr>";
+        });
+        out += "</table>";
+        out += "<p class=\"small\">" + (any ? "the best of every card posted to the board; the name is the card." : "nobody has posted a card with its numbers on it; the first one holds every record it has a number for.") + " finish a round and post the card to stand here. an honour system, with a lock on the door.</p>";
+        return out;
+    }
     function showRecords(onlyFresh) {
         if (!veilRecords) return;
         if (onlyFresh && !Object.keys(fresh).length) { veilRecords.hidden = true; return; }
@@ -1088,7 +1168,7 @@
     // From the bar: the records over the game, paused, with the card put by to
     // make room; the button again puts them away and brings back what was there.
     function openRecords() {
-        if (veilRecords && !veilRecords.hidden && !veil.hidden && veilRecords.querySelector("#golf-initials")) { closeRecords(); return; }
+        if (veilRecords && !veilRecords.hidden && !veil.hidden && veilRecords.querySelector(".tabs")) { closeRecords(); return; }
         if (mode !== "title" && mode !== "card" && !paused) { paused = true; go.textContent = "play on"; veilText.textContent = "paused on " + hole.name + ", hole " + (holeNo + 1) + "."; }
         veilCard.hidden = true; if (postLink) postLink.hidden = true;
         if (veilBoard) veilBoard.hidden = true;
@@ -1108,7 +1188,7 @@
     var board = null;
     function fetchBoard() {
         if (!window.fetch) return;
-        fetch(RAW + "cards.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.cards) { board = j.cards; if (!veil.hidden && veilBoard && !veilBoard.hidden) showBoard(seed); } }).catch(function () { board = null; });
+        fetch(RAW + "cards.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.cards) { board = j.cards; shared = j.records || {}; if (!veil.hidden && veilBoard && !veilBoard.hidden) showBoard(seed); if (!veil.hidden && veilRecords && !veilRecords.hidden && veilRecords.querySelector(".tabs")) showRecords(false); if (mode === "card") postCard(); } }).catch(function () { board = null; });
     }
     function esc(x) { return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     function boardHtml(forSeed, mine) {
@@ -2211,7 +2291,8 @@
             var v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3);
             if (v !== e.target.value) e.target.value = v;
         });
-        veilRecords.addEventListener("change", function (e) { if (e.target.id === "golf-initials") { setInitials(e.target.value); showRecords(false); } });
+        veilRecords.addEventListener("change", function (e) { if (e.target.id === "golf-initials") { setInitials(e.target.value); if (mode === "card") postCard(); showRecords(false); } });
+        veilRecords.addEventListener("click", function (e) { var v = e.target.getAttribute && e.target.getAttribute("data-view"); if (v) { recordsView = v; showRecords(false); } });
         veilRecords.addEventListener("keydown", function (e) { if (e.target.id === "golf-initials" && e.key === "Enter") e.target.blur(); e.stopPropagation(); });
     }
     newButton.addEventListener("click", function () {
@@ -2336,6 +2417,8 @@
         keep: keepRound, kept: keptRound, forget: forgetRound,
         // The record board: what stands, a number offered to it, the initials, and the board itself.
         get records() { return RECORDS.map(function (r) { var h = holder(r); return { key: r.key, label: r.label, v: h.v, shown: r.show(h.v), who: h.who || "YOU", course: h.course, hole: h.hole, when: h.when, mine: !!saved.records[r.key] }; }); },
+        cardLine: cardLine, checkWord: checkWord, numbers: roundNumbers, wouldTake: wouldTake,
+        shared: function (r) { if (r !== undefined) shared = r; return shared; },
         record: tryRecord, initials: function (v) { return v == null ? saved.initials : setInitials(v); }, openRecords: openRecords, get career() { return saved.career; },
         settle: function () { for (var n = 0; mode === "flight" && n < 240 * 90; n++) step(1 / 240); if (mode === "penalty") takeDrop(); return mode; },
         // The camera's levers: where it is, what it is following, the game run on by hand, and where the ball is in the picture.
