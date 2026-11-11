@@ -6,7 +6,8 @@ name: ghosts left
 # the open ones into ghosts.json and commits it to the sky-data branch
 # beside the guest book and the tanks, since master is protected; the page
 # reads it from raw.githubusercontent.com (tools/ghosts.py). Closing an
-# issue lays its ghost to rest.
+# issue lays its ghost to rest. Descents posted from the same page (issues
+# titled "descent:") are compiled into the same file.
 on:
   issues:
     types: [opened, edited, closed, reopened, deleted]
@@ -25,7 +26,7 @@ concurrency:
 jobs:
   compile:
     name: compile the ghosts
-    if: github.event_name != 'issues' || startsWith(github.event.issue.title, 'ghost:')
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, 'ghost:') || startsWith(github.event.issue.title, 'descent:')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
