@@ -21,6 +21,7 @@
     var veilText = document.getElementById("golf-veil-text");
     var veilCard = document.getElementById("golf-veil-card");
     var go = document.getElementById("golf-go");
+    var freshButton = document.getElementById("golf-fresh");
     var soundButton = document.getElementById("golf-sound");
     var fullButton = document.getElementById("golf-full");
     var unfillButton = document.getElementById("golf-unfill");
@@ -428,7 +429,7 @@
                 live = { mph: mph, dir: from == null ? 0 : ((from + 180) % 360) * Math.PI / 180, from: from, when: p.timestamp ? new Date(p.timestamp) : null };
                 if (mph === 0 || from == null) live.dir = 0;
                 var said = (p.textDescription || "") + " " + (p.presentWeather || []).map(function (w) { return w && w.rawString || ""; }).join(" ");
-                if (/rain|drizzle|shower|\bRA\b|\bDZ\b|\bSHRA\b|[-+]RA|[-+]DZ/i.test(said)) wet = true;
+                wet = /\brain\b/.test(location.hash) || /rain|drizzle|shower|\bRA\b|\bDZ\b|\bSHRA\b|[-+]RA|[-+]DZ/i.test(said);   // and dry again when it stops
                 live.wet = wet;
                 if (hole) applyWind(hole);
                 if (audio && hole) audio.wind(hole.wind.mph);
@@ -529,20 +530,31 @@
         return Math.atan2(hole.pin.x - ball.x, hole.pin.z - ball.z);
     }
     function yardsToPin() { return Math.hypot(hole.pin.x - ball.x, hole.pin.z - ball.z); }
+    // The power, from a third to all of it, that sends this club furthest along the aim.
+    function punch() {
+        var best = forecast(1.1);
+        for (var p = 0.3; p < 1.1; p += 0.05) { var f = forecast(p); if (f.along > best.along + 0.5) best = f; }
+        return best;
+    }
     // The club for the shot: the shortest whose full shot, forecast from here
     // along the aim, reaches the pin; the driver only off a tee.
     function pickClub() {
         if (ball.lie === "green") return PUTTER;
         var d = yardsToPin();
         if (ball.lie === "fringe" && d < 14) return PUTTER;
-        // If none reaches, the one that goes furthest (from a bunker, a long club can find the lip).
-        var was = club, pick = -1, best = -1, far = -Infinity;
+        // If none reaches, the one that goes furthest (from a bunker, a long club can find the lip);
+        // and if the full shots go into the branches, the one whose best punch goes furthest.
+        var was = club, pick = -1, best = -1, far = -Infinity, caught = false;
         for (var i = PUTTER - 1; i >= 0 && pick < 0; i--) {
             if (ball.lie !== "tee" && i === 0) continue;
             club = i;
-            var a = forecast(1).along;
-            if (a >= d * 0.98) pick = i;
-            if (a > far) { far = a; best = i; }
+            var f = forecast(1);
+            if (f.along >= d * 0.98) pick = i;
+            if (f.along > far) { far = f.along; best = i; caught = !!f.trees; }
+        }
+        if (pick < 0 && caught) {
+            far = -Infinity;
+            for (i = PUTTER - 1; i >= 1; i--) { club = i; var a = punch().along; if (a > far) { far = a; best = i; } }
         }
         club = was;
         return pick >= 0 ? pick : best;
@@ -770,28 +782,32 @@
         if (forecastCache.key !== key) forecastCache = { key: key, at: {} };
         var q = club === PUTTER ? 2000 : 200, pk = Math.round(Math.max(0.05, Math.min(1.1, power)) * q) / q;
         if (forecastCache.at[pk]) return forecastCache.at[pk];
-        var b = {}, dt = 1 / 120, path = [[ball.x, ball.y + 0.06, ball.z]], carry = null, end = null;
+        // At the game's own step (step() and settle() take 1/240 s), so a landing on the edge of
+        // two surfaces is decided the same way in the forecast as in the shot.
+        var b = {}, dt = 1 / 240, path = [[ball.x, ball.y + 0.06, ball.z]], carry = null, end = null;
         launch(b, pk, 0);
-        for (var i = 0; i < 120 * 45 && !end; i++) {
+        for (var i = 0; i < 240 * 45 && !end; i++) {
             end = move(b, dt, true);
             if (!carry && (b.bounces > 0 || b.rolling)) carry = { x: b.x, z: b.z };
-            if (i % 6 === 5) path.push([b.x, b.y + 0.06, b.z]);
+            if (i % 12 === 11) path.push([b.x, b.y + 0.06, b.z]);
         }
         if (end === "cup" || end === "dunk") { b.x = hole.pin.x; b.z = hole.pin.z; }
         path.push([b.x, height(hole, b.x, b.z) + 0.06, b.z]);
-        var r = { x: b.x, z: b.z, end: end || "stop", carry: carry || { x: b.x, z: b.z }, path: path, power: pk,
+        var r = { x: b.x, z: b.z, end: end || "stop", carry: carry || { x: b.x, z: b.z }, path: path, power: pk, trees: b.treeHits,
                   along: (b.x - ball.x) * Math.sin(aim) + (b.z - ball.z) * Math.cos(aim) };
         forecastCache.at[pk] = r;
         return r;
     }
     // The power that sends this club to the pin, or a putt a foot past it,
-    // solved on the forecast. 1.1 means the pin is out of this club's reach.
+    // solved on the forecast. 1.1 means the pin is out of this club's reach;
+    // but if a full shot only finds the branches, the power that goes
+    // furthest, which is the punch under them.
     function solveNeed() {
-        var target = yardsToPin() + (club === PUTTER ? PUTT_PAST : 0);
-        if (forecast(1.1).along < target) return 1.1;
+        var target = yardsToPin() + (club === PUTTER ? PUTT_PAST : 0), full = forecast(1.1);
+        if (full.along < target) return full.trees ? punch().power : 1.1;
         var lo = 0.05, hi = 1.1;
         for (var k = 0; k < (club === PUTTER ? 16 : 12); k++) { var mid = (lo + hi) / 2; if (forecast(mid).along < target) lo = mid; else hi = mid; }
-        return (lo + hi) / 2;
+        return forecast((lo + hi) / 2).power;          // the power the ring was worked out at, exactly, so a shot at the tick is the ring
     }
     // The advice on the screen: the tick's power and the shot it makes, worked
     // out again when anything changes, but no oftener than eight times a
@@ -889,7 +905,8 @@
             if (ball.from.lie === "green") { st.holed = Math.round(far * 3); tryRecord("putt", st.holed); }
             else { st.out = Math.round(far); tryRecord("holeOut", st.out); }
         }
-        if (strokes <= hole.par - 1) st.gir = true;
+        // Holed from off the green, the green was reached with the stroke that holed it.
+        if (ball.from && ball.from.lie !== "green" && strokes <= hole.par - 2) st.gir = true;
         ball.x = hole.pin.x; ball.z = hole.pin.z; ball.y = height(hole, ball.x, ball.z) - 0.1;
         ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
         if (audio) audio.cup(dunk);
@@ -2256,9 +2273,10 @@
     // ---- the page ----------------------------------------------------------
     function begin() {
         ensureAudio();
-        if (!live) fetchWind();
+        if (!live || mode === "title" || mode === "card") fetchWind();     // the weather again for each round, so rain can stop
         if (audio) audio.wind(0);
         veil.hidden = true; veilCard.hidden = true;
+        if (freshButton) freshButton.hidden = true;
         if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true; if (veilRecords) veilRecords.hidden = true;
         if (paused) { paused = false; return; }
         var kept = mode === "title" ? keptRound() : null;
@@ -2402,7 +2420,14 @@
         var done = (r.scores || []).filter(function (x) { return x; }).length;
         veilText.textContent += " Your round is on hole " + (r.holeNo + 1 + (r.done ? 1 : 0) > HOLES ? HOLES : r.holeNo + 1 + (r.done ? 1 : 0)) + (done ? ", " + done + (done === 1 ? " hole" : " holes") + " in" : "") + "; it carries on where you left it.";
         go.textContent = "play on";
+        if (freshButton) freshButton.hidden = false;
     })();
+    // Or drop it, and begin today's course again from the first tee.
+    if (freshButton) freshButton.addEventListener("click", function () {
+        forgetRound();
+        freshButton.hidden = true; go.textContent = "tee off";
+        begin();
+    });
     requestAnimationFrame(frame);
 
     // For poking at in the console.
