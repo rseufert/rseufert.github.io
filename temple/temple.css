@@ -382,3 +382,5 @@ body.filled { overflow: hidden; }
 .temple-page.neck .neck-bar label.file input { font-size: 12px; padding: 3px; max-width: 16em; }
 .temple-page.neck #neck-tab-speed { width: 9em; padding: 0; flex: none; }
 .temple-page.neck #neck-tab-controls[hidden] { display: none; }
+.temple-page.neck #neck-inlay-list[hidden] { display: none; }
+.temple-page.neck #neck-drill-say b { color: var(--accent); }

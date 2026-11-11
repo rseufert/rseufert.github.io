@@ -136,7 +136,8 @@
     // ---- the state, kept in this browser --------------------------------------------------------------
     var KEY = "temple-neck";
     var S = { tuning: TUNINGS[0][1].slice(), tuningName: "Standard", frets: 22, root: 0, scale: "major", chordRoot: null, chord: null,
-        labels: "names", colours: false, spelling: "auto", flip: false, faint: true, capo: 0, mine: { tunings: {}, scales: {}, chords: {} } };
+        labels: "names", colours: false, spelling: "auto", flip: false, faint: true, capo: 0,
+        inlays: "usual", inlayList: "3 5 7 9 12 15 17 19 21 24", trueFrets: false, scaleMm: 648, caged: false, mine: { tunings: {}, scales: {}, chords: {} } };
     try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved && typeof saved === "object") Object.keys(S).forEach(function (k) { if (saved[k] !== undefined) S[k] = saved[k]; }); } catch (e) { /* a fresh neck */ }
     ["tunings", "scales", "chords", "tabs"].forEach(function (k) { if (!S.mine || typeof S.mine !== "object") S.mine = {}; if (!S.mine[k]) S.mine[k] = {}; });
     if (!Array.isArray(S.tuning) || !S.tuning.length) S.tuning = TUNINGS[0][1].slice();
@@ -184,7 +185,14 @@
 
     // ---- the neck's geometry -----------------------------------------------------------------------
     var G = null, hover = null, sounding = {}, shapesFound = [], shapeAt = 0;
-    function along(k, N) { return 0.45 * (k / N) + 0.55 * (1 - Math.pow(2, -k / 12)) / (1 - Math.pow(2, -N / 12)); }
+    function along(k, N) { var rule = (1 - Math.pow(2, -k / 12)) / (1 - Math.pow(2, -N / 12)); return S.trueFrets ? rule : 0.45 * (k / N) + 0.55 * rule; }
+    // The inlays: the usual dots, none (a classical neck), a ukulele's, or your own list; 12 and 24 doubled when they have one.
+    var INLAYS = { usual: [3, 5, 7, 9, 12, 15, 17, 19, 21, 24, 27], uke: [5, 7, 10, 12, 15, 17, 19], none: [] };
+    function inlayList() {
+        if (S.inlays === "own") return String(S.inlayList || "").split(/[\s,]+/).map(Number).filter(function (f) { return f > 0 && f <= 36; });
+        return INLAYS[S.inlays] || INLAYS.usual;
+    }
+    function inlayAt(f) { return inlayList().indexOf(f) < 0 ? 0 : f % 12 === 0 ? 2 : 1; }
     function layout() {
         var w = stage.clientWidth || 800, n = S.tuning.length, N = S.frets, vertical = w < 640, g = {};
         g.w = w; g.n = n; g.N = N; g.vertical = vertical;
@@ -248,9 +256,10 @@
         // inlays and their numbers
         var midAcross = (G.across0 + G.across1) / 2;
         ctx.font = "11px " + MONO; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        var numbered = S.inlays === "none" ? INLAYS.usual : inlayList();   // a bare neck still gets its numbers
         for (var f = 1; f <= N; f++) {
-            var m = G.mid(f), dbl = f % 12 === 0, dot = [3, 5, 7, 9].indexOf(f % 12) >= 0 || dbl;
-            if (dot) {
+            var m = G.mid(f), kind = inlayAt(f), dbl = kind === 2, dot = numbered.indexOf(f) >= 0;
+            if (kind) {
                 ctx.fillStyle = "#0e2a20";
                 var off = dbl ? G.gap * (n > 2 ? 1 : 0.3) : 0;
                 [-off, off].forEach(function (o, j) { if (!dbl && j) return; var p = G.xy(m, midAcross + o); ctx.beginPath(); ctx.arc(p.x, p.y, G.r * 0.55, 0, Math.PI * 2); ctx.fill(); });
@@ -276,11 +285,18 @@
             var ca = G.line(S.capo) - Math.min(9, (G.line(S.capo) - G.line(S.capo - 1)) * 0.3);
             lineAlong(ca, G.across0 - 4, ca, G.across1 + 4, "#b8923f", 7);
         }
+        // the CAGED bands, behind the notes
+        if (cagedMap && !naming && !tabShape && !drill) cagedShapes.forEach(function (sh) {
+            var a0 = sh.from === 0 ? G.boardA - G.open : G.line(sh.from - 1), a1 = G.line(Math.min(G.N, sh.to));
+            ctx.globalAlpha = 0.13; rectAlong(a0, a1, G.across0, G.across1, sh.col); ctx.globalAlpha = 1;
+            var lp = G.vertical ? G.xy((a0 + a1) / 2, G.across1 + 12) : G.xy((a0 + a1) / 2, G.across0 + 7);
+            ctx.font = "bold 11px " + MONO; ctx.fillStyle = sh.col; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(sh.letter, lp.x, lp.y);
+        });
         // the notes; behind a capo there are none
         var shape = naming || tabShape || shapesFound[shapeAt] || null;
         for (i = 0; i < n; i++) for (f = S.capo ? S.capo : 0; f <= N; f++) drawNote(i, f, shape);
         // muted strings in the shape
-        if (shape && shape !== tabShape) shape.forEach(function (fr, i) {
+        if (shape && shape !== tabShape && !drill && !(cagedMap && !naming)) shape.forEach(function (fr, i) {
             if (fr !== null) return;
             var p = G.pos(i, S.capo ? S.capo : 0); ctx.strokeStyle = "#ff6a5a"; ctx.lineWidth = 1.5; var k = G.r * 0.5;
             ctx.beginPath(); ctx.moveTo(p.x - k, p.y - k); ctx.lineTo(p.x + k, p.y + k); ctx.moveTo(p.x + k, p.y - k); ctx.lineTo(p.x - k, p.y + k); ctx.stroke();
@@ -297,6 +313,22 @@
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         var fontPx = S.labels === "letters" || S.labels === "hexagrams" ? Math.round(r * 1.25) : text.length > 3 ? Math.round(r * 0.78) : Math.round(r * 0.95);
         var font = (S.labels === "letters" ? fontPx + "px " + HEB : fontPx + "px " + MONO);
+        if (drill) {   // a drill: the board bare, the start note lit, the answers flashed
+            if (drill.hide) text = "";
+            var fl = drill.flash && drill.flash.key === key ? drill.flash : null;
+            if (drill.q && drill.q.start && drill.q.start.i === i && drill.q.start.f === f) drawDot(p, r, AMBER, true, labelFor(pc, midi), font, hot);
+            else if (fl) drawDot(p, r, fl.ok ? "#3ed47a" : "#ff5a4a", true, labelFor(pc, midi), font, true);
+            else if (drill.hide) { ctx.fillStyle = "#1f4a3c"; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); }
+            else faintText(p, text, font, hot);
+            return;
+        }
+        if (cagedMap && !naming && !tabShape) {   // the five shapes, each in its colour, the rest stepped back
+            var cs = cagedMap[key];
+            if (cs) { drawDot(p, r, cs.col, true, text, font, hot); if (cs.root) { ctx.strokeStyle = AMBER; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, r + 2.5, 0, Math.PI * 2); ctx.stroke(); } }
+            else if (lit) drawDot(p, r * 0.8, DIM, false, text, font, hot, true);
+            else if (S.faint) faintText(p, text, font, hot);
+            return;
+        }
         if (shape) {   // with a shape up, or frets put down to be named, those are lit and the rest steps back
             if (inShape) drawDot(p, r, naming && !S.colours ? INK : col, true, text, font, hot);
             else if (lit) drawDot(p, r * 0.8, S.colours ? COLOUR[pc][1] : DIM, false, text, font, hot, true);
@@ -431,7 +463,7 @@
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]; }); }
     function describe(i, f) {
         var midi = S.tuning[i] + f, pc = mod(midi, 12), name = labelForName(pc), hz = 440 * Math.pow(2, (midi - 69) / 12);
-        var where = "string " + (S.tuning.length - i) + ", " + (f === 0 ? "open" : "fret " + f) + (S.capo && f >= S.capo ? (f === S.capo ? ", open above the capo" : ", " + (f - S.capo) + " above the capo") : "");
+        var where = "string " + (S.tuning.length - i) + ", " + (f === 0 ? "open" : "fret " + f + " (its wire " + Math.round(S.scaleMm * (1 - Math.pow(2, -f / 12))) + " mm from the nut)") + (S.capo && f >= S.capo ? (f === S.capo ? ", open above the capo" : ", " + (f - S.capo) + " above the capo") : "");
         var role = [];
         if (view.chord && view.chord[pc]) role.push("the " + view.chord[pc].label + " of " + view.chordName);
         if (view.scale[pc]) role.push("the " + view.scale[pc].label + " of " + view.rootName + " " + view.sd.name.toLowerCase());
@@ -596,6 +628,8 @@
         var shapeBox = $("neck-shapes");
         shapeBox.hidden = !view.chord;
         $("neck-shape-at").textContent = shapesFound.length ? "shape " + (shapeAt + 1) + " of " + shapesFound.length + ": " + shapeText(shapesFound[shapeAt]) : view.chord ? "no shape under four fingers" : "";
+        computeCaged(); $("neck-caged").setAttribute("aria-pressed", S.caged ? "true" : "false"); $("neck-caged-say").textContent = cagedSay;
+        $("neck-inlays").value = S.inlays; $("neck-inlay-list").hidden = S.inlays !== "own"; $("neck-spacing").value = S.trueFrets ? "true" : "even"; $("neck-scale-mm").value = String(S.scaleMm);
         diatonic(); fillReading(); resize(); nameIt();
     }
     // A toggle pressed: the set as it now stands, unnamed until kept.
@@ -813,7 +847,7 @@
         if (by[n]) return by[n].slice();
         var out = TUNINGS[0][1].slice(); while (out.length < n) out.push(out[out.length - 1] + 5); return out.slice(0, n);
     }
-    function parseTab(text) {
+    function parseTab(text, force) {
         var lines = String(text).replace(/\r/g, "").replace(/\t/g, "    ").split("\n"), runs = [], header = [], i = 0;
         while (i < lines.length) {
             var run = [];
@@ -849,6 +883,7 @@
                 }
             }
         }
+        if (force && force.tuning && force.tuning.length === n) tuning = force.tuning.slice();
         if (!tuning) {
             var named = TUNINGS.slice().sort(function (a, b) { return b[0].length - a[0].length; }).filter(function (t) { return t[1].length === n && t[0] !== "Standard" && new RegExp("\\b" + t[0].replace(/[()]/g, "") + "\\b", "i").test(head); })[0];
             tuning = named ? named[1].slice() : S.tuning.length === n ? S.tuning.slice() : standardFor(n);
@@ -897,9 +932,9 @@
         return { n: n, tuning: tuning, capo: capo, systems: systems, events: events, key: key, title: title, maxFret: maxFret, lines: lines };
     }
     function tabMs() { return 1000 / (12 * (+$("neck-tab-speed").value || 100) / 100); }
-    function loadTab(text) {
-        stopTab();
-        var t = parseTab(text);
+    function loadTab(text, force) {
+        stopTab(); if (drill) stopDrill();
+        var t = parseTab(text, force);
         if (!t) { TAB = null; tabShape = null; renderTab(); $("neck-tab-status").textContent = "no tab in that: a tab is lines of dashes, one a string, with fret numbers on them"; changed(true); return; }
         TAB = t; tabAt = 0; tabShape = null; naming = null;
         S.tuning = t.tuning.slice(); S.tuningName = ""; S.capo = t.capo;
@@ -987,7 +1022,252 @@
         sel.disabled = !names.length; $("neck-tab-forget").hidden = !names.length;
     }
     var tabText = "";
-    function readTab(text) { tabText = String(text || ""); loadTab(tabText); }
+    function readTab(text) { if (isScore(text)) { readScore(String(text)); return; } tabText = String(text || ""); loadTab(tabText); }
+
+    // ---- CAGED: the five shapes of a major or minor chord, laid end to end up the neck ------------------------
+    // Each is an open chord's fingering moved up: C, A, G, E, D, with its root on the A, A, low E, low E and D string.
+    // They hold for any tuning with standard's intervals (fourths and the third between G and B), so for E♭ and D too.
+    var CAGED = {
+        major: [["C", 1, [null, 0, -1, -3, -2, -3]], ["A", 1, [null, 0, 2, 2, 2, 0]], ["G", 0, [0, -1, -3, -3, -3, 0]], ["E", 0, [0, 2, 2, 1, 0, 0]], ["D", 2, [null, null, 0, 2, 3, 2]]],
+        minor: [["C", 1, [null, 0, -2, -3, -2, null]], ["A", 1, [null, 0, 2, 2, 1, 0]], ["G", 0, [0, -2, -3, -3, 0, 0]], ["E", 0, [0, 2, 2, 0, 0, 0]], ["D", 2, [null, null, 0, 2, 3, 1]]]
+    };
+    var CAGED_COLOUR = { C: "#ff6a5a", A: "#ffb000", G: "#3ed47a", E: "#4f9dff", D: "#c07cff" };
+    var cagedMap = null, cagedShapes = [], cagedSay = "";
+    function computeCaged() {
+        cagedMap = null; cagedShapes = []; cagedSay = "";
+        if (!S.caged) return;
+        var t = S.tuning, steps = t.slice(1).map(function (m, k) { return m - t[k]; }).join(",");
+        if (t.length !== 6 || steps !== "5,5,5,4,5") { cagedSay = "CAGED needs six strings tuned as standard is, or a step down"; return; }
+        var root, quality;
+        if (view.chord) { root = view.chordRoot; quality = view.chord[mod(root + 4, 12)] ? "major" : view.chord[mod(root + 3, 12)] ? "minor" : null; }
+        else { root = S.root; quality = view.scale[mod(root + 4, 12)] ? "major" : view.scale[mod(root + 3, 12)] ? "minor" : null; }
+        if (!quality) { cagedSay = "CAGED is for a chord with a third, major or minor"; return; }
+        var lo = S.capo, hi = S.frets;
+        CAGED[quality].forEach(function (tpl) {
+            var rs = tpl[1], r0 = mod(root - (t[rs] + lo), 12) + lo;
+            for (var r = r0; r <= hi + 3; r += 12) {
+                var frets = tpl[2].map(function (d) { return d === null ? null : r + d; });
+                var used = frets.filter(function (f) { return f !== null; });
+                if (Math.min.apply(null, used) < lo || Math.max.apply(null, used) > hi) continue;
+                cagedShapes.push({ letter: tpl[0], col: CAGED_COLOUR[tpl[0]], frets: frets, from: Math.min.apply(null, used), to: Math.max.apply(null, used), at: r });
+            }
+        });
+        cagedShapes.sort(function (a, b) { return a.from - b.from || a.to - b.to; });
+        cagedMap = {};
+        cagedShapes.forEach(function (sh) {
+            // the whole chord within the shape's frets, not only the five or six notes of the fingering
+            for (var i = 0; i < 6; i++) for (var f = sh.from; f <= sh.to; f++) {
+                var pc = mod(t[i] + f, 12), k = i + ":" + f, d = mod(pc - root, 12);
+                if ((d === 0 || d === 7 || d === (quality === "major" ? 4 : 3)) && !cagedMap[k]) cagedMap[k] = { col: sh.col, root: d === 0, letter: sh.letter };
+            }
+        });
+        var nm = (view.chord ? view.chordName : view.names[root] + (quality === "minor" ? "m" : ""));
+        cagedSay = nm + " up the neck: " + cagedShapes.map(function (sh) { return sh.letter + " shape at " + (sh.from === S.capo ? "the " + (S.capo ? "capo" : "nut") : "fret " + sh.from); }).join(" · ");
+    }
+
+    // ---- drills: the board bare, a question, a tap for the answer --------------------------------------------
+    var drill = null;
+    var INTERVAL_NAMES = ["", "a minor second", "a major second", "a minor third", "a major third", "a fourth", "a tritone", "a fifth", "a minor sixth", "a major sixth", "a minor seventh", "a major seventh"];
+    function rnd(n) { var a = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(a); return a[0] % n; }
+    function drillRange() { return { lo: S.capo, hi: Math.min(S.frets, S.capo + 12) }; }
+    function nextQuestion() {
+        var k = drill.kind, R = drillRange(), q = { start: null };
+        if (k === "notes") {
+            var pc = rnd(12); q.target = pc; q.say = "find " + (view.names[pc]) + ", anywhere from the " + (S.capo ? "capo" : "nut") + " to fret " + R.hi;
+        } else if (k === "intervals") {
+            var i = rnd(S.tuning.length), f = R.lo + rnd(R.hi - R.lo - 2), iv = 1 + rnd(11), m = S.tuning[i] + f;
+            q.start = { i: i, f: f }; q.target = mod(m + iv, 12);
+            q.say = "from the lit " + view.names[mod(m, 12)] + ", find " + INTERVAL_NAMES[iv] + " up";
+        } else if (k === "chords") {
+            var ids = ["maj", "min", "dom7", "maj7", "m7", "dim", "sus4"], id = ids[rnd(ids.length)], root = rnd(12), tones = formula(CHORD[id].f).filter(function (t) { return t.semis !== 0; }), tone = tones[rnd(tones.length)];
+            q.target = mod(root + tone.semis, 12); q.say = "find the " + tone.label + " of " + view.names[root] + CHORD[id].sym;
+        } else {
+            var st = view.st, d = 1 + rnd(st.length - 1);
+            q.target = mod(S.root + st[d].semis, 12); q.say = "find degree " + st[d].label + " of " + view.rootName + " " + view.sd.name.toLowerCase();
+        }
+        q.t0 = Date.now(); drill.q = q; drillSay(); draw();
+    }
+    function drillSay(extra) {
+        var d = drill; if (!d) { $("neck-drill-say").textContent = ""; return; }
+        $("neck-drill-say").innerHTML = "<b>" + esc(d.q ? d.q.say : "") + "</b><br>" + d.right + " of " + d.tries + (d.streak > 1 ? " · " + d.streak + " in a row" : "") + (d.last ? " · the last in " + (d.last / 1000).toFixed(1) + "s" : "") + (extra ? " · " + esc(extra) : "");
+    }
+    function drillTap(i, f) {
+        var midi = S.tuning[i] + f, pc = mod(midi, 12), q = drill.q; if (!q) return;
+        if (q.start && q.start.i === i && q.start.f === f) { pluck(midi, 0); return; }
+        drill.tries++;
+        var ok = pc === q.target, key = i + ":" + f;
+        drill.flash = { key: key, ok: ok };
+        if (q.start) pluck(S.tuning[q.start.i] + q.start.f, 0);
+        pluck(midi, q.start ? 0.18 : 0);
+        if (ok) {
+            drill.right++; drill.streak++; drill.last = Date.now() - q.t0; drillSay("yes, " + view.names[pc]);
+            var was = drill; setTimeout(function () { if (drill === was) { drill.flash = null; nextQuestion(); } }, 650);
+        } else {
+            drill.streak = 0; drillSay("that is " + view.names[pc]);
+            setTimeout(function () { if (drill && drill.flash && drill.flash.key === key) { drill.flash = null; draw(); } }, 650);
+        }
+        draw();
+    }
+    function startDrill() {
+        stopTab(); naming = null; tabShape = null;
+        drill = { kind: $("neck-drill-kind").value, right: 0, tries: 0, streak: 0, last: 0, flash: null, q: null, hide: $("neck-drill-hide").getAttribute("aria-pressed") === "true" };
+        $("neck-drill-go").textContent = "stop the drill"; $("neck-drill-go").setAttribute("aria-pressed", "true");
+        nextQuestion();
+    }
+    function stopDrill() {
+        drill = null; $("neck-drill-go").textContent = "start"; $("neck-drill-go").setAttribute("aria-pressed", "false"); drillSay(); draw();
+    }
+
+    // ---- MusicXML: a score read into a tab, with its rhythm kept by the spacing ---------------------------------
+    // .musicxml is the XML itself; .mxl is the same zipped, and the browser's own inflater opens it. The part with
+    // frets in it is taken if there is one (a tab staff), else the first part with notes; notes without frets are
+    // laid on the strings near where the hand already is. Eight columns a quarter note, so the player's speed follows.
+    function unzipFirstXml(buf) {
+        var u = new Uint8Array(buf), dv = new DataView(buf), eocd = -1;
+        for (var i = u.length - 22; i >= Math.max(0, u.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+        if (eocd < 0) return Promise.reject(new Error("not a zip"));
+        var count = dv.getUint16(eocd + 10, true), at = dv.getUint32(eocd + 16, true), files = {};
+        for (var k = 0; k < count; k++) {
+            if (dv.getUint32(at, true) !== 0x02014b50) break;
+            var method = dv.getUint16(at + 10, true), csize = dv.getUint32(at + 20, true), nlen = dv.getUint16(at + 28, true), xlen = dv.getUint16(at + 30, true), clen = dv.getUint16(at + 32, true), local = dv.getUint32(at + 42, true);
+            var name = new TextDecoder().decode(u.subarray(at + 46, at + 46 + nlen));
+            files[name] = { method: method, csize: csize, local: local };
+            at += 46 + nlen + xlen + clen;
+        }
+        function read(name) {
+            var e = files[name]; if (!e) return Promise.reject(new Error("missing " + name));
+            var start = e.local + 30 + dv.getUint16(e.local + 26, true) + dv.getUint16(e.local + 28, true), data = u.subarray(start, start + e.csize);
+            if (e.method === 0) return Promise.resolve(new TextDecoder().decode(data));
+            if (e.method !== 8 || !window.DecompressionStream) return Promise.reject(new Error("this browser cannot open a zipped score; save it as .musicxml"));
+            return new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+        }
+        var root = files["META-INF/container.xml"] ? read("META-INF/container.xml").then(function (x) { var m = /full-path="([^"]+)"/.exec(x); return m ? m[1] : null; }) : Promise.resolve(null);
+        return root.then(function (path) {
+            path = path || Object.keys(files).filter(function (n) { return /\.(xml|musicxml)$/i.test(n) && n.indexOf("META-INF") !== 0; })[0];
+            if (!path) throw new Error("no score in that zip");
+            return read(path);
+        });
+    }
+    function kids(el, name) { var out = []; for (var c = el.firstElementChild; c; c = c.nextElementSibling) if (c.localName === name) out.push(c); return out; }
+    function kid(el, name) { return el ? kids(el, name)[0] || null : null; }
+    function txt(el, name) { var k = kid(el, name); return k ? k.textContent.trim() : null; }
+    function readMusicXML(xml) {
+        var doc = new DOMParser().parseFromString(xml, "application/xml");
+        if (doc.getElementsByTagName("parsererror").length) return { error: "that XML does not parse" };
+        if (doc.documentElement.localName === "score-timewise") return { error: "a timewise score; save it as partwise MusicXML" };
+        var parts = Array.prototype.slice.call(doc.getElementsByTagName("part"));
+        var part = parts.filter(function (p) { return p.getElementsByTagName("fret").length; })[0] || parts.filter(function (p) { return p.getElementsByTagName("pitch").length; })[0];
+        if (!part) return { error: "no notes in that score" };
+        var title = (doc.getElementsByTagName("work-title")[0] || doc.getElementsByTagName("movement-title")[0] || {}).textContent || "";
+        var sp = Array.prototype.slice.call(doc.getElementsByTagName("score-part")).filter(function (x) { return x.getAttribute("id") === part.getAttribute("id"); })[0];
+        var partName = sp ? txt(sp, "part-name") || "" : "";
+        var tuning = null, capo = 0, tempo = null, notes = [], bars = [], divisions = 1, t0 = 0;
+        var STEP = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+        kids(part, "measure").forEach(function (meas) {
+            var pos = 0, end = 0, last = 0;
+            bars.push(t0);
+            for (var el = meas.firstElementChild; el; el = el.nextElementSibling) {
+                var nm = el.localName;
+                if (nm === "attributes") {
+                    var dv = txt(el, "divisions"); if (dv) divisions = +dv || 1;
+                    var sd = kid(el, "staff-details");
+                    if (sd) {
+                        var tl = kids(sd, "staff-tuning");
+                        if (tl.length) { tuning = []; tl.forEach(function (x) { tuning[(+x.getAttribute("line") || 1) - 1] = (+txt(x, "tuning-octave") + 1) * 12 + STEP[txt(x, "tuning-step")] + (+txt(x, "tuning-alter") || 0); }); }
+                        if (txt(sd, "capo")) capo = +txt(sd, "capo") || 0;
+                    }
+                } else if (nm === "direction" || nm === "sound") {
+                    var snd = nm === "sound" ? el : kid(el, "sound");
+                    if (snd && snd.getAttribute("tempo") && tempo == null) tempo = +snd.getAttribute("tempo");
+                } else if (nm === "backup") { pos -= +txt(el, "duration") || 0; }
+                else if (nm === "forward") { pos += +txt(el, "duration") || 0; end = Math.max(end, pos); }
+                else if (nm === "note") {
+                    if (kid(el, "grace") || kid(el, "cue")) continue;
+                    var dur = +txt(el, "duration") || 0, chord = !!kid(el, "chord"), at = chord ? last : pos;
+                    if (!chord) { last = pos; pos += dur; end = Math.max(end, pos); }
+                    var pitch = kid(el, "pitch"); if (!pitch) continue;
+                    var ties = kids(el, "tie").map(function (x) { return x.getAttribute("type"); });
+                    if (ties.indexOf("stop") >= 0 && ties.indexOf("start") < 0) continue;
+                    if (ties.indexOf("stop") >= 0) continue;
+                    var midi = (+txt(pitch, "octave") + 1) * 12 + STEP[txt(pitch, "step")] + (+txt(pitch, "alter") || 0);
+                    var tech = kid(kid(el, "notations"), "technical"), str = tech && txt(tech, "string"), fr = tech && txt(tech, "fret");
+                    notes.push({ t: t0 + at / divisions, midi: midi, string: str ? +str : null, fret: fr != null ? +fr : null });
+                }
+            }
+            t0 += Math.max(end, pos) / divisions;
+        });
+        if (!notes.length) return { error: "no pitched notes in that score" };
+        return { title: title.trim(), part: partName, tuning: tuning && tuning.every(function (m) { return m > 0; }) ? tuning : null, capo: capo, tempo: tempo || 100, notes: notes, bars: bars, length: t0 };
+    }
+    // Put each chord's notes on strings: frets from the capo, each note a string of its own, near the last hand.
+    function fretNotes(score, tun, capo) {
+        var n = tun.length, hand = 0, groups = {};
+        score.notes.forEach(function (x) { (groups[x.t] = groups[x.t] || []).push(x); });
+        var hasFrets = score.notes.every(function (x) { return x.string != null && x.fret != null; });
+        return Object.keys(groups).map(Number).sort(function (a, b) { return a - b; }).map(function (t) {
+            var g = groups[t];
+            if (hasFrets) return { t: t, notes: g.map(function (x) { return { s: n - x.string, f: x.fret }; }).filter(function (x) { return x.s >= 0 && x.s < n; }) };
+            var ms = g.map(function (x) { var m = x.midi; while (m < tun[0] + capo) m += 12; while (m > tun[n - 1] + capo + 19) m -= 12; return m; })
+                .filter(function (m, k, a) { return a.indexOf(m) === k; }).sort(function (a, b) { return a - b; });
+            while (ms.length > n) ms.splice(1, 1);
+            var best = null;
+            (function walk(k, used, acc, cost) {
+                if (best && cost >= best.cost) return;
+                if (k === ms.length) {
+                    var fr = acc.filter(function (x) { return x.f > 0; }).map(function (x) { return x.f; });
+                    var span = fr.length ? Math.max.apply(null, fr) - Math.min.apply(null, fr) : 0;
+                    var c = cost + (span > 4 ? (span - 4) * 8 : 0);
+                    if (!best || c < best.cost) best = { cost: c, notes: acc.slice() };
+                    return;
+                }
+                for (var s = 0; s < n; s++) {
+                    if (used & (1 << s)) continue;
+                    var f = ms[k] - tun[s] - capo; if (f < 0 || f > 20) continue;
+                    acc.push({ s: s, f: f }); walk(k + 1, used | (1 << s), acc, cost + (f === 0 ? 0.3 : Math.abs(f - hand))); acc.pop();
+                }
+            })(0, 0, [], 0);
+            var notes = best ? best.notes : [];
+            var fr = notes.filter(function (x) { return x.f > 0; }).map(function (x) { return x.f; });
+            if (fr.length) hand = hand * 0.4 + 0.6 * fr.reduce(function (a, b) { return a + b; }, 0) / fr.length;
+            return { t: t, notes: notes };
+        }).filter(function (e) { return e.notes.length; });
+    }
+    // Write it out as a text tab: eight columns a quarter, a bar line at each measure, four measures a line.
+    function scoreToTab(score) {
+        var tun = score.tuning && score.tuning.length >= 4 && score.tuning.length <= 8 ? score.tuning : TUNINGS[0][1].slice(), n = tun.length, capo = score.capo;
+        var events = fretNotes(score, tun, capo), Q = 8, bars = score.bars.concat([score.length]), lines = [];
+        var labels = tun.map(function (m) { return SHARP[mod(m, 12)].replace("♯", "#"); }).reverse(), lw = Math.max.apply(null, labels.map(function (l) { return l.length; }));
+        var e = 0;
+        for (var b0 = 0; b0 < bars.length - 1; b0 += 4) {
+            var rows = labels.map(function (l) { return (l + "     ").slice(0, lw) + "|"; });
+            for (var b = b0; b < Math.min(b0 + 4, bars.length - 1); b++) {
+                var start = bars[b], stop = bars[b + 1], width = Math.max(4, Math.round((stop - start) * Q)), cells = rows.map(function () { return []; }), col = 0;
+                for (var k = 0; k < width + 8; k++) cells.forEach(function (c) { c.push("-"); });
+                var lastEnd = 0;
+                while (e < events.length && events[e].t < stop - 1e-6) {
+                    var ev = events[e], c0 = Math.max(lastEnd, Math.round((ev.t - start) * Q)), w = 1;
+                    ev.notes.forEach(function (x) { var str = String(x.f), row = n - 1 - x.s; w = Math.max(w, str.length); for (var j = 0; j < str.length; j++) cells[row][c0 + j] = str[j]; });
+                    lastEnd = c0 + w + 1; col = Math.max(col, lastEnd); e++;
+                }
+                var len = Math.max(width, col);
+                rows = rows.map(function (r, k) { return r + cells[k].slice(0, len).join("") + "|"; });
+            }
+            lines.push(rows.join("\n"));
+        }
+        var head = [(score.title || "a score") + (score.part ? " · " + score.part : ""), "from MusicXML · tempo " + Math.round(score.tempo) + (capo ? " · capo " + capo : "")];
+        return { text: head.join("\n") + "\n\n" + lines.join("\n\n"), tuning: tun, tempo: score.tempo };
+    }
+    function readScore(xml, name) {
+        var sc = readMusicXML(xml);
+        if (sc.error) { $("neck-tab-status").textContent = sc.error; return; }
+        var out = scoreToTab(sc);
+        $("neck-tab-paste").value = out.text;
+        tabText = out.text; loadTab(out.text, { tuning: out.tuning });
+        var speed = Math.max(25, Math.min(200, Math.round(out.tempo * 8 / 60 / 12 * 100 / 5) * 5));
+        $("neck-tab-speed").value = speed; $("neck-tab-speed-at").textContent = speed + "%";
+        if (name) $("neck-tab-name").value = name;
+    }
+    function isScore(text) { return /<score-(partwise|timewise)/.test(String(text).slice(0, 4000)); }
 
     // ---- wiring ------------------------------------------------------------------------------------------
     $("neck-tuning").onchange = function () {
@@ -1023,8 +1303,15 @@
     else $("neck-pipes").parentNode.hidden = true;
     $("neck-tab-file").onchange = function () {
         var f = this.files && this.files[0]; if (!f) return;
-        if (f.size > 512 * 1024) { $("neck-tab-status").textContent = "that file is too big to be a tab"; return; }
-        var rd = new FileReader(); rd.onload = function () { readTab(rd.result); $("neck-tab-name").value = f.name.replace(/\.[^.]+$/, ""); }; rd.readAsText(f);
+        var base = f.name.replace(/\.[^.]+$/, "");
+        if (/\.mxl$/i.test(f.name)) {
+            if (f.size > 8 * 1024 * 1024) { $("neck-tab-status").textContent = "that score is too big"; return; }
+            $("neck-tab-status").textContent = "opening the score…";
+            f.arrayBuffer().then(unzipFirstXml).then(function (xml) { readScore(xml, base); }, function (err) { $("neck-tab-status").textContent = String(err.message || err); });
+            this.value = ""; return;
+        }
+        if (f.size > (/\.(musicxml|xml)$/i.test(f.name) ? 8 * 1024 * 1024 : 512 * 1024)) { $("neck-tab-status").textContent = "that file is too big to be a tab"; return; }
+        var rd = new FileReader(); rd.onload = function () { readTab(rd.result); $("neck-tab-name").value = base; }; rd.readAsText(f);
         this.value = "";
     };
     $("neck-tab-read").onclick = function () { readTab($("neck-tab-paste").value); };
@@ -1051,6 +1338,17 @@
         if (best >= 0) { var was = tabPlaying; stopTab(); tabAt = best; if (was) playTab(); else showEvent(best, true); }
     });
     fillTabs();
+    (function () { var sel = $("neck-frets"); sel.innerHTML = ""; for (var k = 12; k <= 30; k++) option(sel, k, k, k === S.frets); })();
+    $("neck-inlays").onchange = function () { S.inlays = this.value; changed(true); };
+    $("neck-inlay-list").value = S.inlayList;
+    $("neck-inlay-list").oninput = function () { S.inlayList = this.value; keep(); draw(); };
+    $("neck-spacing").onchange = function () { S.trueFrets = this.value === "true"; changed(true); };
+    $("neck-scale-mm").onchange = function () { S.scaleMm = +this.value || 648; changed(true); };
+    $("neck-caged").onclick = function () { S.caged = !S.caged; if (S.caged) { naming = null; tabShape = null; stopTab(); } changed(true); };
+    $("neck-drill-go").onclick = function () { if (drill) stopDrill(); else startDrill(); };
+    $("neck-drill-skip").onclick = function () { if (drill) { drill.streak = 0; nextQuestion(); } };
+    $("neck-drill-kind").onchange = function () { if (drill) startDrill(); };
+    $("neck-drill-hide").onclick = function () { var on = this.getAttribute("aria-pressed") !== "true"; this.setAttribute("aria-pressed", on ? "true" : "false"); if (drill) { drill.hide = on; draw(); } };
     $("neck-sky").onclick = skyChord;
     (function () { var sel = $("neck-capo"); for (var c = 0; c <= 12; c++) option(sel, c, c ? "fret " + c : "none", c === S.capo); })();
     $("neck-capo").onchange = function () { S.capo = +this.value; if (S.capo > S.frets - 4) S.frets = 24; if (naming) naming = naming.map(function () { return null; }); changed(); };
@@ -1069,7 +1367,8 @@
     $("neck-reset").onclick = function () {
         var mine = S.mine;
         S = { tuning: TUNINGS[0][1].slice(), tuningName: "Standard", frets: 22, root: 0, scale: "major", chordRoot: null, chord: null,
-            labels: "names", colours: false, spelling: "auto", flip: false, faint: true, capo: 0, mine: mine };
+            labels: "names", colours: false, spelling: "auto", flip: false, faint: true, capo: 0,
+            inlays: S.inlays, inlayList: S.inlayList, trueFrets: S.trueFrets, scaleMm: S.scaleMm, caged: false, mine: mine };   // the instrument is yours: it stays
         LINKED = {}; naming = null;
         sky = null; changed();
     };
@@ -1090,12 +1389,13 @@
         var h = hit(e);
         if ((h && hover && h.i === hover.i && h.f === hover.f) || (!h && !hover)) return;
         hover = h; canvas.style.cursor = h ? "pointer" : "default";
-        if (h) showCell(function () { return describe(h.i, h.f); });
+        if (h && !drill) showCell(function () { return describe(h.i, h.f); });
         draw();
     });
     canvas.addEventListener("pointerleave", function () { hover = null; draw(); });
     canvas.addEventListener("click", function (e) {
         var h = hit(e); if (!h) return;
+        if (drill) { drillTap(h.i, h.f); return; }
         if (naming) { naming[h.i] = naming[h.i] === h.f ? null : h.f; nameIt(); }
         else showCell(function () { return describe(h.i, h.f); });
         pluck(S.tuning[h.i] + h.f, 0, h.i + ":" + h.f);
@@ -1107,5 +1407,5 @@
     compute(); changed(); fillHour();
     if (arrived && arrived.note != null) showCell(function () { return noteCell(arrived.note); });
     setInterval(fillHour, 60000);
-    window.Neck = { state: function () { return JSON.parse(JSON.stringify(S)); }, tab: function () { return TAB; }, parseTab: parseTab, load: readTab, yin: function (b, sr) { return yin(b, sr); }, put: function (i, f) { if (naming) { naming[i] = naming[i] === f ? null : f; nameIt(); } return $("neck-named").textContent; }, view: function () { return view; }, shapes: function () { return shapesFound; }, spell: spell, formula: formula };
+    window.Neck = { state: function () { return JSON.parse(JSON.stringify(S)); }, tab: function () { return TAB; }, parseTab: parseTab, load: readTab, unzip: unzipFirstXml, readScore: readScore, caged: function () { return cagedShapes; }, drill: function () { return drill; }, yin: function (b, sr) { return yin(b, sr); }, put: function (i, f) { if (naming) { naming[i] = naming[i] === f ? null : f; nameIt(); } return $("neck-named").textContent; }, view: function () { return view; }, shapes: function () { return shapesFound; }, spell: spell, formula: formula };
 })();
