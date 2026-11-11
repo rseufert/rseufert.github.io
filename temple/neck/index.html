@@ -36,9 +36,11 @@ sky this minute is a chord you can play.</p>
 </div>
 <div class="neck-bar">
   <button type="button" id="neck-name" aria-pressed="false">name a chord</button>
+  <button type="button" id="neck-caged" aria-pressed="false">CAGED</button>
   <button type="button" id="neck-name-light" hidden>light it</button>
   <span class="hint" id="neck-named" aria-live="polite"></span>
 </div>
+<p class="hint" id="neck-caged-say" aria-live="polite"></p>
 <div class="neck-bar">
   <button type="button" id="neck-tuner" aria-pressed="false">tune by ear</button>
   <span class="hint tuned" id="neck-tuned" aria-live="polite"></span>
@@ -49,10 +51,25 @@ sky this minute is a chord you can play.</p>
   <span class="hint" id="neck-hour"></span>
 </div>
 
-<h2>A tab</h2>
-<p class="hint">open a plain-text tab, or paste one, and the neck takes its tuning, capo and key from it and plays it; nothing leaves this browser</p>
+<h2>A drill</h2>
+<p class="hint">the board goes bare and asks; tap where the answer is</p>
 <div class="neck-bar">
-  <label class="file">open a tab file <input type="file" id="neck-tab-file" accept=".txt,.tab,.crd,.text,text/plain"></label>
+  <label>find <select id="neck-drill-kind">
+    <option value="notes">a note, anywhere</option>
+    <option value="intervals">an interval from a lit note</option>
+    <option value="chords">a chord's tone</option>
+    <option value="degrees">a degree of the scale</option>
+  </select></label>
+  <button type="button" id="neck-drill-go" aria-pressed="false">start</button>
+  <button type="button" id="neck-drill-skip">another</button>
+  <button type="button" id="neck-drill-hide" aria-pressed="true">hide the names</button>
+</div>
+<p class="cell" id="neck-drill-say" aria-live="polite"></p>
+
+<h2>A tab</h2>
+<p class="hint">open a plain-text tab or a MusicXML score (.musicxml or .mxl), or paste one, and the neck takes its tuning, capo and key from it and plays it; nothing leaves this browser</p>
+<div class="neck-bar">
+  <label class="file">open a tab file <input type="file" id="neck-tab-file" accept=".txt,.tab,.crd,.text,.musicxml,.xml,.mxl,text/plain,application/vnd.recordare.musicxml+xml,application/vnd.recordare.musicxml"></label>
   <button type="button" id="neck-tab-sample">try Greensleeves</button>
   <select id="neck-tab-mine" aria-label="your kept tabs"></select>
   <button type="button" id="neck-tab-forget" hidden>forget it</button>
@@ -134,9 +151,6 @@ G|-2-------|" aria-label="paste a tab"></textarea>
     <option value="sharps">sharps</option>
     <option value="flats">flats</option>
   </select></label>
-  <label>frets <select id="neck-frets">
-    <option>12</option><option>15</option><option>19</option><option>21</option><option>22</option><option>24</option>
-  </select></label>
 </div>
 <div class="neck-bar">
   <button type="button" id="neck-colours" aria-pressed="false">Case's colours</button>
@@ -148,6 +162,34 @@ G|-2-------|" aria-label="paste a tab"></textarea>
 <div class="neck-bar">
   <button type="button" id="neck-pipes" aria-pressed="false">the hexagrams by the season</button>
   <span class="hint" id="neck-pipes-say"></span>
+</div>
+
+<h2>Your instrument</h2>
+<div class="neck-bar">
+  <label>frets <select id="neck-frets"></select></label>
+  <label>inlays <select id="neck-inlays">
+    <option value="usual">the usual dots</option>
+    <option value="none">none, a classical neck</option>
+    <option value="uke">a ukulele's</option>
+    <option value="own">your own</option>
+  </select></label>
+  <input id="neck-inlay-list" type="text" hidden aria-label="the frets with inlays, by number" placeholder="the frets with dots: 3 5 7 9 12">
+</div>
+<div class="neck-bar">
+  <label>spaced <select id="neck-spacing">
+    <option value="even">evened out, for the names</option>
+    <option value="true">true to the rule of eighteen</option>
+  </select></label>
+  <label>scale <select id="neck-scale-mm">
+    <option value="628">628 mm, 24.75 in, a Gibson</option>
+    <option value="648">648 mm, 25.5 in, a Fender</option>
+    <option value="650">650 mm, a classical</option>
+    <option value="635">635 mm, 25 in, a PRS</option>
+    <option value="686">686 mm, 27 in, a baritone</option>
+    <option value="864">864 mm, 34 in, a bass</option>
+    <option value="346">346 mm, a soprano ukulele</option>
+    <option value="350">350 mm, a mandolin</option>
+  </select></label>
 </div>
 
 <h2>What it is</h2>
@@ -177,6 +219,16 @@ a p or a slide is played softer, as a hammer or a slide sounds, and a new note o
 The key is guessed by Krumhansl and Schmuckler's method, weighing how often each note sounds against the profiles
 of the major and minor keys, and the neck lights that scale behind the tab. Greensleeves is arranged here from the
 traditional tune. A tab you open stays in this browser; keep it under a name to have it next time.</p>
+
+<p>The CAGED view takes the chord lit, or the key's own triad, and lays the five open shapes along the neck, C, A, G,
+E and D, each moved up to where its root falls, in its own colour, with the root ringed: they join end to end and the
+order comes round again at the twelfth fret. It needs the intervals of standard tuning, so it works a step down too.
+A drill clears the board and asks for a note, an interval up from a lit note, a tone of a chord, or a degree of the
+scale; tap the place, and it keeps count. A MusicXML score, from MuseScore or most notation programs, is read into a
+tab: the part with frets in it if there is a tab staff, otherwise the first part with notes, laid on the strings near
+where the hand already is, with its tempo setting the speed and its rhythm kept in the spacing, eight columns to a
+quarter note; a zipped .mxl is opened by the browser's own inflater. Your instrument is the number of frets, the dots
+and the scale length, which tells you how far each fret wire sits from the nut.</p>
 
 <p>The tone scale is Paul Foster Case's, from the Builders of the Adytum's tarot of the 1920s, which hung a note and a
 colour on each of the twenty-two trumps. Laid out it is simpler than it sounds: the twelve semitones from C go round
