@@ -125,6 +125,8 @@ body.filled { overflow: hidden; }
 .golf-page .pads { position: absolute; left: 12px; bottom: 40px; z-index: 2; display: none; gap: 4px; }   /* six pads, clear of the swing meter at 375 wide */
 .golf-page .pads button { font: 13px var(--mono); color: #ffcc33; background: rgba(0, 0, 0, 0.7); border: 1px solid #ffcc33; min-width: 40px; height: 40px; padding: 0 8px; cursor: pointer; }
 @media (hover: none) and (pointer: coarse) { .golf-page .pads { display: flex; } }
+/* Under the veil the pads have nothing to aim, and would sit on its button. */
+.golf-page .stage:has(.veil:not([hidden])) .pads { display: none; }
 
 /* The clubhouse board, on the veil: who posted what on this course. */
 .golf-page .board-wrap { max-width: 100%; overflow-x: auto; margin: 0 0 14px; }
@@ -138,6 +140,26 @@ body.filled { overflow: hidden; }
 .golf-page table.board td.over { color: #ff7a7a; }
 .golf-page table.board td.flags { color: #ffcc33; letter-spacing: 0.2em; }
 .golf-page table.board td.when { color: #7d7d88; }
+/* The cabinet's records, on the veil: what stands, and whose initials are on it. */
+.golf-page table.records th, .golf-page table.records td { padding: 3px 6px; white-space: nowrap; }
+.golf-page table.records th { color: #e9e9f0; letter-spacing: 0.06em; }
+.golf-page table.records th small { display: block; font-size: 10px; color: #7d7d88; letter-spacing: 0; white-space: normal; }
+.golf-page table.records td.where { display: none; font-size: 10px; color: #7d7d88; }
+/* With room, a record is one line: what, where and when, how much, who. And the banner steps aside for the board. */
+@media (min-width: 700px) {
+    .golf-page table.records th small { display: none; }
+    .golf-page table.records td.where { display: table-cell; }
+}
+.golf-page .veil:has(.records-wrap:not([hidden]) .initials) .banner, .golf-page .veil:has(.records-wrap:not([hidden]) .initials) #golf-veil-text { display: none; }
+.golf-page .records-wrap .initials { margin: 0 auto 8px; }
+.golf-page table.records td.val { color: #ffcc33; text-align: right; white-space: nowrap; }
+.golf-page table.records td.who { color: #8fe7ff; letter-spacing: 0.18em; }
+.golf-page table.records td.who.mine { color: #4dff7a; }
+.golf-page table.records tr.fresh td.val { animation: golf-record 0.9s steps(2, jump-none) infinite; }
+@keyframes golf-record { from { opacity: 1; } to { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .golf-page table.records tr.fresh td.val { animation: none; } }
+.golf-page .records-wrap .initials input { font: 13px var(--mono); width: 3.4em; padding: 3px 4px; margin-left: 6px; text-align: center; text-transform: uppercase; letter-spacing: 0.18em; color: #4dff7a; background: #000; border: 1px solid #ffcc33; border-radius: 0; }
+.golf-page .records-wrap .initials input::placeholder { color: #4d4d57; }
 .golf-page .veil a.button { display: inline-block; font: 13px var(--mono); color: #8fe7ff; background: #000; border: 1px solid #8fe7ff; padding: 8px 18px; text-decoration: none; letter-spacing: 0.05em; }
 .golf-page .veil a.button:hover { background: #8fe7ff; color: #000; }
 .golf-page .veil a.button[hidden] { display: none; }

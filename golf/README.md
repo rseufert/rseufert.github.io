@@ -240,7 +240,7 @@ from the green; `esc` pauses; on a phone there are buttons for aim, club, the
 flyover and the view from the green, a drag across the sky aims, and two
 fingers dragged sideways look round. The club is chosen for
 you as each shot stops, the shortest whose full shot reaches the pin. Best rounds per
-course, and the sound setting, are in `localStorage` under `golf`.
+course, the cabinet's records and the sound setting are in `localStorage` under `golf`.
 `window.Golf` exposes the generator, the ball and a few levers for poking at
 in the console, including `Golf.settle()`, which runs a shot to rest at once,
 and `Golf.hud(false)`, for a clean picture. The keyboard is the game's only
@@ -270,6 +270,40 @@ More levers: `Golf.forecast(p)` and `Golf.need()` are the advice,
 `Golf.scores`, `Golf.strokes` and `Golf.stats` the score as it stands,
 `Golf.rain(on)`, `Golf.bearing` and `Golf.shape` the day and the hole, and
 `Golf.kept()` and `Golf.forget()` the round kept.
+
+## The cabinet's records
+
+The record board, the way the cabinet in the bar kept one (`RECORDS`). Four
+are single shots, weighed as they happen: the longest drive (a tee shot on a
+par 4 or 5 that stops on the fairway, the fringe or the green, as the cabinet
+had it), the longest putt to drop from on the green, the longest hole out
+from off it, and the tee shot nearest the pin on a par 3 (the first stroke,
+stopping on the green; a tap-in does not count as a putt, and an ace is not
+"near"). Five are for a whole round, weighed when the ninth hole is in
+(`roundRecords`): the best round, the most birdies (anything under par), the
+fairways hit of seven, the greens hit of nine, and the fewest putts; the last
+three want every hole's numbers and no hole picked up. All in whole yards,
+feet, inches and strokes, so a record is beaten by one of those and never
+tied.
+
+Each has a house record that came with the cabinet, with the initials of
+whoever set it (the sasquatch, the heron, the elves, rickbot, Rick, Josh
+Allen, the airport, the mountain) and a year in the nineties. They were set
+from a bot that plays a little unevenly: about what the best of four or five
+rounds does, so one falls now and then and not all at once. `tryRecord(key,
+v)` keeps a number that beats what stands, in `localStorage` under `golf`
+(`records`: the number, the initials in use, the course, the hole, the day,
+the seed), and for a shot puts NEW CABINET RECORD on the screen for five
+seconds with a cheer. The card at the end of a round lists the ones that fell
+in it, and the records button shows the whole board over the game, paused,
+with the house's initials in blue and yours in green; the button again puts
+it away. Initials are three letters or figures, given on the board; until
+there are any a record is held by YOU, and the first ones given take those.
+Under the board, the cabinet's counts: rounds, holes in one, eagles, birdies
+(`career`), and how often the trees and the mountain have had something to
+say. `Golf.records` is the board, `Golf.record(key, v)` offers it a number,
+`Golf.initials("RIK")` sets the initials. Nothing is sent anywhere; the
+clubhouse board below is the shared one.
 
 ## The clubhouse board
 
