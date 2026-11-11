@@ -15,7 +15,10 @@
    the solstice's A as the foundation. A capo; a chord named from the notes you put down; a tuner that
    listens through the microphone and keeps nothing; and the whole setting
    in the address (#key=E&scale=minor&chord=m7&on=A&tuning=D2-A2-D3-G3-B3-E4&capo=2),
-   which is how the cards and the wheel send a note here. Your tunings, scales, chords and settings are kept in this
+   which is how the cards and the wheel send a note here. And a tab
+   player: a plain-text tab opened or pasted, its tuning, capo and key
+   read from it, played on the neck with the notes lit and the tab
+   followed by a cursor; the tab stays in this browser. Your tunings, scales, chords and settings are kept in this
    browser (localStorage temple-neck) and nowhere else. One script, no
    library. */
 (function () {
@@ -135,7 +138,7 @@
     var S = { tuning: TUNINGS[0][1].slice(), tuningName: "Standard", frets: 22, root: 0, scale: "major", chordRoot: null, chord: null,
         labels: "names", colours: false, spelling: "auto", flip: false, faint: true, capo: 0, mine: { tunings: {}, scales: {}, chords: {} } };
     try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved && typeof saved === "object") Object.keys(S).forEach(function (k) { if (saved[k] !== undefined) S[k] = saved[k]; }); } catch (e) { /* a fresh neck */ }
-    ["tunings", "scales", "chords"].forEach(function (k) { if (!S.mine || typeof S.mine !== "object") S.mine = {}; if (!S.mine[k]) S.mine[k] = {}; });
+    ["tunings", "scales", "chords", "tabs"].forEach(function (k) { if (!S.mine || typeof S.mine !== "object") S.mine = {}; if (!S.mine[k]) S.mine[k] = {}; });
     if (!Array.isArray(S.tuning) || !S.tuning.length) S.tuning = TUNINGS[0][1].slice();
     var sky = null;   // the sky's chord, when asked for: not kept
     var LINKED = {};  // a scale or chord that came in on the address, not one of the named ones
@@ -274,10 +277,10 @@
             lineAlong(ca, G.across0 - 4, ca, G.across1 + 4, "#b8923f", 7);
         }
         // the notes; behind a capo there are none
-        var shape = naming || shapesFound[shapeAt] || null;
+        var shape = naming || tabShape || shapesFound[shapeAt] || null;
         for (i = 0; i < n; i++) for (f = S.capo ? S.capo : 0; f <= N; f++) drawNote(i, f, shape);
         // muted strings in the shape
-        if (shape) shape.forEach(function (fr, i) {
+        if (shape && shape !== tabShape) shape.forEach(function (fr, i) {
             if (fr !== null) return;
             var p = G.pos(i, S.capo ? S.capo : 0); ctx.strokeStyle = "#ff6a5a"; ctx.lineWidth = 1.5; var k = G.r * 0.5;
             ctx.beginPath(); ctx.moveTo(p.x - k, p.y - k); ctx.lineTo(p.x + k, p.y + k); ctx.moveTo(p.x + k, p.y - k); ctx.lineTo(p.x - k, p.y + k); ctx.stroke();
@@ -402,14 +405,21 @@
         for (i = 0; i < len; i++) { var j = i % period; d[i] = ring[j]; ring[j] = decay * 0.5 * (ring[j] + ring[(j + 1) % period]); }
         return (BUF[midi] = b);
     }
-    function pluck(midi, delay, key) {
+    var ringing = {};   // what each string is sounding, when it is being played as a string: a new note there stops it
+    function pluck(midi, delay, key, opts) {
         var a = audio(); if (!a) return;
-        var src = a.createBufferSource(), g = a.createGain(), lp = a.createBiquadFilter(), t = a.currentTime + (delay || 0);
-        src.buffer = buffer(midi); lp.type = "lowpass"; lp.frequency.value = TOUCH ? 6000 : 3800; g.gain.value = TOUCH ? 0.55 : 0.28;
+        opts = opts || {};
+        var src = a.createBufferSource(), g = a.createGain(), lp = a.createBiquadFilter(), t = a.currentTime + (delay || 0), vol = opts.vol == null ? 1 : opts.vol;
+        src.buffer = buffer(midi); lp.type = "lowpass"; lp.frequency.value = TOUCH ? 6000 : 3800; g.gain.value = (TOUCH ? 0.55 : 0.28) * vol;
         src.connect(lp); lp.connect(g); g.connect(OUT); src.start(t);
+        var gains = [g];
         if (TOUCH && midi < 55) {   // below G3 a phone loses the note: its octave, quietly, under it
             var up = a.createBufferSource(), ug = a.createGain();
-            up.buffer = buffer(midi + 12); ug.gain.value = 0.3; up.connect(ug); ug.connect(OUT); up.start(t);
+            up.buffer = buffer(midi + 12); ug.gain.value = 0.3 * vol; up.connect(ug); ug.connect(OUT); up.start(t); gains.push(ug);
+        }
+        if (opts.string != null) {
+            (ringing[opts.string] || []).forEach(function (old) { try { old.gain.setTargetAtTime(0, t, 0.015); } catch (e) { /* gone */ } });
+            ringing[opts.string] = gains;
         }
         if (key) {
             setTimeout(function () { sounding[key] = (sounding[key] || 0) + 1; draw(); }, (delay || 0) * 1000);
@@ -568,6 +578,7 @@
 
     var scaleToggles = {}, chordToggles = {};
     function changed(keepShape) {
+        if (tabShape && tabShape.length !== S.tuning.length) { tabShape = null; stopTab(); }
         if (naming && naming.length !== S.tuning.length) naming = S.tuning.map(function () { return null; });
         compute(); if (!keepShape) shapeAt = 0;
         keep(); writeHash(); fillTunings(); fillStrings(); fillScales(); fillChords();
@@ -785,6 +796,199 @@
         if (heard !== m) { heard = m; draw(); }
     }
 
+    // ---- the tab: a plain-text tab read, laid on the neck and played -----------------------------------------
+    // A tab is lines of dashes, one a string, highest on top, with fret numbers where notes fall; the letters before
+    // them name the strings. Time is read from the columns, since a plain tab has no other: the page plays it at so many
+    // columns a second, bar lines taking no time. A number is a fret above the capo if the tab names one.
+    var TAB = null, tabAt = 0, tabTimer = null, tabPlaying = false, tabShape = null;
+    var SAMPLE = "Greensleeves\ntraditional, sixteenth century; arranged for the neck\nTuning: standard   Capo: none\n\n       Am                 C                  G                  Em                \ne|----|------------------|0--------1--0-----|------------------|------------------|\nB|----|1-----------3-----|------------------|3-----------0-----|------------0-----|\nG|-2--|------------------|------------------|------------------|0--------2--------|\nD|----|------------------|------------------|------------------|------------------|\nA|----|0-----------------|3-----------------|------------------|------------------|\nE|----|------------------|------------------|3-----------------|0-----------------|\n\n    Am                 E                  E                  Am                \ne|-|------------------|------------------|------------------|------------------|\nB|-|1-----------------|------------------|0-----------------|------------------|\nG|-|------------2-----|2--------1--2-----|------------1-----|------------2-----|\nD|-|------------------|------------------|------------------|2-----------------|\nA|-|0-----------------|------------------|------------------|0-----------------|\nE|-|------------------|0-----------------|0-----------------|------------------|\n\n    Am                 C                  G                  Em                \ne|-|------------------|0--------1--0-----|------------------|------------------|\nB|-|1-----------3-----|------------------|3-----------0-----|------------0-----|\nG|-|------------------|------------------|------------------|0--------2--------|\nD|-|------------------|------------------|------------------|------------------|\nA|-|0-----------------|3-----------------|------------------|------------------|\nE|-|------------------|------------------|3-----------------|0-----------------|\n\n    Am                 E                  Am                \ne|-|------------------|------------------|------------------|\nB|-|1--------0--------|------------------|------------------|\nG|-|------------2-----|1-----------1-----|2-----------------|\nD|-|------------------|---------4--------|------------------|\nA|-|0-----------------|------------------|0-----------------|\nE|-|------------------|0-----------------|------------------|";
+    var CHORD_TOKEN = /^\(?[A-G][#b♯♭]?(m|maj|min|dim|aug|sus|add|M|°|ø|\+)?[0-9]*(sus[24]|add[0-9]+|[#b♯♭][0-9]+)*(\/[A-G][#b♯♭]?)?\)?$/;
+    function isTabBody(b) {
+        var dashes = (b.match(/-/g) || []).length, len = b.replace(/\s+$/, "").length;
+        if (dashes < 4 || dashes < len * 0.35) return false;
+        return b.replace(/[-0-9|hpbrstxXvPHBRS\/\\~()<>.*=^:\[\] ]/g, "").length <= 2;
+    }
+    function standardFor(n) {
+        var by = { 4: [28, 33, 38, 43], 5: [23, 28, 33, 38, 43], 6: TUNINGS[0][1], 7: [35, 40, 45, 50, 55, 59, 64], 8: [30, 35, 40, 45, 50, 55, 59, 64] };
+        if (by[n]) return by[n].slice();
+        var out = TUNINGS[0][1].slice(); while (out.length < n) out.push(out[out.length - 1] + 5); return out.slice(0, n);
+    }
+    function parseTab(text) {
+        var lines = String(text).replace(/\r/g, "").replace(/\t/g, "    ").split("\n"), runs = [], header = [], i = 0;
+        while (i < lines.length) {
+            var run = [];
+            while (i < lines.length) {
+                var m = /^(\s*([A-Ga-g](?:#|b|♯|♭)?\d?)?\s*([|:\[\]]?))(.*)$/.exec(lines[i]);
+                if (!m || !isTabBody(m[4])) break;
+                run.push({ raw: lines[i], label: m[2] || "", start: m[1].length, line: i });
+                i++;
+            }
+            if (run.length) runs.push(run);
+            else { if (!runs.length) header.push(lines[i]); i++; }
+        }
+        // the strings: the commonest number of lines in a run
+        var counts = {}; runs.forEach(function (r) { if (r.length >= 3 && r.length <= 10) counts[r.length] = (counts[r.length] || 0) + 1; });
+        var n = +Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a] || b - a; })[0] || 0;
+        if (!n) return null;
+        var systems = runs.filter(function (r) { return r.length === n; }).map(function (rows) {
+            var above = rows[0].line > 0 ? lines[rows[0].line - 1] : "", toks = above.trim() ? above.trim().split(/\s+/) : [];
+            var chords = toks.length && toks.every(function (t) { return CHORD_TOKEN.test(t); }) ? above : null;
+            return { rows: rows, chords: chords };
+        });
+        var head = header.join("\n");
+        // the tuning: from the letters, else a name in the header, else standard for that many strings
+        var tuning = null, labels = systems[0].rows.map(function (r) { return r.label; });
+        if (labels.every(function (l) { return l; })) {
+            var pcs = labels.slice().reverse().map(function (l) { return noteParse(l.replace(/\d/, "")); });
+            if (pcs.every(function (p) { return p != null; })) {
+                var known = TUNINGS.filter(function (t) { return t[1].length === n && t[1].every(function (m, k) { return mod(m, 12) === pcs[k]; }); })[0];
+                if (known) tuning = known[1].slice();
+                else {
+                    var base = standardFor(n);
+                    tuning = pcs.map(function (pc, k) { var m = base[k] - 6; while (mod(m, 12) !== pc) m++; return m; });
+                }
+            }
+        }
+        if (!tuning) {
+            var named = TUNINGS.slice().sort(function (a, b) { return b[0].length - a[0].length; }).filter(function (t) { return t[1].length === n && t[0] !== "Standard" && new RegExp("\\b" + t[0].replace(/[()]/g, "") + "\\b", "i").test(head); })[0];
+            tuning = named ? named[1].slice() : S.tuning.length === n ? S.tuning.slice() : standardFor(n);
+        }
+        var cm = /capo\s*(?:on\s*)?(?:the\s*)?(?:fret\s*)?:?\s*(\d{1,2})/i.exec(head + "\n" + lines.join("\n")), capo = cm ? Math.min(12, +cm[1]) : 0;
+        // the events: a column with a fret number on any string; a bar line takes no time
+        var events = [], T = 0, maxFret = 0;
+        systems.forEach(function (sys, si) {
+            var bodies = sys.rows.map(function (r) { return r.raw.slice(r.start); }), len = Math.max.apply(null, bodies.map(function (b) { return b.length; }));
+            var labelsAt = [];
+            if (sys.chords) sys.chords.replace(/\S+/g, function (tok, at) { labelsAt.push({ col: at - sys.rows[0].start, name: tok.replace(/[()]/g, "") }); return tok; });
+            var t = 0, bar = 1;
+            for (var c = 0; c < len; c++) {
+                var notes = [], isBar = false;
+                bodies.forEach(function (b, k) {
+                    var ch = b[c];
+                    if (ch === "|") isBar = true;
+                    if (ch >= "0" && ch <= "9" && !(c > 0 && /\d/.test(b[c - 1]))) {
+                        var num = ch; if (/\d/.test(b[c + 1] || "") && +(ch + b[c + 1]) <= 30) num += b[c + 1];
+                        var fret = +num; maxFret = Math.max(maxFret, fret);
+                        notes.push({ string: n - 1 - k, fret: fret, legato: /[hpHP\/\\s]/.test(b[c - 1] || ""), w: num.length });
+                    }
+                });
+                if (isBar && !notes.length) { if (c > 0) bar++; continue; }
+                if (notes.length) events.push({ sys: si, col: c, t: T + t, notes: notes, label: null, bar: bar });
+                t++;
+            }
+            // each chord name goes to the first note under it or just after it
+            labelsAt.forEach(function (l) { var e = events.filter(function (e) { return e.sys === si && e.col >= l.col - 1; })[0]; if (e && !e.label) e.label = l.name; });
+            T += t + 4;   // a breath between lines
+        });
+        if (!events.length) return null;
+        // carry each line's chord names forward, so a note under a chord knows it
+        var last = null; events.forEach(function (e) { if (e.label) last = e.label; else e.held = last; });
+        // the key, by Krumhansl and Schmuckler's profiles against how often each note sounds
+        var hist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        events.forEach(function (e) { e.notes.forEach(function (nt) { hist[mod(tuning[nt.string] + capo + nt.fret, 12)]++; }); });
+        var MAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88], MIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+        function corr(x, y) { var mx = 0, my = 0, k; for (k = 0; k < 12; k++) { mx += x[k] / 12; my += y[k] / 12; } var a = 0, b = 0, c2 = 0; for (k = 0; k < 12; k++) { a += (x[k] - mx) * (y[k] - my); b += (x[k] - mx) * (x[k] - mx); c2 += (y[k] - my) * (y[k] - my); } return b && c2 ? a / Math.sqrt(b * c2) : 0; }
+        var key = { root: 0, minor: false, r: -2 };
+        for (var r = 0; r < 12; r++) [false, true].forEach(function (minor) {
+            var prof = (minor ? MIN : MAJ).map(function (v, k) { return (minor ? MIN : MAJ)[mod(k - r, 12)]; });
+            var q = corr(hist, prof); if (q > key.r) key = { root: r, minor: minor, r: q };
+        });
+        var title = header.map(function (l) { return l.trim(); }).filter(Boolean)[0] || "";
+        return { n: n, tuning: tuning, capo: capo, systems: systems, events: events, key: key, title: title, maxFret: maxFret, lines: lines };
+    }
+    function tabMs() { return 1000 / (12 * (+$("neck-tab-speed").value || 100) / 100); }
+    function loadTab(text) {
+        stopTab();
+        var t = parseTab(text);
+        if (!t) { TAB = null; tabShape = null; renderTab(); $("neck-tab-status").textContent = "no tab in that: a tab is lines of dashes, one a string, with fret numbers on them"; changed(true); return; }
+        TAB = t; tabAt = 0; tabShape = null; naming = null;
+        S.tuning = t.tuning.slice(); S.tuningName = ""; S.capo = t.capo;
+        if (t.maxFret + t.capo > S.frets) S.frets = 24;
+        S.root = t.key.root; S.scale = t.key.minor ? "minor" : "major"; S.chord = null; S.chordRoot = null;
+        changed();
+        renderTab();
+        var tn = tuningMatch(), notes = t.events.reduce(function (k, e) { return k + e.notes.length; }, 0);
+        $("neck-tab-status").textContent = (t.title ? t.title + ": " : "") + notes + " notes on " + t.n + " strings, " + (tn ? tn.slice(2) : S.tuning.map(pitchKey).join(" ").replace(/s/g, "♯")) + " tuning" +
+            (t.capo ? ", capo " + t.capo : "") + "; it reads as " + view.rootName + " " + (t.key.minor ? "minor" : "major") + ". Play, or tap a column of the tab.";
+        showEvent(0, false);
+    }
+    function esc2(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function renderTab() {
+        var box = $("neck-tab-text");
+        if (!TAB) { box.innerHTML = ""; $("neck-tab-controls").hidden = true; return; }
+        $("neck-tab-controls").hidden = false;
+        box.innerHTML = TAB.systems.map(function (sys, si) { return "<pre data-s=\"" + si + "\">" + sysHtml(sys, null) + "</pre>"; }).join("");
+    }
+    function sysHtml(sys, ev) {
+        var out = [];
+        if (sys.chords) out.push(esc2(sys.chords));
+        sys.rows.forEach(function (r) {
+            if (!ev) { out.push(esc2(r.raw)); return; }
+            var w = Math.max.apply(null, ev.notes.map(function (nt) { return nt.w; })), a = r.start + ev.col;
+            var line = r.raw; while (line.length < a + w) line += " ";
+            out.push(esc2(line.slice(0, a)) + "<mark>" + esc2(line.slice(a, a + w)) + "</mark>" + esc2(line.slice(a + w)));
+        });
+        return out.join("\n");
+    }
+    var markedSys = -1;
+    function showEvent(i, sound) {
+        if (!TAB) return;
+        var ev = TAB.events[i]; if (!ev) return;
+        var box = $("neck-tab-text");
+        if (markedSys >= 0 && markedSys !== ev.sys) { var old = box.querySelector("pre[data-s=\"" + markedSys + "\"]"); if (old) old.innerHTML = sysHtml(TAB.systems[markedSys], null); }
+        var pre = box.querySelector("pre[data-s=\"" + ev.sys + "\"]");
+        if (pre) {
+            pre.innerHTML = sysHtml(TAB.systems[ev.sys], ev);
+            var mk = pre.querySelector("mark");
+            if (mk) {
+                var left = mk.offsetLeft - pre.offsetLeft;
+                if (left < pre.scrollLeft + 20 || left > pre.scrollLeft + pre.clientWidth - 40) pre.scrollLeft = Math.max(0, left - pre.clientWidth / 3);
+            }
+            if (markedSys !== ev.sys && tabPlaying) {
+                var r = pre.getBoundingClientRect();
+                if (r.top < 0 || r.bottom > window.innerHeight) {
+                    var cv = canvas.getBoundingClientRect();   // keep the line in view, below the neck when the neck is in view
+                    if (cv.bottom > 0 && cv.bottom < window.innerHeight * 0.6) window.scrollBy({ top: r.top - cv.bottom - 12, behavior: "smooth" });
+                    else pre.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                }
+            }
+        }
+        markedSys = ev.sys;
+        // on the neck: the event's notes as a shape, sounded
+        var picks = S.tuning.map(function () { return null; }), sorted = ev.notes.slice().sort(function (a, b) { return a.string - b.string; });
+        sorted.forEach(function (nt) { picks[nt.string] = nt.fret + TAB.capo; });
+        tabShape = picks;
+        if (sound) sorted.forEach(function (nt, k) {
+            var f = nt.fret + TAB.capo;
+            pluck(S.tuning[nt.string] + f, sorted.length > 2 ? 0.012 * k : 0, nt.string + ":" + f, { string: nt.string, vol: nt.legato ? 0.65 : 1 });
+        });
+        var named = nameChord(picks), pcs = named.pcs.length;
+        var chord = ev.label || (pcs >= 3 && named.found[0] ? named.found[0].name : ev.held || "");
+        var notes = sorted.map(function (nt) { var m = S.tuning[nt.string] + nt.fret + TAB.capo; return view.names[mod(m, 12)] + (Math.floor(m / 12) - 1); }).join(" ");
+        $("neck-tab-now").textContent = "line " + (ev.sys + 1) + ", bar " + ev.bar + " · " + notes + (chord ? " · " + chord : "") + "   (" + (i + 1) + " of " + TAB.events.length + ")";
+        draw();
+    }
+    function tick() {
+        if (!tabPlaying || !TAB) return;
+        var ev = TAB.events[tabAt]; showEvent(tabAt, true);
+        var next = tabAt + 1, loop = $("neck-tab-loop").getAttribute("aria-pressed") === "true";
+        if (loop && (next >= TAB.events.length || TAB.events[next].sys !== ev.sys)) { next = tabAt; while (next > 0 && TAB.events[next - 1].sys === ev.sys) next--; }
+        if (next >= TAB.events.length) { tabPlaying = false; tabAt = 0; $("neck-tab-play").textContent = "play"; return; }
+        var gap = next <= tabAt ? 6 : Math.max(1, TAB.events[next].t - ev.t);
+        tabAt = next; tabTimer = setTimeout(tick, gap * tabMs());
+    }
+    function playTab() { if (!TAB) return; if (tabPlaying) { stopTab(); return; } tabPlaying = true; $("neck-tab-play").textContent = "pause"; tick(); }
+    function stopTab() { tabPlaying = false; clearTimeout(tabTimer); var b = $("neck-tab-play"); if (b) b.textContent = "play"; }
+    function stepTab(by) { if (!TAB) return; stopTab(); tabAt = mod(tabAt + by, TAB.events.length); showEvent(tabAt, true); }
+    function fillTabs() {
+        var sel = $("neck-tab-mine"), names = Object.keys(S.mine.tabs);
+        sel.innerHTML = ""; option(sel, "", names.length ? "your tabs" : "no tabs kept yet", true);
+        names.forEach(function (k) { option(sel, k, k, false); });
+        sel.disabled = !names.length; $("neck-tab-forget").hidden = !names.length;
+    }
+    var tabText = "";
+    function readTab(text) { tabText = String(text || ""); loadTab(tabText); }
+
     // ---- wiring ------------------------------------------------------------------------------------------
     $("neck-tuning").onchange = function () {
         var v = this.value; if (!v) return; naming = null;
@@ -817,10 +1021,40 @@
     $("neck-flip").onclick = function () { S.flip = !S.flip; changed(true); };
     if (P) { $("neck-pipes").onclick = function () { P.toggle(); }; P.onChange(function () { changed(true); if (cellFor && cell.innerHTML === cellSaid) showCell(cellFor); }); }
     else $("neck-pipes").parentNode.hidden = true;
+    $("neck-tab-file").onchange = function () {
+        var f = this.files && this.files[0]; if (!f) return;
+        if (f.size > 512 * 1024) { $("neck-tab-status").textContent = "that file is too big to be a tab"; return; }
+        var rd = new FileReader(); rd.onload = function () { readTab(rd.result); $("neck-tab-name").value = f.name.replace(/\.[^.]+$/, ""); }; rd.readAsText(f);
+        this.value = "";
+    };
+    $("neck-tab-read").onclick = function () { readTab($("neck-tab-paste").value); };
+    $("neck-tab-sample").onclick = function () { $("neck-tab-paste").value = SAMPLE; readTab(SAMPLE); $("neck-tab-name").value = ""; };
+    $("neck-tab-play").onclick = playTab;
+    $("neck-tab-prev").onclick = function () { stepTab(-1); };
+    $("neck-tab-next").onclick = function () { stepTab(1); };
+    $("neck-tab-loop").onclick = function () { this.setAttribute("aria-pressed", this.getAttribute("aria-pressed") === "true" ? "false" : "true"); };
+    $("neck-tab-speed").oninput = function () { $("neck-tab-speed-at").textContent = this.value + "%"; };
+    $("neck-tab-clear").onclick = function () { stopTab(); TAB = null; tabShape = null; tabText = ""; markedSys = -1; renderTab(); $("neck-tab-status").textContent = ""; $("neck-tab-now").textContent = ""; draw(); };
+    $("neck-tab-keep").onclick = function () {
+        var name = $("neck-tab-name").value.trim().slice(0, 60); if (!TAB) return; if (!name) { $("neck-tab-name").focus(); return; }
+        S.mine.tabs[name] = tabText; keep(); fillTabs(); $("neck-tab-status").textContent = "kept as " + name + ", in this browser";
+    };
+    $("neck-tab-mine").onchange = function () { var k = this.value; if (k && S.mine.tabs[k] != null) { $("neck-tab-name").value = k; readTab(S.mine.tabs[k]); } };
+    $("neck-tab-forget").onclick = function () { var k = $("neck-tab-mine").value || $("neck-tab-name").value.trim(); if (S.mine.tabs[k] != null) { delete S.mine.tabs[k]; keep(); fillTabs(); } };
+    $("neck-tab-text").addEventListener("click", function (e) {
+        var pre = e.target.closest && e.target.closest("pre"); if (!pre || !TAB) return;
+        var si = +pre.dataset.s, sys = TAB.systems[si], probe = document.createElement("span");
+        probe.textContent = "0000000000"; pre.appendChild(probe); var cw = probe.getBoundingClientRect().width / 10; pre.removeChild(probe);
+        var pr = pre.getBoundingClientRect(), pad = parseFloat(getComputedStyle(pre).paddingLeft) || 0;
+        var col = Math.floor((e.clientX - pr.left - pad + pre.scrollLeft) / cw) - sys.rows[0].start;
+        var best = -1; TAB.events.forEach(function (ev, k) { if (ev.sys === si && (best < 0 || Math.abs(ev.col - col) < Math.abs(TAB.events[best].col - col))) best = k; });
+        if (best >= 0) { var was = tabPlaying; stopTab(); tabAt = best; if (was) playTab(); else showEvent(best, true); }
+    });
+    fillTabs();
     $("neck-sky").onclick = skyChord;
     (function () { var sel = $("neck-capo"); for (var c = 0; c <= 12; c++) option(sel, c, c ? "fret " + c : "none", c === S.capo); })();
     $("neck-capo").onchange = function () { S.capo = +this.value; if (S.capo > S.frets - 4) S.frets = 24; if (naming) naming = naming.map(function () { return null; }); changed(); };
-    $("neck-name").onclick = function () { naming = naming ? null : S.tuning.map(function () { return null; }); changed(true); };
+    $("neck-name").onclick = function () { naming = naming ? null : S.tuning.map(function () { return null; }); if (naming) { stopTab(); tabShape = null; } changed(true); };
     $("neck-name-light").onclick = function () {
         var r = naming && nameChord(naming); if (!r || !r.found.length) return;
         S.chord = r.found[0].id; S.chordRoot = r.found[0].root; naming = null; changed();
@@ -873,5 +1107,5 @@
     compute(); changed(); fillHour();
     if (arrived && arrived.note != null) showCell(function () { return noteCell(arrived.note); });
     setInterval(fillHour, 60000);
-    window.Neck = { state: function () { return JSON.parse(JSON.stringify(S)); }, yin: function (b, sr) { return yin(b, sr); }, put: function (i, f) { if (naming) { naming[i] = naming[i] === f ? null : f; nameIt(); } return $("neck-named").textContent; }, view: function () { return view; }, shapes: function () { return shapesFound; }, spell: spell, formula: formula };
+    window.Neck = { state: function () { return JSON.parse(JSON.stringify(S)); }, tab: function () { return TAB; }, parseTab: parseTab, load: readTab, yin: function (b, sr) { return yin(b, sr); }, put: function (i, f) { if (naming) { naming[i] = naming[i] === f ? null : f; nameIt(); } return $("neck-named").textContent; }, view: function () { return view; }, shapes: function () { return shapesFound; }, spell: spell, formula: formula };
 })();

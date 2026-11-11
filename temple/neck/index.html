@@ -49,6 +49,39 @@ sky this minute is a chord you can play.</p>
   <span class="hint" id="neck-hour"></span>
 </div>
 
+<h2>A tab</h2>
+<p class="hint">open a plain-text tab, or paste one, and the neck takes its tuning, capo and key from it and plays it; nothing leaves this browser</p>
+<div class="neck-bar">
+  <label class="file">open a tab file <input type="file" id="neck-tab-file" accept=".txt,.tab,.crd,.text,text/plain"></label>
+  <button type="button" id="neck-tab-sample">try Greensleeves</button>
+  <select id="neck-tab-mine" aria-label="your kept tabs"></select>
+  <button type="button" id="neck-tab-forget" hidden>forget it</button>
+</div>
+<textarea id="neck-tab-paste" rows="5" spellcheck="false" placeholder="or paste a tab here:
+e|-----0---|
+B|---1-----|
+G|-2-------|" aria-label="paste a tab"></textarea>
+<div class="neck-bar">
+  <button type="button" id="neck-tab-read">read it</button>
+  <span class="hint" id="neck-tab-status" aria-live="polite"></span>
+</div>
+<div id="neck-tab-controls" hidden>
+  <div class="neck-bar">
+    <button type="button" id="neck-tab-prev" aria-label="the note before">&larr;</button>
+    <button type="button" id="neck-tab-play">play</button>
+    <button type="button" id="neck-tab-next" aria-label="the next note">&rarr;</button>
+    <button type="button" id="neck-tab-loop" aria-pressed="false">loop the line</button>
+    <label>speed <input type="range" id="neck-tab-speed" min="25" max="200" step="5" value="100"> <span id="neck-tab-speed-at">100%</span></label>
+    <button type="button" id="neck-tab-clear">put it away</button>
+  </div>
+  <p class="hint tuned" id="neck-tab-now" aria-live="off"></p>
+  <div class="neck-tab" id="neck-tab-text"></div>
+  <div class="neck-bar">
+    <input id="neck-tab-name" type="text" placeholder="a name for this tab" maxlength="60" aria-label="a name for this tab">
+    <button type="button" id="neck-tab-keep">keep it</button>
+  </div>
+</div>
+
 <h2>The scale's own chords</h2>
 <p class="hint">thirds stacked on each degree, as triads and as sevenths; tap one to light it and hear it</p>
 <div class="neck-diatonic" id="neck-diatonic"></div>
@@ -135,6 +168,15 @@ what it hears by de Cheveigné and Kawahara's Yin method (2002), says how many c
 nearest; the sound is looked at as it comes in and kept nowhere. The address carries the whole setting, the key, the
 scale, the chord and its root, the tuning and the capo, so a link sends someone the neck as you have it; the cards and
 the wheel send a trump's or a sign's note here the same way.</p>
+
+<p>A tab is read the way it is written: each run of lines of dashes is a line of music, a line to a string with the
+highest on top, and the letters in front of them are the tuning; a header naming Drop D or DADGAD, or a capo, is taken
+at its word, and chord names written over the lines are kept. A plain tab has no rhythm, only order and spacing, so the
+page plays it by its columns, so many a second, a bar line taking no time, and the speed is yours. A note after an h,
+a p or a slide is played softer, as a hammer or a slide sounds, and a new note on a string stops the last one there.
+The key is guessed by Krumhansl and Schmuckler's method, weighing how often each note sounds against the profiles
+of the major and minor keys, and the neck lights that scale behind the tab. Greensleeves is arranged here from the
+traditional tune. A tab you open stays in this browser; keep it under a name to have it next time.</p>
 
 <p>The tone scale is Paul Foster Case's, from the Builders of the Adytum's tarot of the 1920s, which hung a note and a
 colour on each of the twenty-two trumps. Laid out it is simpler than it sounds: the twelve semitones from C go round

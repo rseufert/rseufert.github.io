@@ -375,3 +375,10 @@ body.filled { overflow: hidden; }
 .temple-page.daimon table.almuten th, .temple-page.daimon table.almuten td { border: 1px solid var(--rule); padding: 4px 10px; text-align: center; }
 .temple-page.daimon table.almuten th:first-child { text-align: left; }
 .temple-page.daimon table.almuten tr.lord td, .temple-page.daimon table.almuten tr.lord th { color: var(--accent); }
+.temple-page.neck textarea { display: block; width: 100%; box-sizing: border-box; font: 13px/1.35 var(--mono); padding: 8px 10px; color: var(--ink); background: var(--code-bg); border: 1px solid var(--rule); border-radius: 0; margin: 0 0 8px; resize: vertical; white-space: pre; overflow-x: auto; }
+.temple-page.neck textarea:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
+.temple-page.neck .neck-tab pre { font: 13px/1.35 var(--mono); color: var(--soft); background: var(--code-bg); border: 1px solid var(--rule); padding: 8px 10px; margin: 0 0 8px; overflow-x: auto; white-space: pre; cursor: pointer; }
+.temple-page.neck .neck-tab mark { background: var(--accent); color: var(--accent-ink); }
+.temple-page.neck .neck-bar label.file input { font-size: 12px; padding: 3px; max-width: 16em; }
+.temple-page.neck #neck-tab-speed { width: 9em; padding: 0; flex: none; }
+.temple-page.neck #neck-tab-controls[hidden] { display: none; }
