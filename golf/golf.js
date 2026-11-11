@@ -42,15 +42,24 @@
     var COARSE = 6;            // the ground's grid, in yards
     var FINE = 2;              // the green's grid
     var CUP = 0.075;           // the cup's radius, a little generous, as arcades are
+    var CUP_ROLL = 1.5;        // yards a second: a putt slower than this drops (one that would run about two yards past)
+    var CUP_RUN = 0.9;         // a chip or a full shot running up has to be slower, so holing one is the treat it should be
+    var CUP_AIR = 4;           // and a ball coming down out of the air, slower than this along the ground
+    var GIMME = 0.33;          // a foot: a ball this close on the green is tapped in for one
+    var PUTT_PAST = 0.33;      // the tick asks for a putt that would stop a foot past the hole
     var HOLES = 9;
-    var WIND_ACC = 0.2;        // yards/s² of push per mile an hour
+    var WIND_ACC = 0.075;      // yards/s² of push per mile an hour: a 10 mph crosswind moves a drive about a dozen yards
     var SIDE_ACC = 7;          // how hard a full hook or slice bends
+    var LIFT = 0.3;            // the backspin's lift, per yard a second of speed over the ground
+    var LIFT_FOR = 5;          // seconds; the lift dies away over this long
+    var CHECK = 1.5;           // how much of the spin the fairway takes off the first bounce (the green 1.7)
     var PUTT_MAX = 6.2;        // yards a second at full putt: about 33 yards on a flat green
+    var DRIVE = 265;           // about where a good drive finishes on a flat fairway, carry and run
 
     // Clubs: what each carries at full power from a good lie, and its loft.
     var CLUBS = [
-        { id: "DR", name: "driver", carry: 245, loft: 12 },
-        { id: "3W", name: "3 wood", carry: 220, loft: 15 },
+        { id: "DR", name: "driver", carry: 245, loft: 14 },
+        { id: "3W", name: "3 wood", carry: 220, loft: 17 },
         { id: "3I", name: "3 iron", carry: 195, loft: 20 },
         { id: "5I", name: "5 iron", carry: 175, loft: 26 },
         { id: "7I", name: "7 iron", carry: 152, loft: 33 },
@@ -63,8 +72,8 @@
 
     // What each lie does: how much of a full shot it lets out, bounce, grab, and roll.
     var LIE = {
-        tee:     { label: "tee",     take: 1.00, bounce: 0.38, grab: 0.18, roll: 1.6 },
-        fairway: { label: "fairway", take: 1.00, bounce: 0.36, grab: 0.20, roll: 1.6 },
+        tee:     { label: "tee",     take: 1.00, bounce: 0.38, grab: 0.18, roll: 1.9 },
+        fairway: { label: "fairway", take: 1.00, bounce: 0.36, grab: 0.20, roll: 1.9 },
         fringe:  { label: "fringe",  take: 0.97, bounce: 0.30, grab: 0.25, roll: 1.2 },
         green:   { label: "green",   take: 1.00, bounce: 0.26, grab: 0.30, roll: 0.55 },
         rough:   { label: "rough",   take: 0.85, bounce: 0.22, grab: 0.45, roll: 4.2 },
@@ -73,6 +82,12 @@
         water:   { label: "water",   take: 0,    bounce: 0,    grab: 1,    roll: 99 },
         ob:      { label: "out of bounds", take: 0, bounce: 0.2, grab: 0.5, roll: 6 }
     };
+    // In the rain: a landing ball is held and a rolling one slowed, the green most.
+    var WET = {};
+    Object.keys(LIE).forEach(function (k) {
+        var L = LIE[k], dry = k === "sand" || k === "water" || k === "ob";
+        WET[k] = dry ? L : { label: L.label, take: L.take, bounce: L.bounce * 0.7, grab: Math.min(0.95, L.grab + 0.1), roll: L.roll * (k === "green" ? 1.35 : 1.2) };
+    });
     var INK = {
         tee: "#e8ffe0", fairway: "#4dff7a", fringe: "#86ec6a", green: "#bfff6e", rough: "#22a64a",
         deep: "#15702f", sand: "#ffd36b", water: "#46b4ff", ob: "#0d4a20", tree: "#35d06c",
@@ -188,10 +203,12 @@
             var pt = par === 3 ? 0.55 + r() * 0.3 : 0.45 + r() * 0.4, pp = pointAt(H, pt), ps = r() < 0.5 ? -1 : 1, off = H.fw + 10 + r() * 14;
             H.water = { kind: "pond", x: pp.x + pp.nx * ps * off, z: pp.z + pp.nz * ps * off, r: 14 + r() * 12 };
         }
+        // Some holes have a shape of their own, chosen by a generator of their own, so the rest of the hole is as it was.
+        shape(H, rng(seed * 613 + n * 7121 + 9));
         // The ground's own lie, before the course is cut into it.
         H.waterLevel = H.water ? rawHeight(H, H.water.x, H.water.z) - 0.6 : -99;
         H.greenBase = rawHeight(H, H.green.x, H.green.z) + 0.4;
-        H.teeBase = rawHeight(H, 0, -4) + 0.5;
+        H.teeBase = rawHeight(H, 0, -4) + 0.5 + (H.teeLift || 0);
         // Trees in the rough's far edge and beyond.
         H.trees = [];
         var tr = rng(H.s + 77);
@@ -201,13 +218,43 @@
             var tx = tp.x + tp.nx * ts * tdst, tz = tp.z + tp.nz * ts * tdst + (tt < 0 ? tt * H.length : tt > 1 ? (tt - 1) * H.length : 0);
             var kind = classify(H, tx, tz);
             if (kind !== "rough" && kind !== "deep" && kind !== "ob") continue;
-            H.trees.push({ x: tx, z: tz, h: 8 + tr() * 8, r: 2.5 + tr() * 2.5 });
+            H.trees.push({ x: tx, z: tz, h: 8 + tr() * 8, r: 2.5 + tr() * 2.5, y: 0 });
             if (H.trees.length >= 120) break;
         }
         H.wind = { mph: Math.round(r() * 16), dir: r() * Math.PI * 2 };
         H.name = NAMES[seed % NAMES.length];
+        // The way the hole plays on the compass, from its own generator so the ground is as it was:
+        // the airport's wind, the sun and the mountain are all turned by it.
+        H.bearing = rng(seed * 131 + n * 977 + 3)() * Math.PI * 2;
+        for (i = 0; i < H.trees.length; i++) H.trees[i].y = height(H, H.trees[i].x, H.trees[i].z);
         build(H);
         return H;
+    }
+    // A hole's shape, some of the time: a carry over water to the green; an
+    // elevated tee; a fairway split by a strip of rough and sand where a
+    // drive lands; or a green with the pin tucked behind a bunker in front.
+    var SHAPES = { carry: "A CARRY TO THE GREEN", elevated: "AN ELEVATED TEE", split: "A SPLIT FAIRWAY", tucked: "A TUCKED PIN" };
+    function shape(H, r) {
+        var pick = r(), kinds = H.par === 3 ? ["carry", "elevated", "tucked"] : ["split", "elevated", "tucked", "carry"];
+        H.shape = pick < 0.35 ? "" : kinds[Math.floor((pick - 0.35) / 0.65 * kinds.length)];
+        var dir = { x: Math.sin(H.gdir), z: Math.cos(H.gdir) };
+        if (H.shape === "carry") {
+            // A creek across the line short of the green, close enough that the approach has to fly it.
+            var short = H.green.rz + 9 + r() * 14, t = Math.max(0.25, 1 - short / H.length), cp = pointAt(H, t);
+            H.water = { kind: "creek", x: cp.x, z: cp.z, nx: cp.nx, nz: cp.nz, w: 7 + r() * 4, wob: r() * 10 };
+        } else if (H.shape === "elevated") {
+            H.teeLift = 7 + r() * 8;                     // yards above the ground in front, the tee box sloping down to it
+        } else if (H.shape === "split") {
+            var land = Math.min(0.8, DRIVE / H.length);
+            H.island = { t0: land - 0.12 - r() * 0.05, t1: land + 0.06 + r() * 0.06, w: 4 + r() * 3 };
+            var mid = pointAt(H, (H.island.t0 + H.island.t1) / 2);
+            H.bunkers.push({ x: mid.x, z: mid.z, r: Math.min(H.island.w, 4 + r() * 2) });
+        } else if (H.shape === "tucked") {
+            var br = 5 + r() * 2.5;
+            H.bunkers.push({ x: H.green.x - dir.x * (H.green.rz + br * 0.9), z: H.green.z - dir.z * (H.green.rz + br * 0.9), r: br });
+            var side = (r() - 0.5) * H.green.rx * 0.5;
+            H.pin = { x: H.green.x - dir.x * H.green.rz * 0.5 + dir.z * side, z: H.green.z - dir.z * H.green.rz * 0.5 - dir.x * side };
+        }
     }
     // Par 36: five fours, two threes and two fives, in an order from the seed.
     function parsOf(seed) {
@@ -261,6 +308,7 @@
         var beyond = Math.hypot(x - H.p2.x, z - H.p2.z);
         if (p.t > 0.995 && beyond > Math.max(H.green.rx, H.green.rz) + 40) return "ob";
         if (z < -20) return "ob";
+        if (H.island && p.t > H.island.t0 && p.t < H.island.t1 && p.d < H.island.w) return "rough";
         if (p.d < H.fw * (p.t > 0.9 ? 0.8 : 1) && p.t >= H.fwStart) return "fairway";
         if (p.d < H.cw) return "rough";
         if (p.d < H.ob) return "deep";
@@ -273,8 +321,8 @@
     function height(H, x, z) {
         var h = rawHeight(H, x, z);
         // The tee box is a flat platform.
-        var td = Math.max(Math.abs(x) - 6, z - 4, -12 - z);
-        if (td < 6) { var tk = Math.max(0, Math.min(1, td / 6)); h = H.teeBase * (1 - tk) + h * tk; }
+        var td = Math.max(Math.abs(x) - 6, z - 4, -12 - z), tb = H.teeLift ? 26 : 6;
+        if (td < tb) { var tk = Math.max(0, Math.min(1, td / tb)); if (H.teeLift) tk = tk * tk * (3 - 2 * tk); h = H.teeBase * (1 - tk) + h * tk; }
         // The green is a tilted plane with a little roll in it, blended into the ground round it.
         var gd = greenDist(H, x, z);
         if (gd < 1.6) {
@@ -357,10 +405,13 @@
     }
 
     // ---- the wind off the river ------------------------------------------------
-    // Every hole here runs north, tee to green, so a compass wind means
-    // something: the latest observation at the airport (api.weather.gov,
-    // KPDX, no key) blows across the course of the day when it can be had,
-    // and the HUD says so. Otherwise each hole keeps the wind it grew with.
+    // Each hole is laid out tee to green up its own axis and turned on the
+    // compass by its bearing, so the same wind is a crosswind on one hole and
+    // a headwind on the next: the latest observation at the airport
+    // (api.weather.gov, KPDX, no key) blows across the course of the day when
+    // it can be had, and the HUD says so. Otherwise each hole keeps the wind
+    // it grew with. The same report says when it is raining there, and then
+    // it rains on the course.
     var live = null;
     function fetchWind() {
         if (!window.fetch) return;
@@ -374,11 +425,14 @@
                 // the game's direction is where the wind goes, from north round by east; the airport's is where it comes from
                 live = { mph: mph, dir: from == null ? 0 : ((from + 180) % 360) * Math.PI / 180, from: from, when: p.timestamp ? new Date(p.timestamp) : null };
                 if (mph === 0 || from == null) live.dir = 0;
+                var said = (p.textDescription || "") + " " + (p.presentWeather || []).map(function (w) { return w && w.rawString || ""; }).join(" ");
+                if (/rain|drizzle|shower|\bRA\b|\bDZ\b|\bSHRA\b|[-+]RA|[-+]DZ/i.test(said)) wet = true;
+                live.wet = wet;
                 if (hole) applyWind(hole);
                 if (audio && hole) audio.wind(hole.wind.mph);
             }).catch(function () { /* the course keeps its own wind */ });
     }
-    function applyWind(H) { if (live) { H.wind = { mph: live.mph, dir: live.dir, live: true }; } }
+    function applyWind(H) { if (live) { H.wind = { mph: live.mph, dir: live.dir - H.bearing, live: true }; } }
     function compass(deg) { return ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"][Math.round(deg / 22.5) % 16]; }
 
     // ---- state -------------------------------------------------------------
@@ -396,12 +450,15 @@
     var paused = false;
     var showHud = true;        // Golf.hud(false) in the console, for a clean picture
     var flags = [];            // what happened this round: sq4, hood6
+    var stats = [];            // each hole's numbers for the card: putts, fairway, green in regulation, drive, penalties, a hole out
+    var wet = /\brain\b/.test(location.hash);   // raining at the airport, or #rain to try it
     var holeClock = 0;         // seconds on this hole
     var squatch = null, squatchAt = -1;        // something in the trees
     var HOOD = { bearing: 1.95, erupting: false, t: 0, at: -1, erupted: false, hole: 0, ash: [] };   // the mountain, east by south
 
+    function stat() { return stats[holeNo] || (stats[holeNo] = { putts: 0, fairway: false, gir: false, drive: 0, pens: 0, holeOut: false }); }
     function startRound() {
-        holeNo = 0; scores = []; flags = [];
+        holeNo = 0; scores = []; flags = []; stats = [];
         HOOD.erupting = false; HOOD.erupted = false; HOOD.t = 0; HOOD.ash = [];
         startHole();
     }
@@ -423,34 +480,78 @@
         follow.ready = false; shotCam.phase = ""; drop = null;
         look.target = look.yaw = 0; look.reverse = false;
         message = "HOLE " + (holeNo + 1) + "  PAR " + hole.par + "  " + Math.round(yardsToPin()) + " YDS"; messageClock = 0;
+        stats[holeNo] = null; stat();
         updateScore();
+        keepRound();
+    }
+
+    // ---- the round, kept as it goes -------------------------------------------
+    // A reload, or a phone dropping the tab, picks up where the ball last
+    // stopped: the course, the hole, the strokes, the card and the lie, kept
+    // in localStorage (golf-round) until the round is done or another begun.
+    var ROUND = "golf-round";
+    function keepRound() {
+        if (!hole || mode === "title") return;
+        var r = { v: 1, seed: seed, holeNo: holeNo, strokes: strokes, scores: scores, flags: flags, stats: stats, done: mode === "holed", ball: { x: ball.x, z: ball.z } };
+        try { localStorage.setItem(ROUND, JSON.stringify(r)); } catch (e) { /* not kept, then */ }
+    }
+    function forgetRound() { try { localStorage.removeItem(ROUND); } catch (e) { /* nothing kept */ } }
+    function keptRound() {
+        var r = null;
+        try { r = JSON.parse(localStorage.getItem(ROUND)); } catch (e) { r = null; }
+        return r && r.v === 1 && r.seed === seed && r.holeNo >= 0 && r.holeNo < HOLES && r.ball ? r : null;
+    }
+    function resumeRound(r) {
+        holeNo = r.holeNo; scores = r.scores || []; flags = r.flags || []; stats = r.stats || [];
+        HOOD.erupting = false; HOOD.t = 0; HOOD.ash = [];
+        HOOD.erupted = flags.some(function (f) { return /^hood/.test(f); });
+        if (r.done) { hole = generate(seed, holeNo); applyWind(hole); nextHole(); return; }   // the hole was finished: on to the next, or the card
+        var keep = stats[holeNo];
+        startHole();
+        stats[holeNo] = keep || stats[holeNo];
+        strokes = r.strokes || 0;
+        place(r.ball.x, r.ball.z);
+        follow.ready = false; shotCam.phase = "";
+        note("HOLE " + (holeNo + 1) + " · STROKE " + (strokes + 1));
     }
     function aimAtPin() {
-        // Aim at the pin if it is in reach, else down the middle of the hole.
+        // Aim at the pin if it is in reach, else down the middle of the hole as far as a drive goes, carry and run.
         var dp = yardsToPin();
-        var reach = CLUBS[0].carry * 1.05;
-        if (dp <= reach) return Math.atan2(hole.pin.x - ball.x, hole.pin.z - ball.z);
+        if (dp <= DRIVE * 1.05) return Math.atan2(hole.pin.x - ball.x, hole.pin.z - ball.z);
         var a = along(hole, ball.x, ball.z), t = a.t, step = 0.005;
         while (t < 1) {
             t += step;
             var p = pointAt(hole, t);
-            if (Math.hypot(p.x - ball.x, p.z - ball.z) >= reach * 0.9) return Math.atan2(p.x - ball.x, p.z - ball.z);
+            if (Math.hypot(p.x - ball.x, p.z - ball.z) >= DRIVE) return Math.atan2(p.x - ball.x, p.z - ball.z);
         }
         return Math.atan2(hole.pin.x - ball.x, hole.pin.z - ball.z);
     }
     function yardsToPin() { return Math.hypot(hole.pin.x - ball.x, hole.pin.z - ball.z); }
+    // The club for the shot: the shortest whose full shot, forecast from here
+    // along the aim, reaches the pin; the driver only off a tee.
     function pickClub() {
         if (ball.lie === "green") return PUTTER;
-        var d = yardsToPin(), take = LIE[ball.lie] ? LIE[ball.lie].take || 1 : 1;
+        var d = yardsToPin();
         if (ball.lie === "fringe" && d < 14) return PUTTER;
-        for (var i = PUTTER - 1; i >= 0; i--) {
-            if (ball.lie !== "tee" && i === 0 && PUTTER > 1) continue;     // the driver only off a tee
-            if (CLUBS[i].carry * take >= d * 0.92) return i;
+        // If none reaches, the one that goes furthest (from a bunker, a long club can find the lip).
+        var was = club, pick = -1, best = -1, far = -Infinity;
+        for (var i = PUTTER - 1; i >= 0 && pick < 0; i--) {
+            if (ball.lie !== "tee" && i === 0) continue;
+            club = i;
+            var a = forecast(1).along;
+            if (a >= d * 0.98) pick = i;
+            if (a > far) { far = a; best = i; }
         }
-        return ball.lie === "tee" ? 0 : 1;
+        club = was;
+        return pick >= 0 ? pick : best;
     }
 
     // ---- the swing ---------------------------------------------------------
+    // How much of a full shot a lie lets out for a club: the sand wedge is made for sand.
+    function takeOf(c, lie) {
+        if (CLUBS[c].id === "SW" && lie === "sand") return 0.92;
+        return LIE[lie] ? LIE[lie].take || 1 : 1;
+    }
     // A full club: v chosen so that the carry on flat ground with no wind is
     // the club's number, found once by trying.
     var launchSpeed = CLUBS.map(function (c) {
@@ -463,42 +564,43 @@
         return (lo + hi) / 2;
     });
     function carryOf(v, loftDeg) {
-        var a = loftDeg * Math.PI / 180, x = 0, y = 0, vx = v * Math.cos(a), vy = v * Math.sin(a), dt = 1 / 120;
+        var a = loftDeg * Math.PI / 180, b = { x: 0, y: 0, z: 0, vx: 0, vy: v * Math.sin(a), vz: v * Math.cos(a), side: 0, flight: 0, calm: true }, dt = 1 / 120;
         for (var t = 0; t < 20; t += dt) {
-            var k = 0.0016 * Math.hypot(vx, vy);
-            vx -= vx * k * dt; vy -= vy * k * dt; vy -= G * dt;
-            x += vx * dt; y += vy * dt;
-            if (y < 0 && vy < 0) return x;
+            b.flight += dt;
+            fly(b, dt);
+            if (b.y < 0 && b.vy < 0) return b.z;
         }
-        return x;
+        return b.z;
+    }
+    // A ball sent off from where the ball lies, at a power and a crookedness:
+    // the strike's, and the forecast's, so the two cannot disagree.
+    function launch(b, power, side) {
+        var c = CLUBS[club];
+        b.x = ball.x; b.y = ball.y; b.z = ball.z;
+        b.flight = 0; b.bounces = 0; b.lipped = false; b.hit = ""; b.treeHits = 0; b.putt = club === PUTTER;
+        if (club === PUTTER) {
+            var v = Math.max(0.05, power) * PUTT_MAX * (ball.lie === "green" ? 1 : 1.25), push = side * 0.06;
+            b.vx = v * Math.sin(aim + push); b.vz = v * Math.cos(aim + push); b.vy = 0;
+            b.rolling = true; b.side = 0; b.back = 0;
+            return;
+        }
+        var p = Math.max(0.05, power), over = Math.max(0, p - 1);
+        var v0 = launchSpeed[club] * Math.sqrt(Math.min(1.1, p) * takeOf(club, ball.lie));
+        var loft = c.loft * Math.PI / 180 * (ball.lie === "rough" || ball.lie === "deep" ? 0.9 : 1);
+        var s = side * (1 + over * 8);
+        var dir = aim + s * 0.035;                         // a push or a pull at the start
+        var h = v0 * Math.cos(loft);
+        b.vx = h * Math.sin(dir); b.vz = h * Math.cos(dir); b.vy = v0 * Math.sin(loft);
+        b.rolling = false; b.side = s; b.back = 0.25 + (c.loft / 56) * 0.35;
     }
     function strike(power, side) {
-        var c = CLUBS[club];
         ball.from = { x: ball.x, y: ball.y, z: ball.z, lie: ball.lie };
         ball.lastDry = { x: ball.x, z: ball.z };
+        if (club === PUTTER && ball.lie === "green") stat().putts++;
         strokes++;
         updateScore();
-        if (club === PUTTER) {
-            var v = Math.max(0.05, power) * PUTT_MAX * (ball.lie === "green" ? 1 : 1.25);
-            var push = side * 0.06;
-            ball.vx = v * Math.sin(aim + push); ball.vz = v * Math.cos(aim + push); ball.vy = 0;
-            ball.rolling = true; ball.side = 0; ball.back = 0;
-            if (audio) audio.putt(power);
-        } else {
-            var take = LIE[ball.lie].take || 1;
-            if (c.id === "SW" && ball.lie === "sand") take = 0.92;
-            var p = Math.max(0.05, power);
-            var over = Math.max(0, p - 1);
-            var v0 = launchSpeed[club] * Math.sqrt(Math.min(1.1, p) * take);
-            var loft = c.loft * Math.PI / 180 * (ball.lie === "rough" || ball.lie === "deep" ? 0.9 : 1);
-            var s = side * (1 + over * 8);
-            var dir = aim + s * 0.035;                         // a push or a pull at the start
-            var h = v0 * Math.cos(loft);
-            ball.vx = h * Math.sin(dir); ball.vz = h * Math.cos(dir); ball.vy = v0 * Math.sin(loft);
-            ball.rolling = false; ball.side = s; ball.back = 0.25 + (c.loft / 56) * 0.35;
-            if (audio) audio.thwack(p);
-        }
-        ball.flight = 0; ball.bounces = 0; ball.lipped = false;
+        launch(ball, power, side);
+        if (audio) { if (club === PUTTER) audio.putt(power); else audio.thwack(Math.max(0.05, power)); }
         english = club === PUTTER ? 0 : 1;
         trail = [];
         mode = "flight"; modeClock = 0;
@@ -514,22 +616,43 @@
     }
 
     // ---- the ball in the world ---------------------------------------------
-    // In the air: gravity, a little drag, the wind, and the curve. b is the
-    // ball, or a copy of it when the landing camera asks where it will come down.
+    // In the air: gravity, a little drag, the backspin's lift, the wind, the
+    // curve, and the trees. b is the ball, or a copy of it when the forecast or
+    // the landing camera asks where it will go; a calm copy is carryOf's.
     function fly(b, dt) {
         var sp = Math.hypot(b.vx, b.vy, b.vz), k = 0.0016 * sp;
         b.vx -= b.vx * k * dt; b.vy -= b.vy * k * dt; b.vz -= b.vz * k * dt;
         b.vy -= G * dt;
-        var wa = hole.wind.mph * WIND_ACC;
-        b.vx += Math.sin(hole.wind.dir) * wa * dt; b.vz += Math.cos(hole.wind.dir) * wa * dt;
-        var hs = Math.hypot(b.vx, b.vz) || 1, curve = b.side * SIDE_ACC * Math.max(0, 1 - b.flight / 5);
+        var hs = Math.hypot(b.vx, b.vz) || 1;
+        b.vy += LIFT * hs * Math.max(0, 1 - b.flight / LIFT_FOR) * dt;     // so it climbs, and comes down steep enough to stop
+        if (!b.calm) { var wa = hole.wind.mph * WIND_ACC; b.vx += Math.sin(hole.wind.dir) * wa * dt; b.vz += Math.cos(hole.wind.dir) * wa * dt; }
+        var curve = b.side * SIDE_ACC * Math.max(0, 1 - b.flight / 5);
         var rx = b.vz / hs, rz = -b.vx / hs;                  // to the right of the flight
         b.vx += rx * curve * dt; b.vz += rz * curve * dt;
         b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+        if (!b.calm && hole) canopy(b);
+    }
+    // The trees catch what flies into them: the branches let it through slowly
+    // and knocked down, the trunk sends it back, and either turns it a little,
+    // by an amount fixed by the tree, so a forecast and the shot agree.
+    function canopy(b) {
+        var T = hole.trees;
+        for (var i = 0; i < T.length; i++) {
+            var t = T[i], dx = b.x - t.x, dz = b.z - t.z;
+            if (dx > t.r || dx < -t.r || dz > t.r || dz < -t.r) continue;
+            var lo = t.y + t.h * 0.25, u = (b.y - lo) / (t.h * 0.87), d = Math.hypot(dx, dz);
+            var into = u >= 0 && u <= 1 ? d < t.r * 0.85 * (1 - u) : u < 0 && b.y >= t.y && d < 0.4;
+            if (!into || b.hit.indexOf("," + i + ",") >= 0) continue;
+            b.hit += "," + i + ",";
+            var turn = (lattice(i, b.treeHits, hole.s) - 0.5) * 1.6, c = Math.cos(turn), s = Math.sin(turn), keep = u < 0 ? -0.3 : 0.3;
+            var vx = (b.vx * c - b.vz * s) * keep, vz = (b.vx * s + b.vz * c) * keep;
+            b.vx = vx; b.vz = vz; b.vy = Math.min(b.vy, 0) * 0.4; b.side = 0;
+            b.treeHits++;
+        }
     }
     // Where the ball in the air will first touch the ground, and how long until it does, if nothing leans on it.
     function predictLanding() {
-        var b = { x: ball.x, y: ball.y, z: ball.z, vx: ball.vx, vy: ball.vy, vz: ball.vz, side: ball.side, flight: ball.flight }, dt = 1 / 120;
+        var b = { x: ball.x, y: ball.y, z: ball.z, vx: ball.vx, vy: ball.vy, vz: ball.vz, side: ball.side, flight: ball.flight, hit: ball.hit, treeHits: ball.treeHits }, dt = 1 / 120;
         for (var t = 0; t < 15; t += dt) {
             b.flight += dt;
             fly(b, dt);
@@ -539,93 +662,171 @@
         }
         return null;
     }
-    function step(dt) {
-        ball.flight += dt;
-        if (!ball.rolling) {
-            fly(ball, dt);
-            if (inCup() && ball.vy < 0 && ball.y < height(hole, ball.x, ball.z) + 0.3 && Math.hypot(ball.vx, ball.vz) < 9) return holed(true);
-            var gh = height(hole, ball.x, ball.z);
-            if (ball.y <= gh) contact(gh);
-            else if (classify(hole, ball.x, ball.z) !== "water") ball.lastDry = { x: ball.x, z: ball.z };
+    // One step of a ball: the one in play, or a forecast's copy (sim), which
+    // makes no sound and never lips out at random. Returns what ended the shot,
+    // if something did: "dunk" (in from the air), "cup", "water", "ob" or "stop".
+    function move(b, dt, sim) {
+        b.flight += dt;
+        if (!b.rolling) {
+            fly(b, dt);
+            if (Math.hypot(b.x - hole.pin.x, b.z - hole.pin.z) < CUP && b.vy < 0 && b.y < height(hole, b.x, b.z) + 0.3 && Math.hypot(b.vx, b.vz) < CUP_AIR) return "dunk";
+            var gh = height(hole, b.x, b.z);
+            if (b.y <= gh) { var e = land(b, gh, sim); if (e) return e; }
+            else if (!sim && classify(hole, b.x, b.z) !== "water") b.lastDry = { x: b.x, z: b.z };
         } else {
-            roll(dt);
+            var r = rollOn(b, dt, sim);
+            if (r) return r;
         }
-        if (ball.x < hole.box.x0 || ball.x > hole.box.x1 || ball.z < hole.box.z0 || ball.z > hole.box.z1) return outOfBounds();
+        if (b.x < hole.box.x0 || b.x > hole.box.x1 || b.z < hole.box.z0 || b.z > hole.box.z1) return "ob";
+        return null;
     }
-    function inCup() { return Math.hypot(ball.x - hole.pin.x, ball.z - hole.pin.z) < CUP; }
-    function contact(gh) {
-        var kind = classify(hole, ball.x, ball.z);
-        ball.y = gh;
-        if (kind === "water") return splash();
-        if (kind === "ob") return outOfBounds();
-        var L = LIE[kind], n = normal(hole, ball.x, ball.z);
-        var vn = ball.vx * n.x + ball.vy * n.y + ball.vz * n.z;
-        if (audio && ball.bounces === 0) audio.land(kind, Math.min(1, -vn / 20));
+    function step(dt) {
+        var hits = ball.treeHits;
+        var e = move(ball, dt, false);
+        if (ball.treeHits > hits) { if (audio) audio.leaves(); note("TREES"); }
+        if (e === "dunk") holed(true);
+        else if (e === "cup") holed(false);
+        else if (e === "water") splash();
+        else if (e === "ob") outOfBounds();
+        else if (e === "stop") stop();
+    }
+    // The ground, as it is today: in the rain it holds a landing ball and slows a rolling one.
+    function lieOf(kind) { return wet && WET[kind] ? WET[kind] : LIE[kind]; }
+    function land(b, gh, sim) {
+        var kind = classify(hole, b.x, b.z);
+        b.y = gh;
+        if (kind === "water") return "water";
+        if (kind === "ob") return "ob";
+        var L = lieOf(kind), n = normal(hole, b.x, b.z);
+        var vn = b.vx * n.x + b.vy * n.y + b.vz * n.z;
+        if (!sim && audio && b.bounces === 0) audio.land(kind, Math.min(1, -vn / 20));
         if (vn < -2.2 && kind !== "sand") {
-            // A bounce: off the slope, losing some to the ground and some to its grip.
-            var tx = ball.vx - vn * n.x, ty = ball.vy - vn * n.y, tz = ball.vz - vn * n.z;
+            // A bounce: off the slope, losing some to the ground and some to its grip, and on the
+            // first, some to the spin: on the fairway it checks, and on the green it can draw back.
+            var tx = b.vx - vn * n.x, ty = b.vy - vn * n.y, tz = b.vz - vn * n.z;
             var keep = 1 - L.grab;
-            if (ball.bounces === 0 && (kind === "green" || kind === "fringe" || kind === "fairway")) keep -= ball.back * (kind === "green" ? 1.7 : 0.9);
-            ball.vx = tx * keep - vn * L.bounce * n.x; ball.vy = ty * keep - vn * L.bounce * n.y; ball.vz = tz * keep - vn * L.bounce * n.z;
-            ball.y = gh + 0.01;
-            ball.bounces++;
-            ball.side *= 0.3;
+            if (b.bounces === 0 && kind === "green") keep -= b.back * 1.7;
+            else if (b.bounces === 0 && (kind === "fringe" || kind === "fairway")) keep = Math.max(0, keep - b.back * CHECK);
+            b.vx = tx * keep - vn * L.bounce * n.x; b.vy = ty * keep - vn * L.bounce * n.y; b.vz = tz * keep - vn * L.bounce * n.z;
+            b.y = gh + 0.01;
+            b.bounces++;
+            b.side *= 0.3;
         } else {
             // Down for good: it rolls from here, if it rolls at all.
             var keep2 = kind === "sand" ? 0.04 : 1 - L.grab * 0.7;
-            if (ball.bounces === 0 && kind === "green") keep2 -= ball.back * 1.2;
-            ball.vx = (ball.vx - vn * n.x) * keep2; ball.vz = (ball.vz - vn * n.z) * keep2; ball.vy = 0;
-            ball.rolling = true;
+            if (b.bounces === 0 && kind === "green") keep2 -= b.back * 1.2;
+            b.vx = (b.vx - vn * n.x) * keep2; b.vz = (b.vz - vn * n.z) * keep2; b.vy = 0;
+            b.rolling = true;
         }
+        return null;
     }
-    function roll(dt) {
-        var kind = classify(hole, ball.x, ball.z);
-        if (kind === "water") return splash();
-        if (kind === "ob") return outOfBounds();
-        var L = LIE[kind], n = normal(hole, ball.x, ball.z);
-        var sp = Math.hypot(ball.vx, ball.vz);
+    function rollOn(b, dt, sim) {
+        var kind = classify(hole, b.x, b.z);
+        if (kind === "water") return "water";
+        if (kind === "ob") return "ob";
+        var L = lieOf(kind), n = normal(hole, b.x, b.z);
+        var sp = Math.hypot(b.vx, b.vz);
         // Downhill pull of a rolling ball (5/7 of g along the slope), and the grass holding it back.
         var ax = -G * (5 / 7) * n.gx, az = -G * (5 / 7) * n.gz;
         var pull = Math.hypot(ax, az);
-        if (sp < 0.08 && pull < L.roll * 0.9) { stop(); return; }
-        if (sp > 0) { ax -= ball.vx / sp * L.roll; az -= ball.vz / sp * L.roll; }
-        var nvx = ball.vx + ax * dt, nvz = ball.vz + az * dt;
-        if (sp > 0 && nvx * ball.vx + nvz * ball.vz < 0 && pull < L.roll) { stop(); return; }
-        ball.vx = nvx; ball.vz = nvz;
-        ball.x += ball.vx * dt; ball.z += ball.vz * dt;
-        ball.y = height(hole, ball.x, ball.z);
-        if (kind !== "water") ball.lastDry = { x: ball.x, z: ball.z };
+        if (sp < 0.08 && pull < L.roll * 0.9) return "stop";
+        if (sp > 0) { ax -= b.vx / sp * L.roll; az -= b.vz / sp * L.roll; }
+        var nvx = b.vx + ax * dt, nvz = b.vz + az * dt;
+        if (sp > 0 && nvx * b.vx + nvz * b.vz < 0 && pull < L.roll) return "stop";
+        b.vx = nvx; b.vz = nvz;
+        b.x += b.vx * dt; b.z += b.vz * dt;
+        b.y = height(hole, b.x, b.z);
+        if (!sim) b.lastDry = { x: b.x, z: b.z };
         // The cup: slow enough and it drops; too fast and it lips out.
-        var d = Math.hypot(ball.x - hole.pin.x, ball.z - hole.pin.z);
+        var d = Math.hypot(b.x - hole.pin.x, b.z - hole.pin.z);
         if (d < CUP) {
-            var v = Math.hypot(ball.vx, ball.vz);
-            if (v < 1.9) return holed(false);
-            if (v < 3.2 && !ball.lipped) {
-                ball.lipped = true;
+            var v = Math.hypot(b.vx, b.vz);
+            if (v < (b.putt ? CUP_ROLL : CUP_RUN)) return "cup";
+            if (v < 3.2 && !b.lipped && !sim) {
+                b.lipped = true;
                 var turn = (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.6), c = Math.cos(turn), s = Math.sin(turn);
-                var vx = ball.vx * c - ball.vz * s, vz = ball.vx * s + ball.vz * c;
-                ball.vx = vx * 0.55; ball.vz = vz * 0.55;
+                var vx = b.vx * c - b.vz * s, vz = b.vx * s + b.vz * c;
+                b.vx = vx * 0.55; b.vz = vz * 0.55;
                 if (audio) audio.lip();
                 note("LIP OUT");
             }
-        } else if (d > CUP * 3) ball.lipped = false;
-        if (ball.flight > 40) stop();
+        } else if (d > CUP * 3) b.lipped = false;
+        if (b.flight > 40) return "stop";
+        return null;
     }
+
+    // ---- the forecast ------------------------------------------------------
+    // Where a shot from here goes: the ball's own steps run on a copy from the
+    // strike to where it stops, wind, slope, trees and all, with nothing
+    // leaned on it. Its path, where it first comes down, where it stops, how
+    // far that is along the aim, and what ended it. Cached by everything that
+    // moves it, and by the power.
+    var forecastCache = { key: "", at: {} };
+    function shotKey() { return [seed, holeNo, ball.x, ball.z, ball.lie, aim, club, hole.wind.mph, hole.wind.dir, wet].join(); }
+    function forecast(power) {
+        var key = shotKey();
+        if (forecastCache.key !== key) forecastCache = { key: key, at: {} };
+        var q = club === PUTTER ? 2000 : 200, pk = Math.round(Math.max(0.05, Math.min(1.1, power)) * q) / q;
+        if (forecastCache.at[pk]) return forecastCache.at[pk];
+        var b = {}, dt = 1 / 120, path = [[ball.x, ball.y + 0.06, ball.z]], carry = null, end = null;
+        launch(b, pk, 0);
+        for (var i = 0; i < 120 * 45 && !end; i++) {
+            end = move(b, dt, true);
+            if (!carry && (b.bounces > 0 || b.rolling)) carry = { x: b.x, z: b.z };
+            if (i % 6 === 5) path.push([b.x, b.y + 0.06, b.z]);
+        }
+        if (end === "cup" || end === "dunk") { b.x = hole.pin.x; b.z = hole.pin.z; }
+        path.push([b.x, height(hole, b.x, b.z) + 0.06, b.z]);
+        var r = { x: b.x, z: b.z, end: end || "stop", carry: carry || { x: b.x, z: b.z }, path: path, power: pk,
+                  along: (b.x - ball.x) * Math.sin(aim) + (b.z - ball.z) * Math.cos(aim) };
+        forecastCache.at[pk] = r;
+        return r;
+    }
+    // The power that sends this club to the pin, or a putt a foot past it,
+    // solved on the forecast. 1.1 means the pin is out of this club's reach.
+    function solveNeed() {
+        var target = yardsToPin() + (club === PUTTER ? PUTT_PAST : 0);
+        if (forecast(1.1).along < target) return 1.1;
+        var lo = 0.05, hi = 1.1;
+        for (var k = 0; k < (club === PUTTER ? 16 : 12); k++) { var mid = (lo + hi) / 2; if (forecast(mid).along < target) lo = mid; else hi = mid; }
+        return (lo + hi) / 2;
+    }
+    // The advice on the screen: the tick's power and the shot it makes, worked
+    // out again when anything changes, but no oftener than eight times a
+    // second, so holding an arrow down does not run a forecast every frame.
+    var advice = { key: "", need: 1, shot: null, t: -9 };
+    function advise() {
+        var key = shotKey();
+        if (key !== advice.key && (clock - advice.t > 0.12 || !advice.shot)) {
+            var need = solveNeed();
+            advice = { key: key, need: need, shot: forecast(Math.min(1, need)), t: clock };
+        }
+        return advice;
+    }
+
     function stop() {
         ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
         ball.lie = classify(hole, ball.x, ball.z);
         ball.y = height(hole, ball.x, ball.z);
         mode = "rest"; modeClock = 0;
-        var c = CLUBS[club];
+        var c = CLUBS[club], st = stat();
         if (ball.from && c.carry) {
             var dist = Math.hypot(ball.x - ball.from.x, ball.z - ball.from.z);
             shotNote = Math.round(dist) + " YDS · " + LIE[ball.lie].label.toUpperCase();
+            if (ball.from.lie === "tee" && hole.par > 3) { st.drive = Math.round(dist); st.fairway = ball.lie === "fairway"; }
         } else shotNote = LIE[ball.lie].label.toUpperCase();
+        if (ball.lie === "green" && strokes <= hole.par - 2) st.gir = true;
+        // A ball this close on the green is tapped in, for a stroke.
+        if (ball.lie === "green" && yardsToPin() <= GIMME && strokes < 10) {
+            strokes++; st.putts++;
+            note("TAP IN");
+            return holed(false, true);
+        }
         nextShot();
         if (strokes >= 10) {
             note("PICKED UP");
             finishHole(10);
-        }
+        } else keepRound();
     }
     // The next aim and club, chosen as the ball stops, so the camera makes one
     // move from the shot to the lie rather than two.
@@ -633,7 +834,7 @@
     function splash() {
         if (audio) audio.splash();
         note("WATER · +1");
-        strokes++;
+        strokes++; penalised();
         var d = ball.lastDry || ball.from;
         // Drop on dry ground on the near side of where it went in.
         var bx = d.x, bz = d.z, back = Math.atan2(ball.from.x - bx, ball.from.z - bz);
@@ -643,12 +844,16 @@
     function outOfBounds() {
         if (audio) audio.thud();
         note("OUT OF BOUNDS · +1");
-        strokes++;
+        strokes++; penalised();
         penalty(ball.from.x, ball.from.z);
     }
     // A penalty holds on where it went in or out, with the note on the screen,
     // then cuts to the drop: the camera never flies back across the hole.
     var drop = null;
+    function penalised() {
+        var st = stat(); st.pens++;
+        if (ball.from && ball.from.lie === "tee" && hole.par > 3) st.fairway = false;
+    }
     function penalty(x, z) {
         ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
         drop = { x: x, z: z };
@@ -667,13 +872,17 @@
         updateScore();
         mode = "rest"; modeClock = 0; shotNote = LIE[ball.lie].label.toUpperCase();
         nextShot();
-        if (strokes >= 10) { note("PICKED UP"); finishHole(10); }
+        if (strokes >= 10) { note("PICKED UP"); finishHole(10); } else keepRound();
     }
-    function holed(dunk) {
+    function holed(dunk, tapIn) {
+        var st = stat();
+        if (!tapIn && ball.from && ball.from.lie !== "green") st.holeOut = true;
+        if (strokes <= hole.par - 1) st.gir = true;
         ball.x = hole.pin.x; ball.z = hole.pin.z; ball.y = height(hole, ball.x, ball.z) - 0.1;
         ball.vx = ball.vy = ball.vz = 0; ball.rolling = false;
         if (audio) audio.cup(dunk);
         finishHole(strokes);
+        if (tapIn) message = "TAP IN · " + message;
     }
     function finishHole(n) {
         scores[holeNo] = n;
@@ -685,6 +894,7 @@
         if (audio && diff < 0) audio.cheer(-diff);
         mode = "holed"; modeClock = 0;
         updateScore();
+        keepRound();
     }
     function note(t) { message = t; messageClock = 0; }
     function flag(f) { if (flags.indexOf(f) < 0) flags.push(f); }
@@ -697,17 +907,38 @@
         scoreOut.textContent = hole.name + " · hole " + (holeNo + 1) + " of " + HOLES + (done ? " · " + toPar(total() - parSoFar()) : "");
     }
     function card() {
-        var rows = "<table class=\"card\"><tr><th>hole</th>", r2 = "<tr><th>par</th>", r3 = "<tr><th>you</th>", i, p = 0, pars = parsOf(seed);
+        var rows = "<table class=\"card\"><tr><th>hole</th>", r2 = "<tr><th>par</th>", r3 = "<tr><th>you</th>", r4 = "<tr class=\"putts\"><th>putts</th>", i, p = 0, pars = parsOf(seed), putts = 0;
         for (i = 0; i < HOLES; i++) {
             var hp = pars[i]; p += hp;
             rows += "<td>" + (i + 1) + "</td>";
             r2 += "<td>" + hp + "</td>";
             var s = scores[i], cls = s == null ? "" : s < hp ? " class=\"under\"" : s > hp ? " class=\"over\"" : "";
             r3 += "<td" + cls + ">" + (s == null ? "" : s) + "</td>";
+            var pt = stats[i] && s != null ? stats[i].putts : null;
+            r4 += "<td>" + (pt == null ? "" : pt) + "</td>"; putts += pt || 0;
         }
         var t = total();
-        rows += "<td>out</td></tr>"; r2 += "<td>" + p + "</td></tr>"; r3 += "<td>" + t + "</td></tr>";
-        return rows + r2 + r3 + "</table>";
+        rows += "<td>out</td></tr>"; r2 += "<td>" + p + "</td></tr>"; r3 += "<td>" + t + "</td></tr>"; r4 += "<td>" + putts + "</td></tr>";
+        var line = summary();
+        return rows + r2 + r3 + r4 + "</table>" + (line ? "<p class=\"small\">" + esc(line) + "</p>" : "");
+    }
+    // The round's numbers, as they were kept: fairways and greens, putts,
+    // penalties, the longest drive, and holes out from off the green.
+    function summary() {
+        var fw = 0, fwOf = 0, gr = 0, grOf = 0, pu = 0, pen = 0, long = 0, outs = 0, pars = parsOf(seed);
+        for (var i = 0; i < HOLES; i++) {
+            var st = stats[i]; if (!st || scores[i] == null) continue;
+            if (pars[i] > 3) { fwOf++; if (st.fairway) fw++; }
+            grOf++; if (st.gir) gr++;
+            pu += st.putts; pen += st.pens; outs += st.holeOut ? 1 : 0;
+            if (st.drive > long) long = st.drive;
+        }
+        if (!grOf) return "";
+        var bits = ["fairways " + fw + " of " + fwOf, "greens " + gr + " of " + grOf, pu + " putts"];
+        if (pen) bits.push(pen + (pen === 1 ? " penalty" : " penalties"));
+        if (long) bits.push("longest drive " + long + " yds");
+        if (outs) bits.push(outs + (outs === 1 ? " hole" : " holes") + " out from off the green");
+        return bits.join(" · ");
     }
     function endRound() {
         var t = total(), p = parSoFar(), best = saved.best[seed];
@@ -717,6 +948,7 @@
         var keys = Object.keys(saved.best);
         if (keys.length > 60) delete saved.best[keys.sort()[0]];
         save();
+        forgetRound();
         mode = "card";
         veil.hidden = false;
         veilText.textContent = hole.name + ": " + t + " (" + toPar(t - p) + ")" + (newBest ? (best == null ? ", your first round on this course." : ", your best here.") : ". Your best here is " + best + ".") + happened();
@@ -725,7 +957,7 @@
         go.textContent = "play again";
         if (postLink) {
             var line = "gc1:" + seed + ":" + t + ":" + scores.map(function (x) { return x || 10; }).join(",") + ":" + (flags.length ? flags.join(",") : "-");
-            var body = "course: " + hole.name + "\nseed: " + seed + "\ntotal: " + t + " (" + toPar(t - p) + ")\nholes: " + scores.join(" ") + "\n\n```\n" + line + "\n```\n\nPosted from rickseufert.com/golf/#seed=" + seed + ". Keep the code block as it is; a workflow reads open issues titled \"card:\" onto the clubhouse board, a player's best on each course. It is an honour system, like the one in the clubhouse. Closing the issue takes the card down.";
+            var body = "course: " + hole.name + "\nseed: " + seed + "\ntotal: " + t + " (" + toPar(t - p) + ")\nholes: " + scores.join(" ") + (summary() ? "\n" + summary() : "") + "\n\n```\n" + line + "\n```\n\nPosted from rickseufert.com/golf/#seed=" + seed + ". Keep the code block as it is; a workflow reads open issues titled \"card:\" onto the clubhouse board, a player's best on each course. It is an honour system, like the one in the clubhouse. Closing the issue takes the card down.";
             postLink.href = "https://github.com/rseufert/rseufert.github.io/issues/new?title=" + encodeURIComponent("card: " + t + " on " + hole.name + " (" + seed + ")") + "&body=" + encodeURIComponent(body);
             postLink.hidden = false;
         }
@@ -812,7 +1044,7 @@
         var down = e.clientY - swing.y0;
         if (swing.phase === "back") {
             if (down > swing.back) swing.back = down;
-            if (swing.back > 18 && down < swing.back - 24) { swing.phase = "fwd"; swing.fx = e.clientX; swing.fy = e.clientY; swing.ft = now; swing.from = swing.pts[swing.pts.length - 1]; }
+            if (swing.back > (club === PUTTER ? 8 : 18) && down < swing.back - 24) { swing.phase = "fwd"; swing.fx = e.clientX; swing.fy = e.clientY; swing.ft = now; swing.from = swing.pts[swing.pts.length - 1]; }
         }
         if (swing.phase === "fwd" && e.clientY < swing.y0 - 6) release();
     }
@@ -1175,7 +1407,7 @@
         }
     }
     function mountain(hz) {
-        var rel = Math.atan2(Math.sin(HOOD.bearing - cam.yaw), Math.cos(HOOD.bearing - cam.yaw));
+        var hb = HOOD.bearing - hole.bearing, rel = Math.atan2(Math.sin(hb - cam.yaw), Math.cos(hb - cam.yaw));
         if (Math.abs(rel) > 1.25) return;
         var sx = W / 2 + f * Math.tan(rel), w = f * 0.2, h = f * 0.075, top = hz - h;
         ctx.globalAlpha = 0.95; ctx.strokeStyle = "#7f8fd8"; ctx.lineWidth = 1.2; ctx.fillStyle = "#000";
@@ -1197,6 +1429,18 @@
             var lx = sx + lean * h * 1.5, ly = top - h * 2.5; ctx.moveTo(lx, ly);
             for (var k = 0; k < 6; k++) { lx += (Math.random() - 0.5) * h * 0.6; ly += h * 0.35; ctx.lineTo(lx, ly); }
             ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+    }
+    // Rain: streaks down the screen, leaning with the wind as you face it.
+    function rainfall() {
+        var lean = Math.sin(hole.wind.dir - cam.yaw) * Math.min(1, hole.wind.mph / 15) * 0.5;
+        ctx.strokeStyle = "#8fb8ff"; ctx.lineWidth = 1;
+        for (var i = 0; i < 70; i++) {
+            var sp = 0.9 + lattice(i, 1, 13), x = (lattice(i, 2, 13) * (W + 80) + clock * lean * 300 * sp) % (W + 80) - 40, y = (lattice(i, 3, 13) * Hpx + clock * Hpx * 1.4 * sp) % (Hpx + 40) - 20;
+            if (x < -40) x += W + 80;
+            ctx.globalAlpha = 0.12 + 0.18 * lattice(i, 4, 13);
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + lean * 14, y + 14); ctx.stroke();
         }
         ctx.globalAlpha = 1;
     }
@@ -1292,6 +1536,7 @@
         if (squatch) { var sd = Math.hypot(squatch.x - cam.x, squatch.z - cam.z); if (clearLine(cam, squatch.x, height(hole, squatch.x, squatch.z) + 1.4, squatch.z)) sasquatch({ d: sd }); }
         if (mode === "flight") tracer();
         ashfall();
+        if (wet && !REDUCED) rainfall();
         if (mode !== "title" && showHud) hud();
         ctx.globalAlpha = 1;
     }
@@ -1304,7 +1549,7 @@
         ctx.beginPath(); ctx.moveTo(0, hz); ctx.lineTo(W, hz); ctx.stroke();
         mountain(hz);
         // A low sun, and some stars above the haze: the course at dusk.
-        var rel = Math.atan2(Math.sin(0.9 - cam.yaw), Math.cos(0.9 - cam.yaw)), sx = W / 2 + f * Math.tan(rel);
+        var sun = 0.9 - hole.bearing, rel = Math.atan2(Math.sin(sun - cam.yaw), Math.cos(sun - cam.yaw)), sx = W / 2 + f * Math.tan(rel);
         if (Math.abs(rel) < 1.1 && sx > -40 && sx < W + 40) {
             ctx.globalAlpha = 0.85; ctx.strokeStyle = INK.gold;
             ctx.beginPath(); ctx.arc(sx, hz - 22, 14, Math.PI, 0); ctx.stroke();
@@ -1312,7 +1557,7 @@
         }
         ctx.fillStyle = "#c9d7ff";
         for (var i = 0; i < 60; i++) {
-            var x = ((lattice(i, 1, 7) * 2 * Math.PI - cam.yaw) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+            var x = ((lattice(i, 1, 7) * 2 * Math.PI - hole.bearing - cam.yaw) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
             if (Math.abs(x) > 1.2) continue;
             var y = hz - 40 - lattice(i, 2, 7) * Hpx * 0.6;
             ctx.globalAlpha = 0.2 + 0.5 * lattice(i, 3, 7);
@@ -1355,7 +1600,7 @@
     // A tree: two crossed triangles on a trunk, filled black so it hides what is behind it.
     function tree(t, a) {
         if (a <= 0.01) return;
-        var y = height(hole, t.x, t.z);
+        var y = t.y;
         var ang = Math.atan2(cam.x - t.x, cam.z - t.z), cx = Math.cos(ang) * t.r, cz = -Math.sin(ang) * t.r;
         ctx.strokeStyle = INK.tree; ctx.lineWidth = 1; ctx.globalAlpha = a * 0.85;
         poly3([[t.x - cx, y + t.h * 0.25, t.z - cz], [t.x + cx, y + t.h * 0.25, t.z + cz], [t.x, y + t.h, t.z]], "#000");
@@ -1399,40 +1644,53 @@
         ctx.globalAlpha = 1;
         ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 2 * Math.PI); ctx.fill();
     }
-    // Where this club goes from here if hit full and true, and the line to it.
-    // How much of this club reaches the pin from here: for the tick on the meter, and the ring.
-    function powerToPin() {
-        if (club === PUTTER) return Math.min(1.1, Math.sqrt(2 * LIE[ball.lie].roll * yardsToPin()) / (PUTT_MAX * (ball.lie === "green" ? 1 : 1.25)));
-        var full = CLUBS[club].carry * (LIE[ball.lie].take || 1);
-        return Math.min(1.1, yardsToPin() / full);
+    // ---- the advice ------------------------------------------------------------
+    // How much of this club the pin asks for, for the tick on the meter: the
+    // power whose forecast stops at the pin, or a foot past it with a putter.
+    function powerToPin() { return advise().need; }
+    // The power of the shot on the screen: the one being swung, else the tick's.
+    function plannedPower() {
+        if (swing && swing.phase) return Math.min(1.1, swing.back / backReach());
+        if (meter && meter.phase >= 2) return Math.min(1.1, meter.power);
+        return Math.min(1, powerToPin());
     }
+    function shown() {
+        var p = plannedPower(), a = advise();
+        return a.shot && Math.abs(p - Math.min(1, a.need)) < 1e-9 ? a.shot : forecast(p);
+    }
+    // The shot as it will go, if it is hit as planned and straight: its track
+    // along the ground (seen from behind, the flight itself is one tall line),
+    // a cross where it first comes down, and a ring where it stops, in the
+    // water's colour or the flag's if that is where it ends. A putt shows only
+    // the first few yards of its line, so the break is a hint and the rest is
+    // still the read.
     function aimLine() {
-        var putt = club === PUTTER;
-        var reach = putt ? Math.min(yardsToPin(), 34) : CLUBS[club].carry * (LIE[ball.lie].take || 1) * Math.min(1, powerToPin());
-        if (meter && meter.phase >= 2 && !putt) reach *= Math.min(1.1, meter.power);
-        if (swing && swing.phase && !putt) reach *= Math.min(1.1, swing.back / backReach());
-        if (swing && swing.phase && putt) reach = rollFor(Math.min(1.1, swing.back / backReach()));
-        var tx = ball.x + Math.sin(aim) * reach, tz = ball.z + Math.cos(aim) * reach;
+        var putt = club === PUTTER, F = shown(), path = F.path, i;
+        var show = putt ? Math.max(1, Math.min(4, F.along * 0.4)) : Infinity;
         ctx.strokeStyle = INK.aim; ctx.lineWidth = 1.2;
         ctx.setLineDash([4, 6]);
-        var n = 24, prev = null;
-        for (var i = 0; i <= n; i++) {
-            var u = i / n, x = ball.x + (tx - ball.x) * u, z = ball.z + (tz - ball.z) * u;
-            var y = height(hole, x, z) + (putt ? 0.04 : Math.sin(u * Math.PI) * reach * 0.12 * Math.tan(CLUBS[club].loft * Math.PI / 180) * 1.6);
-            ctx.globalAlpha = 0.85 * (1 - u * 0.5);
-            if (prev) line3(prev[0], prev[1], prev[2], x, y, z);
-            prev = [x, y, z];
+        for (i = 1; i < path.length; i++) {
+            var gone = Math.hypot(path[i][0] - ball.x, path[i][2] - ball.z);
+            if (gone > show) break;
+            ctx.globalAlpha = 0.85 * (1 - 0.5 * i / path.length) * (putt ? Math.max(0.15, 1 - gone / show) : 1);
+            var a0 = path[i - 1], a1 = path[i];
+            if (putt) line3(a0[0], a0[1], a0[2], a1[0], a1[1], a1[2]);
+            else line3(a0[0], height(hole, a0[0], a0[2]) + 0.05, a0[2], a1[0], height(hole, a1[0], a1[2]) + 0.05, a1[2]);
         }
         ctx.setLineDash([]);
+        if (putt) return;
+        var cy = height(hole, F.carry.x, F.carry.z) + 0.05, cs = 1.2;
+        ctx.globalAlpha = 0.7;
+        line3(F.carry.x - cs, cy, F.carry.z, F.carry.x + cs, cy, F.carry.z);
+        line3(F.carry.x, cy, F.carry.z - cs, F.carry.x, cy, F.carry.z + cs);
         ctx.globalAlpha = 0.9 + 0.1 * Math.sin(clock * 5);
-        var ring = [], rr = putt ? 0.5 : Math.max(2, reach * 0.04);
-        for (i = 0; i < 20; i++) { var a = i / 20 * 2 * Math.PI, rx = tx + Math.cos(a) * rr, rz = tz + Math.sin(a) * rr; ring.push([rx, height(hole, rx, rz) + 0.05, rz]); }
+        ctx.strokeStyle = F.end === "water" ? INK.water : F.end === "ob" ? INK.flag : INK.aim;
+        var ring = [], rr = Math.max(1.5, Math.hypot(F.x - ball.x, F.z - ball.z) * 0.03);
+        for (i = 0; i < 20; i++) { var a = i / 20 * 2 * Math.PI, rx = F.x + Math.cos(a) * rr, rz = F.z + Math.sin(a) * rr; ring.push([rx, height(hole, rx, rz) + 0.05, rz]); }
         poly3(ring, null);
     }
-    function rollFor(p) {
-        var v = Math.max(0.05, p) * PUTT_MAX * (ball.lie === "green" ? 1 : 1.25), r = LIE[ball.lie].roll;
-        return v * v / (2 * r);
-    }
+    // How far along the aim a putt at power p runs, by the forecast.
+    function rollFor(p) { return forecast(p).along; }
     // On the green: which way it falls, as little marks drifting downhill.
     function slopes() {
         var g = hole.green, step = 2;
@@ -1479,6 +1737,11 @@
         var elev = height(hole, hole.pin.x, hole.pin.z) - height(hole, ball.x, ball.z);
         text("TO PIN " + dTxt + (Math.abs(elev) >= 1 && !onGreen ? (elev > 0 ? "  ▲" : "  ▼") + Math.abs(Math.round(elev)) : ""), pad, pad + 2 * fs + 14, fs, "#e9e9f0");
         text("LIE " + LIE[ball.lie].label.toUpperCase(), pad, pad + 3 * fs + 20, fs, INK[ball.lie] || "#e9e9f0");
+        // A putt's aim, in inches either side of the cup, for reading a break by number.
+        if (club === PUTTER && mode === "aim") {
+            var pinA = Math.atan2(hole.pin.x - ball.x, hole.pin.z - ball.z), off = Math.sin(aim - pinA) * dp * 36;
+            text(Math.abs(off) < 1 ? "AIM AT THE CUP" : "AIM " + Math.round(Math.abs(off)) + " IN " + (off > 0 ? "RIGHT" : "LEFT"), pad, pad + 4 * fs + 26, fs, "#8fe7ff");
+        }
         // The wind, an arrow drawn relative to where you are looking.
         var wx = W - pad - 34, wy = pad + 30, a = hole.wind.dir - cam.yaw;
         ctx.globalAlpha = 0.9; ctx.strokeStyle = "#8fe7ff"; ctx.lineWidth = 1.2;
@@ -1490,11 +1753,12 @@
             ctx.moveTo(ex, ey); ctx.lineTo(ex - Math.sin(a + 0.5) * 7, ey + Math.cos(a + 0.5) * 7); ctx.stroke();
         }
         text(hole.wind.mph ? hole.wind.mph + " MPH" : "CALM", wx, wy + 26, fs - 1, "#8fe7ff", "center");
-        if (hole.wind.live) text("PDX" + (live && live.from != null && hole.wind.mph ? " · " + compass(live.from) : ""), wx, wy + 26 + fs, fs - 3, "#8fe7ff", "center", 0.8);
+        var said = (hole.wind.live ? "PDX" + (live && live.from != null && hole.wind.mph ? " · " + compass(live.from) : "") : "") + (wet ? (hole.wind.live ? " · " : "") + "RAIN" : "");
+        if (said) text(said, wx, wy + 26 + fs, fs - 3, "#8fe7ff", "center", 0.8);
         // The club, bottom left.
         var c = CLUBS[club], by2 = Hpx - pad - fs - 4;
         if (mode === "aim" || mode === "rest") {
-            text(c.id + "  " + c.name.toUpperCase() + (c.carry ? "  " + Math.round(c.carry * (LIE[ball.lie].take || 1)) + " YDS" : ""), pad, by2, fs + 1, gold);
+            text(c.id + "  " + c.name.toUpperCase() + (c.carry ? "  " + Math.round(c.carry * takeOf(club, ball.lie)) + " CARRY" : ""), pad, by2, fs + 1, gold);
             if (!TOUCH) text("▲▼ club  ◀▶ aim  q e look  r green  space swing", pad, by2 - fs - 6, fs - 2, "#7d7d88");
         }
         if (mode === "flight" && english > 0 && !ball.rolling && club !== PUTTER) text("LEAN ◀ ▶ ▼  " + Math.round(english * 100) + "%", pad, by2, fs, "#8fe7ff", "left", 0.8);
@@ -1541,7 +1805,10 @@
         if (mode === "rest" && shotNote) text(shotNote, W / 2, Hpx * 0.22, fs + 3, "#ffffff", "center", Math.min(1, modeClock * 3));
         if (mode === "rest" && modeClock > 0.6) text(TOUCH ? "tap to line up" : "click or space to line up", W / 2, Hpx * 0.22 + fs + 12, fs - 1, "#7d7d88", "center");
         if (look.reverse && (mode === "aim" || mode === "rest")) text("FROM THE GREEN · " + (TOUCH ? "tap to go back" : "let go of r to go back"), W / 2, Hpx * 0.16, fs + 1, gold, "center");   // clear of the pads at the bottom
-        if (mode === "flyover") text(hole.name.toUpperCase() + " · HOLE " + (holeNo + 1), W / 2, Hpx - 46, fs + 2, gold, "center", Math.min(1, modeClock * 2));
+        if (mode === "flyover") {
+            text(hole.name.toUpperCase() + " · HOLE " + (holeNo + 1) + " · PLAYS " + compass(((hole.bearing * 180 / Math.PI) % 360 + 360) % 360), W / 2, Hpx - 46, fs + 2, gold, "center", Math.min(1, modeClock * 2));
+            if (hole.shape) text(SHAPES[hole.shape], W / 2, Hpx - 46 + fs + 8, fs, "#e9e9f0", "center", Math.min(1, modeClock * 2));
+        }
         if (mode === "aim" && !swing && !meter && modeClock < 4 && strokes === 0 && holeNo === 0) {
             var tip = small ? ["drag down, then flick up to swing", TOUCH ? "drag the sky to aim" : "or space three times"] : [TOUCH ? "drag down, then flick up to swing · drag the sky to aim" : "drag down, then flick up to swing · or space three times"];
             for (var ti = 0; ti < tip.length; ti++) text(tip[ti], W / 2, Hpx * 0.42 + ti * (fs + 6), fs, "#e9e9f0", "center", Math.min(1, (4 - modeClock)));
@@ -1557,9 +1824,9 @@
         ctx.globalAlpha = 1; ctx.fillStyle = INK.flag; ctx.fillRect(px(hole.pin.x) - 1.5, pz(hole.pin.z) - 1.5, 3, 3);
         ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(px(ball.x), pz(ball.z), 2.2, 0, 2 * Math.PI); ctx.fill();
         if (mode === "aim") {
-            var reach = club === PUTTER ? Math.min(yardsToPin(), 30) : CLUBS[club].carry;
+            var F = shown();
             ctx.strokeStyle = INK.aim; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(px(ball.x), pz(ball.z)); ctx.lineTo(px(ball.x + Math.sin(aim) * reach), pz(ball.z + Math.cos(aim) * reach)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(px(ball.x), pz(ball.z)); ctx.lineTo(px(F.x), pz(F.z)); ctx.stroke();
         }
     }
 
@@ -1611,6 +1878,7 @@
             },
             splash: function () { var t = ac.currentTime; noise(t, 0.7, "lowpass", 2400, 0.8, 0.6, 300); noise(t + 0.1, 0.5, "bandpass", 1200, 2, 0.2, 500); },
             thud: function () { var t = ac.currentTime; tone(t, 0.25, "sine", 140, 0.4, 50); },
+            leaves: function () { var t = ac.currentTime; noise(t, 0.4, "bandpass", 3200, 0.7, 0.3, 1800); tone(t + 0.05, 0.08, "sine", 420, 0.12, 260); },
             lip: function () { var t = ac.currentTime; tone(t, 0.05, "triangle", 2100, 0.2); tone(t + 0.07, 0.05, "triangle", 1800, 0.14); },
             cup: function (dunk) {
                 var t = ac.currentTime;
@@ -1771,7 +2039,9 @@
         veil.hidden = true; veilCard.hidden = true;
         if (veilBoard) veilBoard.hidden = true; if (postLink) postLink.hidden = true;
         if (paused) { paused = false; return; }
-        if (mode === "card" || mode === "title") startRound();
+        var kept = mode === "title" ? keptRound() : null;
+        if (kept) resumeRound(kept);
+        else if (mode === "card" || mode === "title") startRound();
         if (audio) audio.wind(hole.wind.mph);
     }
     go.addEventListener("click", begin);
@@ -1813,15 +2083,29 @@
         else fill(true);
     });
     unfillButton.addEventListener("click", function () { fill(false); });
+    // The pads. Aim turns by a fine step a tap (about two and a half yards at a
+    // driver's distance, half an inch a yard on a putt), and held down it
+    // repeats, faster the longer it is held.
+    function nudge(dir) { aim += dir * (club === PUTTER ? 0.006 : 0.01); }
+    var held = null;
+    function letGo() { if (held) { clearTimeout(held.t); held = null; } }
     if (pads) {
+        pads.addEventListener("pointerdown", function (e) {
+            var b = e.target.closest("button[data-act=left], button[data-act=right]");
+            if (!b || mode !== "aim" || meter || swing) return;
+            var dir = b.getAttribute("data-act") === "left" ? -1 : 1;
+            letGo(); nudge(dir);
+            held = { n: 0 };
+            (function again() { held.t = setTimeout(function () { if (!held || mode !== "aim") return letGo(); nudge(dir); held.n++; again(); }, held.n ? Math.max(25, 90 - held.n * 4) : 320); })();
+        });
+        ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) { pads.addEventListener(ev, letGo); });
         pads.addEventListener("click", function (e) {
             var b = e.target.closest("button");
             if (!b || mode !== "aim" || meter || swing) return;
             var act = b.getAttribute("data-act");
             if (act === "up") club = Math.max(0, club - 1);
             if (act === "down") club = Math.min(PUTTER, club + 1);
-            if (act === "left") aim -= club === PUTTER ? 0.006 : 0.04;
-            if (act === "right") aim += club === PUTTER ? 0.006 : 0.04;
+            if ((act === "left" || act === "right") && e.detail === 0) nudge(act === "left" ? -1 : 1);   // from the keyboard; a press was handled on the way down
             if (act === "view") { mode = "flyover"; modeClock = 0; }
             if (act === "back") { look.reverse = !look.reverse; follow.ready = false; }   // the view from the green, and back
         });
@@ -1880,6 +2164,12 @@
     ball.x = 0; ball.z = 0; ball.y = height(hole, 0, 0); ball.lie = "tee";
     aim = aimAtPin();
     veilText.textContent = "the course of the day: " + hole.name + ", nine holes" + (seed !== today() ? " (seed " + seed + ")" : "") + "." + (saved.best[seed] != null ? " Your best here is " + saved.best[seed] + "." : "");
+    (function () {
+        var r = keptRound(); if (!r) return;
+        var done = (r.scores || []).filter(function (x) { return x; }).length;
+        veilText.textContent += " Your round is on hole " + (r.holeNo + 1 + (r.done ? 1 : 0) > HOLES ? HOLES : r.holeNo + 1 + (r.done ? 1 : 0)) + (done ? ", " + done + (done === 1 ? " hole" : " holes") + " in" : "") + "; it carries on where you left it.";
+        go.textContent = "play on";
+    })();
     requestAnimationFrame(frame);
 
     // For poking at in the console.
@@ -1888,7 +2178,10 @@
         get hole() { return hole; }, get ball() { return ball; }, get mode() { return mode; }, get seed() { return seed; },
         strike: function (p, s) { if (mode !== "aim") readyToHit(); strike(p, s || 0); },
         aim: function (a) { if (a != null) aim = a; return aim; }, club: function (c) { if (c != null) club = c; return club; },
-        start: begin, clubs: CLUBS, scores: scores, launchSpeed: launchSpeed, rollFor: rollFor,
+        start: begin, clubs: CLUBS, get scores() { return scores; }, get strokes() { return strokes; }, get stats() { return stats; }, launchSpeed: launchSpeed, rollFor: rollFor,
+        forecast: function (p) { return forecast(p == null ? plannedPower() : p); }, need: solveNeed, summary: summary,
+        rain: function (on) { if (on != null) wet = !!on; return wet; }, get bearing() { return hole && hole.bearing; }, get shape() { return hole && hole.shape; },
+        keep: keepRound, kept: keptRound, forget: forgetRound,
         settle: function () { for (var n = 0; mode === "flight" && n < 240 * 90; n++) step(1 / 240); if (mode === "penalty") takeDrop(); return mode; },
         // The camera's levers: where it is, what it is following, the game run on by hand, and where the ball is in the picture.
         get cam() { return cam; }, get follow() { return follow; }, get shotCam() { return shotCam; }, get look() { return look; },

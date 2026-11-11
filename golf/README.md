@@ -51,24 +51,91 @@ goes where a drive lands and beside the green; water, on some holes, is a
 creek across the line or a pond beside it. The course is named for a corner
 of Portland.
 
+About two holes in three also have a shape of their own (`shape`, from a
+generator of its own, so the rest of the hole is as it was): **a carry**, a
+creek across the line 9 to 23 yards short of the green, so the approach has
+to fly it; **an elevated tee**, 7 to 15 yards above the ground in front, the
+box sloping down to it over 26 yards; **a split fairway**, a strip of rough
+with a bunker in it down the middle where a drive lands (par 4s and 5s); or
+**a tucked pin**, a bunker in front of the green and the pin in the front
+half behind it. The flyover names the shape.
+
+Each hole also has a bearing on the compass (`H.bearing`, again from its own
+generator): the hole is laid out up its own axis and turned by it, so the
+airport's wind, the low sun and Mt Hood all come round with it, and a
+crosswind on one hole is a headwind on the next. The flyover says which way
+the hole plays.
+
 ## The ball
 
 Yards and seconds, gravity 10.7. Each club has a carry at full power from a
 good lie and a loft; its launch speed is found once, by bisection, so that
 the carry on flat ground with no wind is the club's number (driver 245, down
 to the sand wedge at 78). Power scales the carry, and the lie takes some off
-(rough 85%, trees 62%, sand 70%, the sand wedge 92% out of sand). In the air
-there is a little drag, the wind (0.2 yards/s² for every mile an hour, the
-whole time it is up), and the curve: a hook or slice pushes sideways, at up to
-7 yards/s², fading over five seconds. On the ground, a bounce reflects off
-the slope with the surface's restitution and grip, and backspin takes speed
-off the first bounce on a green, enough to check it or draw it back. Once
-down, it rolls: the slope pulls it at 5/7 of g along the gradient (a rolling
-ball), and the surface holds it back (green 0.55 yards/s², fairway 1.6,
-rough 4.2, sand 12). It drops if it reaches the cup slower than 1.9 yards a
-second and lips out if it is not much faster. Water and out of bounds cost a
-stroke: water drops it on dry ground on the near side, out of bounds puts it
-back where it was hit. Ten strokes and it is picked up.
+(rough 85%, trees 62%, sand 70%, the sand wedge 92% out of sand: `takeOf`,
+which the strike, the HUD and the advice all use). In the air there is a
+little drag; lift from the backspin (`LIFT`, in proportion to the speed over
+the ground, dying away over five seconds), so a drive climbs to about 33
+yards and comes down at near 40 degrees; the wind (0.075 yards/s² for every
+mile an hour, the whole time it is up: a 10 mph crosswind moves a drive or
+an iron 11 to 13 yards); and the curve: a hook or slice pushes sideways, at
+up to 7 yards/s², fading over five seconds. The trees are in the way: a ball
+that flies into a canopy (a cone like the one drawn) is knocked down to
+three tenths of its speed and turned a little, and one that hits a trunk
+comes back (`canopy`); the turn is fixed by the tree, so a forecast and the
+shot agree.
+
+On the ground, a bounce reflects off the slope with the surface's
+restitution and grip, and backspin takes speed off the first bounce: on the
+fairway or the fringe it checks (`CHECK`), on a green it can stop or draw
+back. Once down, it rolls: the slope pulls it at 5/7 of g along the gradient
+(a rolling ball), and the surface holds it back (green 0.55 yards/s²,
+fairway 1.9, rough 4.2, sand 12). Full and true on a flat fairway, the
+driver carries 245 and finishes about 273, a 7 iron 152 and 159, and the
+wedges stop where they land. A putt drops if it reaches the cup slower than
+1.5 yards a second (`CUP_ROLL`, a putt that would run about two yards past)
+and lips out if it is not much faster; a chip or a full shot running up has
+to be slower than 0.9 (`CUP_RUN`), and one coming down out of the air
+slower than 4 along the ground (`CUP_AIR`). A ball that stops within a foot
+of the hole on the green is tapped in for a stroke (`GIMME`). Water and out
+of bounds cost a stroke: water drops it on dry ground on the near side, out
+of bounds puts it back where it was hit. Ten strokes and it is picked up.
+
+In the rain, which is when the airport says it is raining (or `#rain`),
+every grass holds a landing ball more and slows a rolling one, the green
+most (`WET`), and rain streaks down the screen with the wind.
+
+`move(b, dt, sim)` is one step of a ball, the one in play or a copy, and
+says what ended the shot if something did (in from the air, in the cup,
+water, out of bounds, stopped); `step` acts on it for the real ball, with
+the sounds and the notes, and the copy never lips out at random.
+
+## The advice
+
+Everything the game tells you about a shot comes from running it.
+`forecast(power)` launches a copy of the ball from the lie with the club and
+the aim (`launch`, the same function the strike uses) and steps it with
+`move` until it stops: wind, slope, lift, trees, bounces, the cup. It gives
+the path, where it first comes down, where it stops, how far that is along
+the aim, and what ended it; it is cached by everything that moves it, and by
+the power. `solveNeed()` bisects on it for the power that stops the ball at
+the pin, or a foot past it with a putter, so the light tick on the meter
+allows for run, wind, elevation and slope; `advise()` keeps the answer and
+works it out again when something changes, no oftener than eight times a
+second. The aim line is the forecast's track along the ground at the tick's
+power (or at the power being swung), with a cross where it comes down and a
+ring where it stops, in the water's blue or the flag's red if that is how it
+ends. A putt shows only the first few yards of its line, fading, so the
+break is a hint and the rest is the read; the HUD gives the putt's aim in
+inches left or right of the cup. The club is chosen as each shot stops
+(`pickClub`): the shortest whose full shot, forecast from here along the
+aim, reaches the pin, or else the one that goes furthest.
+
+The bot that checked this (eight courses, 72 holes, the game's own aim, club
+and tick, straight): full shots stop within half a yard of the forecast;
+every putt inside three feet goes in; a perfect bot in calm air goes round
+about eight under, one with 8% error in its power about level, and with the
+seeded wind about three over.
 
 ## The swing
 
@@ -145,21 +212,25 @@ Golf.start(); Golf.holeTo(0); Golf.put(10, 120); Golf.tick(33); Golf.framing()
 
 ## The wind off the river
 
-Every hole runs north, tee to green, so a compass wind means something:
-the latest observation at Portland's airport (api.weather.gov, station
-KPDX, no key, CORS open) is fetched when the page loads and when a round
-begins, turned from the direction it blows from to the direction it goes,
-and laid over every hole's seeded wind (`applyWind`); the HUD marks it PDX
-with the compass point. If the fetch fails the holes keep the wind they
-grew with. `Golf.wind` is the observation; `Golf.calm()` puts the seeded
-wind back.
+Each hole is turned on the compass by its bearing, so a compass wind
+means something different on each: the latest observation at Portland's
+airport (api.weather.gov, station KPDX, no key, CORS open) is fetched when
+the page loads and when a round begins, turned from the direction it blows
+from to the direction it goes and then by the hole's bearing, and laid over
+every hole's seeded wind (`applyWind`); the HUD marks it PDX with the
+compass point. The same observation says when it is raining at the airport
+(its description, or a present-weather code of rain, drizzle or showers),
+and then it rains on the course, and the HUD says RAIN. If the fetch fails
+the holes keep the wind they grew with, and it is dry. `Golf.wind` is the
+observation; `Golf.calm()` puts the seeded wind back.
 
 ## Sound
 
 WebAudio, behind the sound toggle and built on the first click, with
 `js/unmute.js` for iPhones: a breeze that rises with the wind, the swoosh and
 crack of a full swing, the tick of a putt, a thud or a hiss on landing, a
-splash, the rattle of the cup, and a crowd for anything under par.
+rustle of leaves when the trees catch it, a splash, the rattle of the cup,
+and a crowd for anything under par.
 
 ## Controls and state
 
@@ -168,14 +239,37 @@ club; `v` flies the hole; hold `q` or `e` to look round and `r` to look back
 from the green; `esc` pauses; on a phone there are buttons for aim, club, the
 flyover and the view from the green, a drag across the sky aims, and two
 fingers dragged sideways look round. The club is chosen for
-you as each shot stops, the longest that does not overshoot. Best rounds per
+you as each shot stops, the shortest whose full shot reaches the pin. Best rounds per
 course, and the sound setting, are in `localStorage` under `golf`.
 `window.Golf` exposes the generator, the ball and a few levers for poking at
 in the console, including `Golf.settle()`, which runs a shot to rest at once,
 and `Golf.hud(false)`, for a clean picture. The keyboard is the game's only
 while the stage is on screen. A light tick on the swing meter marks the
-power that reaches the pin with the chosen club, and the aim's ring sits
-at the pin when a full swing would fly past it.
+power that reaches the pin with the chosen club (see the advice, above).
+
+On a phone the aim pads turn the aim 0.01 radians a tap for a full shot
+(about two and a half yards at a driver's distance) and 0.006 for a putt,
+and held down they repeat, faster the longer they are held; a drag across
+the sky is still the finest. A putt's backswing counts from 8 pixels, a full
+swing's from 18, so the gentlest putt is a short one even on a short stage.
+
+The round in progress is kept as each shot stops, in `localStorage` under
+`golf-round`: the course, the hole, the strokes, the card, the hole's
+numbers and the lie. Come back to the same course (a reload, a phone that
+dropped the tab) and the title says where the round is, and "play on" puts
+the ball back where it was. It is forgotten when the card is shown, and
+replaced when another round begins.
+
+The card has a row of putts and a line of the round's numbers: fairways hit
+off the tee on the par 4s and 5s, greens in regulation, putts, penalties,
+the longest drive, and holes out from off the green (`summary`). The line
+goes into the post to the board too, outside the code block, which is as it
+was.
+
+More levers: `Golf.forecast(p)` and `Golf.need()` are the advice,
+`Golf.scores`, `Golf.strokes` and `Golf.stats` the score as it stands,
+`Golf.rain(on)`, `Golf.bearing` and `Golf.shape` the day and the hole, and
+`Golf.kept()` and `Golf.forget()` the round kept.
 
 ## The clubhouse board
 
@@ -207,7 +301,7 @@ counts: `sq<hole>` goes on the card and `golf.squatch` in `localStorage`
 goes up. `Golf.squatch()` calls it.
 
 Mt Hood stands on the horizon east by south (`HOOD.bearing`, 1.95 rad
-from the hole's north), a silhouette with a snow line, drawn in `sky()`.
+from north, turned by each hole's bearing), a silhouette with a snow line, drawn in `sky()`.
 Once a round, if at all (six in a hundred a hole, or `#hood` on the
 address for the first hole), it erupts: a glow at the summit, a column of
 puffs leaning with the wind and growing for forty seconds, lightning in
