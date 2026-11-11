@@ -371,10 +371,26 @@
     }
 
     // ---- sound: a plucked string, Karplus and Strong's ------------------------------------------------
-    var AC = null, BUF = {};
+    // On a phone: js/unmute.js in the first tap, so the ringer switch does not silence it, and a mix for a speaker that
+    // carries almost nothing under 300 Hz: louder, the mud cut, the overtones lifted, and the low strings doubled an
+    // octave up so the ear hears the fundamental that is not there.
+    var TOUCH = !!(window.matchMedia && matchMedia("(hover: none) and (pointer: coarse)").matches);
+    var AC = null, BUF = {}, OUT = null;
     function audio() {
-        if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; AC = new C(); }
-        if (AC.state === "suspended") AC.resume();
+        if (!AC) {
+            var C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+            AC = new C();
+            if (window.Unmute) window.Unmute(AC);
+            OUT = AC.destination;
+            if (TOUCH) {
+                var hp = AC.createBiquadFilter(), lift = AC.createBiquadFilter(), comp = AC.createDynamicsCompressor();
+                hp.type = "highpass"; hp.frequency.value = 160;
+                lift.type = "peaking"; lift.frequency.value = 1400; lift.Q.value = 0.8; lift.gain.value = 6;
+                comp.threshold.value = -14; comp.ratio.value = 4;
+                hp.connect(lift); lift.connect(comp); comp.connect(AC.destination); OUT = hp;
+            }
+        }
+        if (AC.state !== "running") { try { var r = AC.resume(); if (r && r.catch) r.catch(function () { /* the next tap */ }); } catch (e) { /* later */ } }
         return AC;
     }
     function buffer(midi) {
@@ -389,8 +405,12 @@
     function pluck(midi, delay, key) {
         var a = audio(); if (!a) return;
         var src = a.createBufferSource(), g = a.createGain(), lp = a.createBiquadFilter(), t = a.currentTime + (delay || 0);
-        src.buffer = buffer(midi); lp.type = "lowpass"; lp.frequency.value = 3800; g.gain.value = 0.28;
-        src.connect(lp); lp.connect(g); g.connect(a.destination); src.start(t);
+        src.buffer = buffer(midi); lp.type = "lowpass"; lp.frequency.value = TOUCH ? 6000 : 3800; g.gain.value = TOUCH ? 0.55 : 0.28;
+        src.connect(lp); lp.connect(g); g.connect(OUT); src.start(t);
+        if (TOUCH && midi < 55) {   // below G3 a phone loses the note: its octave, quietly, under it
+            var up = a.createBufferSource(), ug = a.createGain();
+            up.buffer = buffer(midi + 12); ug.gain.value = 0.3; up.connect(ug); ug.connect(OUT); up.start(t);
+        }
         if (key) {
             setTimeout(function () { sounding[key] = (sounding[key] || 0) + 1; draw(); }, (delay || 0) * 1000);
             setTimeout(function () { sounding[key]--; if (!sounding[key]) delete sounding[key]; draw(); }, (delay || 0) * 1000 + 450);
