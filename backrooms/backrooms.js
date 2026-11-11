@@ -28,6 +28,7 @@
     var unfillButton = document.getElementById("backrooms-unfill");
     var resetButton = document.getElementById("backrooms-reset");
     var ghostLink = document.getElementById("backrooms-ghost");
+    var descentLink = document.getElementById("backrooms-descent");
     var depthOut = document.getElementById("backrooms-depth");
     var staticButton = document.getElementById("backrooms-static");
     var chalkButton = document.getElementById("backrooms-chalk");
@@ -48,7 +49,13 @@
     var EYE = 0.42;       // eye height; ceilings start at 0.8
     var FOV = 78 * Math.PI / 180;
     var RADIUS = 0.2;     // how wide you are
-    var WALK = 2.0, RUN = 3.3;
+    var WALK = 2.0, RUN = 3.3, WINDED = 1.6;
+    // Breath: a run lasts eight seconds from full, comes back in eight walking
+    // (five standing), and once it is gone there is no running until it is
+    // half back. A run is heard: for a while after, what is near enough to
+    // hear comes faster (nearly as fast as a run, never faster) and does not
+    // lose interest.
+    var BREATH = 8, RECOVER = 8, HEARD = 2.5, HEAR = 16, UP = 3;
 
     // ---- the record --------------------------------------------------------
     // Seeds come from a dozen, so that visitors share floors and meet each
@@ -60,6 +67,8 @@
         var s = null;
         try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
         if (!s || typeof s.seed !== "number") s = { seed: freshSeed(), level: 0, best: 0, deaths: 0, sound: 1 };
+        if (!s.times || typeof s.times !== "object") s.times = {};           // best seconds a level, by "seed:level"
+        if (s.descent && typeof s.descent.t !== "number") s.descent = null;   // the descent under way: seed, seconds, found, deepest
         var m = /seed=(\d+)/.exec(location.hash), l = /level=(\d+)/.exec(location.hash);
         if (m) s.seed = +m[1];
         if (l) s.level = Math.min(+l[1], 60);
@@ -111,6 +120,33 @@
         "the menu has one door too many", "there is no bottom. that is the joke", "josh allen can see you",
         "the elves are cold", "kulture kudasai", "you have been here before"
     ];
+    // Notes kept for further down, so there is something new to read below level 3.
+    var LOWER = [
+        "it can hear you run", "breathe. walk. breathe.", "count the pillars. they don't", "the chalk remembers where you were",
+        "it looked away first. once.", "you can get past it if you don't blink", "the carpet is wet here. it is always wet here",
+        "level 4 was a lie. this is the lie now", "someone drew a circle here and stayed inside", "the hum is a semitone lower than yesterday",
+        "the exit sign is a sign", "it is faster in a straight line", "corners are where it slows down", "do not let it see you turn",
+        "you are not the first. you are not the last. you are the one here", "the static is free. it isn't."
+    ];
+    var DEEPEST = [
+        "nobody comes this far", "the elves don't come down here", "there is no level after this one. there is",
+        "the ceiling is the floor of level %", "the lights are older down here", "the corridors are longer because you are slower",
+        "it knows your name. it doesn't know which one", "down is the only direction left", "this wall was painted over a door",
+        "your ghost is somewhere above you, walking", "the hum has stopped pretending to be electrical", "keep the chalk for the last one"
+    ];
+    // Notes written from your own record, a few a level.
+    function personalNotes(level) {
+        var out = [], best = saved.times[saved.seed + ":" + level], g = ghostCount();
+        if (saved.deaths) out.push("found " + saved.deaths + " time" + (saved.deaths === 1 ? "" : "s") + ". it keeps count too");
+        if (best != null) out.push("your best on this level is " + clockText(best) + ". beat it");
+        if (g) out.push(g + " ghost" + (g === 1 ? "" : "s") + " on this seed. one of them might be you");
+        if (saved.best > level) out.push("you have been to level " + saved.best + ". it is still down there");
+        return out;
+    }
+    function notePool(level) {
+        var pool = level < 4 ? NOTES.slice() : level < 9 ? LOWER.concat(NOTES.slice(0, 10)) : DEEPEST.map(function (t) { return t.replace("%", level - 1); }).concat(LOWER);
+        return personalNotes(level).concat(pool);
+    }
     // One note is always on a wall of level 0, in Poe's signs from The Gold-Bug
     // (5 is a, 8 is e, ? is t, the key is in the story, the story is in the
     // temple): TELL THE HELP ROBOT IALDABAOTH, run together as Poe ran his.
@@ -131,19 +167,33 @@
     ];
     var PALETTE = ["#ffb000", "#b6ff3a", "#00e5ff", "#ff3d9a", "#ff5a2e", "#c288ff", "#ffffff"];
 
+    // From level 7, every fourth level is a kind of its own: the lights out but
+    // for the way down, one long corridor, or a way down that will not stay put.
+    var KINDS = ["dark", "corridor", "moving"];
+    function kindOf(level) { return level >= 7 && level % 4 === 3 ? KINDS[Math.floor((level - 7) / 4) % KINDS.length] : ""; }
+    var SPECIAL = {
+        dark: "level %. the lights are out. all but one.",
+        corridor: "level %. one corridor. it goes on. so does it.",
+        moving: "level %. the way down will not stay where it is."
+    };
     function generate(seed, level) {
-        var rand = mulberry32(mix(seed, level));
-        var n = Math.min(16 + level * 3, 44);
+        var rand = mulberry32(mix(seed, level)), kind = kindOf(level);
+        // The grid grows the whole way down (to 64), and the rooms stop once
+        // about a third of it is open, so deeper stays a maze rather than a hall.
+        var n = kind === "corridor" ? 27 : Math.min(22 + level * 2, 64);
         var grid = new Uint8Array(n * n);     // 1 solid, 0 open
         var height = new Float32Array(n * n);
         var i, j, x, z;
         for (i = 0; i < n * n; i++) { grid[i] = 1; height[i] = 0.8; }
         function at(x, z) { return (x < 0 || z < 0 || x >= n || z >= n) ? 1 : grid[z * n + x]; }
-        function open(x, z, h) { if (x > 0 && z > 0 && x < n - 1 && z < n - 1) { grid[z * n + x] = 0; height[z * n + x] = h; } }
+        var opened = 0;
+        function open(x, z, h) { if (x > 0 && z > 0 && x < n - 1 && z < n - 1) { if (grid[z * n + x]) opened++; grid[z * n + x] = 0; height[z * n + x] = h; } }
+        if (kind === "corridor") return finish(seed, level, kind, rand, n, grid, height, maze(rand, n, grid, height, open, at));
 
         // Rooms, overlapping on purpose: the backrooms are not architecture.
         var rooms = [], tries = 6 + level * 2, big = level < 3 ? 5 : 8;
         for (i = 0; i < tries; i++) {
+            if (rooms.length >= 2 && opened > n * n * (0.3 - Math.min(0.08, Math.max(0, level - 10) * 0.008))) break;
             var w = 2 + Math.floor(rand() * big), d = 2 + Math.floor(rand() * big);
             var rx = 1 + Math.floor(rand() * (n - w - 2)), rz = 1 + Math.floor(rand() * (n - d - 2));
             var h = level < 3 ? 0.8 : 0.6 + rand() * 0.5;
@@ -164,7 +214,7 @@
             }
         }
         for (i = 1; i < rooms.length; i++) corridor(rooms[i - 1], rooms[i]);
-        for (i = 0; i < 1 + level; i++) corridor(rooms[Math.floor(rand() * rooms.length)], rooms[Math.floor(rand() * rooms.length)]);
+        for (i = 0; i < Math.min(1 + level, 6); i++) corridor(rooms[Math.floor(rand() * rooms.length)], rooms[Math.floor(rand() * rooms.length)]);
         // Pillars, on a grid, where there is room: the columns of the place.
         for (z = 2; z < n - 2; z++) for (x = 2; x < n - 2; x++) {
             if (x % 3 !== 1 || z % 3 !== 1 || rand() > 0.6) continue;
@@ -177,8 +227,31 @@
             x = 1 + Math.floor(rand() * (n - 2)); z = 1 + Math.floor(rand() * (n - 2));
             if (at(x, z) && !(at(x - 1, z) && at(x + 1, z) && at(x, z - 1) && at(x, z + 1))) open(x, z, 0.65);
         }
+        return finish(seed, level, kind, rand, n, grid, height, rooms[0]);
+    }
+    // One long corridor: a maze of one-wide halls on the odd cells, cut by a
+    // walk that backs up when it is stuck, with a very few loops.
+    function maze(rand, n, grid, height, open, at) {
+        var stack = [[1, 1]], x, z, k;
+        open(1, 1, 0.7);
+        while (stack.length) {
+            var c = stack[stack.length - 1], ways = [];
+            [[2, 0], [-2, 0], [0, 2], [0, -2]].forEach(function (s) { var nx = c[0] + s[0], nz = c[1] + s[1]; if (nx > 0 && nz > 0 && nx < n - 1 && nz < n - 1 && at(nx, nz)) ways.push(s); });
+            if (!ways.length) { stack.pop(); continue; }
+            var w = ways[Math.floor(rand() * ways.length)];
+            open(c[0] + w[0] / 2, c[1] + w[1] / 2, 0.7); open(c[0] + w[0], c[1] + w[1], 0.7);
+            stack.push([c[0] + w[0], c[1] + w[1]]);
+        }
+        for (k = 0; k < n * 0.4; k++) {
+            x = 2 + Math.floor(rand() * (n - 4)); z = 2 + Math.floor(rand() * (n - 4));
+            if (at(x, z) && ((!at(x - 1, z) && !at(x + 1, z) && at(x, z - 1) && at(x, z + 1)) || (!at(x, z - 1) && !at(x, z + 1) && at(x - 1, z) && at(x + 1, z)))) open(x, z, 0.7);
+        }
+        return { x: 1, z: 1 };
+    }
+    function finish(seed, level, kind, rand, n, grid, height, start) {
+        var i, x, z;
+        function at(x, z) { return (x < 0 || z < 0 || x >= n || z >= n) ? 1 : grid[z * n + x]; }
         // Keep only what the start can reach; the rest was never there.
-        var start = rooms[0];
         grid[start.z * n + start.x] = 0;                 // a pillar may have grown there
         var dist = field(grid, n, start.x, start.z);
         var far = [], reach = [];
@@ -188,11 +261,13 @@
         }
         var maxd = 0;
         reach.forEach(function (c) { if (dist[c] > maxd) maxd = dist[c]; });
-        reach.forEach(function (c) { if (dist[c] >= maxd * 0.85) far.push(c); });
+        // Far from the start; on level 0, at least sixteen steps, past the fog, so the figure and a note come first.
+        var least = Math.min(maxd, Math.max(maxd * 0.85, level === 0 ? 16 : 0));
+        reach.forEach(function (c) { if (dist[c] >= least) far.push(c); });
         var ex = far[Math.floor(rand() * far.length)];
         var exit = { x: ex % n, z: Math.floor(ex / n) };
         // Notes on the walls, where someone stood.
-        var notes = [], used = {}, want = Math.min(4 + level, 12), pool = NOTES.slice();
+        var notes = [], used = {}, want = Math.min(4 + level, 12), pool = notePool(level);
         for (i = 0; i < 400 && notes.length < want; i++) {
             var c = reach[Math.floor(rand() * reach.length)];
             x = c % n; z = Math.floor(c / n);
@@ -204,7 +279,7 @@
             notes.push({ x: x, z: z, face: faces[Math.floor(rand() * faces.length)], text: pool.splice(Math.floor(rand() * pool.length), 1)[0], seen: false });
         }
         if (level === 0 && notes.length) notes[notes.length - 1].text = CIPHER;      // the wall with the signs, every seed
-        return { n: n, grid: grid, height: height, start: start, exit: exit, dist: dist, reach: reach, notes: notes, level: level, rand: rand };
+        return { n: n, grid: grid, height: height, start: start, exit: exit, dist: dist, reach: reach, notes: notes, level: level, rand: rand, kind: kind, open: reach.length };
     }
     // Breadth-first distances over open cells, -1 where you cannot get.
     function field(grid, n, sx, sz) {
@@ -231,12 +306,20 @@
     var clock = 0, levelClock = 0, modeClock = 0, flicker = 1, blackout = 0, lastFrame = 0, slow = 0;
     var playerField = null, fieldAt = -1;
     var sawExit = false, sawThing = false, stepClock = 0, near = 0, hue = 0;
+    var breath = 1, winded = false, heard = 0, foundHere = 0;
     var W = 0, H = 0, DPR = 1, f = 0;
 
-    function fogRadius() { return Math.max(4.5, 11 - L.level * 0.6); }
+    function fogRadius() { return L.kind === "dark" ? 2.4 : Math.max(4.5, 11 - L.level * 0.6); }
     function color() {
         if (ELF) return "hsl(" + hue.toFixed(0) + ", 100%, 65%)";
-        return PALETTE[Math.min(L.level, PALETTE.length - 1)];
+        if (L.level < PALETTE.length) return PALETTE[L.level];
+        return "hsl(" + ((L.level * 53 + 20) % 360) + ", 95%, 62%)";              // below the palette, a colour a level
+    }
+    // How many steps a cell is from the way down, for the draft, the hum and the note that says so.
+    var exitField = null;
+    function toExit(x, z) {
+        if (!exitField) exitField = field(L.grid, L.n, L.exit.x, L.exit.z);
+        return exitField[Math.floor(z) * L.n + Math.floor(x)];
     }
     function cellAt(x, z) {
         x = Math.floor(x); z = Math.floor(z);
@@ -244,31 +327,42 @@
     }
     function heightAt(x, z) { return L.height[Math.floor(z) * L.n + Math.floor(x)]; }
 
+    // Into a level: fresh (falsy again), back to its start after being found
+    // (again true: the chalk, static and the level's clock carry on, so being
+    // found costs time), or back up to it (again "up": fresh, but said so).
     function enter(level, again) {
+        var fresh = again !== true;
         L = generate(saved.seed, level);
         cam.x = L.start.x + 0.5; cam.z = L.start.z + 0.5; cam.pitch = 0;
         cam.yaw = L.rand() * Math.PI * 2;
         things = [];
-        var count = Math.min(1 + Math.floor(level / 2), 5);
+        var count = figureCount(level);
         for (var i = 0; i < count; i++) spawn(10 + i * 3, 18 + i * 3);
-        sawExit = false; sawThing = false; sawGhost = false; levelClock = 0; fieldAt = -1;
-        chalk = CHALK; circles = [];
+        sawExit = false; sawThing = false; sawGhost = false; fieldAt = -1; exitField = null;
+        breath = 1; winded = false; heard = 0; circles = [];
+        if (fresh) { chalk = CHALK; fuzz = 0; fuzzCool = 0; foundHere = 0; levelClock = 0; marks = []; moved = 0; }
         rec = []; recClock = 0;
+        // A descent starts at the top of level 0 and is timed to wherever it gets.
+        if (level === 0 && !again) saved.descent = { seed: saved.seed, t: 0, found: 0, deepest: 0 };
         saved.level = level;
         if (level > saved.best) saved.best = level;
         save();
         haunt();
         var text = level < ARRIVALS.length ? ARRIVALS[level] : DEEPER[(level * 7 + saved.seed) % DEEPER.length].replace("%", level);
-        say(again ? "the start again. it is somewhere else now. so is the way down, probably not." : text, 7);
+        if (L.kind && SPECIAL[L.kind]) text = SPECIAL[L.kind].replace("%", level);
+        say(again === "up" ? "back up to level " + level + ". it is not where you left it." : again ? "the start again. it is somewhere else now. so is the way down, probably not." : text, 7);
         if (audio) audio.level(level);
     }
-    function spawn(lo, hi) {
-        // Somewhere between lo and hi steps from the player, out of sight.
+    function figureCount(level) { return kindOf(level) === "corridor" ? 3 : Math.min(1 + Math.floor(level / 2), level < 12 ? 5 : 5 + Math.floor((level - 12) / 6), 8); }
+    function spawn(lo, hi, behind) {
+        // Somewhere between lo and hi steps from the player, out of sight; behind,
+        // further from the way down than you are, for one that has given up on you.
         var px = Math.floor(cam.x), pz = Math.floor(cam.z);
-        var d = field(L.grid, L.n, px, pz), pick = [], i;
-        for (i = 0; i < d.length; i++) if (d[i] >= lo && d[i] <= hi) pick.push(i);
+        var d = field(L.grid, L.n, px, pz), pick = [], i, mine = behind ? toExit(cam.x, cam.z) : 0;
+        for (i = 0; i < d.length; i++) if (d[i] >= lo && d[i] <= hi && (!behind || toExit(i % L.n + 0.5, Math.floor(i / L.n) + 0.5) > mine)) pick.push(i);
+        if (!pick.length && behind) for (i = 0; i < d.length; i++) if (d[i] >= lo && d[i] <= hi) pick.push(i);
         if (!pick.length) for (i = 0; i < d.length; i++) if (d[i] >= 6) pick.push(i);
-        if (!pick.length) return;
+        if (!pick.length) return false;
         var c, x, z, best = null;
         for (i = 0; i < 60; i++) {
             c = pick[Math.floor(Math.random() * pick.length)]; x = c % L.n + 0.5; z = Math.floor(c / L.n) + 0.5;
@@ -277,14 +371,16 @@
             if (far) { best = [x, z]; break; }
             if (!best) best = [x, z];
         }
-        if (!best) return;
-        things.push({ x: best[0], z: best[1], tx: best[0], tz: best[1], seen: false, unseenFor: 0, wobble: Math.random() * 7 });
+        if (!best) return false;
+        var sprinters = things.filter(function (t) { return t.sprint; }).length, want = L.level >= 4 ? 1 + Math.floor((L.level - 4) / 10) : 0;
+        things.push({ x: best[0], z: best[1], tx: best[0], tz: best[1], seen: false, unseenFor: 0, wobble: Math.random() * 7, sprint: sprinters < want, wait: 0, stare: 0, flee: 0 });
+        return true;
     }
 
     // ---- lines of sight ----------------------------------------------------
-    function visible(x, z) {
+    function visible(x, z, reach) {
         var dx = x - cam.x, dz = z - cam.z, d = Math.hypot(dx, dz);
-        if (d > fogRadius() + 1) return false;
+        if (d > (reach || fogRadius() + 1)) return false;
         var ang = Math.atan2(dx, dz) - cam.yaw;
         ang = Math.atan2(Math.sin(ang), Math.cos(ang));
         if (Math.abs(ang) > FOV / 2 + 0.08) return false;
@@ -301,16 +397,24 @@
     // it stood, and you can walk through it; then it is most of a minute
     // before the trick works again. It does not know what happened either.
     var FUZZ = 4, COOL = 45, fuzz = 0, fuzzCool = 0;
+    var SPRINT = 3.8;    // from level 4, some of them: faster than a run in a straight line, and slow round a corner
     // Chalk: C. A circle on the floor round where you stand, which it will not
     // cross, for CHALK_TIME seconds; CHALK pieces a level. The grimoires' rule,
     // as a cooldown: draw it before it reaches you, and stay inside.
-    var CHALK = 3, CHALK_TIME = 20, CHALK_R = 1.3, chalk = CHALK, circles = [];
+    // Drawn right in front of one, it backs off and goes elsewhere. A circle
+    // that has worn off leaves a faint ring on the floor for the rest of the
+    // level, which is a trail in the fog if you want one.
+    var CHALK = 3, CHALK_TIME = 20, CHALK_R = 1.3, chalk = CHALK, circles = [], marks = [];
+    // Stared at this long (watched, near enough that watching holds it), it looks away first, and goes.
+    var STARE = 10;
     function useChalk() {
         if (mode !== "play") return;
         if (chalk <= 0) { say("no chalk left on this level.", 3); return; }
         circles.push({ x: cam.x, z: cam.z, r: CHALK_R, left: CHALK_TIME });
         chalk--;
-        say("a circle, in chalk. it will not cross it. twenty seconds; stay inside.", 4);
+        var shy = things.filter(function (t) { return Math.hypot(t.x - cam.x, t.z - cam.z) < CHALK_R + 1.2; });
+        shy.forEach(function (t) { t.flee = 2; t.stare = 0; });
+        say(shy.length ? "a circle, in chalk, at its feet. it backs away from it." : "a circle, in chalk. it will not cross it. twenty seconds; stay inside.", 4);
         if (audio) audio.chalk();
     }
     function inCircle(x, z) { for (var i = 0; i < circles.length; i++) if (Math.hypot(x - circles[i].x, z - circles[i].z) < circles[i].r) return true; return false; }
@@ -328,6 +432,7 @@
         var freeze = Math.max(3, 9 - L.level * 0.6);
         var speed = Math.min(1.4 + L.level * 0.22, 3.0);
         var fuzzed = fuzz > 0;
+        var c0 = Math.floor(cam.z) * L.n + Math.floor(cam.x);
         near = 99;
         things.slice().forEach(function (t) {
             var dx = cam.x - t.x, dz = cam.z - t.z, d = Math.hypot(dx, dz);
@@ -339,12 +444,38 @@
             } else t.unseenFor += dt;
             t.seen = seen;
             if (fuzzed) return;                        // noise does not walk, and does not find
-            if (d < 0.45 && mode === "play") { found(); return; }
-            if (seen && d < freeze) return;            // it does not move while you watch
-            // Far off, or forgotten: it is somewhere nearer, now.
             var c = Math.floor(t.z) * L.n + Math.floor(t.x);
+            // Going: it walks away from you, up the field, finds no one, and is somewhere else after.
+            if (t.flee > 0) {
+                t.flee -= dt;
+                if (t.flee <= 0) { if (spawn(10, 18, true)) things.splice(things.indexOf(t), 1); return; }
+                if (Math.hypot(t.tx - t.x, t.tz - t.z) < 0.05) {
+                    var fx = Math.floor(t.x), fz = Math.floor(t.z), far = playerField[c], gx = fx, gz = fz;
+                    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (s) {
+                        var v = fx + s[0] >= 0 && fz + s[1] >= 0 && fx + s[0] < L.n && fz + s[1] < L.n ? playerField[(fz + s[1]) * L.n + fx + s[0]] : -1;
+                        if (v > far) { far = v; gx = fx + s[0]; gz = fz + s[1]; }
+                    });
+                    t.tx = gx + 0.5; t.tz = gz + 0.5;
+                }
+                var ex = t.tx - t.x, ez = t.tz - t.z, em = Math.hypot(ex, ez);
+                if (em > 0) { var es = Math.min(em, speed * dt); t.x += ex / em * es; t.z += ez / em * es; }
+                return;
+            }
+            // Watched, it does not move, and it is only a body: it can be edged past in a corridor, touching the wall.
+            var frozen = seen && d < freeze;
+            if (d < (frozen ? 0.22 : 0.45) && mode === "play") { found(); return; }
+            if (frozen) {
+                t.stare += dt;
+                if (t.stare > STARE) { t.flee = 2; t.stare = 0; t.tx = t.x; t.tz = t.z; say("it looked away first. it is going.", 4); }
+                return;
+            }
+            t.stare = Math.max(0, t.stare - dt * 0.5);
+            var hears = heard > 0 && playerField[c] >= 0 && playerField[c] <= HEAR;
+            if (hears) t.unseenFor = 0;
+            // Far off, or forgotten: it is somewhere nearer, now.
             if (playerField[c] > 24 || (t.unseenFor > 25 && playerField[c] > 12)) {
-                things.splice(things.indexOf(t), 1); spawn(7, 12); return;
+                if (spawn(7, 12)) things.splice(things.indexOf(t), 1);
+                return;
             }
             // Walk the distance field down toward the player.
             if (Math.hypot(t.tx - t.x, t.tz - t.z) < 0.05) {
@@ -355,11 +486,18 @@
                     var v = playerField[nz * L.n + nx];
                     if (v >= 0 && (v < best || (v === best && Math.random() < 0.3))) { best = v; bx = nx; bz = nz; }
                 });
+                // A sprinter is faster than a run down a straight hall and has to stop to turn a corner.
+                var turned = t.dx != null && (bx - x !== t.dx || bz - z !== t.dz);
+                if (t.sprint && turned) t.wait = 0.45;
+                t.dx = bx - x; t.dz = bz - z;
                 t.tx = bx + 0.5; t.tz = bz + 0.5;
             }
+            if (t.wait > 0) { t.wait -= dt; return; }
             var mx = t.tx - t.x, mz = t.tz - t.z, m = Math.hypot(mx, mz);
+            // One that heard you run comes faster, nearly as fast as a run, never faster; a sprinter is already faster.
+            var pace = t.sprint ? SPRINT : hears ? Math.max(speed, Math.min(speed * 1.3, RUN - 0.25)) : speed;
             if (m > 0) {
-                var step = Math.min(m, speed * dt), nx = t.x + mx / m * step, nz = t.z + mz / m * step;
+                var step = Math.min(m, pace * dt), nx = t.x + mx / m * step, nz = t.z + mz / m * step;
                 if (inCircle(nx, nz) && !inCircle(t.x, t.z)) { t.tx = t.x; t.tz = t.z; return; }   // it stands at the chalk
                 t.x = nx; t.z = nz;
             }
@@ -368,10 +506,13 @@
     // Root: `. A session above the floor: every recording of it walking at
     // once, seen from above, and a seat behind any one pair of eyes. Without
     // the token from the dungeon under /dev it lasts twenty seconds.
-    var root = { view: 0, left: 0, cam: null, ROOT: 20 };
+    // Without the token it can be opened once a minute, and the map shows the
+    // way down only once you have seen it yourself.
+    var root = { view: 0, left: 0, cam: null, ROOT: 20, cool: 0, COOL: 60 };
     function su() {
         if (mode === "root") { exitRoot("root session closed."); return; }
         if (mode !== "play") return;
+        if (!ELF && root.cool > 0) { say("root@backrooms:~# session refused. " + Math.ceil(root.cool) + " seconds. the token is in the dungeon, under /dev.", 4); return; }
         mode = "root"; modeClock = 0;
         root.view = 0; root.left = ELF ? Infinity : root.ROOT;
         root.cam = { x: cam.x, z: cam.z, yaw: cam.yaw, pitch: cam.pitch };
@@ -382,6 +523,7 @@
     }
     function exitRoot(text) {
         mode = "play"; modeClock = 0;
+        if (!ELF) root.cool = root.COOL;
         cam.x = root.cam.x; cam.z = root.cam.z; cam.yaw = root.cam.yaw; cam.pitch = root.cam.pitch;
         say(text, 5);
         lock();
@@ -403,10 +545,12 @@
             ctx.strokeRect(ox + x * S + 0.5, oy + z * S + 0.5, S - 1, S - 1);
         }
         var pulse = 0.5 + 0.5 * Math.sin(clock * 4);
-        ctx.globalAlpha = 0.4 + 0.6 * pulse; ctx.strokeStyle = col; ctx.lineWidth = 2;
-        ctx.strokeRect(ox + L.exit.x * S + 1, oy + L.exit.z * S + 1, S - 2, S - 2);
-        ctx.font = Math.max(8, S * 0.5) + "px " + MONO; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = col;
-        ctx.fillText("↓", ox + (L.exit.x + 0.5) * S, oy + (L.exit.z + 0.5) * S);
+        if (ELF || sawExit) {
+            ctx.globalAlpha = 0.4 + 0.6 * pulse; ctx.strokeStyle = col; ctx.lineWidth = 2;
+            ctx.strokeRect(ox + L.exit.x * S + 1, oy + L.exit.z * S + 1, S - 2, S - 2);
+            ctx.font = Math.max(8, S * 0.5) + "px " + MONO; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = col;
+            ctx.fillText("↓", ox + (L.exit.x + 0.5) * S, oy + (L.exit.z + 0.5) * S);
+        }
         ctx.lineWidth = 1.5;
         things.forEach(function (t) {
             var px = ox + t.x * S, pz = oy + t.z * S;
@@ -439,6 +583,8 @@
     function found() {
         mode = "found"; modeClock = 0;
         keepGhost();
+        foundHere++;
+        if (saved.descent) saved.descent.found++;
         saved.deaths++; save();
         if (audio) audio.found();
         say("", 0);
@@ -509,6 +655,24 @@
         ghostLink.textContent = "leave your ghost (level " + ghost.level + ")";
         ghostLink.hidden = false;
     }
+    // A descent, posted the way the golf card is: an issue titled "descent:"
+    // with one line, bd1:SEED:LEVEL:SECONDS:FOUND, which the ghosts' workflow
+    // reads into ghosts.json beside them (tools/ghosts.py); the best on this
+    // seed are shown on the way in. An honour system, like the clubhouse.
+    function offerDescent(D) {
+        if (!descentLink || !D || D.deepest < 1) return;
+        var secs = Math.round(D.t), line = "bd1:" + D.seed + ":" + D.deepest + ":" + secs + ":" + D.found;
+        var body = "seed: " + D.seed + "\ndeepest: level " + D.deepest + "\ntime: " + clockText(secs) + "\nfound: " + D.found + "\n\n```\n" + line + "\n```\n\nFrom rickseufert.com/backrooms/#seed=" + D.seed + ", timed from the top of level 0. Keep the code block as it is; a workflow reads open issues titled \"descent:\" into the backrooms, where the deepest on each seed are shown on the way in. An honour system. Closing the issue takes it down.";
+        descentLink.href = "https://github.com/rseufert/rseufert.github.io/issues/new?title=" + encodeURIComponent("descent: level " + D.deepest + " in " + clockText(secs) + " (seed " + D.seed + ")") + "&body=" + encodeURIComponent(body);
+        descentLink.textContent = "post your descent (level " + D.deepest + ", " + clockText(secs) + ")";
+        descentLink.hidden = false;
+    }
+    // The deepest descents posted on a seed, deepest first, then quickest.
+    function descents(seed) {
+        var list = (book && book.descents || []).filter(function (d) { return d && d.seed === seed; });
+        list.sort(function (a, b) { return b.level - a.level || a.seconds - b.seconds; });
+        return list.slice(0, 3).map(function (d) { return (d.by || "someone") + " to level " + d.level + " in " + clockText(d.seconds); });
+    }
     function haunt() {
         // The ghosts of this seed and level: yours first, then the ones sent in.
         ghosts = [];
@@ -562,11 +726,20 @@
         if (keys.KeyQ) side -= 1;
         if (keys.KeyE) side += 1;
         fwd += -stick.y; side += stick.x;
-        var run = keys.ShiftLeft || keys.ShiftRight || Math.hypot(stick.x, stick.y) > 0.9;
+        var want = keys.ShiftLeft || keys.ShiftRight || Math.hypot(stick.x, stick.y) > 0.9;
         cam.yaw += turn * 2.2 * dt;
         var m = Math.hypot(fwd, side);
         if (m > 1) { fwd /= m; side /= m; }
-        var v = (run ? RUN : WALK) * dt;
+        var run = want && !winded && m > 0.1;
+        if (run) {
+            breath -= dt / BREATH; heard = HEARD;
+            if (breath <= 0) { breath = 0; winded = true; say("out of breath. walk.", 3); }
+        } else {
+            breath = Math.min(1, breath + dt / (m > 0.1 ? RECOVER : RECOVER * 0.6));
+            if (winded && breath >= 0.5) winded = false;
+        }
+        if (heard > 0) heard -= dt;
+        var v = (run ? RUN : winded ? WINDED : WALK) * dt;
         var dx = (cam.fx * fwd + cam.rx * side) * v, dz = (cam.fz * fwd + cam.rz * side) * v;
         if (!blocked(cam.x + dx, cam.z)) cam.x += dx;
         if (!blocked(cam.x, cam.z + dz)) cam.z += dz;
@@ -582,8 +755,17 @@
     }
     function drop() {
         mode = "drop"; modeClock = 0;
+        // The level's time, and the descent's.
+        var k = saved.seed + ":" + L.level, best = saved.times[k];
+        dropNote = best == null || levelClock < best ? (best == null ? "" : "your best here, by " + clockText(best - levelClock) + ".") : "your best here is " + clockText(best) + ".";
+        if (best == null || levelClock < best) saved.times[k] = Math.round(levelClock * 10) / 10;
+        var ks = Object.keys(saved.times); if (ks.length > 300) delete saved.times[ks[0]];
+        var D = saved.descent;
+        if (D && D.seed === saved.seed) { D.deepest = Math.max(D.deepest, L.level + 1); offerDescent(D); }
+        save();
         if (audio) audio.drop();
     }
+    function clockText(t) { var s = Math.max(0, Math.floor(t)), m = Math.floor(s / 60); return m + ":" + (s % 60 < 10 ? "0" : "") + s % 60; }
 
     // ---- drawing -----------------------------------------------------------
     function resize() {
@@ -626,7 +808,7 @@
         for (var z = Math.max(0, pz - R); z <= Math.min(n - 1, pz + R); z++) {
             for (var x = Math.max(0, px - R); x <= Math.min(n - 1, px + R); x++) {
                 var c = z * n + x;
-                if (L.grid[c]) continue;
+                if (L.grid[c] || (x === L.exit.x && z === L.exit.z && L.kind === "dark")) continue;
                 var cx = x + 0.5, cz = z + 0.5;
                 toCam(cx, 0, cz, tmp);
                 if (tmp.z < -1.2) continue;                       // behind you
@@ -642,6 +824,10 @@
                 wall(x, z, h, x, z + 1, x + 1, 0, z + 1, x, 0, z + 1, x, h, z + 1, x + 1, h, z + 1); // south
                 wall(x, z, h, x - 1, z, x, 0, z + 1, x, 0, z, x, h, z, x, h, z + 1);         // west
             }
+        }
+        if (L.kind === "dark" && visible(L.exit.x + 0.5, L.exit.z + 0.5, 30)) {
+            var ex = L.exit.x, ez = L.exit.z;
+            quad("exit", Math.hypot(ex + 0.5 - cam.x, ez + 0.5 - cam.z, cam.y), ex, 0, ez, ex + 1, 0, ez, ex + 1, 0, ez + 1, ex, 0, ez + 1);
         }
         quads.sort(function (a, b) { return b.d - a.d; });
     }
@@ -670,6 +856,7 @@
         ctx.lineJoin = "round";
         for (var i = 0; i < quads.length; i++) {
             var q = quads[i], a = fade(q.d) * bright;
+            if (q.kind === "exit" && L.kind === "dark") a = Math.max(a, 0.85 * flicker);    // the one light left on
             if (a <= 0.01) continue;
             for (var k = 0; k < 4; k++) toCam(q.p[k][0], q.p[k][1], q.p[k][2], tmp[k]);
             if (tmp[0].z < NEAR && tmp[1].z < NEAR && tmp[2].z < NEAR && tmp[3].z < NEAR) continue;
@@ -699,6 +886,8 @@
         }
         ctx.globalAlpha = 1;
         notes(horizon, col, bright);
+        chalkMarks(horizon, bright);
+        draft(horizon, col, bright);
         figures(horizon, bright, glow);
         apparitions(horizon, bright);
         hud(col);
@@ -766,7 +955,52 @@
             var a = fade(d) * bright;
             if (d < 2.2 && !nt.seen) { nt.seen = true; if (audio) audio.tick(); }
             ctx.globalAlpha = a;
-            label(nt.text, x, 0.5, z, horizon, d < 2.2 ? "#fff" : col, 0.06);
+            var said = /from the way down/.test(nt.text) ? "this wall is " + toExit(nt.x + 0.5, nt.z + 0.5) + " steps from the way down" : nt.text;
+            label(said, x, 0.5, z, horizon, d < 2.2 ? "#fff" : col, 0.06);
+        });
+        ctx.globalAlpha = 1;
+    }
+    // A draft along the floor, toward the way down: a few motes near your
+    // feet, each drifting from its cell to the neighbour one step nearer.
+    var motes = [];
+    function drift(dt) {
+        while (motes.length < 12) {
+            var a = Math.random() * Math.PI * 2, r = 0.6 + Math.random() * 2.6, x = cam.x + Math.sin(a) * r, z = cam.z + Math.cos(a) * r;
+            if (cellAt(x, z)) { motes.push({ dead: true }); continue; }
+            motes.push({ x: x, z: z, life: 1.5 + Math.random() * 1.5, age: 0 });
+        }
+        motes = motes.filter(function (m) { return !m.dead; });
+        motes.forEach(function (m) {
+            m.age += dt;
+            var here = toExit(m.x, m.z), cx = Math.floor(m.x), cz = Math.floor(m.z), bx = cx, bz = cz, best = here;
+            [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (s) { var v = cellAt(cx + s[0] + 0.5, cz + s[1] + 0.5) ? -1 : toExit(cx + s[0] + 0.5, cz + s[1] + 0.5); if (v >= 0 && v < best) { best = v; bx = cx + s[0]; bz = cz + s[1]; } });
+            var tx = bx + 0.5 - m.x, tz = bz + 0.5 - m.z, l = Math.hypot(tx, tz) || 1;
+            m.px = m.x; m.pz = m.z;
+            m.x += tx / l * 0.7 * dt; m.z += tz / l * 0.7 * dt;
+        });
+        motes = motes.filter(function (m) { return m.age < m.life && Math.hypot(m.x - cam.x, m.z - cam.z) < 4; });
+    }
+    function draft(horizon, col, bright) {
+        ctx.strokeStyle = col; ctx.lineWidth = 1;
+        motes.forEach(function (m) {
+            if (m.px == null) return;
+            var k = Math.sin(Math.PI * m.age / m.life);
+            ctx.globalAlpha = 0.35 * k * bright;
+            var dx = m.x - m.px, dz = m.z - m.pz, l = Math.hypot(dx, dz) || 1;
+            segment(m.x - dx / l * 0.12, 0.015, m.z - dz / l * 0.12, m.x, 0.015, m.z, horizon);
+        });
+        ctx.globalAlpha = 1;
+    }
+    // Where the chalk was: a faint ring, for the rest of the level.
+    function chalkMarks(horizon, bright) {
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1;
+        marks.forEach(function (c) {
+            var d = Math.hypot(c.x - cam.x, c.z - cam.z);
+            if (d > fogRadius() + c.r) return;
+            var ring = [];
+            for (var k = 0; k < 24; k++) { var a = k / 24 * Math.PI * 2; ring.push([c.x + Math.cos(a) * c.r, 0.02, c.z + Math.sin(a) * c.r]); }
+            ctx.globalAlpha = 0.22 * Math.max(0.3, fade(d)) * bright;
+            poly(ring, horizon, true);
         });
         ctx.globalAlpha = 1;
     }
@@ -867,10 +1101,22 @@
         ctx.globalAlpha = 0.85;
         ctx.textAlign = "left";
         ctx.fillText("LEVEL " + L.level, 14, 12);
-        if (mode === "play") { ctx.globalAlpha = chalk ? 0.85 : 0.4; ctx.fillText("chalk \u00b7 " + chalk + (TOUCH || !chalk ? "" : " \u00b7 C"), 14, 28); ctx.globalAlpha = 0.85; }
+        if (mode === "play") {
+            ctx.globalAlpha = chalk ? 0.85 : 0.4; ctx.fillText("chalk \u00b7 " + chalk + (TOUCH || !chalk ? "" : " \u00b7 C"), 14, 28); ctx.globalAlpha = 0.85;
+            if (breath < 1) {                                                  // breath, while it is not full
+                ctx.globalAlpha = 0.7; ctx.strokeStyle = winded ? "#ff2a2a" : col; ctx.lineWidth = 1;
+                ctx.strokeRect(14.5, 46.5, 60, 4); ctx.fillStyle = winded ? "#ff2a2a" : col; ctx.fillRect(15, 47, 59 * breath, 3);
+                ctx.fillStyle = col; ctx.globalAlpha = 0.85;
+            }
+        }
         ctx.textAlign = "right";
         var s = Math.floor(levelClock), m = Math.floor(s / 60);
         ctx.fillText((m < 10 ? "0" : "") + m + ":" + (s % 60 < 10 ? "0" : "") + s % 60, W - 14, 12);
+        var best = saved.times[saved.seed + ":" + L.level], D = saved.descent;
+        ctx.globalAlpha = 0.55;
+        if (best != null) ctx.fillText("best " + clockText(best), W - 14, 28);
+        if (D && D.seed === saved.seed) ctx.fillText("descent " + clockText(D.t), W - 14, best != null ? 44 : 28);
+        ctx.globalAlpha = 0.85;
         if (mode === "play") {
             ctx.textBaseline = "bottom"; ctx.globalAlpha = fuzz > 0 ? 0.5 + 0.5 * Math.random() : 0.85;
             ctx.fillStyle = fuzz > 0 ? "#fff" : fuzzCool > 0 ? "#8d8d98" : col;
@@ -917,7 +1163,7 @@
         ctx.font = "bold " + Math.min(72, W / 7) + "px " + MONO;
         ctx.fillText("FOUND", W / 2, H / 2);
         ctx.font = "13px " + MONO; ctx.fillStyle = "#fff";
-        ctx.fillText("it puts you back at the start. it does not put you back the same.", W / 2, H / 2 + 50);
+        ctx.fillText(foundHere >= UP && L.level > 0 ? "three times on this level. it takes you back up one." : "it puts you back at the start. it does not put you back the same.", W / 2, H / 2 + 50);
         if (lastGhost && lastGhost.level === L.level && t > 0.8) ctx.fillText("your last thirty seconds stay here, walking.", W / 2, H / 2 + 72);
         ctx.globalAlpha = 1;
     }
@@ -929,9 +1175,14 @@
             ctx.fillStyle = color(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.font = Math.min(40, W / 10) + "px " + MONO;
             ctx.fillText("LEVEL " + (L.level + 1), W / 2, H / 2);
+            ctx.font = "13px " + MONO; ctx.fillStyle = "#fff";
+            ctx.fillText("level " + L.level + " in " + clockText(levelClock) + (dropNote ? ". " + dropNote : "."), W / 2, H / 2 + 40);
+            var D = saved.descent;
+            if (D && D.seed === saved.seed) ctx.fillText("the descent: level " + (L.level + 1) + " in " + clockText(D.t) + ", found " + D.found + " time" + (D.found === 1 ? "" : "s") + ".", W / 2, H / 2 + 60);
         }
         ctx.globalAlpha = 1;
     }
+    var dropNote = "", moved = 0;
     function say(text, seconds) { msg.text = text; msg.at = clock; msg.until = clock + seconds + text.length / 32; }
 
     // ---- the loop ----------------------------------------------------------
@@ -940,7 +1191,18 @@
         var dt = Math.min(0.05, Math.max(0, (now - lastFrame) / 1000 || 0));
         var t0 = performance.now();
         lastFrame = now;
+        advance(dt);
+        draw();
+        var took = performance.now() - t0;
+        slow = took > 18 ? Math.min(slow + 1, 30) : Math.max(slow - 1, 0);   // drop the glow when the frame is slow
+    }
+    // A frame's worth of the game, without drawing it: the loop's, and Backrooms.tick's.
+    function advance(dt) {
         clock += dt; modeClock += dt;
+        if ((mode === "play" || mode === "found" || mode === "drop") && saved.descent && L && saved.descent.seed === saved.seed) {
+            saved.descent.t += dt;
+            if (Math.floor(saved.descent.t / 5) !== Math.floor((saved.descent.t - dt) / 5)) save();
+        }
         if (ELF) hue = (hue + dt * 12) % 360;
         if (mode === "play") {
             levelClock += dt;
@@ -950,7 +1212,11 @@
             record(dt);
             walk(dt);
             if (fuzz > 0) fuzz -= dt;
-            if (circles.length) { circles.forEach(function (c) { c.left -= dt; }); circles = circles.filter(function (c) { return c.left > 0; }); }
+            if (circles.length) {
+                circles.forEach(function (c) { c.left -= dt; if (c.left <= 0) marks.push({ x: c.x, z: c.z, r: c.r }); });
+                circles = circles.filter(function (c) { return c.left > 0; });
+                if (marks.length > 24) marks.splice(0, marks.length - 24);
+            }
             if (fuzzCool > 0) fuzzCool -= dt;
             // The lights are old.
             if (!REDUCED) {
@@ -960,9 +1226,23 @@
                 if (L.level >= 3 && Math.random() < dt * 0.02) blackout = 0.15 + Math.random() * 0.3;
             }
             if (audio) audio.near(near, L.level);
-            if (!sawExit && visible(L.exit.x + 0.5, L.exit.z + 0.5)) { sawExit = true; say("there. the way down.", 4); }
+            if (!sawExit && visible(L.exit.x + 0.5, L.exit.z + 0.5, L.kind === "dark" ? 30 : 0)) { sawExit = true; say("there. the way down.", 4); }
+            // The way down that will not stay put: every forty seconds, somewhere far from you and out of sight.
+            if (L.kind === "moving") {
+                L.moveClock = (L.moveClock || 0) + dt;
+                if (L.moveClock > 40 && playerField) {
+                    L.moveClock = 0;
+                    var cand = L.reach.filter(function (c) { return playerField[c] >= 18 && !visible(c % L.n + 0.5, Math.floor(c / L.n) + 0.5); });
+                    if (cand.length) { var ce = cand[Math.floor(Math.random() * cand.length)]; L.exit = { x: ce % L.n, z: Math.floor(ce / L.n) }; exitField = null; sawExit = false; moved++; say("the way down moved.", 4); }
+                }
+            }
+            if (root.cool > 0) root.cool -= dt;
+            if (audio) audio.way(toExit(cam.x, cam.z));
+            drift(dt);
         } else if (mode === "found" && modeClock > 2.4) {
-            enter(L.level, true);                 // back to the start; it has moved
+            // Back to the start, and it has moved; the third time on one level, back up a level.
+            if (foundHere >= UP && L.level > 0) enter(L.level - 1, "up");
+            else enter(L.level, true);
             mode = "play";
         } else if (mode === "drop" && modeClock > 2.2) {
             enter(L.level + 1);
@@ -977,14 +1257,14 @@
             }
         }
         cam.fx = Math.sin(cam.yaw); cam.fz = Math.cos(cam.yaw); cam.rx = Math.cos(cam.yaw); cam.rz = -Math.sin(cam.yaw);
+    }
+    function draw() {
         if (mode === "root" && !root.view) rootMap();
         else if (mode !== "title") { gather(); render(); }
         if (staticButton) staticButton.hidden = !(TOUCH && mode === "play");
         if (chalkButton) chalkButton.hidden = !(TOUCH && mode === "play");
         // A pause button where there is no esc to press, or no lock to let go of.
         if (pauseButton) pauseButton.hidden = !(mode === "play" && (TOUCH || !lockable));
-        var took = performance.now() - t0;
-        slow = took > 18 ? Math.min(slow + 1, 30) : Math.max(slow - 1, 0);   // drop the glow when the frame is slow
     }
 
     // ---- input -------------------------------------------------------------
@@ -1077,8 +1357,13 @@
     if (chalkButton) chalkButton.addEventListener("click", useChalk);
     if (pauseButton) pauseButton.addEventListener("click", function () { if (mode === "play") pause(TOUCH ? "paused. tap to go on." : "paused. click to go on."); });
     if (rootButton) rootButton.addEventListener("click", function () { if (mode === "play" || mode === "root") su(); else say("", 0); });
+    // Start over asks once: a second press within four seconds means it.
+    var sure = 0;
     resetButton.addEventListener("click", function () {
-        saved.seed = freshSeed(); saved.level = 0; save();
+        if (clock - sure > 4 || !sure) { sure = clock || 0.001; resetButton.textContent = "start over? press again"; setTimeout(function () { if (resetButton.textContent !== "start over") resetButton.textContent = "start over"; sure = 0; }, 4000); return; }
+        sure = 0; resetButton.textContent = "start over";
+        saved.seed = freshSeed(); saved.level = 0; saved.descent = null; save();
+        if (descentLink) descentLink.hidden = true;
         if (document.exitPointerLock) document.exitPointerLock();
         mode = "title"; things = [];
         title();
@@ -1134,7 +1419,9 @@
     if (!TOUCH) { if (walkRange) walkRange.parentNode.hidden = true; if (leftyBox) leftyBox.parentNode.hidden = true; }
     function title() {
         var how = TOUCH ? "left thumb walks, right thumb looks. the static button makes it noise for four seconds, once a minute. the top left corner pauses, and the settings are there." : "wasd or arrows walk, the mouse looks, shift runs, esc pauses and has the settings. F is static: four seconds when it is only noise, once a minute. ` is root.";
-        veilText.textContent = (saved.level ? "you fell to level " + saved.level + " last time. it is still there. " : "you noclipped out of rickseufert.com. ") + how + " find the way down. do not let it reach you.";
+        var D = saved.descent && saved.descent.seed === saved.seed ? saved.descent : null, top = descents(saved.seed);
+        veilText.textContent = (saved.level ? "you fell to level " + saved.level + " last time. it is still there. " : "you noclipped out of rickseufert.com. ") + how + " find the way down. do not let it reach you." +
+            (D && D.t > 0 ? " your descent is " + clockText(D.t) + " in." : "") + (top.length ? " deepest on this seed: " + top.join(" · ") + "." : "");
         go.textContent = saved.level ? "go back down" : "noclip";
         if (settings) settings.hidden = true;
         veil.hidden = false;
@@ -1189,6 +1476,10 @@
                 hum3.o.frequency.exponentialRampToValueAtTime(base * 1.012, t);
                 hum4.o.frequency.exponentialRampToValueAtTime(base * 3, t);
             },
+            way: function (steps) {
+                var k = steps >= 0 ? Math.max(0, 1 - steps / 30) : 0;
+                hum3.o.frequency.setTargetAtTime(base * (1.012 + 0.03 * k * k), ac.currentTime, 0.5);
+            },
             near: function (d, level) {
                 var k = Math.max(0, 1 - d / 8); k *= k;
                 thing.g.gain.setTargetAtTime(k * 0.35, ac.currentTime, 0.1);
@@ -1229,11 +1520,31 @@
         })
         .catch(function () { /* unhaunted */ });
     if (localGhosts().length) offer(localGhosts()[0]);
+    // #seed= and #level= are read again when the address changes, as golf's are.
+    addEventListener("hashchange", function () {
+        var m = /seed=(\d+)/.exec(location.hash), l = /level=(\d+)/.exec(location.hash);
+        if (!m && !l) return;
+        if (m) saved.seed = +m[1];
+        if (l) saved.level = Math.min(+l[1], 60);
+        save();
+        if (mode === "title") title();
+        else enter(saved.level);
+    });
+    if (saved.descent && saved.descent.seed === saved.seed) offerDescent(saved.descent);
     resize();
     addEventListener("resize", resize);
     document.addEventListener("fullscreenchange", function () { setTimeout(resize, 50); });
     save();
     title();
     requestAnimationFrame(frame);
-    window.Backrooms = { generate: generate, field: field, pack: pack, unpack: unpack, state: function () { return { mode: mode, cam: cam, level: L, things: things, ghosts: ghosts, msg: msg, clock: clock, saved: saved, fuzz: fuzz, fuzzCool: fuzzCool, root: root }; }, useStatic: useStatic, su: su, rootTab: rootTab, render: function () { gather(); render(); } };
+    window.Backrooms = { generate: generate, field: field, pack: pack, unpack: unpack, state: function () { return { mode: mode, cam: cam, level: L, things: things, ghosts: ghosts, msg: msg, clock: clock, saved: saved, fuzz: fuzz, fuzzCool: fuzzCool, root: root, breath: breath, winded: winded, heard: heard, chalk: chalk, circles: circles, marks: marks, foundHere: foundHere, levelClock: levelClock }; }, useStatic: useStatic, useChalk: useChalk, su: su, rootTab: rootTab, render: function () { gather(); render(); },
+        // The game run on by hand, a thirtieth of a second at a time at most, drawn once at the end; and a level begun at once.
+        tick: function (ms) {
+            var left = (ms == null ? 1000 / 30 : ms) / 1000;
+            while (left > 1e-9) { var dt = Math.min(1 / 30, left); left -= dt; advance(dt); }
+            draw();
+            return mode;
+        },
+        enter: function (level, seed) { if (seed != null) saved.seed = seed; enter(level == null ? saved.level : level); mode = "play"; modeClock = 0; veil.hidden = true; return L.n; },
+        press: function (code, down) { keys[code] = down !== false; }, visible: function (x, z) { return visible(x, z); }, toExit: function (x, z) { return toExit(x, z); }, kindOf: kindOf };
 })();
