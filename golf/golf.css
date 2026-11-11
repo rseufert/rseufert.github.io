@@ -119,6 +119,8 @@ body.filled { overflow: hidden; }
 .golf-page table.card th { color: #ffcc33; font-weight: normal; text-align: left; }
 .golf-page table.card td.under { color: #4dff7a; }
 .golf-page table.card td.over { color: #ff7a7a; }
+.golf-page table.card tr.putts td, .golf-page table.card tr.putts th { color: #8d8d98; }
+.golf-page .card-wrap .small { font: 12px var(--mono); color: #8d8d98; max-width: 460px; margin: 8px auto 0; text-align: center; }
 /* Aim and club, as buttons in the stage, for thumbs. */
 .golf-page .pads { position: absolute; left: 12px; bottom: 40px; z-index: 2; display: none; gap: 4px; }   /* six pads, clear of the swing meter at 375 wide */
 .golf-page .pads button { font: 13px var(--mono); color: #ffcc33; background: rgba(0, 0, 0, 0.7); border: 1px solid #ffcc33; min-width: 40px; height: 40px; padding: 0 8px; cursor: pointer; }
