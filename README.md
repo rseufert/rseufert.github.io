@@ -24,12 +24,20 @@ pictures are not (see the licence note at the end).
 
 The counter is GoatCounter, when `goatcounter:` in `_config.yml` names a
 site code, and nothing when it is empty: `_includes/counter.html`, which the
-layout puts last in the body, loads the script with the pathname only, never
+layout puts at the end of the body, loads the script with the pathname only, never
 the query string or the hash, and not at all for a browser that sends Do Not
 Track or Global Privacy Control. It sets no cookie and uses no storage, which
 keeps the footer honest; rickbot looks for the script before it answers about
 trackers. The dashboard is at `CODE.goatcounter.com`, and can be made public
 there.
+
+After it comes `_includes/anchor.html`, for one browser. Chrome on an iPhone,
+sent straight to a part of a page (`/#projects`), keeps the top of the page
+under its toolbar afterwards, and the menu cannot be scrolled back to. So in
+that browser only, a hash that names an element is taken off the address
+before the browser acts on it, the page loads at its top, and the script
+scrolls to the element and puts the hash back. Safari and everything else
+are left to do it themselves.
 
 The home page is an index: one film, the purchase that crosses all three
 mocks, then each project as a tile, the dashboard as one of its numbers, the
