@@ -1,0 +1,42 @@
+{%- comment -%}
+Chrome on an iPhone, sent straight to a part of a page (/#projects, a link
+from another page or another app), lands there and then keeps the top of the
+page under its own toolbar: the menu cannot be scrolled back to. It is
+Chrome's fault and only Chrome's; Safari on the same phone is fine, and so
+is a jump made from inside the page once it has loaded.
+
+So, in that browser only, the arrival is made to look like the second case.
+This is the last script on the page, so everything above has read the
+address already and every element is there to be found. If the hash names an
+element, it is taken off the address before the browser acts on it, the page
+loads at its top, and then the page scrolls to the element itself and the
+hash goes back where it was. A hash that names no element (a game's seed,
+rickbot's #chat) is left alone, and a visitor who has already touched the
+page is not moved.
+{%- endcomment -%}
+<script>
+(function () {
+    if (!/CriOS\//.test(navigator.userAgent) || !history.replaceState) return;
+    var hash = location.hash, el = null;
+    if (hash.length < 2) return;
+    try { el = document.getElementById(decodeURIComponent(hash.slice(1))); } catch (e) { el = null; }
+    if (!el) return;
+    try { history.replaceState(history.state, "", location.pathname + location.search); } catch (e) { return; }
+    var touched = false, done = false;
+    function touch() { touched = true; }
+    ["touchstart", "wheel", "keydown"].forEach(function (t) { addEventListener(t, touch, { passive: true }); });
+    function arrive() {
+        if (done) return;
+        done = true;
+        ["touchstart", "wheel", "keydown"].forEach(function (t) { removeEventListener(t, touch); });
+        // Back on the address, unless something has written one of its own meanwhile.
+        if (!location.hash) { try { history.replaceState(history.state, "", hash); } catch (e) { /* the address stays bare */ } }
+        if (!touched) el.scrollIntoView();
+    }
+    // A little after the page has loaded, when the toolbar has settled; and
+    // not left waiting for ever on a slow picture.
+    function soon() { setTimeout(arrive, 250); }
+    if (document.readyState === "complete") soon(); else addEventListener("load", soon);
+    setTimeout(arrive, 5000);
+}());
+</script>
