@@ -187,7 +187,7 @@
         "julia set": "a julia set is every point that never escapes under z → z² + c for one fixed c. the strip under the menu is one, zooming. the whole page is at /julia/.",
         "mandelbrot set": "the mandelbrot set is the catalogue of every c: the ones whose julia set is one piece. its edge is where the pictures are. the julia page has a small map of it.",
         "fractal": "a fractal is a shape that is the same, smaller, when you look closer. the strip under the menu is one and never stops looking closer.",
-        "flipper zero": "the Flipper Zero is a small orange handheld with a dolphin on it: sub-GHz radio, NFC, RFID, infrared, GPIO. rick writes apps for it: eight of them, four on the home page and the rest at /flipper/.",
+        "flipper zero": "the Flipper Zero is a small orange handheld with a dolphin on it: sub-GHz radio, NFC, RFID, infrared, GPIO. rick writes apps for it: nine of them, four on the home page and the rest at /flipper/.",
         "sub-ghz": "sub-GHz is the radio band below a gigahertz, where garage doors and car keys and weather stations talk. the Flipper listens there.",
         "nfc": "NFC is near-field communication: the tap in tap-to-pay. the Flipper reads and emulates it.",
         "rfid": "RFID is the older cousin of NFC: 125 kHz tags, office badges, the reader by a door that blinks at you.",
@@ -659,7 +659,7 @@
         },
         nest: {
             name: "The Flipper Nest",
-            desc: "Eight small apps roost here like dolphins with opinions. One is a rolodex. One is a timer. One is sniffing sub-GHz, and it has found your thoughts, and they are mostly about lunch. From the east comes the sound of small engines.",
+            desc: "Nine small apps roost here like dolphins with opinions. One is a rolodex. One is a timer. One is sniffing sub-GHz, and it has found your thoughts, and they are mostly about lunch. From the east comes the sound of small engines.",
             exits: { w: "nav", e: "arena" },
             ways: "The menu is west. The engines are east."
         },
