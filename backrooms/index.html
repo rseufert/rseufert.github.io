@@ -36,7 +36,7 @@ thirty seconds, walking the same halls for whoever comes next. Find the way down
 
 <div class="bar">
   <p class="hint"><kbd>w a s d</kbd> or arrows walk &middot; mouse looks &middot; <kbd>shift</kbd> runs &middot; <kbd>f</kbd> is static &middot; <kbd>c</kbd> is chalk &middot; <kbd>`</kbd> is root &middot; <kbd>esc</kbd> pauses &middot; on a phone, left thumb walks, right thumb looks, and the corner button pauses</p>
-  <p class="buttons"><button type="button" id="backrooms-sound">sound</button> <button type="button" id="backrooms-full">fullscreen</button> <button type="button" id="backrooms-root">root</button> <button type="button" id="backrooms-reset">start over</button> <a class="button" id="backrooms-ghost" href="https://github.com/rseufert/rseufert.github.io/issues/new" target="_blank" rel="noopener" hidden>leave your ghost</a> <output id="backrooms-depth" class="depth"></output></p>
+  <p class="buttons"><button type="button" id="backrooms-sound">sound</button> <button type="button" id="backrooms-full">fullscreen</button> <button type="button" id="backrooms-root">root</button> <button type="button" id="backrooms-reset">start over</button> <a class="button" id="backrooms-ghost" href="https://github.com/rseufert/rseufert.github.io/issues/new" target="_blank" rel="noopener" hidden>leave your ghost</a> <a class="button" id="backrooms-descent" href="https://github.com/rseufert/rseufert.github.io/issues/new" target="_blank" rel="noopener" hidden>post your descent</a> <output id="backrooms-depth" class="depth"></output></p>
 </div>
 
 <p>The drawing is the kind the arcades did before they had pixels to spare: every wall, floor tile and
@@ -66,7 +66,20 @@ most of a minute before the trick works again, and it does not know what happene
 once, yours and everyone's who sent theirs in, and <kbd>tab</kbd> climbs into any one of them to watch their
 last thirty seconds from where they stood. There is no server under this site, so nobody can be watched as
 they play; the recordings are the next thing to it, and all of them at once is the superuser's view. Without
-the root token, which is kept in rickbot's dungeon under <code>/dev</code>, a session lasts twenty seconds.</p>
+the root token, which is kept in rickbot's dungeon under <code>/dev</code>, a session lasts twenty seconds, it
+will not open again for a minute, and the map does not show the way down until you have seen it yourself.</p>
+
+<p>Running is a choice now. A run lasts eight seconds of breath, and it hears you: for a moment after, whatever
+is near comes nearly as fast. From level 4 some of them sprint, faster than you down a straight hall and slow
+at every corner. Watched, it is only a body, and in a corridor you can edge past it against the wall; stare
+long enough and it looks away first and goes. Chalk drawn at its feet sends it off too, and a circle that has
+worn off leaves a faint ring, a trail in the fog. It finds you three times on one level and it takes you back
+up a level. A draft along the floor drifts toward the way down, and the hum beats faster as you get near.</p>
+
+<p>Further down the levels keep growing and stay a maze, and every fourth one from level 7 is different: the
+lights out but for the way down, one long corridor, or a way down that will not stay put. The clock keeps your
+best time on each level, and a descent is timed from the top of level 0 to wherever you get; post it, the way
+a golf card is posted, and the deepest on each seed are shown on the way in.</p>
 </div>
 <script src="/js/unmute.js?v={{ site.time | date: '%s' }}"></script>
 <script src="/backrooms/backrooms.js?v={{ site.time | date: '%s' }}"></script>

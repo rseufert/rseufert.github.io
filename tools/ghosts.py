@@ -14,10 +14,20 @@ commits the result to the sky-data branch, where the page reads it
     python3 tools/ghosts.py               # write data/ghosts.json
     python3 tools/ghosts.py --out FILE    # write FILE instead
 
-A ghost is  bk1:SEED:LEVEL:HZ:DATA  where DATA is six URL-safe base64
+A ghost is  bk2:SEED:LEVEL:HZ:DATA  where DATA is six URL-safe base64
 characters a sample: x and z in 64ths of a cell, then the yaw in 4096ths of
-a turn. Nothing in an issue is evaluated; a line that is not that shape is
+a turn. bk2 is the generation of the levels: they were regrown in November
+2026, and a bk1 ghost, walked on the old ones, would walk through the new
+walls, so bk1 lines are left out (their issues can be closed). Nothing in an issue is evaluated; a line that is not that shape is
 left out. GITHUB_TOKEN, if set, is used for the API.
+
+Descents go in the same file. The page offers to post one, as an issue
+titled "descent: level L in M:SS (seed S)" with one line in a code block:
+bd1:SEED:LEVEL:SECONDS:FOUND, how deep a run from the top of level 0 got,
+how long it took, and how many times it was found on the way: the level 1
+to 60 (the game stops at 60) and at least five seconds a level, which no
+level can be crossed in. Each person's
+deepest (then quickest) on each seed is kept, the best hundred in all.
 """
 import argparse
 import datetime
@@ -31,7 +41,12 @@ from pathlib import Path
 REPO = "rseufert/rseufert.github.io"
 OUT = Path(__file__).resolve().parent.parent / "data" / "ghosts.json"
 PREFIX = "ghost:"
-GHOST = re.compile(r"^bk1:(\d{1,7}):(\d{1,2}):(\d{1,2}):([A-Za-z0-9_-]{18,1800})$")
+GHOST = re.compile(r"^bk2:(\d{1,7}):(\d{1,2}):(\d{1,2}):([A-Za-z0-9_-]{18,1800})$")
+DESCENT_PREFIX = "descent:"
+DESCENT = re.compile(r"^bd1:(\d{1,7}):(\d{1,2}):(\d{1,6}):(\d{1,4})$")
+DESCENTS = 100
+MAX_LEVEL = 60          # the game goes no deeper
+SECONDS_A_LEVEL = 5     # level 0's way down alone is sixteen steps at a run
 MOST = 400          # in all
 A_FLOOR = 20        # on one seed and level
 
@@ -64,11 +79,45 @@ def ghost(body):
     return {"seed": int(g.group(1)), "level": int(g.group(2)), "path": line}
 
 
+def descent(body):
+    """The first fenced code block, if it is one descent line and nothing else."""
+    m = re.search(r"```[^\n]*\n(.*?)\n```", body or "", re.S)
+    if not m:
+        return None
+    d = DESCENT.match(m.group(1).strip())
+    if not d:
+        return None
+    level, seconds = int(d.group(2)), int(d.group(3))
+    if not 1 <= level <= MAX_LEVEL or seconds < SECONDS_A_LEVEL * level:
+        return None
+    return {"seed": int(d.group(1)), "level": int(d.group(2)), "seconds": int(d.group(3)), "found": int(d.group(4))}
+
+
+def best_descents(all_issues):
+    """Each person's deepest, then quickest, descent on each seed."""
+    best = {}
+    for issue in all_issues:
+        if not issue["title"].lower().startswith(DESCENT_PREFIX):
+            continue
+        d = descent(issue.get("body"))
+        if not d:
+            print(f"#{issue['number']}: not a descent; skipped")
+            continue
+        d.update(by=issue["user"]["login"], when=issue["created_at"][:10], url=issue["html_url"])
+        key = (d["by"], d["seed"])
+        old = best.get(key)
+        if not old or (d["level"], -d["seconds"]) > (old["level"], -old["seconds"]):
+            best[key] = d
+    out = sorted(best.values(), key=lambda d: (-d["level"], d["seconds"]))
+    return out[:DESCENTS]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=OUT)
     args = ap.parse_args()
-    left = [i for i in issues() if i["title"].lower().startswith(PREFIX)]
+    everything = issues()
+    left = [i for i in everything if i["title"].lower().startswith(PREFIX)]
     left.sort(key=lambda i: i["created_at"], reverse=True)
     ghosts, floors = [], Counter()
     for issue in left:
@@ -89,10 +138,11 @@ def main():
         "about": f"Ghosts left in the backrooms: the open issues on {REPO} titled 'ghost:', each a last thirty seconds on a seed and level, newest first, read by tools/ghosts.py.",
         "updated": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "ghosts": ghosts,
+        "descents": best_descents(everything),
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n")
-    print(f"{len(ghosts)} ghosts of {len(left)} left; wrote {args.out}")
+    print(f"{len(ghosts)} ghosts of {len(left)} left, {len(book['descents'])} descents; wrote {args.out}")
 
 
 if __name__ == "__main__":

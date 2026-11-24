@@ -115,12 +115,16 @@ the sounds and the notes, and the copy never lips out at random.
 Everything the game tells you about a shot comes from running it.
 `forecast(power)` launches a copy of the ball from the lie with the club and
 the aim (`launch`, the same function the strike uses) and steps it with
-`move` until it stops: wind, slope, lift, trees, bounces, the cup. It gives
+`move` until it stops, at the game's own step of 1/240 s so that a landing on
+the edge of two surfaces goes the same way in both: wind, slope, lift, trees,
+bounces, the cup. It gives
 the path, where it first comes down, where it stops, how far that is along
 the aim, and what ended it; it is cached by everything that moves it, and by
 the power. `solveNeed()` bisects on it for the power that stops the ball at
 the pin, or a foot past it with a putter, so the light tick on the meter
-allows for run, wind, elevation and slope; `advise()` keeps the answer and
+allows for run, wind, elevation and slope. When nothing reaches the pin and a
+full shot only finds the branches, the tick is instead the power that goes
+furthest (`punch`), which is the punch under them. `advise()` keeps the answer and
 works it out again when something changes, no oftener than eight times a
 second. The aim line is the forecast's track along the ground at the tick's
 power (or at the power being swung), with a cross where it comes down and a
@@ -129,7 +133,8 @@ ends. A putt shows only the first few yards of its line, fading, so the
 break is a hint and the rest is the read; the HUD gives the putt's aim in
 inches left or right of the cup. The club is chosen as each shot stops
 (`pickClub`): the shortest whose full shot, forecast from here along the
-aim, reaches the pin, or else the one that goes furthest.
+aim, reaches the pin, or else the one that goes furthest; under the trees,
+the one whose punch goes furthest.
 
 The bot that checked this (eight courses, 72 holes, the game's own aim, club
 and tick, straight): full shots stop within half a yard of the forecast;
@@ -220,7 +225,9 @@ from to the direction it goes and then by the hole's bearing, and laid over
 every hole's seeded wind (`applyWind`); the HUD marks it PDX with the
 compass point. The same observation says when it is raining at the airport
 (its description, or a present-weather code of rain, drizzle or showers),
-and then it rains on the course, and the HUD says RAIN. If the fetch fails
+and then it rains on the course, and the HUD says RAIN; the observation is
+read again at the start of each round, so the rain stops when it stops at the
+airport. If the fetch fails
 the holes keep the wind they grew with, and it is dry. `Golf.wind` is the
 observation; `Golf.calm()` puts the seeded wind back.
 
@@ -257,11 +264,13 @@ The round in progress is kept as each shot stops, in `localStorage` under
 `golf-round`: the course, the hole, the strokes, the card, the hole's
 numbers and the lie. Come back to the same course (a reload, a phone that
 dropped the tab) and the title says where the round is, and "play on" puts
-the ball back where it was. It is forgotten when the card is shown, and
-replaced when another round begins.
+the ball back where it was, or "start from the first tee" drops it and begins
+the course again. It is forgotten when the card is shown, and replaced when
+another round begins.
 
 The card has a row of putts and a line of the round's numbers: fairways hit
-off the tee on the par 4s and 5s, greens in regulation, putts, penalties,
+off the tee on the par 4s and 5s, greens in regulation (a hole out from off
+the green counts only if it was in par − 2), putts, penalties,
 the longest drive, and holes out from off the green (`summary`). The line
 goes into the post to the board too, outside the code block, which is as it
 was.

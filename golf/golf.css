@@ -68,6 +68,8 @@
 }
 .golf-page .veil button { color: #ffcc33; background: #000; border-color: #ffcc33; padding: 8px 22px; letter-spacing: 0.1em; }
 .golf-page .veil button:hover { background: #ffcc33; color: #000; }
+/* "play on" and "start from the first tee" wrap on a phone: keep a thumb's gap between them. */
+.golf-page .veil #golf-go, .golf-page .veil #golf-fresh { margin: 5px 3px; }
 .golf-page .bar button:hover, .golf-page .bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .golf-page .bar a.button { display: inline-block; text-decoration: none; color: #8fe7ff; border-color: #8fe7ff; }
 .golf-page .bar a.button:hover { background: #8fe7ff; color: #000; }
